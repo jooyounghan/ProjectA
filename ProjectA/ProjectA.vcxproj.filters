@@ -16,6 +16,12 @@
     <Filter Include="External">
       <UniqueIdentifier>{71aa9899-28ab-44de-a964-437454a88759}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\ParticleSystem">
+      <UniqueIdentifier>{198e43d0-0740-4739-add3-c5a51b4ddd09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\ParticleSystem">
+      <UniqueIdentifier>{a0286594-b018-4141-b1af-b6fb85b6c42b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -33,6 +39,12 @@
     <ClCompile Include="Camera.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="ParticleManager.cpp">
+      <Filter>소스 파일\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleEmitter.cpp">
+      <Filter>소스 파일\ParticleSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ProjectAApp.h">
@@ -49,6 +61,12 @@
     </ClInclude>
     <ClInclude Include="MacroUtilities.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleManager.h">
+      <Filter>헤더 파일\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleEmitter.h">
+      <Filter>헤더 파일\ParticleSystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
