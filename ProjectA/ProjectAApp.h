@@ -5,9 +5,19 @@
 #include <memory>
 #include <vector>
 
+#include "VertexShader.h"
+#include "GeometryShader.h"
+#include "PixelShader.h"
+#include "ComputeShader.h"
+
 class IUpdatable;
 class CCamera;
 class CParticleEmitter;
+
+namespace D3D11
+{
+	class CGraphicsPSOObject;
+}
 
 class CProjectAApp : public App::CBaseApp
 {
@@ -49,7 +59,24 @@ private:
 private:
 	std::vector<IUpdatable*> m_updatables;
 
+#pragma region 테스트 변수
 private:
 	std::unique_ptr<CCamera> m_camera;
 	std::unique_ptr<CParticleEmitter> m_particleEmitter;
+
+private:
+	D3D11::CVertexShader m_drawEmitterVS;
+	D3D11::CPixelShader m_drawEmitterPS;
+	std::unique_ptr<D3D11::CGraphicsPSOObject> m_drawEmitterPSO;
+
+private:
+	D3D11::CComputeShader m_particleSourceCS;
+	D3D11::CComputeShader m_particleSimulateCS;
+
+private:
+	D3D11::CVertexShader m_drawParticleVS;
+	D3D11::CGeometryShader m_drawParticleGS;
+	D3D11::CPixelShader m_drawParticlePS;
+	std::unique_ptr<D3D11::CGraphicsPSOObject> m_drawParticlePSO;
+#pragma endregion
 };

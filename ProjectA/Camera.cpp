@@ -27,7 +27,6 @@ CCamera::CCamera(
 	m_isPropertiesChanged(false),
 	m_cameraSpeed(10.f),
 	m_mouseNdcX(0.f), m_mouseNdcY(0.f), 
-	m_isFirstViewOptionOn(false),
 	m_currentForward(GDirection::GDefaultForward),
 	m_currentUp(GDirection::GDefaultUp),
 	m_currentRight(GDirection::GDefaultRight)
@@ -60,8 +59,10 @@ void CCamera::HandleInput(UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_KEYDOWN:
 		UpdateKeyStatus(wParam, true);
+		break;
 	case WM_KEYUP:
 		UpdateKeyStatus(wParam, false);
+		break;
 	default:
 		break;
 	}
@@ -105,32 +106,39 @@ void CCamera::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContex
 
 void CCamera::Update(ID3D11DeviceContext* deviceContext, float dt)
 {
-	XMVECTOR movement = XMVectorZero();
-	if (m_isMoveKeyPressed[static_cast<size_t>(EKey::W)]) movement += m_currentForward * m_cameraSpeed;
-	if (m_isMoveKeyPressed[static_cast<size_t>(EKey::D)]) movement += m_currentRight * m_cameraSpeed;
-	if (m_isMoveKeyPressed[static_cast<size_t>(EKey::S)]) movement -= m_currentForward * m_cameraSpeed;
-	if (m_isMoveKeyPressed[static_cast<size_t>(EKey::A)]) movement -= m_currentRight * m_cameraSpeed;
+	const XMVECTOR quaternion = XMQuaternionRotationRollPitchYawFromVector(m_angle);
+	m_currentForward = XMVector3Rotate(GDirection::GDefaultForward, quaternion);
+	m_currentUp = XMVector3Rotate(GDirection::GDefaultUp, quaternion);
+	m_currentRight = XMVector3Rotate(GDirection::GDefaultRight, quaternion);
 
-	if (XMVectorGetX(XMVector3Length(movement)) > 1E-3) m_isPropertiesChanged = true;
+	float cameraSpeed = m_cameraSpeed * dt;
+	XMVECTOR movement = XMVectorZero();
+	if (m_isMoveKeyPressed[static_cast<size_t>(EKey::W)]) movement += m_currentForward * cameraSpeed;
+	if (m_isMoveKeyPressed[static_cast<size_t>(EKey::D)]) movement += m_currentRight * cameraSpeed;
+	if (m_isMoveKeyPressed[static_cast<size_t>(EKey::S)]) movement -= m_currentForward * cameraSpeed;
+	if (m_isMoveKeyPressed[static_cast<size_t>(EKey::A)]) movement -= m_currentRight * cameraSpeed;
+
+	if (XMVectorGetX(XMVector3Length(movement)) > 1E-3)
+	{
+		m_position = XMVectorAdd(m_position, movement);
+		m_isPropertiesChanged = true;
+	}
 	if (m_isPropertiesChanged)
 	{
-		const XMVECTOR quaternion = XMQuaternionRotationRollPitchYawFromVector(m_angle);
-		m_currentForward = XMVector3Rotate(GDirection::GDefaultForward, quaternion);
-		m_currentUp = XMVector3Rotate(GDirection::GDefaultUp, quaternion);
-		m_currentRight = XMVector3Rotate(GDirection::GDefaultRight, quaternion);
-
-		m_cameraPropertiesCPU.viewMatrix = XMMatrixLookToLH(
+		XMMATRIX viewMatrix = XMMatrixLookToLH(
 			m_position,
 			m_currentForward,
 			m_currentUp
 		);
 
-		m_cameraPropertiesCPU.projMatrix = XMMatrixPerspectiveFovLH(
+		XMMATRIX projMatrix = XMMatrixPerspectiveFovLH(
 			m_fovAngle,
 			m_viewport.Width / m_viewport.Height,
 			m_nearZ,
 			m_farZ
 		);
+
+		m_cameraPropertiesCPU.viewProjMatrix = XMMatrixTranspose(viewMatrix * projMatrix);
 
 		m_propertiesGPU.Stage(deviceContext);
 		m_propertiesGPU.Upload(deviceContext);
@@ -145,12 +153,9 @@ void CCamera::UpdateAngle(int mouseX, int mouseY)
 	m_mouseNdcX = std::clamp(m_mouseNdcX, -1.0f, 1.0f);
 	m_mouseNdcY = std::clamp(m_mouseNdcY, -1.0f, 1.0f);
 
-	if (m_isFirstViewOptionOn)
+	if (m_isMoveKeyPressed[4])
 	{
-		m_angle = XMVectorAdd(
-			m_angle,
-			XMVectorSet(-m_mouseNdcY * XM_PIDIV2, m_mouseNdcX * XM_2PI, 0.f, 0.f)
-		);
+		m_angle = XMVectorSet(-m_mouseNdcY * XM_PI, m_mouseNdcX * XM_2PI, 0.f, 0.f);
 		m_isPropertiesChanged = true;
 	}
 }
@@ -159,10 +164,11 @@ void CCamera::UpdateKeyStatus(WPARAM keyInformation, bool isDown)
 {
 	static const unordered_map<WPARAM, EKey> WinMsgToKeyInput
 	{
-		{ 0x41, EKey::A }, // A
-		{ 0x44, EKey::D }, // D
-		{ 0x53, EKey::S }, // S
-		{ 0x57, EKey::W } // W
+		{ 'A', EKey::A}, 
+		{ 'D', EKey::D },
+		{ 'S', EKey::S },
+		{ 'W', EKey::W },
+		{ 'F', EKey::F } 
 	};
 
 	try

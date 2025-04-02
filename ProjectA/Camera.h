@@ -10,6 +10,7 @@ enum class EKey
 	D,
 	S,
 	A,
+	F
 };
 
 class CCamera : public IUpdatable
@@ -29,6 +30,9 @@ public:
 protected:
 	D3D11_VIEWPORT m_viewport;
 
+public:
+	inline const D3D11_VIEWPORT& GetViewport() const noexcept { return m_viewport; }
+
 protected:
 	DirectX::XMVECTOR m_position;
 	DirectX::XMVECTOR m_angle;
@@ -39,8 +43,7 @@ protected:
 protected:
 	struct
 	{
-		DirectX::XMMATRIX viewMatrix;
-		DirectX::XMMATRIX projMatrix;
+		DirectX::XMMATRIX viewProjMatrix;
 	} m_cameraPropertiesCPU;
 	D3D11::CDynamicBuffer m_propertiesGPU;
 	bool m_isPropertiesChanged;
@@ -69,8 +72,7 @@ protected:
 	float m_cameraSpeed;
 	float m_mouseNdcX;
 	float m_mouseNdcY;
-	bool m_isFirstViewOptionOn;
-	bool m_isMoveKeyPressed[4];
+	bool m_isMoveKeyPressed[5];
 
 protected:
 	DirectX::XMVECTOR m_currentForward;

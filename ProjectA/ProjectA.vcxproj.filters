@@ -9,10 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="리소스 파일">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="External">
       <UniqueIdentifier>{71aa9899-28ab-44de-a964-437454a88759}</UniqueIdentifier>
     </Filter>
@@ -34,7 +30,7 @@
     <Filter Include="소스 파일\Updatable\ParticleSystem">
       <UniqueIdentifier>{198e43d0-0740-4739-add3-c5a51b4ddd09}</UniqueIdentifier>
     </Filter>
-    <Filter Include="리소스 파일\DebugComponent">
+    <Filter Include="Emitter">
       <UniqueIdentifier>{0b4dd9dd-53f9-4b72-8a88-0c45f82be677}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -107,16 +103,31 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
-    <None Include="DebugComponentCommon.hlsli">
-      <Filter>리소스 파일\DebugComponent</Filter>
+    <None Include="EmitterCommon.hlsli">
+      <Filter>Emitter</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="DebugComponentVS.hlsl">
-      <Filter>리소스 파일\DebugComponent</Filter>
+    <FxCompile Include="EmitterLineVS.hlsl">
+      <Filter>Emitter</Filter>
     </FxCompile>
-    <FxCompile Include="DebugComponentPS.hlsl">
-      <Filter>리소스 파일\DebugComponent</Filter>
+    <FxCompile Include="EmitterLinePS.hlsl">
+      <Filter>Emitter</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleSourceCS.hlsl">
+      <Filter>Emitter</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleSimulateCS.hlsl">
+      <Filter>Emitter</Filter>
+    </FxCompile>
+    <FxCompile Include="DrawParticleVS.hlsl">
+      <Filter>Emitter</Filter>
+    </FxCompile>
+    <FxCompile Include="DrawParticleGS.hlsl">
+      <Filter>Emitter</Filter>
+    </FxCompile>
+    <FxCompile Include="DrawParticlePS.hlsl">
+      <Filter>Emitter</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

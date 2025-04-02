@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef DEPTHSTENCILSTATE_H
-#define DEPTHSTENCILSTATE_H
+#ifndef SAMPLERSTATE_H
+#define SAMPLERSTATE_H
 
 #include "D3D11DllHelper.h"
 

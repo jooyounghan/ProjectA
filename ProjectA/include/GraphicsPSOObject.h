@@ -17,7 +17,7 @@ namespace D3D11
 
 namespace D3D11
 {
-	class CGraphicsPSOObject
+	class D3D11MANAGER_API CGraphicsPSOObject
 	{
 	public:
 		CGraphicsPSOObject(
@@ -47,6 +47,10 @@ namespace D3D11
 			const FLOAT blendFactor[4] = NULL,
 			UINT blendSamplerMask = 0xFFFFFFFF,
 			UINT stencilRef = NULL
+		);
+
+		void RemovePSO(
+			ID3D11DeviceContext* deviceContext
 		);
 	};
 }

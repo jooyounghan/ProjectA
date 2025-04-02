@@ -9,6 +9,15 @@
 
 
 #pragma region Test
+#include "MacroUtilities.h"
+
+#include "GraphicsPSOObject.h"
+
+#include "RasterizerState.h"
+#include "BlendState.h"
+#include "DepthStencilState.h"
+#include "SamplerState.h"
+
 #include "Camera.h"
 #include "ParticleEmitter.h"
 #pragma  endregion
@@ -26,7 +35,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
 );
 
 CProjectAApp::CProjectAApp() noexcept
-	: CBaseApp()
+	: CBaseApp(), m_drawEmitterVS(1), m_drawParticleVS(1)
 {
 }
 
@@ -67,6 +76,12 @@ void CProjectAApp::Init()
 			engine->GetBackBufferFormat(),
 			engine->GetSwapChainFlag());
 	};
+
+	CRasterizerState::InitializeDefaultRasterizerStates(m_device);
+	CBlendState::InitializeDefaultBlendStates(m_device);
+	CDepthStencilState::InitializeDefaultDepthStencilState(m_device);
+	CSamplerState::InitializeSamplerState(m_device);
+
 #pragma endregion
 
 #pragma region ImGui 초기화
@@ -90,7 +105,57 @@ void CProjectAApp::Init()
 	ImGui::EndFrame();
 #pragma endregion
 
-#pragma region Test 초기화
+#pragma region 테스트 초기화
+
+	// Init Draw Emitter PSO =========================================================
+	m_drawEmitterVS.AddInputLayoutElement(
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	);
+	m_drawEmitterVS.CreateShader(L"./EmitterLineVS.hlsl", "main", "vs_5_0", m_device);
+	m_drawEmitterPS.CreateShader(L"./EmitterLinePS.hlsl", "main", "ps_5_0", m_device);
+
+	m_drawEmitterPSO = make_unique<CGraphicsPSOObject>(
+		&m_drawEmitterVS,
+		nullptr,
+		nullptr,
+		nullptr,
+		&m_drawEmitterPS,
+		CRasterizerState::GetRSWireframeCWSS(),
+		nullptr,
+		CDepthStencilState::GetDSDraw(),
+		nullptr,
+		0
+	);
+	// ==============================================================================
+
+	// Init Particle Simulation Shader ==============================================
+	m_particleSourceCS.CreateShader(L"./ParticleSourceCS.hlsl", "main", "cs_5_0", m_device);
+	m_particleSimulateCS.CreateShader(L"./ParticleSimulateCS.hlsl", "main", "cs_5_0", m_device);
+	// ==============================================================================
+
+	// Init Draw Particle PSO =========================================================
+	m_drawParticleVS.AddInputLayoutElement(
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	);
+	m_drawParticleVS.CreateShader(L"./DrawParticleVS.hlsl", "main", "vs_5_0", m_device);
+	m_drawParticleGS.CreateShader(L"./DrawParticleGS.hlsl", "main", "gs_5_0", m_device);
+	m_drawParticlePS.CreateShader(L"./DrawParticlePS.hlsl", "main", "ps_5_0", m_device);
+
+	m_drawParticlePSO = make_unique<CGraphicsPSOObject>(
+		&m_drawParticleVS,
+		nullptr,
+		nullptr,
+		&m_drawParticleGS,
+		&m_drawParticlePS,
+		CRasterizerState::GetRSSolidCWSS(),
+		nullptr,
+		CDepthStencilState::GetDSDraw(),
+		nullptr,
+		0
+		);
+	// ==============================================================================
+
+
 	m_camera = make_unique<CCamera>(
 		XMVectorSet(0.f, 0.f, 0.f, 1.f),
 		XMVectorSet(0.f, 0.f, 0.f, 1.f),
@@ -117,17 +182,47 @@ constexpr FLOAT clearColor[4] = { 0.f, 0.f, 0.f, 1.f };
 
 void CProjectAApp::Update(float deltaTime)
 {
+#pragma region Update Instances
+	m_camera->Update(m_deviceContext, deltaTime);
+	m_particleEmitter->Update(m_deviceContext, deltaTime);
+#pragma endregion
+
+#pragma region Init RTV With Camera
 	static vector<ID3D11RenderTargetView*> mainRTVs = { m_camera->GetRTV() };
 	for (auto& mainRTV : mainRTVs)
 	{
 		m_deviceContext->ClearRenderTargetView(mainRTV, clearColor);
 	}
+	m_deviceContext->ClearDepthStencilView(m_camera->GetDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0x00);
 	m_deviceContext->OMSetRenderTargets(static_cast<UINT>(mainRTVs.size()), mainRTVs.data(), m_camera->GetDSV());
+	m_deviceContext->RSSetViewports(1, &m_camera->GetViewport());
+#pragma endregion
 
+#pragma region Draw Emitter
+	m_drawEmitterPSO->ApplyPSO(m_deviceContext);
 
+	static vector<ID3D11Buffer*> emitterVSCB{ m_camera->GetPropertiesBuffer(), m_particleEmitter->GetPropertiesBuffer() };
+
+	vector<ID3D11Buffer*> emitterVertexBuffers = m_particleEmitter->GetVertexBuffers();
+	ID3D11Buffer* emitterIndexBuffer = m_particleEmitter->GetIndexBuffer();
+	vector<UINT> emitterStrides = m_particleEmitter->GetStrides();
+	vector<UINT> emitterOffsets = m_particleEmitter->GetOffsets();
+
+	m_deviceContext->IASetVertexBuffers(0, static_cast<UINT>(emitterVertexBuffers.size()), emitterVertexBuffers.data(), emitterStrides.data(), emitterOffsets.data());
+	m_deviceContext->IASetIndexBuffer(emitterIndexBuffer, DXGI_FORMAT_R32_UINT, NULL);
+	m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	m_deviceContext->VSSetConstantBuffers(0, static_cast<UINT>(emitterVSCB.size()), emitterVSCB.data());
+	m_deviceContext->DrawIndexed(m_particleEmitter->GetIndexCount(), NULL, NULL);
+
+	m_drawEmitterPSO->RemovePSO(m_deviceContext);
+#pragma endregion
+
+#pragma region Copy To BackBuffer And Draw UI
 	m_deviceContext->CopyResource(m_backBuffer, m_camera->GetRenderTargetTexture());
 
 	DrawUI();
+#pragma endregion
 
 	HRESULT hResult = m_swapchain->Present(1, 0);
 	if (FAILED(hResult)) throw exception("Present Failed");
@@ -164,4 +259,5 @@ void CProjectAApp::DrawUI()
 void CProjectAApp::AppProcImpl(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam);
+	if (m_camera) m_camera->HandleInput(msg, wParam, lParam);
 }

@@ -18,7 +18,7 @@ CParticleEmitter::CParticleEmitter(
 	m_emitterPropertiesGPU(PASS_SINGLE(m_emitterPropertiesCPU)),
 	m_isEmitterPropertiesChanged(false),
 	m_positionBuffer(12, static_cast<UINT>(GEmitterBoxPositions.size()), GEmitterBoxPositions.data(), D3D11_BIND_VERTEX_BUFFER),
-	m_indexBuffer(4, static_cast<UINT>(GEmitterBoxIndices.size()), GEmitterBoxIndices.data(), D3D11_BIND_VERTEX_BUFFER)
+	m_indexBuffer(4, static_cast<UINT>(GEmitterBoxIndices.size()), GEmitterBoxIndices.data(), D3D11_BIND_INDEX_BUFFER)
 {
 	SetEmitVelocity(emitVelocity);
 
@@ -58,13 +58,10 @@ void CParticleEmitter::Update(ID3D11DeviceContext* deviceContext, float dt)
 		m_emitterPropertiesCPU.toWorldTransform = XMMatrixAffineTransformation(
 			XMVectorSet(1.f, 1.f, 1.f, 0.f),
 			XMQuaternionIdentity(),
-			XMQuaternionRotationRollPitchYaw(
-				XMConvertToRadians(XMVectorGetX(m_angle)),
-				XMConvertToRadians(XMVectorGetY(m_angle)),
-				XMConvertToRadians(XMVectorGetZ(m_angle))
-			),
+			XMQuaternionRotationRollPitchYawFromVector(m_angle),
 			m_position
 		);
+		m_emitterPropertiesCPU.toWorldTransform = XMMatrixTranspose(m_emitterPropertiesCPU.toWorldTransform);
 
 		m_emitterPropertiesGPU.Stage(deviceContext);
 		m_emitterPropertiesGPU.Upload(deviceContext);

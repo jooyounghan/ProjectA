@@ -3,7 +3,6 @@
 #include "ConstantBuffer.h"
 #include "DynamicBuffer.h"
 
-#include <DynamicBuffer.h>
 #include <DirectXMath.h>
 #include <vector>
 
@@ -29,6 +28,13 @@ protected:
 	D3D11::CConstantBuffer m_positionBuffer;
 	D3D11::CConstantBuffer m_indexBuffer;
 
+public:
+	inline std::vector<ID3D11Buffer*> GetVertexBuffers() const noexcept { return { m_positionBuffer.GetBuffer() }; }
+	inline ID3D11Buffer* GetIndexBuffer() const noexcept { return m_indexBuffer.GetBuffer(); }
+	inline std::vector<UINT> GetStrides() const noexcept { return { sizeof(DirectX::XMFLOAT3) }; }
+	inline std::vector<UINT> GetOffsets() const noexcept { return { 0 }; }
+	inline UINT GetIndexCount() const noexcept { return static_cast<UINT>(CParticleEmitter::GEmitterBoxIndices.size()); }
+
 protected:
 	struct 
 	{
@@ -37,6 +43,9 @@ protected:
 	} m_emitterPropertiesCPU;
 	D3D11::CDynamicBuffer m_emitterPropertiesGPU;
 	bool m_isEmitterPropertiesChanged;
+
+public:
+	inline ID3D11Buffer* GetPropertiesBuffer() const noexcept { return m_emitterPropertiesGPU.GetBuffer(); }
 
 public:
 	void SetPosition(const DirectX::XMVECTOR& position) noexcept;
