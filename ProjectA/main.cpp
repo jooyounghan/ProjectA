@@ -4,7 +4,7 @@
 
 int main()
 {
-	ProjectAApp* testApp = ProjectAApp::GetInstance();
+	CProjectAApp* testApp = CProjectAApp::GetInstance();
 	testApp->Create(1280, 960, L"Test", L"Engine");
 
 	D3D11::GEngine* engine = D3D11::GEngine::GetInstance();

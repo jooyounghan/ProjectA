@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -121,13 +121,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)D3D11Manager\D3D11Manager\AppManager;$(SolutionDir)D3D11Manager\D3D11Manager\D3D11Manager;$(ProjectDir)External</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)External</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)D3D11Manager\D3D11Manager\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>D3D11Manager.lib;AppManager.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -151,7 +151,10 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="External\imgui_impl_dx11.cpp" />
     <ClCompile Include="External\imgui_impl_win32.cpp" />
+    <ClCompile Include="GlobalVariable.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="ModelFactory.cpp" />
     <ClCompile Include="ParticleEmitter.cpp" />
     <ClCompile Include="ParticleManager.cpp" />
     <ClCompile Include="ProjectAApp.cpp" />
@@ -160,13 +163,32 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="External\imgui_impl_dx11.h" />
     <ClInclude Include="External\imgui_impl_win32.h" />
+    <ClInclude Include="GlobalVariable.h" />
     <ClInclude Include="MacroUtilities.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="ModelFactory.h" />
     <ClInclude Include="ParticleEmitter.h" />
     <ClInclude Include="ParticleManager.h" />
     <ClInclude Include="ProjectAApp.h" />
+    <ClInclude Include="Updatable.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="DebugComponentCommon.hlsli" />
     <None Include="vcpkg.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="DebugComponentPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="DebugComponentVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,6 +1,9 @@
 #include "Camera.h"
 
+#include "TextureUtilities.h"
+#include "BufferMacroUtilities.h"
 #include "MacroUtilities.h"
+#include "GlobalVariable.h"
 
 #include <Windows.h>
 #include <xmmintrin.h>
@@ -9,38 +12,37 @@
 
 using namespace std;
 using namespace DirectX;
+using namespace D3D11;
 
-const XMVECTOR Camera::GDefaultForward = XMVectorSet(0.f, 0.f, 1.f, 0.f);
-const XMVECTOR Camera::GDefaultUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-const XMVECTOR Camera::GDefaultRight = XMVectorSet(1.f, 0.f, 0.f, 0.f);
-
-Camera::Camera(
-	const XMVECTOR& positionIn, 
-	const XMVECTOR& angleIn, 
+CCamera::CCamera(
+	const XMVECTOR& position, 
+	const XMVECTOR& angle, 
 	UINT viewportWidth, 
 	UINT viewportHeight, 
 	float fovAngle, 
 	float nearZ, 
 	float farZ
 ) noexcept
-	: m_cameraViewPropertiesGPU(sizeof(m_cameraViewPropertiesCPU), 1, &m_cameraViewPropertiesGPU),
-	m_cameraProjPropertiesGPU(sizeof(m_cameraProjPropertiesCPU), 1, &m_cameraProjPropertiesCPU),
-	m_mouseNdcX(0.f), m_mouseNdcY(0.f), m_isFirstViewOptionOn(false),
-	m_currentForward(GDefaultForward), m_currentUp(GDefaultUp), m_currentRight(GDefaultRight)
+	: m_propertiesGPU(PASS_SINGLE(m_cameraPropertiesCPU)),
+	m_isPropertiesChanged(false),
+	m_cameraSpeed(10.f),
+	m_mouseNdcX(0.f), m_mouseNdcY(0.f), 
+	m_isFirstViewOptionOn(false),
+	m_currentForward(GDirection::GDefaultForward),
+	m_currentUp(GDirection::GDefaultUp),
+	m_currentRight(GDirection::GDefaultRight)
 {
 	AutoZeroMemory(m_viewport);
-	AutoZeroMemory(m_cameraViewPropertiesCPU);
-	AutoZeroMemory(m_cameraProjPropertiesCPU);
+	AutoZeroMemory(m_cameraPropertiesCPU);
 	AutoZeroMemory(m_isMoveKeyPressed);
 
-	m_cameraViewPropertiesCPU.position = positionIn;
-	m_cameraViewPropertiesCPU.angle = angleIn;
-	m_isViewChanged = true;
+	m_position = position;
+	m_angle = angle;
+	m_fovAngle = fovAngle;
+	m_nearZ = nearZ;
+	m_farZ = farZ;
 
-	m_cameraProjPropertiesCPU.fovAngle = fovAngle;
-	m_cameraProjPropertiesCPU.nearZ = nearZ;
-	m_cameraProjPropertiesCPU.farZ = farZ;
-	m_isProjChanged = true;
+	m_isPropertiesChanged = true;
 
 	m_viewport.TopLeftX = 0.f;
 	m_viewport.TopLeftY = 0.f;
@@ -50,7 +52,7 @@ Camera::Camera(
 	m_viewport.MaxDepth = 1.f;
 }
 
-void Camera::HandleInput(UINT msg, WPARAM wParam, LPARAM lParam)
+void CCamera::HandleInput(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 	case WM_MOUSEMOVE:
@@ -65,50 +67,77 @@ void Camera::HandleInput(UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 }
 
-void Camera::UpdateCamera(ID3D11DeviceContext* deviceContext, float dt)
+void CCamera::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
-	if (m_isMoveKeyPressed[static_cast<size_t>(EKey::W)]) m_cameraViewPropertiesCPU.position += m_currentForward * m_cameraSpeed;
-	if (m_isMoveKeyPressed[static_cast<size_t>(EKey::D)]) m_cameraViewPropertiesCPU.position += m_currentRight * m_cameraSpeed;
-	if (m_isMoveKeyPressed[static_cast<size_t>(EKey::S)]) m_cameraViewPropertiesCPU.position -= m_currentForward * m_cameraSpeed;
-	if (m_isMoveKeyPressed[static_cast<size_t>(EKey::A)]) m_cameraViewPropertiesCPU.position -= m_currentRight * m_cameraSpeed;
+	m_propertiesGPU.InitializeBuffer(device);
 
-	if (m_isViewChanged) UpdateViewMatrix(deviceContext);
-	if (m_isProjChanged) UpdateProjMatrix(deviceContext);
-
-
-}
-
-void Camera::UpdateViewMatrix(ID3D11DeviceContext* deviceContext) noexcept
-{
-	const XMVECTOR quaternion = XMQuaternionRotationRollPitchYawFromVector(m_cameraViewPropertiesCPU.angle);
-	m_currentForward = XMVector3Rotate(GDefaultForward, quaternion);
-	m_currentUp = XMVector3Rotate(GDefaultUp, quaternion);
-	m_currentRight = XMVector3Rotate(GDefaultRight, quaternion);
-
-	m_cameraViewPropertiesCPU.viewMatrix = XMMatrixLookToLH(
-		m_cameraViewPropertiesCPU.position,
-		m_currentForward,
-		m_currentUp
+	TextureUtilities::CreateTexture2D(
+		static_cast<UINT>(m_viewport.Width),
+		static_cast<UINT>(m_viewport.Height), 
+		1, 1, NULL, NULL, D3D11_USAGE_DEFAULT, 
+		DXGI_FORMAT_R8G8B8A8_UNORM, 
+		D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE, 
+		device, m_renderTarget.GetAddressOf()
 	);
 
-	m_cameraViewPropertiesGPU.Stage(deviceContext);
-	m_cameraViewPropertiesGPU.Upload(deviceContext);
-}
-
-void Camera::UpdateProjMatrix(ID3D11DeviceContext* deviceContext) noexcept
-{
-	m_cameraProjPropertiesCPU.projMatrix = XMMatrixPerspectiveFovLH(
-		m_cameraProjPropertiesCPU.fovAngle,
-		m_viewport.Width / m_viewport.Height,
-		m_cameraProjPropertiesCPU.nearZ,
-		m_cameraProjPropertiesCPU.farZ
+	TextureUtilities::CreateTexture2D(
+		static_cast<UINT>(m_viewport.Width),
+		static_cast<UINT>(m_viewport.Height), 
+		1, 1, NULL, NULL, D3D11_USAGE_DEFAULT, 
+		DXGI_FORMAT_D24_UNORM_S8_UINT,
+		D3D11_BIND_DEPTH_STENCIL,
+		device, m_depthStencil.GetAddressOf()
 	);
 
-	m_cameraProjPropertiesGPU.Stage(deviceContext);
-	m_cameraProjPropertiesGPU.Upload(deviceContext);
+	TextureUtilities::CreateRenderTargetView(
+		device, m_renderTarget.Get(), m_renderTargetRTV.GetAddressOf()
+	);
+	TextureUtilities::CreateShaderResourceView(
+		device, deviceContext, m_renderTarget.Get(), m_renderTargetSRV.GetAddressOf()
+	);
+	TextureUtilities::CreateUnorderedAccessView(
+		device, m_renderTarget.Get(), m_renderTargetUAV.GetAddressOf()
+	);
+	TextureUtilities::CreateDepthStencilView(
+		device, m_depthStencil.Get(), m_depthStencilView.GetAddressOf()
+	);
 }
 
-void Camera::UpdateAngle(int mouseX, int mouseY)
+void CCamera::Update(ID3D11DeviceContext* deviceContext, float dt)
+{
+	XMVECTOR movement = XMVectorZero();
+	if (m_isMoveKeyPressed[static_cast<size_t>(EKey::W)]) movement += m_currentForward * m_cameraSpeed;
+	if (m_isMoveKeyPressed[static_cast<size_t>(EKey::D)]) movement += m_currentRight * m_cameraSpeed;
+	if (m_isMoveKeyPressed[static_cast<size_t>(EKey::S)]) movement -= m_currentForward * m_cameraSpeed;
+	if (m_isMoveKeyPressed[static_cast<size_t>(EKey::A)]) movement -= m_currentRight * m_cameraSpeed;
+
+	if (XMVectorGetX(XMVector3Length(movement)) > 1E-3) m_isPropertiesChanged = true;
+	if (m_isPropertiesChanged)
+	{
+		const XMVECTOR quaternion = XMQuaternionRotationRollPitchYawFromVector(m_angle);
+		m_currentForward = XMVector3Rotate(GDirection::GDefaultForward, quaternion);
+		m_currentUp = XMVector3Rotate(GDirection::GDefaultUp, quaternion);
+		m_currentRight = XMVector3Rotate(GDirection::GDefaultRight, quaternion);
+
+		m_cameraPropertiesCPU.viewMatrix = XMMatrixLookToLH(
+			m_position,
+			m_currentForward,
+			m_currentUp
+		);
+
+		m_cameraPropertiesCPU.projMatrix = XMMatrixPerspectiveFovLH(
+			m_fovAngle,
+			m_viewport.Width / m_viewport.Height,
+			m_nearZ,
+			m_farZ
+		);
+
+		m_propertiesGPU.Stage(deviceContext);
+		m_propertiesGPU.Upload(deviceContext);
+	}
+}
+
+void CCamera::UpdateAngle(int mouseX, int mouseY)
 {
 	m_mouseNdcX = mouseX * 2.0f / m_viewport.Width - 1.0f;
 	m_mouseNdcY = -mouseY * 2.0f / m_viewport.Height + 1.0f;
@@ -118,15 +147,15 @@ void Camera::UpdateAngle(int mouseX, int mouseY)
 
 	if (m_isFirstViewOptionOn)
 	{
-		m_cameraViewPropertiesCPU.angle = XMVectorAdd(
-			m_cameraViewPropertiesCPU.angle, 
+		m_angle = XMVectorAdd(
+			m_angle,
 			XMVectorSet(-m_mouseNdcY * XM_PIDIV2, m_mouseNdcX * XM_2PI, 0.f, 0.f)
 		);
-		m_isViewChanged = true;
+		m_isPropertiesChanged = true;
 	}
 }
 
-void Camera::UpdateKeyStatus(WPARAM keyInformation, bool isDown)
+void CCamera::UpdateKeyStatus(WPARAM keyInformation, bool isDown)
 {
 	static const unordered_map<WPARAM, EKey> WinMsgToKeyInput
 	{

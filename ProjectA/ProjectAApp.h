@@ -1,22 +1,26 @@
 #pragma once
 #include "BaseApp.h"
-#include "Camera.h"
 
 #include <d3d11.h>
 #include <memory>
+#include <vector>
 
-class ProjectAApp : public App::CBaseApp
+class IUpdatable;
+class CCamera;
+class CParticleEmitter;
+
+class CProjectAApp : public App::CBaseApp
 {
 protected:
-	ProjectAApp() noexcept;
-	ProjectAApp(const ProjectAApp& baseApp) = delete;
-	ProjectAApp(ProjectAApp&& baseApp) = delete;
+	CProjectAApp() noexcept;
+	CProjectAApp(const CProjectAApp& baseApp) = delete;
+	CProjectAApp(CProjectAApp&& baseApp) = delete;
 
 public:
-	virtual ~ProjectAApp() = default;
+	virtual ~CProjectAApp() = default;
 
 public:
-	static ProjectAApp* GetInstance() noexcept;
+	static CProjectAApp* GetInstance() noexcept;
 
 public:
 	virtual void Create(
@@ -38,9 +42,14 @@ private:
 private:
 	ID3D11Device* m_device = nullptr;
 	ID3D11DeviceContext* m_deviceContext = nullptr;
+	ID3D11Texture2D* m_backBuffer = nullptr;
 	ID3D11RenderTargetView* m_backBufferRTV = nullptr;
 	IDXGISwapChain* m_swapchain = nullptr;
 
 private:
-	std::unique_ptr<Camera> m_camera;
+	std::vector<IUpdatable*> m_updatables;
+
+private:
+	std::unique_ptr<CCamera> m_camera;
+	std::unique_ptr<CParticleEmitter> m_particleEmitter;
 };

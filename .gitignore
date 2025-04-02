@@ -15,20 +15,9 @@
 *.gch
 *.pch
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
 # Fortran module files
 *.mod
 *.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
 
 # Executables
 *.exe
@@ -79,22 +68,6 @@ $RECYCLE.BIN/
 
 # Mono auto generated files
 mono_crash.*
-
-# Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
-x64/
-x86/
-[Ww][Ii][Nn]32/
-[Aa][Rr][Mm]/
-[Aa][Rr][Mm]64/
-bld/
-[Bb]in/
-[Oo]bj/
-[Ll]og/
-[Ll]ogs/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -457,3 +430,12 @@ FodyWeavers.xsd
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudio,windows,c++
 DirectX12/Zombie.fbx
+ProjectA/Debug/ProjectA.exe.recipe
+ProjectA/Debug/vc142.idb
+ProjectA/vcpkg_installed/x64-windows/x64-windows/debug/lib/imguid.lib
+ProjectA/vcpkg_installed/x64-windows/x64-windows/lib/imgui.lib
+ProjectA/x64/Debug/ProjectA.exe.recipe
+ProjectA/x64/Debug/ProjectA.vcxproj.FileListAbsolute.txt
+ProjectA/x64/Debug/vc142.idb
+x64/Debug/DebugComponentPS.cso
+x64/Debug/DebugComponentVS.cso

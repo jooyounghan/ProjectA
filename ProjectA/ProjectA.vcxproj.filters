@@ -16,11 +16,26 @@
     <Filter Include="External">
       <UniqueIdentifier>{71aa9899-28ab-44de-a964-437454a88759}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\ParticleSystem">
+    <Filter Include="헤더 파일\Updatable">
+      <UniqueIdentifier>{6635f9a3-43a9-4a2d-8566-6b772e81914f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Updatable">
+      <UniqueIdentifier>{f3cf7ca6-b449-44b5-9ce6-bb5c0ac7b795}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Updatable\Model">
+      <UniqueIdentifier>{d7f28942-a5f3-46fc-998c-70ad9dc2d7e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Updatable\ParticleSystem">
+      <UniqueIdentifier>{a0286594-b018-4141-b1af-b6fb85b6c42b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Updatable\Model">
+      <UniqueIdentifier>{2bffac91-cbc4-4575-84b6-833768272db6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Updatable\ParticleSystem">
       <UniqueIdentifier>{198e43d0-0740-4739-add3-c5a51b4ddd09}</UniqueIdentifier>
     </Filter>
-    <Filter Include="헤더 파일\ParticleSystem">
-      <UniqueIdentifier>{a0286594-b018-4141-b1af-b6fb85b6c42b}</UniqueIdentifier>
+    <Filter Include="리소스 파일\DebugComponent">
+      <UniqueIdentifier>{0b4dd9dd-53f9-4b72-8a88-0c45f82be677}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -36,14 +51,23 @@
     <ClCompile Include="External\imgui_impl_win32.cpp">
       <Filter>External</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="ParticleManager.cpp">
-      <Filter>소스 파일\ParticleSystem</Filter>
+      <Filter>소스 파일\Updatable\ParticleSystem</Filter>
     </ClCompile>
     <ClCompile Include="ParticleEmitter.cpp">
-      <Filter>소스 파일\ParticleSystem</Filter>
+      <Filter>소스 파일\Updatable\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>소스 파일\Updatable\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelFactory.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>소스 파일\Updatable</Filter>
+    </ClCompile>
+    <ClCompile Include="GlobalVariable.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -56,20 +80,43 @@
     <ClInclude Include="External\imgui_impl_win32.h">
       <Filter>External</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="MacroUtilities.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="ParticleManager.h">
-      <Filter>헤더 파일\ParticleSystem</Filter>
+      <Filter>헤더 파일\Updatable\ParticleSystem</Filter>
     </ClInclude>
     <ClInclude Include="ParticleEmitter.h">
-      <Filter>헤더 파일\ParticleSystem</Filter>
+      <Filter>헤더 파일\Updatable\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>헤더 파일\Updatable\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelFactory.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>헤더 파일\Updatable</Filter>
+    </ClInclude>
+    <ClInclude Include="Updatable.h">
+      <Filter>헤더 파일\Updatable</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalVariable.h">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
+    <None Include="DebugComponentCommon.hlsli">
+      <Filter>리소스 파일\DebugComponent</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="DebugComponentVS.hlsl">
+      <Filter>리소스 파일\DebugComponent</Filter>
+    </FxCompile>
+    <FxCompile Include="DebugComponentPS.hlsl">
+      <Filter>리소스 파일\DebugComponent</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

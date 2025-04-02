@@ -1,4 +1,5 @@
 #pragma once
+#include "Updatable.h"
 #include "DynamicBuffer.h"
 
 #include <DirectXMath.h>
@@ -11,52 +12,58 @@ enum class EKey
 	A,
 };
 
-class Camera
+class CCamera : public IUpdatable
 {
 public:
-	Camera(
-		const DirectX::XMVECTOR& positionIn,
-		const DirectX::XMVECTOR& angleIn,
+	CCamera(
+		const DirectX::XMVECTOR& position,
+		const DirectX::XMVECTOR& angle,
 		UINT viewportWidth,
 		UINT viewportHeight,
 		float fovAngle,
 		float nearZ,
 		float farZ
 	) noexcept;
-	~Camera() = default;
+	~CCamera() = default;
 
 protected:
 	D3D11_VIEWPORT m_viewport;
 
 protected:
-	struct
-	{
-		DirectX::XMMATRIX viewMatrix;
-		DirectX::XMVECTOR position;
-		DirectX::XMVECTOR angle;
-	} m_cameraViewPropertiesCPU;
-	D3D11::CDynamicBuffer m_cameraViewPropertiesGPU;
-	bool m_isViewChanged;
+	DirectX::XMVECTOR m_position;
+	DirectX::XMVECTOR m_angle;
+	float m_fovAngle;
+	float m_nearZ;
+	float m_farZ;
 
 protected:
 	struct
 	{
+		DirectX::XMMATRIX viewMatrix;
 		DirectX::XMMATRIX projMatrix;
-		float fovAngle;
-		float nearZ;
-		float farZ;
-		float dummy;
-	} m_cameraProjPropertiesCPU;
-	D3D11::CDynamicBuffer m_cameraProjPropertiesGPU;
-	bool m_isProjChanged;
+	} m_cameraPropertiesCPU;
+	D3D11::CDynamicBuffer m_propertiesGPU;
+	bool m_isPropertiesChanged;
 
 public:
-	inline bool GetViewChanged() noexcept { return m_isViewChanged; }
-	inline bool GetProjChanged() noexcept { return m_isProjChanged; }
+	inline bool GetPropertiesChanged() const noexcept { return m_isPropertiesChanged; }
+	inline ID3D11Buffer* GetPropertiesBuffer() const noexcept { return m_propertiesGPU.GetBuffer(); }
 
-	inline ID3D11Buffer* GetViewBuffer() noexcept { return m_cameraViewPropertiesGPU.GetBuffer(); }
-	inline ID3D11Buffer* GetProjBuffer() noexcept { return m_cameraProjPropertiesGPU.GetBuffer(); }
+protected:
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_renderTarget;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_depthStencil;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetRTV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_renderTargetSRV;
+	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> m_renderTargetUAV;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 
+public:
+	inline ID3D11Texture2D* GetRenderTargetTexture() const noexcept { return m_renderTarget.Get(); }
+	inline ID3D11Texture2D* GetDepthStencilTexture() const noexcept { return m_depthStencil.Get(); }
+	inline ID3D11RenderTargetView* GetRTV() const noexcept { return m_renderTargetRTV.Get(); }
+	inline ID3D11ShaderResourceView* GetSRV() const noexcept { return m_renderTargetSRV.Get(); }
+	inline ID3D11UnorderedAccessView* GetUAV() const noexcept { return m_renderTargetUAV.Get(); }
+	inline ID3D11DepthStencilView* GetDSV() const noexcept { return m_depthStencilView.Get(); }
 
 protected:
 	float m_cameraSpeed;
@@ -66,20 +73,18 @@ protected:
 	bool m_isMoveKeyPressed[4];
 
 protected:
-	static const DirectX::XMVECTOR GDefaultForward;
-	static const DirectX::XMVECTOR GDefaultUp;
-	static const DirectX::XMVECTOR GDefaultRight;
 	DirectX::XMVECTOR m_currentForward;
 	DirectX::XMVECTOR m_currentUp;
 	DirectX::XMVECTOR m_currentRight;
 
 public:
 	void HandleInput(UINT msg, WPARAM wParam, LPARAM lParam);
-	void UpdateCamera(ID3D11DeviceContext* deviceContext, float dt);
+
+public:
+	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
+	virtual void Update(ID3D11DeviceContext* deviceContext, float dt) override;
 
 protected:
-	void UpdateViewMatrix(ID3D11DeviceContext* deviceContext) noexcept;
-	void UpdateProjMatrix(ID3D11DeviceContext* deviceContext) noexcept;
 	void UpdateAngle(int mouseX, int mouseY);
 	void UpdateKeyStatus(WPARAM keyInformation, bool isDown);
 

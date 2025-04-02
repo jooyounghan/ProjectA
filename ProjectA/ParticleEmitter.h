@@ -1,5 +1,55 @@
 #pragma once
-class ParticleEmitter
+#include "Updatable.h"
+#include "ConstantBuffer.h"
+#include "DynamicBuffer.h"
+
+#include <DynamicBuffer.h>
+#include <DirectXMath.h>
+#include <vector>
+
+class CParticleEmitter : public IUpdatable
 {
+public:
+	CParticleEmitter(
+		const DirectX::XMVECTOR& position,
+		const DirectX::XMVECTOR& angle,
+		const DirectX::XMVECTOR& emitVelocity
+	);
+
+protected:
+	static const std::vector<DirectX::XMFLOAT3> GEmitterBoxPositions;
+	static const std::vector<UINT> GEmitterBoxIndices;
+
+protected:
+	DirectX::XMVECTOR m_position;
+	DirectX::XMVECTOR m_angle;
+
+// TODO : DrawInstanced
+protected:
+	D3D11::CConstantBuffer m_positionBuffer;
+	D3D11::CConstantBuffer m_indexBuffer;
+
+protected:
+	struct 
+	{
+		DirectX::XMMATRIX toWorldTransform;
+		DirectX::XMVECTOR emitVelocity;
+	} m_emitterPropertiesCPU;
+	D3D11::CDynamicBuffer m_emitterPropertiesGPU;
+	bool m_isEmitterPropertiesChanged;
+
+public:
+	void SetPosition(const DirectX::XMVECTOR& position) noexcept;
+	void SetAngle(const DirectX::XMVECTOR& angle) noexcept;
+	void SetEmitVelocity(const DirectX::XMVECTOR& emitVelocity) noexcept;
+
+public:
+	inline const DirectX::XMVECTOR& GetPosition() const noexcept { return m_position; }
+	inline const DirectX::XMVECTOR& GetAngle() const noexcept { return m_angle; }
+	inline const DirectX::XMVECTOR& GetEmitVelocity() const noexcept { return m_emitterPropertiesCPU.emitVelocity; }
+
+public:
+	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
+	virtual void Update(ID3D11DeviceContext* deviceContext, float dt) override;
 };
 

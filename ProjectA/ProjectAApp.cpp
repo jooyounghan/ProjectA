@@ -7,7 +7,11 @@
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
 
-#include <vector>
+
+#pragma region Test
+#include "Camera.h"
+#include "ParticleEmitter.h"
+#pragma  endregion
 
 using namespace std;
 using namespace App;
@@ -21,18 +25,18 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
 	LPARAM lParam
 );
 
-ProjectAApp::ProjectAApp() noexcept
+CProjectAApp::CProjectAApp() noexcept
 	: CBaseApp()
 {
 }
 
-ProjectAApp* ProjectAApp::GetInstance() noexcept
+CProjectAApp* CProjectAApp::GetInstance() noexcept
 {
-	static ProjectAApp ProjectAApp;
+	static CProjectAApp ProjectAApp;
 	return &ProjectAApp;
 }
 
-void ProjectAApp::Create(
+void CProjectAApp::Create(
 	UINT width,
 	UINT height,
 	const wchar_t* className,
@@ -42,13 +46,14 @@ void ProjectAApp::Create(
 	CBaseApp::Create(width, height, className, applicaitonName);
 }
 
-void ProjectAApp::Init()
+void CProjectAApp::Init()
 {
 #pragma region App 초기화
 	GEngine* engine = GEngine::GetInstance();
 
 	m_device = engine->GetDevice();
 	m_deviceContext = engine->GetDeviceContext();
+	m_backBuffer = engine->GetBackBufferTexture();
 	m_backBufferRTV = engine->GetBackBufferRTV();
 	m_swapchain = engine->GetSwapChain();
 
@@ -62,12 +67,6 @@ void ProjectAApp::Init()
 			engine->GetBackBufferFormat(),
 			engine->GetSwapChainFlag());
 	};
-	
-	XMVECTOR initValue = XMVectorSet(0.f, 0.f, 0.f, 0.f);
-
-	m_camera = make_unique<Camera>(
-		initValue, initValue, m_width, m_height, 90.f, 0.01f, 100.000f
-	);
 #pragma endregion
 
 #pragma region ImGui 초기화
@@ -90,22 +89,55 @@ void ProjectAApp::Init()
 	ImGui::NewFrame();
 	ImGui::EndFrame();
 #pragma endregion
+
+#pragma region Test 초기화
+	m_camera = make_unique<CCamera>(
+		XMVectorSet(0.f, 0.f, 0.f, 1.f),
+		XMVectorSet(0.f, 0.f, 0.f, 1.f),
+		m_width, m_height, 90.f, 0.01f, 100.000f
+		);
+
+	m_particleEmitter = make_unique<CParticleEmitter>(
+		XMVectorSet(0.f, 0.f, 10.f, 1.f),
+		XMVectorSet(0.f, 0.f, 0.f, 1.f),
+		XMVectorSet(0.f, 1.f, 0.f, 0.f)
+		);
+
+	m_updatables.emplace_back(m_camera.get());
+	m_updatables.emplace_back(m_particleEmitter.get());
+
+	for (auto& updatable : m_updatables)
+	{
+		updatable->Initialize(m_device, m_deviceContext);
+	}
+#pragma endregion
 }
 
 constexpr FLOAT clearColor[4] = { 0.f, 0.f, 0.f, 1.f };
 
-void ProjectAApp::Update(float deltaTime)
+void CProjectAApp::Update(float deltaTime)
 {
-	m_deviceContext->ClearRenderTargetView(m_backBufferRTV, clearColor);
+	static vector<ID3D11RenderTargetView*> mainRTVs = { m_camera->GetRTV() };
+	for (auto& mainRTV : mainRTVs)
+	{
+		m_deviceContext->ClearRenderTargetView(mainRTV, clearColor);
+	}
+	m_deviceContext->OMSetRenderTargets(static_cast<UINT>(mainRTVs.size()), mainRTVs.data(), m_camera->GetDSV());
+
+
+	m_deviceContext->CopyResource(m_backBuffer, m_camera->GetRenderTargetTexture());
+
+	DrawUI();
+
 	HRESULT hResult = m_swapchain->Present(1, 0);
 	if (FAILED(hResult)) throw exception("Present Failed");
 }
 
-void ProjectAApp::Quit()
+void CProjectAApp::Quit()
 {
 }
 
-void ProjectAApp::DrawUI()
+void CProjectAApp::DrawUI()
 {
 	static vector<ID3D11RenderTargetView*> rtvs{ m_backBufferRTV };
 	m_deviceContext->OMSetRenderTargets(1, rtvs.data(), nullptr);
@@ -129,7 +161,7 @@ void ProjectAApp::DrawUI()
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
-void ProjectAApp::AppProcImpl(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+void CProjectAApp::AppProcImpl(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam);
 }
