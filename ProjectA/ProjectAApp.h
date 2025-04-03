@@ -10,9 +10,11 @@
 #include "PixelShader.h"
 #include "ComputeShader.h"
 
+#include "DynamicBuffer.h"
+
 class IUpdatable;
 class CCamera;
-class CParticleEmitter;
+class CParticleManager;
 
 namespace D3D11
 {
@@ -59,16 +61,19 @@ private:
 private:
 	std::vector<IUpdatable*> m_updatables;
 
+private:
+	struct  
+	{
+		float dt;
+		float appWidth;
+		float appHeight;
+		float dummy;
+	} m_appParamsCPU;
+	D3D11::CDynamicBuffer m_appParamsGPU;
+
 #pragma region 테스트 변수
-private:
 	std::unique_ptr<CCamera> m_camera;
-	std::unique_ptr<CParticleEmitter> m_particleEmitter;
-
-private:
-	D3D11::CVertexShader m_drawEmitterVS;
-	D3D11::CPixelShader m_drawEmitterPS;
-	std::unique_ptr<D3D11::CGraphicsPSOObject> m_drawEmitterPSO;
-
+	std::unique_ptr<CParticleManager> m_particleManager;
 private:
 	D3D11::CComputeShader m_particleSourceCS;
 	D3D11::CComputeShader m_particleSimulateCS;

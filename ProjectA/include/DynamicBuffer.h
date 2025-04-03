@@ -13,9 +13,13 @@ namespace D3D11
 		CDynamicBuffer(
 			UINT elementSize, 
 			UINT arrayCount, 
-			const void* cpuData
+			const void* cpuData,
+			D3D11_BIND_FLAG bindFlag = D3D11_BIND_CONSTANT_BUFFER
 		);
 		~CDynamicBuffer() override = default;
+
+	protected:
+		D3D11_BIND_FLAG m_bindFlag;
 
 	public:
 		virtual D3D11_BUFFER_DESC CreateBufferDesc() noexcept override;

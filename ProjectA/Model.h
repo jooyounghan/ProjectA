@@ -47,7 +47,7 @@ protected:
 		DirectX::XMMATRIX toWorldTransformInv;
 		DirectX::XMMATRIX toWorldTransformInvT;
 	} m_worldTransformationCPU;
-	D3D11::CDynamicBuffer m_worldTransformationGPU;
+	std::unique_ptr<D3D11::CDynamicBuffer> m_worldTransformationGPU;
 	bool m_isWorldTransformationChanged;
 
 public:

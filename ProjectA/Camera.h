@@ -3,6 +3,7 @@
 #include "DynamicBuffer.h"
 
 #include <DirectXMath.h>
+#include <memory>
 
 enum class EKey
 {
@@ -45,12 +46,12 @@ protected:
 	{
 		DirectX::XMMATRIX viewProjMatrix;
 	} m_cameraPropertiesCPU;
-	D3D11::CDynamicBuffer m_propertiesGPU;
+	std::unique_ptr<D3D11::CDynamicBuffer> m_propertiesGPU;
 	bool m_isPropertiesChanged;
 
 public:
 	inline bool GetPropertiesChanged() const noexcept { return m_isPropertiesChanged; }
-	inline ID3D11Buffer* GetPropertiesBuffer() const noexcept { return m_propertiesGPU.GetBuffer(); }
+	inline ID3D11Buffer* GetPropertiesBuffer() const noexcept { return m_propertiesGPU->GetBuffer(); }
 
 protected:
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_renderTarget;

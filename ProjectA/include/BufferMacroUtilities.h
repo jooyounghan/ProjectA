@@ -1,3 +1,3 @@
 #pragma once
 
-#define PASS_SINGLE(a) sizeof(a), 1, &a
+#define PASS_SINGLE(a) static_cast<UINT>(sizeof(a)), 1, &a

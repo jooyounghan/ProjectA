@@ -30,10 +30,13 @@ namespace D3D11
 	private:
 		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAccumulateSS;
 		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAccumulateMS;
-
+		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAlphaBlendSS;
+		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAlphaBlendMS;
 	public:
 		static inline ID3D11BlendState* GetBSAccumulateSS() { return gBSAccumulateSS.Get(); }
 		static inline ID3D11BlendState* GetBSAccumulateMS() { return gBSAccumulateMS.Get(); }
+		static inline ID3D11BlendState* GetBSAlphaBlendSS() { return gBSAlphaBlendSS.Get(); }
+		static inline ID3D11BlendState* GetBSAlphaBlendMS() { return gBSAlphaBlendMS.Get(); }
 	};
 }
 #endif

@@ -19,7 +19,7 @@
 #include "SamplerState.h"
 
 #include "Camera.h"
-#include "ParticleEmitter.h"
+#include "ParticleManager.h"
 #pragma  endregion
 
 using namespace std;
@@ -35,7 +35,8 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
 );
 
 CProjectAApp::CProjectAApp() noexcept
-	: CBaseApp(), m_drawEmitterVS(1), m_drawParticleVS(1)
+	: CBaseApp(), m_drawParticleVS(1),
+	m_appParamsGPU(sizeof(m_appParamsCPU), 1, &m_appParamsCPU)
 {
 }
 
@@ -77,6 +78,8 @@ void CProjectAApp::Init()
 			engine->GetSwapChainFlag());
 	};
 
+	m_appParamsGPU.InitializeBuffer(m_device);
+
 	CRasterizerState::InitializeDefaultRasterizerStates(m_device);
 	CBlendState::InitializeDefaultBlendStates(m_device);
 	CDepthStencilState::InitializeDefaultDepthStencilState(m_device);
@@ -107,74 +110,70 @@ void CProjectAApp::Init()
 
 #pragma region 테스트 초기화
 
-	// Init Draw Emitter PSO =========================================================
-	m_drawEmitterVS.AddInputLayoutElement(
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	);
-	m_drawEmitterVS.CreateShader(L"./EmitterLineVS.hlsl", "main", "vs_5_0", m_device);
-	m_drawEmitterPS.CreateShader(L"./EmitterLinePS.hlsl", "main", "ps_5_0", m_device);
+#pragma region Emitter 그리기 관련 세이더 초기화
+	CParticleManager::InitializeEmitterDrawPSO(m_device);
+#pragma endregion
 
-	m_drawEmitterPSO = make_unique<CGraphicsPSOObject>(
-		&m_drawEmitterVS,
-		nullptr,
-		nullptr,
-		nullptr,
-		&m_drawEmitterPS,
-		CRasterizerState::GetRSWireframeCWSS(),
-		nullptr,
-		CDepthStencilState::GetDSDraw(),
-		nullptr,
-		0
-	);
-	// ==============================================================================
+#pragma region Particle 시뮬레이션 관련 세이더 초기화
+	//m_particleSourceCS.CreateShader(L"./ParticleSourceCS.hlsl", "main", "cs_5_0", m_device);
+	//m_particleSimulateCS.CreateShader(L"./ParticleSimulateCS.hlsl", "main", "cs_5_0", m_device);
+#pragma endregion
 
-	// Init Particle Simulation Shader ==============================================
-	m_particleSourceCS.CreateShader(L"./ParticleSourceCS.hlsl", "main", "cs_5_0", m_device);
-	m_particleSimulateCS.CreateShader(L"./ParticleSimulateCS.hlsl", "main", "cs_5_0", m_device);
-	// ==============================================================================
+#pragma region Particle 그리기 관련 세이더 초기화
+	//m_drawParticleVS.AddInputLayoutElement(
+	//	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	//);
+	//m_drawParticleVS.CreateShader(L"./ParticleDrawVS.hlsl", "main", "vs_5_0", m_device);
+	//m_drawParticleGS.CreateShader(L"./ParticleDrawGS.hlsl", "main", "gs_5_0", m_device);
+	//m_drawParticlePS.CreateShader(L"./ParticleDrawPS.hlsl", "main", "ps_5_0", m_device);
 
-	// Init Draw Particle PSO =========================================================
-	m_drawParticleVS.AddInputLayoutElement(
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	);
-	m_drawParticleVS.CreateShader(L"./DrawParticleVS.hlsl", "main", "vs_5_0", m_device);
-	m_drawParticleGS.CreateShader(L"./DrawParticleGS.hlsl", "main", "gs_5_0", m_device);
-	m_drawParticlePS.CreateShader(L"./DrawParticlePS.hlsl", "main", "ps_5_0", m_device);
+	//m_drawParticlePSO = make_unique<CGraphicsPSOObject>(
+	//	&m_drawParticleVS,
+	//	nullptr,
+	//	nullptr,
+	//	&m_drawParticleGS,
+	//	&m_drawParticlePS,
+	//	CRasterizerState::GetRSSolidCWSS(),
+	//	CBlendState::GetBSAlphaBlendSS(),
+	//	CDepthStencilState::GetDSDraw(),
+	//	nullptr,
+	//	0
+	//);
+#pragma endregion
 
-	m_drawParticlePSO = make_unique<CGraphicsPSOObject>(
-		&m_drawParticleVS,
-		nullptr,
-		nullptr,
-		&m_drawParticleGS,
-		&m_drawParticlePS,
-		CRasterizerState::GetRSSolidCWSS(),
-		nullptr,
-		CDepthStencilState::GetDSDraw(),
-		nullptr,
-		0
-		);
-	// ==============================================================================
-
-
+#pragma region 인스턴스 초기화
 	m_camera = make_unique<CCamera>(
 		XMVectorSet(0.f, 0.f, 0.f, 1.f),
 		XMVectorSet(0.f, 0.f, 0.f, 1.f),
 		m_width, m_height, 90.f, 0.01f, 100.000f
 		);
 
-	m_particleEmitter = make_unique<CParticleEmitter>(
-		XMVectorSet(0.f, 0.f, 10.f, 1.f),
-		XMVectorSet(0.f, 0.f, 0.f, 1.f),
-		XMVectorSet(0.f, 1.f, 0.f, 0.f)
-		);
+	m_particleManager = make_unique<CParticleManager>(1000);
+	for (int z = -5; z < 5; ++z)
+	{
+		for (int y = -5; y < 5; ++y)
+		{
+			for (int x = -5; x < 5; ++x)
+			{
+				m_particleManager->AddParticleEmitter(
+					XMVectorSet(4.f * x, 4.f * y, 4.f * z, 1.f),
+					XMVectorSet(3.f * x, 3.f * y, 3.f * z, 1.f),
+					XMVectorSet(0.f, 0.f, 10.f, 1.f),
+					m_device, m_deviceContext
+				);
+			}
+
+		}
+	}
 
 	m_updatables.emplace_back(m_camera.get());
-	m_updatables.emplace_back(m_particleEmitter.get());
-
+	m_updatables.emplace_back(m_particleManager.get());
 	for (auto& updatable : m_updatables)
 	{
 		updatable->Initialize(m_device, m_deviceContext);
 	}
+#pragma endregion
+
 #pragma endregion
 }
 
@@ -182,12 +181,22 @@ constexpr FLOAT clearColor[4] = { 0.f, 0.f, 0.f, 1.f };
 
 void CProjectAApp::Update(float deltaTime)
 {
-#pragma region Update Instances
-	m_camera->Update(m_deviceContext, deltaTime);
-	m_particleEmitter->Update(m_deviceContext, deltaTime);
+#pragma region 앱 버퍼 업데이트
+	m_appParamsCPU.dt = deltaTime;
+	m_appParamsCPU.appWidth = static_cast<float>(m_width);
+	m_appParamsCPU.appHeight = static_cast<float>(m_height);
+	m_appParamsGPU.Stage(m_deviceContext);
+	m_appParamsGPU.Upload(m_deviceContext);
 #pragma endregion
 
-#pragma region Init RTV With Camera
+#pragma region 인스턴스 업데이트
+	for (auto& updatable : m_updatables)
+	{
+		updatable->Update(m_deviceContext, deltaTime);
+	}
+#pragma endregion
+
+#pragma region 카메라 초기화 및 설정
 	static vector<ID3D11RenderTargetView*> mainRTVs = { m_camera->GetRTV() };
 	for (auto& mainRTV : mainRTVs)
 	{
@@ -198,27 +207,42 @@ void CProjectAApp::Update(float deltaTime)
 	m_deviceContext->RSSetViewports(1, &m_camera->GetViewport());
 #pragma endregion
 
-#pragma region Draw Emitter
-	m_drawEmitterPSO->ApplyPSO(m_deviceContext);
-
-	static vector<ID3D11Buffer*> emitterVSCB{ m_camera->GetPropertiesBuffer(), m_particleEmitter->GetPropertiesBuffer() };
-
-	vector<ID3D11Buffer*> emitterVertexBuffers = m_particleEmitter->GetVertexBuffers();
-	ID3D11Buffer* emitterIndexBuffer = m_particleEmitter->GetIndexBuffer();
-	vector<UINT> emitterStrides = m_particleEmitter->GetStrides();
-	vector<UINT> emitterOffsets = m_particleEmitter->GetOffsets();
-
-	m_deviceContext->IASetVertexBuffers(0, static_cast<UINT>(emitterVertexBuffers.size()), emitterVertexBuffers.data(), emitterStrides.data(), emitterOffsets.data());
-	m_deviceContext->IASetIndexBuffer(emitterIndexBuffer, DXGI_FORMAT_R32_UINT, NULL);
-	m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	m_deviceContext->VSSetConstantBuffers(0, static_cast<UINT>(emitterVSCB.size()), emitterVSCB.data());
-	m_deviceContext->DrawIndexed(m_particleEmitter->GetIndexCount(), NULL, NULL);
-
-	m_drawEmitterPSO->RemovePSO(m_deviceContext);
+#pragma region Emitter 그리기
+	m_particleManager->DrawEmittersDebugCube(m_camera->GetPropertiesBuffer(), m_deviceContext);
 #pragma endregion
 
-#pragma region Copy To BackBuffer And Draw UI
+#pragma region Particle 시뮬레이션
+	//static vector<ID3D11UnorderedAccessView*> particleUAVs{ m_particleEmitter->GetParticlePoolUAV() };
+	//static vector<ID3D11UnorderedAccessView*> particleNullUAVs = vector<ID3D11UnorderedAccessView*>(particleUAVs.size(), nullptr);
+	//static vector<ID3D11Buffer*> particleSimulationCBs{ m_appParamsGPU.GetBuffer() };
+
+	//m_deviceContext->CSSetConstantBuffers(0, static_cast<UINT>(particleSimulationCBs.size()), particleSimulationCBs.data());
+	//m_deviceContext->CSSetUnorderedAccessViews(0, static_cast<UINT>(particleUAVs.size()), particleUAVs.data(), nullptr);
+	//m_particleSourceCS.SetShader(m_deviceContext);
+	//m_deviceContext->Dispatch(static_cast<UINT>(ceil(32.f * 32.f * 32.f / 64.f)), 1, 1);
+	//m_deviceContext->CSSetUnorderedAccessViews(0, static_cast<UINT>(particleNullUAVs.size()), particleNullUAVs.data(), nullptr);
+
+#pragma endregion
+
+#pragma region Particle 그리기
+	//constexpr FLOAT blendFactors[4] = { 1.f, 1.f, 1.f, 1.f };
+	//m_drawParticlePSO->ApplyPSO(m_deviceContext, blendFactors, 0xFFFFFFFF);
+
+	//static vector<ID3D11Buffer*> particleDrawCBs{ m_appParamsGPU.GetBuffer(), m_camera->GetPropertiesBuffer(), m_particleEmitter->GetPropertiesBuffer() };
+	//static vector<ID3D11ShaderResourceView*> particleDrawSRVs{ m_particleEmitter->GetParticlePoolSRV() };
+	//static vector<ID3D11ShaderResourceView*> particleDrawNullSRVs = vector<ID3D11ShaderResourceView*>(particleDrawSRVs.size(), nullptr);
+
+	//m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+	//m_deviceContext->VSSetConstantBuffers(0, static_cast<UINT>(particleDrawCBs.size()), particleDrawCBs.data());
+	//m_deviceContext->VSSetShaderResources(0, static_cast<UINT>(particleDrawSRVs.size()), particleDrawSRVs.data());
+	//m_deviceContext->GSSetConstantBuffers(0, static_cast<UINT>(particleDrawCBs.size()), particleDrawCBs.data());
+	//m_deviceContext->DrawInstanced(32 * 32 * 32, 1, NULL, NULL);
+	//m_deviceContext->VSSetShaderResources(0, static_cast<UINT>(particleDrawNullSRVs.size()), particleDrawNullSRVs.data());
+
+	//m_drawParticlePSO->RemovePSO(m_deviceContext);
+#pragma endregion
+
+#pragma region 카메라 -> 백버퍼 복사 및 UI 그리기
 	m_deviceContext->CopyResource(m_backBuffer, m_camera->GetRenderTargetTexture());
 
 	DrawUI();

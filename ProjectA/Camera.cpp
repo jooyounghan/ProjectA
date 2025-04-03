@@ -23,8 +23,7 @@ CCamera::CCamera(
 	float nearZ, 
 	float farZ
 ) noexcept
-	: m_propertiesGPU(PASS_SINGLE(m_cameraPropertiesCPU)),
-	m_isPropertiesChanged(false),
+	: m_isPropertiesChanged(false),
 	m_cameraSpeed(10.f),
 	m_mouseNdcX(0.f), m_mouseNdcY(0.f), 
 	m_currentForward(GDirection::GDefaultForward),
@@ -70,7 +69,8 @@ void CCamera::HandleInput(UINT msg, WPARAM wParam, LPARAM lParam)
 
 void CCamera::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
-	m_propertiesGPU.InitializeBuffer(device);
+	m_propertiesGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_cameraPropertiesCPU));
+	m_propertiesGPU->InitializeBuffer(device);
 
 	TextureUtilities::CreateTexture2D(
 		static_cast<UINT>(m_viewport.Width),
@@ -140,8 +140,9 @@ void CCamera::Update(ID3D11DeviceContext* deviceContext, float dt)
 
 		m_cameraPropertiesCPU.viewProjMatrix = XMMatrixTranspose(viewMatrix * projMatrix);
 
-		m_propertiesGPU.Stage(deviceContext);
-		m_propertiesGPU.Upload(deviceContext);
+		m_propertiesGPU->Stage(deviceContext);
+		m_propertiesGPU->Upload(deviceContext);
+		m_isPropertiesChanged = false;
 	}
 }
 

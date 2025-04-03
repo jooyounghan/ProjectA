@@ -30,8 +30,20 @@
     <Filter Include="소스 파일\Updatable\ParticleSystem">
       <UniqueIdentifier>{198e43d0-0740-4739-add3-c5a51b4ddd09}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Emitter">
+    <Filter Include="Shader">
       <UniqueIdentifier>{0b4dd9dd-53f9-4b72-8a88-0c45f82be677}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\EmitterDraw">
+      <UniqueIdentifier>{78304fac-1893-4339-8060-50f5be8c2fa8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\Particle">
+      <UniqueIdentifier>{68488469-b755-414f-a52b-ec9cc4d6a3f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\Particle\ParticleDraw">
+      <UniqueIdentifier>{40b1b466-11f0-4f5a-9354-0a730ab1ef35}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\Particle\ParticleSimulation">
+      <UniqueIdentifier>{20b98071-57f6-4f48-9361-28d155ba720b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -103,31 +115,37 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
-    <None Include="EmitterCommon.hlsli">
-      <Filter>Emitter</Filter>
+    <None Include="EmitterDrawCommon.hlsli">
+      <Filter>Shader\EmitterDraw</Filter>
+    </None>
+    <None Include="ParticleDrawCommon.hlsli">
+      <Filter>Shader\Particle\ParticleDraw</Filter>
+    </None>
+    <None Include="ParticleCommon.hlsli">
+      <Filter>Shader\Particle</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="EmitterLineVS.hlsl">
-      <Filter>Emitter</Filter>
+    <FxCompile Include="EmitterDrawPS.hlsl">
+      <Filter>Shader\EmitterDraw</Filter>
     </FxCompile>
-    <FxCompile Include="EmitterLinePS.hlsl">
-      <Filter>Emitter</Filter>
+    <FxCompile Include="EmitterDrawVS.hlsl">
+      <Filter>Shader\EmitterDraw</Filter>
     </FxCompile>
-    <FxCompile Include="ParticleSourceCS.hlsl">
-      <Filter>Emitter</Filter>
+    <FxCompile Include="ParticleDrawVS.hlsl">
+      <Filter>Shader\Particle\ParticleDraw</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleDrawGS.hlsl">
+      <Filter>Shader\Particle\ParticleDraw</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleDrawPS.hlsl">
+      <Filter>Shader\Particle\ParticleDraw</Filter>
     </FxCompile>
     <FxCompile Include="ParticleSimulateCS.hlsl">
-      <Filter>Emitter</Filter>
+      <Filter>Shader\Particle\ParticleSimulation</Filter>
     </FxCompile>
-    <FxCompile Include="DrawParticleVS.hlsl">
-      <Filter>Emitter</Filter>
-    </FxCompile>
-    <FxCompile Include="DrawParticleGS.hlsl">
-      <Filter>Emitter</Filter>
-    </FxCompile>
-    <FxCompile Include="DrawParticlePS.hlsl">
-      <Filter>Emitter</Filter>
+    <FxCompile Include="ParticleSourceCS.hlsl">
+      <Filter>Shader\Particle\ParticleSimulation</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

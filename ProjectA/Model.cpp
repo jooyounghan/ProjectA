@@ -11,7 +11,6 @@ CModel::CModel(
 	const XMVECTOR& scale
 )
 	: m_position(position), m_angle(angle), m_scale(scale),
-	m_worldTransformationGPU(PASS_SINGLE(m_worldTransformationCPU)),
 	m_isWorldTransformationChanged(false)
 {
 
@@ -83,7 +82,8 @@ ID3D11Buffer* CModel::GetIndexBuffer() const noexcept
 
 void CModel::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
-
+	m_worldTransformationGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_worldTransformationCPU));
+	m_worldTransformationGPU->InitializeBuffer(device);
 }
 
 void CModel::Update(ID3D11DeviceContext* deviceContext, float dt)
