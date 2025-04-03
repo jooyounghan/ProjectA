@@ -114,10 +114,6 @@ void CProjectAApp::Init()
 	CParticleManager::InitializeEmitterDrawPSO(m_device);
 #pragma endregion
 
-#pragma region Particle 시뮬레이션 관련 세이더 초기화
-	//m_particleSourceCS.CreateShader(L"./ParticleSourceCS.hlsl", "main", "cs_5_0", m_device);
-	//m_particleSimulateCS.CreateShader(L"./ParticleSimulateCS.hlsl", "main", "cs_5_0", m_device);
-#pragma endregion
 
 #pragma region Particle 그리기 관련 세이더 초기화
 	//m_drawParticleVS.AddInputLayoutElement(
@@ -149,22 +145,6 @@ void CProjectAApp::Init()
 		);
 
 	m_particleManager = make_unique<CParticleManager>(1000);
-	for (int z = -5; z < 5; ++z)
-	{
-		for (int y = -5; y < 5; ++y)
-		{
-			for (int x = -5; x < 5; ++x)
-			{
-				m_particleManager->AddParticleEmitter(
-					XMVectorSet(4.f * x, 4.f * y, 4.f * z, 1.f),
-					XMVectorSet(3.f * x, 3.f * y, 3.f * z, 1.f),
-					XMVectorSet(0.f, 0.f, 10.f, 1.f),
-					m_device, m_deviceContext
-				);
-			}
-
-		}
-	}
 
 	m_updatables.emplace_back(m_camera.get());
 	m_updatables.emplace_back(m_particleManager.get());
@@ -211,35 +191,16 @@ void CProjectAApp::Update(float deltaTime)
 	m_particleManager->DrawEmittersDebugCube(m_camera->GetPropertiesBuffer(), m_deviceContext);
 #pragma endregion
 
-#pragma region Particle 시뮬레이션
-	//static vector<ID3D11UnorderedAccessView*> particleUAVs{ m_particleEmitter->GetParticlePoolUAV() };
-	//static vector<ID3D11UnorderedAccessView*> particleNullUAVs = vector<ID3D11UnorderedAccessView*>(particleUAVs.size(), nullptr);
-	//static vector<ID3D11Buffer*> particleSimulationCBs{ m_appParamsGPU.GetBuffer() };
-
-	//m_deviceContext->CSSetConstantBuffers(0, static_cast<UINT>(particleSimulationCBs.size()), particleSimulationCBs.data());
-	//m_deviceContext->CSSetUnorderedAccessViews(0, static_cast<UINT>(particleUAVs.size()), particleUAVs.data(), nullptr);
-	//m_particleSourceCS.SetShader(m_deviceContext);
-	//m_deviceContext->Dispatch(static_cast<UINT>(ceil(32.f * 32.f * 32.f / 64.f)), 1, 1);
-	//m_deviceContext->CSSetUnorderedAccessViews(0, static_cast<UINT>(particleNullUAVs.size()), particleNullUAVs.data(), nullptr);
-
+#pragma region Particle System
+	m_particleManager->PresetParticleSet();
+	m_particleManager->ActivateEmitter();
+	m_particleManager->DeframentPool();
+	m_particleManager->SimulateParticles();
 #pragma endregion
 
 #pragma region Particle 그리기
-	//constexpr FLOAT blendFactors[4] = { 1.f, 1.f, 1.f, 1.f };
-	//m_drawParticlePSO->ApplyPSO(m_deviceContext, blendFactors, 0xFFFFFFFF);
-
-	//static vector<ID3D11Buffer*> particleDrawCBs{ m_appParamsGPU.GetBuffer(), m_camera->GetPropertiesBuffer(), m_particleEmitter->GetPropertiesBuffer() };
-	//static vector<ID3D11ShaderResourceView*> particleDrawSRVs{ m_particleEmitter->GetParticlePoolSRV() };
-	//static vector<ID3D11ShaderResourceView*> particleDrawNullSRVs = vector<ID3D11ShaderResourceView*>(particleDrawSRVs.size(), nullptr);
-
-	//m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-	//m_deviceContext->VSSetConstantBuffers(0, static_cast<UINT>(particleDrawCBs.size()), particleDrawCBs.data());
-	//m_deviceContext->VSSetShaderResources(0, static_cast<UINT>(particleDrawSRVs.size()), particleDrawSRVs.data());
-	//m_deviceContext->GSSetConstantBuffers(0, static_cast<UINT>(particleDrawCBs.size()), particleDrawCBs.data());
-	//m_deviceContext->DrawInstanced(32 * 32 * 32, 1, NULL, NULL);
-	//m_deviceContext->VSSetShaderResources(0, static_cast<UINT>(particleDrawNullSRVs.size()), particleDrawNullSRVs.data());
-
-	//m_drawParticlePSO->RemovePSO(m_deviceContext);
+	m_particleManager->SortParticles();
+	m_particleManager->DrawParticles();
 #pragma endregion
 
 #pragma region 카메라 -> 백버퍼 복사 및 UI 그리기

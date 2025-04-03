@@ -36,11 +36,10 @@ public:
 	static std::unique_ptr<D3D11::CConstantBuffer> GEmitterIndexBuffer;
 	static void InitializeEmitterDrawPSO(ID3D11Device* device);
 
-
 protected:
 	UINT m_maxEmitterCount;
+	std::queue<UINT> m_transformIndexQueue;
 	std::vector<std::unique_ptr<CParticleEmitter>> m_particleEmitters;
-	std::queue<UINT> m_emitterIDIssuer;
 	std::vector<DirectX::XMMATRIX> m_emitterWorldTransformCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterWorldTransformGPU;
 	bool m_isEmitterWorldTransformationChanged;
@@ -76,6 +75,26 @@ public:
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
 	virtual void Update(ID3D11DeviceContext* deviceContext, float dt) override;
+
+public:
 	void DrawEmittersDebugCube(ID3D11Buffer* viewProjBuffer, ID3D11DeviceContext* deviceContext);
+	void PresetParticleSet();
+	void ActivateEmitter();
+	void DeframentPool();
+	void SimulateParticles();
+	void SortParticles();
+	void DrawParticles();
+
+	// 전체적인 그림이 먼저 필요함
+	// A개의 Emiiter에서
+	// B개 종류의 파티클이 생성됨 (A = N_1(1번 종류) + N_2(2번 종류) + ... + N_B(B번 종류))
+	// 따라서 B개의 Sourcing, Simulating, Drawing 과정을 수행
+	// Emitter 별로 종류 B에 대한 세이더의 포인터 들을 들고 있거나
+	// 매니저가 전체적으로 수행...
+	// 
+	// 1. for (auto& emitter : m_emitters) emitter->SourceParticles(m_totalParticlePool, m_deathParticlePool); + 다형성(SparkEmitter, FireEmitter...)
+	// 와 같은 식으로 하거나 m_sourceCS->Dispatch()로 한번에 하고 내부에서 플래그를 보고 수행
+	// 
+	// 시뮬레이션에 사용될 Field는 어떻게 처리할 지 생각 필요..
 };
 

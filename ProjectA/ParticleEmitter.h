@@ -17,7 +17,8 @@ public:
 		DirectX::XMFLOAT3 accelerate;
 		float life;
 		float mass;
-
+		float polar; 
+		// -1.f : N극 / 0.f 무극성 / 1.f S극으로 해서 polar1 * polar2로 인자간 작용 방향 설정
 	};
 
 	struct SParticleSelector
@@ -46,6 +47,8 @@ protected:
 public:
 	void SetPosition(const DirectX::XMVECTOR& position) noexcept;
 	void SetAngle(const DirectX::XMVECTOR& angle) noexcept;
+	inline const DirectX::XMVECTOR& GetPosition() const noexcept { return m_position; }
+	inline const DirectX::XMVECTOR& GetAngle() const noexcept { return m_angle; }
 
 protected:
 	struct  
@@ -59,10 +62,9 @@ protected:
 
 public:
 	void SetEmitVelocity(const DirectX::XMVECTOR& emitVelocity) noexcept;
-
-public:
-	inline const DirectX::XMVECTOR& GetPosition() const noexcept { return m_position; }
-	inline const DirectX::XMVECTOR& GetAngle() const noexcept { return m_angle; }
+	void SetEmitterID(UINT emitterID) noexcept;
+	inline const DirectX::XMVECTOR& GetEmitVelocity() const noexcept { return m_emitterPropertiesCPU.emitVelocity; }
+	inline const UINT& GetEmitterID() const noexcept { return m_emitterPropertiesCPU.emitterID; }
 
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;

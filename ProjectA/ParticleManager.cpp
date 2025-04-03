@@ -16,6 +16,9 @@ using namespace std;
 using namespace DirectX;
 using namespace D3D11;
 
+#define ZERO_MATRIX  XMMATRIX(XMVectorZero(), XMVectorZero(), XMVectorZero(), XMVectorZero())
+
+
 const vector<XMFLOAT3> CParticleManager::GEmitterBoxPositions = ModelFactory::CreateBoxPositions(XMVectorSet(1.f, 1.f, 1.f, 0.f));
 const vector<UINT> CParticleManager::GEmitterBoxIndices = ModelFactory::CreateIndices();
 unique_ptr<CVertexShader> CParticleManager::GEmitterDrawVS = make_unique<CVertexShader>(5);
@@ -72,20 +75,13 @@ void CParticleManager::InitializeEmitterDrawPSO(ID3D11Device* device)
 CParticleManager::CParticleManager(UINT maxEmitterCount)
 	: m_maxEmitterCount(maxEmitterCount), m_isEmitterWorldTransformationChanged(false)
 {
-	static XMMATRIX zeroMatrix = XMMATRIX(
-		XMVectorZero(),
-		XMVectorZero(),
-		XMVectorZero(),
-		XMVectorZero()
-	);
-
 	AutoZeroMemory(m_particleManagerPropteriesCPU);
-	for (UINT id = 0; id < m_maxEmitterCount; ++id)
+	for (UINT idx = 0; idx < m_maxEmitterCount; ++idx)
 	{
-		m_emitterIDIssuer.push(id);
+		m_transformIndexQueue.push(idx);
 	}
 
-	m_particleEmitters.resize(m_maxEmitterCount);
+	XMMATRIX zeroMatrix = ZERO_MATRIX;
 	m_emitterWorldTransformCPU.resize(m_maxEmitterCount, zeroMatrix);
 }
 
@@ -96,17 +92,17 @@ UINT CParticleManager::AddParticleEmitter(
 	ID3D11Device* device, ID3D11DeviceContext* deviceContext
 )
 {
-	if (!m_emitterIDIssuer.empty())
+	if (!m_transformIndexQueue.empty())
 	{
-		UINT issuedID = m_emitterIDIssuer.front();
-		m_emitterIDIssuer.pop();
+		UINT emitterID = m_transformIndexQueue.front();
+		m_transformIndexQueue.pop();
 
-		m_particleEmitters[issuedID] = make_unique<CParticleEmitter>(
-			issuedID, m_isEmitterWorldTransformationChanged, 
-			m_emitterWorldTransformCPU[issuedID], position, angle, emitVelocity
-		);
-		m_particleEmitters[issuedID]->Initialize(device, deviceContext);
-		return issuedID;
+		m_particleEmitters.emplace_back(make_unique<CParticleEmitter>(
+			emitterID, m_isEmitterWorldTransformationChanged,
+			m_emitterWorldTransformCPU[emitterID], position, angle, emitVelocity
+		));
+		m_particleEmitters.back()->Initialize(device, deviceContext);
+		return emitterID;
 	}
 	else
 	{
@@ -117,22 +113,25 @@ UINT CParticleManager::AddParticleEmitter(
 
 void CParticleManager::RemoveParticleEmitter(UINT emitterID)
 {
-	static XMMATRIX zeroMatrix = XMMATRIX(
-		XMVectorZero(),
-		XMVectorZero(),
-		XMVectorZero(),
-		XMVectorZero()
+	auto it = std::find_if(
+		m_particleEmitters.begin(),
+		m_particleEmitters.end(),
+		[emitterID](const std::unique_ptr<CParticleEmitter>& emitter)
+		{
+			return emitter->GetEmitterID() == emitterID;
+		}
 	);
 
-	if (m_particleEmitters.size() > emitterID && m_particleEmitters[emitterID] != nullptr)
+	if (it != m_particleEmitters.end()) 
 	{
-		m_particleEmitters[emitterID] = nullptr;
-		m_emitterWorldTransformCPU[emitterID] = zeroMatrix;
-		m_emitterIDIssuer.push(emitterID);
+		m_transformIndexQueue.push(emitterID);
+		m_emitterWorldTransformCPU[emitterID] = ZERO_MATRIX;
+		m_isEmitterWorldTransformationChanged = true;
+		m_particleEmitters.erase(it); 
 	}
-	else
+	else 
 	{
-		throw std::exception("Remove Particle Emitter Failed");
+		throw exception("Remove Emitter With ID Failed");
 	}
 }
 
@@ -182,7 +181,7 @@ void CParticleManager::DrawEmittersDebugCube(ID3D11Buffer* viewProjBuffer, ID3D1
 
 	deviceContext->DrawIndexedInstanced(
 		static_cast<UINT>(GEmitterBoxIndices.size()),
-		static_cast<UINT>(m_particleEmitters.size()),
+		m_maxEmitterCount,
 		NULL, NULL, NULL
 	);
 
@@ -191,4 +190,28 @@ void CParticleManager::DrawEmittersDebugCube(ID3D11Buffer* viewProjBuffer, ID3D1
 	deviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, NULL);
 
 	GDrawEmitterPSO->RemovePSO(deviceContext);
+}
+
+void CParticleManager::PresetParticleSet()
+{
+}
+
+void CParticleManager::ActivateEmitter()
+{
+}
+
+void CParticleManager::DeframentPool()
+{
+}
+
+void CParticleManager::SimulateParticles()
+{
+}
+
+void CParticleManager::SortParticles()
+{
+}
+
+void CParticleManager::DrawParticles()
+{
 }

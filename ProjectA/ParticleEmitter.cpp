@@ -10,7 +10,7 @@ using namespace D3D11;
 CParticleEmitter::CParticleEmitter(
 	UINT emitterID,
 	bool& isEmitterWorldTransformChanged,
-	DirectX::XMMATRIX& emitterWorldTransform,
+	XMMATRIX& emitterWorldTransform,
 	const XMVECTOR& position, 
 	const XMVECTOR& angle, 
 	const XMVECTOR& emitVelocity
@@ -21,8 +21,8 @@ CParticleEmitter::CParticleEmitter(
 	m_isEmitterPropertiesChanged(false)
 {
 	AutoZeroMemory(m_emitterPropertiesCPU);
-	m_emitterPropertiesCPU.emitterID = emitterID;
 	SetEmitVelocity(emitVelocity);
+	SetEmitterID(emitterID);
 
 	m_isEmitterWorldTransformChanged = true;
 	m_isThisWorldTransformChanged = true;
@@ -48,6 +48,12 @@ void CParticleEmitter::SetAngle(const DirectX::XMVECTOR& angle) noexcept
 void CParticleEmitter::SetEmitVelocity(const DirectX::XMVECTOR& emitVelocity) noexcept
 {
 	m_emitterPropertiesCPU.emitVelocity = emitVelocity;
+	m_isEmitterPropertiesChanged = true;
+}
+
+void CParticleEmitter::SetEmitterID(UINT emitterID) noexcept
+{
+	m_emitterPropertiesCPU.emitterID = emitterID;
 	m_isEmitterPropertiesChanged = true;
 }
 

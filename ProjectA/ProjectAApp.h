@@ -74,9 +74,6 @@ private:
 #pragma region 테스트 변수
 	std::unique_ptr<CCamera> m_camera;
 	std::unique_ptr<CParticleManager> m_particleManager;
-private:
-	D3D11::CComputeShader m_particleSourceCS;
-	D3D11::CComputeShader m_particleSimulateCS;
 
 private:
 	D3D11::CVertexShader m_drawParticleVS;
