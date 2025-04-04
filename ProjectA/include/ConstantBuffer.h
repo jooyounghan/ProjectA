@@ -22,8 +22,11 @@ namespace D3D11
 		D3D11_USAGE m_usage;
 		D3D11_BIND_FLAG m_bindFlag;
 
-	public:
+	protected:
 		virtual D3D11_BUFFER_DESC CreateBufferDesc() noexcept override;
+
+	public:
+		virtual void InitializeBuffer(ID3D11Device* const device) override;
 	};
 }
 

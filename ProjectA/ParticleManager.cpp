@@ -5,11 +5,14 @@
 #include "ModelFactory.h"
 #include "ConstantBuffer.h"
 
+#include "ComputeShader.h"
 #include "VertexShader.h"
+#include "GeometryShader.h"
 #include "PixelShader.h"
 #include "GraphicsPSOObject.h"
 
 #include "RasterizerState.h"
+#include "BlendState.h"
 #include "DepthStencilState.h"
 
 using namespace std;
@@ -17,7 +20,6 @@ using namespace DirectX;
 using namespace D3D11;
 
 #define ZERO_MATRIX  XMMATRIX(XMVectorZero(), XMVectorZero(), XMVectorZero(), XMVectorZero())
-
 
 const vector<XMFLOAT3> CParticleManager::GEmitterBoxPositions = ModelFactory::CreateBoxPositions(XMVectorSet(1.f, 1.f, 1.f, 0.f));
 const vector<UINT> CParticleManager::GEmitterBoxIndices = ModelFactory::CreateIndices();
@@ -72,10 +74,52 @@ void CParticleManager::InitializeEmitterDrawPSO(ID3D11Device* device)
 	);
 }
 
-CParticleManager::CParticleManager(UINT maxEmitterCount)
-	: m_maxEmitterCount(maxEmitterCount), m_isEmitterWorldTransformationChanged(false)
+unique_ptr<CComputeShader> CParticleManager::GSelectParticleSetCS = make_unique<CComputeShader>();
+unique_ptr<CComputeShader> CParticleManager::GDefragmenaPoolCS = make_unique<CComputeShader>();
+
+void CParticleManager::InitializePoolingPSO(ID3D11Device* device)
 {
-	AutoZeroMemory(m_particleManagerPropteriesCPU);
+	GSelectParticleSetCS->CreateShader(L"./SelectParticleSetCS.hlsl", "main", "cs_5_0", device);
+	GDefragmenaPoolCS->CreateShader(L"./DefragmentPoolCS.hlsl", "main", "cs_5_0", device);
+}
+
+unique_ptr<CComputeShader> CParticleManager::GParticleSourcingCS = make_unique<CComputeShader>();
+
+void CParticleManager::InitializeEmitterSourcingPSO(ID3D11Device* device)
+{
+	GParticleSourcingCS->CreateShader(L"./ParticleSourceCS.hlsl", "main", "cs_5_0", device);
+}
+
+unique_ptr<CVertexShader> CParticleManager::GParticleDrawVS = make_unique<CVertexShader>(0);
+unique_ptr<CGeometryShader> CParticleManager::GParticleDrawGS = make_unique<CGeometryShader>();
+unique_ptr<CPixelShader> CParticleManager::GParticleDrawPS = make_unique<CPixelShader>();
+unique_ptr<CGraphicsPSOObject> CParticleManager::GDrawParticlePSO = nullptr;
+
+void CParticleManager::InitializeParticleDrawPSO(ID3D11Device* device)
+{
+	GParticleDrawVS->CreateShader(L"./ParticleDrawVS.hlsl", "main", "vs_5_0", device);
+	GParticleDrawGS->CreateShader(L"./ParticleDrawGS.hlsl", "main", "gs_5_0", device);
+	GParticleDrawPS->CreateShader(L"./ParticleDrawPS.hlsl", "main", "ps_5_0", device);
+
+	GDrawParticlePSO = make_unique<CGraphicsPSOObject>(
+		GParticleDrawVS.get(),
+		nullptr,
+		nullptr,
+		GParticleDrawGS.get(),
+		GParticleDrawPS.get(),
+		CRasterizerState::GetRSSolidCWSS(),
+		CBlendState::GetBSAlphaBlendSS(),
+		CDepthStencilState::GetDSDraw(),
+		nullptr,
+		0
+	);
+}
+
+CParticleManager::CParticleManager(UINT maxEmitterCount, UINT maxParticleCount)
+	: m_maxEmitterCount(maxEmitterCount), 
+	m_maxParticleCount(maxParticleCount),
+	m_isEmitterWorldTransformationChanged(false)
+{
 	for (UINT idx = 0; idx < m_maxEmitterCount; ++idx)
 	{
 		m_transformIndexQueue.push(idx);
@@ -144,6 +188,22 @@ void CParticleManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* dev
 		D3D11_BIND_VERTEX_BUFFER
 	);
 	m_emitterWorldTransformGPU->InitializeBuffer(device);
+
+	m_particleCountsGPU = make_unique<CStructuredBuffer>(4, 4, nullptr);
+	m_particleCountsGPU->InitializeBuffer(device);
+
+	D3D11_DISPATCH_INDIRECT_ARGS dispatchIndirectArgs;
+	AutoZeroMemory(dispatchIndirectArgs);
+	dispatchIndirectArgs.threadGroupCountX = UINT(ceil(m_maxParticleCount / 64.f));
+	dispatchIndirectArgs.threadGroupCountY = 1;
+	dispatchIndirectArgs.threadGroupCountZ = 1;
+	m_particleDispatchBuffer = make_unique<CIndirectBuffer<D3D11_DISPATCH_INDIRECT_ARGS>>(1, &dispatchIndirectArgs);
+	m_particleDispatchBuffer->InitializeBuffer(device);
+
+	m_totalParticlePool = make_unique<CStructuredBuffer>(static_cast<UINT>(sizeof(SParticle)), m_maxParticleCount, nullptr);
+	m_deathParticleSet = make_unique<CAppendBuffer>(4, m_maxParticleCount, nullptr);
+	m_totalParticlePool->InitializeBuffer(device);
+	m_deathParticleSet->InitializeBuffer(device);
 }
 
 void CParticleManager::Update(ID3D11DeviceContext* deviceContext, float dt)
@@ -178,7 +238,6 @@ void CParticleManager::DrawEmittersDebugCube(ID3D11Buffer* viewProjBuffer, ID3D1
 	deviceContext->IASetVertexBuffers(0, static_cast<UINT>(vertexBuffer.size()), vertexBuffer.data(), strides.data(), offsets.data());
 	deviceContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, NULL);
 	deviceContext->VSSetConstantBuffers(0, 1, &viewProjBuffer);
-
 	deviceContext->DrawIndexedInstanced(
 		static_cast<UINT>(GEmitterBoxIndices.size()),
 		m_maxEmitterCount,
@@ -192,26 +251,83 @@ void CParticleManager::DrawEmittersDebugCube(ID3D11Buffer* viewProjBuffer, ID3D1
 	GDrawEmitterPSO->RemovePSO(deviceContext);
 }
 
-void CParticleManager::PresetParticleSet()
+void CParticleManager::ExecuteParticleSystem(ID3D11DeviceContext* deviceContext)
+{
+	PresetParticleSet(deviceContext);
+	ActivateEmitter(deviceContext);
+}
+
+void CParticleManager::PresetParticleSet(ID3D11DeviceContext* deviceContext)
+{
+	//ID3D11ShaderResourceView* selectSetSrv = m_totalParticlePool->GetSRV();
+	//ID3D11UnorderedAccessView* selectSetUav = m_deathParticleSet->GetUAV();
+	//ID3D11ShaderResourceView* selectSetNullSrv = nullptr;
+	//ID3D11UnorderedAccessView* selectSetNullUav = nullptr;
+
+	ID3D11UnorderedAccessView* selectSetUavs[] = { m_totalParticlePool->GetUAV(), m_deathParticleSet->GetUAV() };
+	ID3D11UnorderedAccessView* selectSetNullUavs[] = { nullptr, nullptr };
+
+	//UINT initDeathParticleCount = 0;
+	UINT initDeathParticleCount[2] = { 0, 0 };
+	GSelectParticleSetCS->SetShader(deviceContext);
+
+	//deviceContext->CSSetShaderResources(0, 1, &selectSetSrv);
+	//deviceContext->CSSetUnorderedAccessViews(0, 1, &selectSetUav, &initDeathParticleCount);
+
+	deviceContext->CSSetUnorderedAccessViews(0, 2, selectSetUavs, initDeathParticleCount);
+	deviceContext->DispatchIndirect(m_particleDispatchBuffer->GetBuffer(), 0);
+	deviceContext->CSSetUnorderedAccessViews(0, 2, selectSetNullUavs, initDeathParticleCount);
+
+	//deviceContext->CSSetShaderResources(0, 1, &selectSetNullSrv);
+	//deviceContext->CSSetUnorderedAccessViews(0, 1, &selectSetNullUav, &initDeathParticleCount);
+}
+
+void CParticleManager::ActivateEmitter(ID3D11DeviceContext* deviceContext)
+{
+	ID3D11UnorderedAccessView* selectSetUavs[] = { m_deathParticleSet->GetUAV(), m_totalParticlePool->GetUAV() };
+	ID3D11UnorderedAccessView* selectSetNullUavs[] = { nullptr, nullptr };
+	UINT initialValue[2] = { -1, NULL };
+	GParticleSourcingCS->SetShader(deviceContext);
+
+	deviceContext->CSSetUnorderedAccessViews(0, 2, selectSetUavs, initialValue);
+	for (auto& particleEmitter : m_particleEmitters)
+	{
+		ID3D11Buffer* emitterPropertiesBuffer = particleEmitter->GetEmitterPropertiesBuffer();
+		deviceContext->CSSetConstantBuffers(0, 1, &emitterPropertiesBuffer);
+		deviceContext->Dispatch(1, 1, 1);
+	}	
+	ID3D11Buffer* emitterPropertiesNullBuffer = nullptr;
+	deviceContext->CSSetConstantBuffers(0, 1, &emitterPropertiesNullBuffer);
+	deviceContext->CSSetUnorderedAccessViews(0, 2, selectSetNullUavs, nullptr);
+}
+
+void CParticleManager::DeframentPool(ID3D11DeviceContext* deviceContext)
 {
 }
 
-void CParticleManager::ActivateEmitter()
+void CParticleManager::SimulateParticles(ID3D11DeviceContext* deviceContext)
 {
 }
 
-void CParticleManager::DeframentPool()
+void CParticleManager::SortParticles(ID3D11DeviceContext* deviceContext)
 {
 }
 
-void CParticleManager::SimulateParticles()
+void CParticleManager::DrawParticles(ID3D11DeviceContext* deviceContext)
 {
-}
+	ID3D11ShaderResourceView* tempPatriclesSrv = m_totalParticlePool->GetSRV();
+	ID3D11ShaderResourceView* tempPatriclesNullSrv = nullptr;
 
-void CParticleManager::SortParticles()
-{
-}
+	const float blendColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	GDrawParticlePSO->ApplyPSO(deviceContext, blendColor, 0xFFFFFFFF);
 
-void CParticleManager::DrawParticles()
-{
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+
+	deviceContext->VSSetShaderResources(0, 1, &tempPatriclesSrv);
+
+	deviceContext->DrawInstanced(m_maxParticleCount, 1, NULL, NULL);
+
+	deviceContext->VSSetShaderResources(0, 1, &tempPatriclesNullSrv);
+
+	GDrawParticlePSO->RemovePSO(deviceContext);
 }

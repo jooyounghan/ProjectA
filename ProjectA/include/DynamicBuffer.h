@@ -3,11 +3,11 @@
 #ifndef DYNAMICBUFFER_H
 #define DYNAMICBUFFER_H
 
-#include "AUploadableBuffer.h"
+#include "ABuffer.h"
 
 namespace D3D11
 {
-	class D3D11MANAGER_API CDynamicBuffer : public AUploadableBuffer
+	class D3D11MANAGER_API CDynamicBuffer : public ABuffer
 	{
 	public:
 		CDynamicBuffer(
@@ -19,10 +19,20 @@ namespace D3D11
 		~CDynamicBuffer() override = default;
 
 	protected:
+		Microsoft::WRL::ComPtr<ID3D11Buffer> m_stagingBuffer;
 		D3D11_BIND_FLAG m_bindFlag;
 
-	public:
+
+	protected:
 		virtual D3D11_BUFFER_DESC CreateBufferDesc() noexcept override;
+
+	public:
+		inline ID3D11Buffer* GetStagingBuffer() const noexcept { return m_stagingBuffer.Get(); }
+		virtual void InitializeBuffer(ID3D11Device* const device) override;
+
+	public:
+		void Stage(ID3D11DeviceContext* const deviceContext);
+		void Upload(ID3D11DeviceContext* const deviceContext) noexcept;
 	};
 }
 

@@ -19,15 +19,17 @@ float smoothstep(float edge0, float edge1, float x)
     return x * x * (3.f - 2.f * x);
 }
 
+cbuffer SystemParams : register(b0)
+{
+    float dt;
+    float appWidth;
+    float appHeight;
+    float dummy;
+};
+
 cbuffer CameraViewProj : register(b1)
 {
     matrix viewProjMatrix;
-};
-
-cbuffer EmitterProperties : register(b2)
-{
-    matrix toWorldTransform;
-    float4 emitVelocity;
 };
 
 StructuredBuffer<Particle> particles : register(t0);

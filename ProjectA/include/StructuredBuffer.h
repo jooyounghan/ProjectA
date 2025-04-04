@@ -3,11 +3,11 @@
 #ifndef STRUCTUREDBUFFER_H
 #define STRUCTUREDBUFFER_H
 
-#include "AUploadableBuffer.h"
+#include "ABuffer.h"
 
 namespace D3D11
 {
-	class D3D11MANAGER_API CStructuredBuffer : public AUploadableBuffer
+	class D3D11MANAGER_API CStructuredBuffer : public ABuffer
 	{
 	public:
 		CStructuredBuffer(
@@ -25,10 +25,12 @@ namespace D3D11
 		ID3D11ShaderResourceView* const GetSRV() const noexcept { return m_structuredSRV.Get(); }
 		ID3D11UnorderedAccessView* const GetUAV() const noexcept { return m_structuredUAV.Get(); }
 
-	public:
+	protected:
 		virtual D3D11_BUFFER_DESC CreateBufferDesc() noexcept override;
 		virtual D3D11_SHADER_RESOURCE_VIEW_DESC CreateShaderResourceViewDesc() noexcept;
 		virtual D3D11_UNORDERED_ACCESS_VIEW_DESC CreateUnorderedAccessViewDesc() noexcept;
+
+	public:
 		virtual void InitializeBuffer(ID3D11Device* const device) override;
 	};
 }

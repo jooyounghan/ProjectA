@@ -6,27 +6,26 @@
 #include <DirectXMath.h>
 #include <memory>
 
+struct SParticle
+{
+	DirectX::XMFLOAT3 position;
+	float life;
+	DirectX::XMFLOAT3 velocity;
+	float mass;
+	DirectX::XMFLOAT3 accelerate;
+	UINT type;
+};
+
+struct SParticleSelector
+{
+	UINT index;
+	UINT type;
+	float zValue;
+	UINT dummy;
+};
 
 class CParticleEmitter : public IUpdatable
 {
-public:
-	struct SParticle
-	{
-		DirectX::XMFLOAT3 position;
-		DirectX::XMFLOAT3 velocity;
-		DirectX::XMFLOAT3 accelerate;
-		float life;
-		float mass;
-		float polar; 
-		// -1.f : N극 / 0.f 무극성 / 1.f S극으로 해서 polar1 * polar2로 인자간 작용 방향 설정
-	};
-
-	struct SParticleSelector
-	{
-		uint32_t index24type8;
-		float zValue;
-	};
-
 public:
 	CParticleEmitter(
 		UINT emitterID,
@@ -53,17 +52,23 @@ public:
 protected:
 	struct  
 	{
-		DirectX::XMVECTOR emitVelocity;
+		DirectX::XMMATRIX emitterWorldTransform;
+		DirectX::XMFLOAT3 emitVelocity;
 		UINT emitterID;
-		DirectX::XMFLOAT3 dummy;
+		UINT emitterType;
+		float particleMass;
+		UINT dummy[2];
 	} m_emitterPropertiesCPU;
-	std::unique_ptr<D3D11::CDynamicBuffer> m_emittorPropertiesGPU;
+	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterPropertiesGPU;
 	bool m_isEmitterPropertiesChanged;
+
+public:
+	inline ID3D11Buffer* GetEmitterPropertiesBuffer() const noexcept { return m_emitterPropertiesGPU->GetBuffer(); }
 
 public:
 	void SetEmitVelocity(const DirectX::XMVECTOR& emitVelocity) noexcept;
 	void SetEmitterID(UINT emitterID) noexcept;
-	inline const DirectX::XMVECTOR& GetEmitVelocity() const noexcept { return m_emitterPropertiesCPU.emitVelocity; }
+	inline const DirectX::XMFLOAT3& GetEmitVelocity() const noexcept { return m_emitterPropertiesCPU.emitVelocity; }
 	inline const UINT& GetEmitterID() const noexcept { return m_emitterPropertiesCPU.emitterID; }
 
 public:

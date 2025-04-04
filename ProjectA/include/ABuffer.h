@@ -32,7 +32,7 @@ namespace D3D11
 
 	public:
 		virtual D3D11_BUFFER_DESC CreateBufferDesc() noexcept = 0;
-		virtual void InitializeBuffer(ID3D11Device* const device);
+		virtual void InitializeBuffer(ID3D11Device* const device) = 0;
 	};
 }
 

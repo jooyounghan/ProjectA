@@ -1,13 +1,9 @@
 struct Particle
 {
-    float3 modelPos;
+    float3 worldPos;
     float life;
-};
-
-cbuffer SystemParams : register(b0)
-{
-    float dt;
-    float appWidth;
-    float appHeight;
-    float dummy;
+    float3 velocity;
+    float mass;
+    float3 accelerate;
+    uint type;
 };

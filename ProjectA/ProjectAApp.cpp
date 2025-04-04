@@ -109,32 +109,10 @@ void CProjectAApp::Init()
 #pragma endregion
 
 #pragma region 테스트 초기화
-
-#pragma region Emitter 그리기 관련 세이더 초기화
 	CParticleManager::InitializeEmitterDrawPSO(m_device);
-#pragma endregion
-
-
-#pragma region Particle 그리기 관련 세이더 초기화
-	//m_drawParticleVS.AddInputLayoutElement(
-	//	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	//);
-	//m_drawParticleVS.CreateShader(L"./ParticleDrawVS.hlsl", "main", "vs_5_0", m_device);
-	//m_drawParticleGS.CreateShader(L"./ParticleDrawGS.hlsl", "main", "gs_5_0", m_device);
-	//m_drawParticlePS.CreateShader(L"./ParticleDrawPS.hlsl", "main", "ps_5_0", m_device);
-
-	//m_drawParticlePSO = make_unique<CGraphicsPSOObject>(
-	//	&m_drawParticleVS,
-	//	nullptr,
-	//	nullptr,
-	//	&m_drawParticleGS,
-	//	&m_drawParticlePS,
-	//	CRasterizerState::GetRSSolidCWSS(),
-	//	CBlendState::GetBSAlphaBlendSS(),
-	//	CDepthStencilState::GetDSDraw(),
-	//	nullptr,
-	//	0
-	//);
+	CParticleManager::InitializePoolingPSO(m_device);
+	CParticleManager::InitializeEmitterSourcingPSO(m_device);
+	CParticleManager::InitializeParticleDrawPSO(m_device);
 #pragma endregion
 
 #pragma region 인스턴스 초기화
@@ -144,8 +122,35 @@ void CProjectAApp::Init()
 		m_width, m_height, 90.f, 0.01f, 100.000f
 		);
 
-	m_particleManager = make_unique<CParticleManager>(1000);
+	m_particleManager = make_unique<CParticleManager>(4, 1024 * 1024);
 
+	m_particleManager->AddParticleEmitter(
+		XMVectorSet(-4.f, 0.f, 10.f, 1.f),
+		XMVectorZero(),
+		XMVectorSet(3.f, 3.f, 0.f, 1.f),
+		m_device, m_deviceContext
+	);
+
+	m_particleManager->AddParticleEmitter(
+		XMVectorSet(0.f, 0.f, 14.f, 1.f),
+		XMVectorZero(),
+		XMVectorSet(0.f, 3.f, -3.f, 1.f),
+		m_device, m_deviceContext
+	);
+	
+	m_particleManager->AddParticleEmitter(
+		XMVectorSet(0.f, 0.f, 6.f, 1.f),
+		XMVectorZero(),
+		XMVectorSet(0.f, 3.f, 3.f, 1.f),
+		m_device, m_deviceContext
+	);
+
+	m_particleManager->AddParticleEmitter(
+		XMVectorSet(4.f, 0.f, 10.f, 1.f),
+		XMVectorZero(),
+		XMVectorSet(-3.f, 3.f, 0.f, 1.f),
+		m_device, m_deviceContext
+	);
 	m_updatables.emplace_back(m_camera.get());
 	m_updatables.emplace_back(m_particleManager.get());
 	for (auto& updatable : m_updatables)
@@ -187,20 +192,21 @@ void CProjectAApp::Update(float deltaTime)
 	m_deviceContext->RSSetViewports(1, &m_camera->GetViewport());
 #pragma endregion
 
-#pragma region Emitter 그리기
+#pragma region ParticleManager 메인 로직
 	m_particleManager->DrawEmittersDebugCube(m_camera->GetPropertiesBuffer(), m_deviceContext);
-#pragma endregion
 
-#pragma region Particle System
-	m_particleManager->PresetParticleSet();
-	m_particleManager->ActivateEmitter();
-	m_particleManager->DeframentPool();
-	m_particleManager->SimulateParticles();
-#pragma endregion
+	ID3D11Buffer* systemCbs = m_appParamsGPU.GetBuffer();
+	m_deviceContext->CSSetConstantBuffers(0, 1, &systemCbs);
+	m_particleManager->ExecuteParticleSystem(m_deviceContext);
 
-#pragma region Particle 그리기
-	m_particleManager->SortParticles();
-	m_particleManager->DrawParticles();
+	ID3D11Buffer* tempCbs[] = { m_appParamsGPU.GetBuffer(), m_camera->GetPropertiesBuffer() };
+	ID3D11Buffer* tempNullCbs[] = { nullptr, nullptr };
+	m_deviceContext->VSSetConstantBuffers(0, 2, tempCbs);
+	m_deviceContext->GSSetConstantBuffers(0, 2, tempCbs);
+	m_particleManager->DrawParticles(m_deviceContext);
+	m_deviceContext->VSSetConstantBuffers(0, 2, tempNullCbs);
+	m_deviceContext->GSSetConstantBuffers(0, 2, tempNullCbs);
+
 #pragma endregion
 
 #pragma region 카메라 -> 백버퍼 복사 및 UI 그리기
