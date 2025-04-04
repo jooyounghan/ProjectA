@@ -93,12 +93,7 @@ protected:
 	UINT m_maxParticleCount;
 	std::unique_ptr<D3D11::CStructuredBuffer> m_totalParticlePool;
 	std::unique_ptr<D3D11::CAppendBuffer> m_deathParticleSet;
-
-public:
-	inline ID3D11ShaderResourceView* GetTotalParticlePoolSRV() const noexcept { return m_totalParticlePool->GetSRV(); }
-	inline ID3D11UnorderedAccessView* GetTotalParticlePoolUAV() const noexcept { return m_totalParticlePool->GetUAV(); }
-	inline ID3D11ShaderResourceView* GetDeathParitcleSetSRV() const noexcept { m_deathParticleSet->GetSRV(); }
-	inline ID3D11UnorderedAccessView* GetDeathParitcleSetUAV() const noexcept { m_deathParticleSet->GetUAV(); }
+	std::unique_ptr<D3D11::CAppendBuffer> m_aliveParticleSet;
 
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;

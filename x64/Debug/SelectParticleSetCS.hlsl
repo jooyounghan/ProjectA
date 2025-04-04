@@ -1,16 +1,7 @@
 #include "ParticleCommon.hlsli"
 
-// Test
-cbuffer SystemParams : register(b0)
-{
-	float dt;
-	float appWidth;
-	float appHeight;
-	float dummy;
-};
-
-RWStructuredBuffer<Particle> totalParticlePool : register(u0);
-AppendStructuredBuffer<uint> deathParticleSet : register(u1);
+StructuredBuffer<Particle> totalParticlePool : register(t0);
+AppendStructuredBuffer<uint> deathParticleSet : register(u0);
 
 [numthreads(64, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
@@ -20,12 +11,5 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	if (currentParticle.life < 1E-3f)
 	{
 		deathParticleSet.Append(index);
-	}
-	else
-	{
-		currentParticle.worldPos += currentParticle.velocity * dt;
-		currentParticle.velocity += currentParticle.accelerate * dt;
-		currentParticle.life -= dt;
-		totalParticlePool[index] = currentParticle;
 	}
 }

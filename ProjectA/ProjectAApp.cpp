@@ -122,26 +122,11 @@ void CProjectAApp::Init()
 		m_width, m_height, 90.f, 0.01f, 100.000f
 		);
 
-	m_particleManager = make_unique<CParticleManager>(4, 1024 * 1024);
-
+	m_particleManager = make_unique<CParticleManager>(2, 1024 * 1024);
 	m_particleManager->AddParticleEmitter(
 		XMVectorSet(-4.f, 0.f, 10.f, 1.f),
 		XMVectorZero(),
 		XMVectorSet(3.f, 3.f, 0.f, 1.f),
-		m_device, m_deviceContext
-	);
-
-	m_particleManager->AddParticleEmitter(
-		XMVectorSet(0.f, 0.f, 14.f, 1.f),
-		XMVectorZero(),
-		XMVectorSet(0.f, 3.f, -3.f, 1.f),
-		m_device, m_deviceContext
-	);
-	
-	m_particleManager->AddParticleEmitter(
-		XMVectorSet(0.f, 0.f, 6.f, 1.f),
-		XMVectorZero(),
-		XMVectorSet(0.f, 3.f, 3.f, 1.f),
 		m_device, m_deviceContext
 	);
 
@@ -151,6 +136,8 @@ void CProjectAApp::Init()
 		XMVectorSet(-3.f, 3.f, 0.f, 1.f),
 		m_device, m_deviceContext
 	);
+
+
 	m_updatables.emplace_back(m_camera.get());
 	m_updatables.emplace_back(m_particleManager.get());
 	for (auto& updatable : m_updatables)
@@ -193,20 +180,24 @@ void CProjectAApp::Update(float deltaTime)
 #pragma endregion
 
 #pragma region ParticleManager 메인 로직
-	m_particleManager->DrawEmittersDebugCube(m_camera->GetPropertiesBuffer(), m_deviceContext);
+	ID3D11Buffer* singleNullCb = nullptr;
 
-	ID3D11Buffer* systemCbs = m_appParamsGPU.GetBuffer();
-	m_deviceContext->CSSetConstantBuffers(0, 1, &systemCbs);
-	m_particleManager->ExecuteParticleSystem(m_deviceContext);
+	ID3D11Buffer* cameraCb = m_camera->GetPropertiesBuffer();
+	m_deviceContext->VSSetConstantBuffers(0, 1, &cameraCb);
+		m_particleManager->DrawEmittersDebugCube(m_camera->GetPropertiesBuffer(), m_deviceContext);
+	m_deviceContext->VSSetConstantBuffers(0, 1, &singleNullCb);
 
-	ID3D11Buffer* tempCbs[] = { m_appParamsGPU.GetBuffer(), m_camera->GetPropertiesBuffer() };
-	ID3D11Buffer* tempNullCbs[] = { nullptr, nullptr };
-	m_deviceContext->VSSetConstantBuffers(0, 2, tempCbs);
-	m_deviceContext->GSSetConstantBuffers(0, 2, tempCbs);
-	m_particleManager->DrawParticles(m_deviceContext);
-	m_deviceContext->VSSetConstantBuffers(0, 2, tempNullCbs);
-	m_deviceContext->GSSetConstantBuffers(0, 2, tempNullCbs);
-
+	ID3D11Buffer* appParamsCb = m_appParamsGPU.GetBuffer();
+	m_deviceContext->CSSetConstantBuffers(0, 1, &appParamsCb);
+	m_deviceContext->GSSetConstantBuffers(0, 1, &appParamsCb);
+		m_particleManager->ExecuteParticleSystem(m_deviceContext);
+		m_deviceContext->VSSetConstantBuffers(1, 1, &cameraCb);
+		m_deviceContext->GSSetConstantBuffers(1, 1, &cameraCb);
+			m_particleManager->DrawParticles(m_deviceContext);
+		m_deviceContext->VSSetConstantBuffers(1, 1, &singleNullCb);
+		m_deviceContext->GSSetConstantBuffers(1, 1, &singleNullCb);
+	m_deviceContext->CSSetConstantBuffers(0, 1, &singleNullCb);
+	m_deviceContext->GSSetConstantBuffers(0, 1, &singleNullCb);
 #pragma endregion
 
 #pragma region 카메라 -> 백버퍼 복사 및 UI 그리기

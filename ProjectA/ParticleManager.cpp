@@ -202,8 +202,10 @@ void CParticleManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* dev
 
 	m_totalParticlePool = make_unique<CStructuredBuffer>(static_cast<UINT>(sizeof(SParticle)), m_maxParticleCount, nullptr);
 	m_deathParticleSet = make_unique<CAppendBuffer>(4, m_maxParticleCount, nullptr);
+	m_aliveParticleSet = make_unique<CAppendBuffer>(4, m_maxParticleCount, nullptr);
 	m_totalParticlePool->InitializeBuffer(device);
 	m_deathParticleSet->InitializeBuffer(device);
+	m_aliveParticleSet->InitializeBuffer(device);
 }
 
 void CParticleManager::Update(ID3D11DeviceContext* deviceContext, float dt)
@@ -259,46 +261,40 @@ void CParticleManager::ExecuteParticleSystem(ID3D11DeviceContext* deviceContext)
 
 void CParticleManager::PresetParticleSet(ID3D11DeviceContext* deviceContext)
 {
-	//ID3D11ShaderResourceView* selectSetSrv = m_totalParticlePool->GetSRV();
-	//ID3D11UnorderedAccessView* selectSetUav = m_deathParticleSet->GetUAV();
-	//ID3D11ShaderResourceView* selectSetNullSrv = nullptr;
-	//ID3D11UnorderedAccessView* selectSetNullUav = nullptr;
-
-	ID3D11UnorderedAccessView* selectSetUavs[] = { m_totalParticlePool->GetUAV(), m_deathParticleSet->GetUAV() };
+	ID3D11ShaderResourceView* selectSetSrv = m_totalParticlePool->GetSRV();
+	ID3D11UnorderedAccessView* selectSetUavs[] = { m_deathParticleSet->GetUAV(), m_aliveParticleSet->GetUAV() };
+	ID3D11ShaderResourceView* selectSetNullSrv = nullptr;
 	ID3D11UnorderedAccessView* selectSetNullUavs[] = { nullptr, nullptr };
 
-	//UINT initDeathParticleCount = 0;
-	UINT initDeathParticleCount[2] = { 0, 0 };
+	UINT initDeathParticleCount = 0;
 	GSelectParticleSetCS->SetShader(deviceContext);
 
-	//deviceContext->CSSetShaderResources(0, 1, &selectSetSrv);
-	//deviceContext->CSSetUnorderedAccessViews(0, 1, &selectSetUav, &initDeathParticleCount);
+	deviceContext->CSSetShaderResources(0, 1, &selectSetSrv);
+	deviceContext->CSSetUnorderedAccessViews(0, 2, selectSetUavs, &initDeathParticleCount);
 
-	deviceContext->CSSetUnorderedAccessViews(0, 2, selectSetUavs, initDeathParticleCount);
 	deviceContext->DispatchIndirect(m_particleDispatchBuffer->GetBuffer(), 0);
-	deviceContext->CSSetUnorderedAccessViews(0, 2, selectSetNullUavs, initDeathParticleCount);
 
-	//deviceContext->CSSetShaderResources(0, 1, &selectSetNullSrv);
-	//deviceContext->CSSetUnorderedAccessViews(0, 1, &selectSetNullUav, &initDeathParticleCount);
+	deviceContext->CSSetShaderResources(0, 1, &selectSetNullSrv);
+	deviceContext->CSSetUnorderedAccessViews(0, 2, selectSetNullUavs, &initDeathParticleCount);
 }
 
 void CParticleManager::ActivateEmitter(ID3D11DeviceContext* deviceContext)
 {
-	ID3D11UnorderedAccessView* selectSetUavs[] = { m_deathParticleSet->GetUAV(), m_totalParticlePool->GetUAV() };
-	ID3D11UnorderedAccessView* selectSetNullUavs[] = { nullptr, nullptr };
-	UINT initialValue[2] = { -1, NULL };
+	ID3D11UnorderedAccessView* selectSetUavs[] = { m_deathParticleSet->GetUAV(), m_aliveParticleSet->GetUAV(), m_totalParticlePool->GetUAV() };
+	ID3D11UnorderedAccessView* selectSetNullUavs[] = { nullptr, nullptr, nullptr };
+	UINT initialValue[3] = { static_cast<UINT>(-1), static_cast<UINT>(-1), NULL };
 	GParticleSourcingCS->SetShader(deviceContext);
 
-	deviceContext->CSSetUnorderedAccessViews(0, 2, selectSetUavs, initialValue);
+	deviceContext->CSSetUnorderedAccessViews(0, 3, selectSetUavs, initialValue);
 	for (auto& particleEmitter : m_particleEmitters)
 	{
 		ID3D11Buffer* emitterPropertiesBuffer = particleEmitter->GetEmitterPropertiesBuffer();
-		deviceContext->CSSetConstantBuffers(0, 1, &emitterPropertiesBuffer);
+		deviceContext->CSSetConstantBuffers(1, 1, &emitterPropertiesBuffer);
 		deviceContext->Dispatch(1, 1, 1);
 	}	
 	ID3D11Buffer* emitterPropertiesNullBuffer = nullptr;
-	deviceContext->CSSetConstantBuffers(0, 1, &emitterPropertiesNullBuffer);
-	deviceContext->CSSetUnorderedAccessViews(0, 2, selectSetNullUavs, nullptr);
+	deviceContext->CSSetConstantBuffers(1, 1, &emitterPropertiesNullBuffer);
+	deviceContext->CSSetUnorderedAccessViews(0, 3, selectSetNullUavs, nullptr);
 }
 
 void CParticleManager::DeframentPool(ID3D11DeviceContext* deviceContext)
