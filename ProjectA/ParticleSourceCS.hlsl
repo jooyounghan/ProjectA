@@ -1,8 +1,8 @@
-#include "ParticleCommon.hlsli"
+#include "ParticleSimulateCommon.hlsli"
 
-ConsumeStructuredBuffer<uint> deathParticleSet : register(u0);
-AppendStructuredBuffer<uint> aliveParticleSet : register(u1);
-RWStructuredBuffer<Particle> totalParticlePool : register(u2);
+RWStructuredBuffer<Particle> totalParticles : register(u1);
+RWStructuredBuffer<uint> aliveFlags : register(u2);
+ConsumeStructuredBuffer<uint> deathParticleSet : register(u3);
 
 cbuffer EmitterProperties : register(b1)
 {
@@ -24,12 +24,12 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	worldPos.xyz /= worldPos.w;
 
 	sourcedParticle.worldPos = worldPos.xyz;
-	sourcedParticle.life = 10.f;
+	sourcedParticle.life = 3.f;
 	sourcedParticle.velocity = mul(float4(emitVelocity, 0.f), toWorldTransformation).xyz;
 	sourcedParticle.mass = particleMass;
 	sourcedParticle.accelerate = float3(0.f, -9.8f, 0.f);
 	sourcedParticle.type = emitterType;
 
-	totalParticlePool[revivedIndex] = sourcedParticle;
-	aliveParticleSet.Append(revivedIndex);
+	totalParticles[revivedIndex] = sourcedParticle;
+    aliveFlags[revivedIndex] = 1;
 }

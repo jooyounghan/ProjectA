@@ -68,3 +68,13 @@ gantt
 	- Z 인덱스에 따라 순차적으로 그려지지 않을 경우 왜곡이 발생([Issue #1](https://github.com/jooyounghan/ProjectA/issues/1)로 관리)
 - ParticleManager 클래스 작성 중
 	- DrawIndexedInstanced를 바탕으로 Emitter 디버그 Cube 그리기 기능 
+
+### 25.04.04
+- AppendBuffer를 통한 SetD(죽은 파티클에 대한 세트) 구성 수행
+- 간단한 상황 예제 작성을 통하여 Set 구성, Sourcing, Simulation 수행(테스트 용으로 간이로 작성)
+
+### 25.04.05 ~ 25.04.06
+- 알고리즘 수정 정리
+	- 기존 알고리즘에서 Prefix Sum을 활용한 방법 추가
+	 ![Image](https://github.com/user-attachments/assets/985bf0b0-b258-494f-8fd2-41e8eaa46ec6)
+

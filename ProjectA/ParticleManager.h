@@ -84,16 +84,22 @@ public:
 #pragma endregion
 
 protected:
-	std::unique_ptr<D3D11::CStructuredBuffer> m_particleCountsGPU;
-
-protected:
-	std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DISPATCH_INDIRECT_ARGS>> m_particleDispatchBuffer;
-
-protected:
 	UINT m_maxParticleCount;
-	std::unique_ptr<D3D11::CStructuredBuffer> m_totalParticlePool;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_totalParticles;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_aliveFlags;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_prefixSums;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_indexBuffers;
 	std::unique_ptr<D3D11::CAppendBuffer> m_deathParticleSet;
-	std::unique_ptr<D3D11::CAppendBuffer> m_aliveParticleSet;
+
+protected:
+	std::unique_ptr<D3D11::CStructuredBuffer> m_particleCountsGPU;
+	/*
+	uint Pmax
+	uint Pcurrent
+	uint
+	uint
+	*/
+	std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DISPATCH_INDIRECT_ARGS>> m_particleDispatchBuffer;
 
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
@@ -105,22 +111,9 @@ public:
 	void DrawParticles(ID3D11DeviceContext* deviceContext);
 
 private:
-	void PresetParticleSet(ID3D11DeviceContext* deviceContext);
+	void SelectParticleSet(ID3D11DeviceContext* deviceContext);
 	void ActivateEmitter(ID3D11DeviceContext* deviceContext);
 	void DeframentPool(ID3D11DeviceContext* deviceContext);
 	void SimulateParticles(ID3D11DeviceContext* deviceContext);
 	void SortParticles(ID3D11DeviceContext* deviceContext);
-
-	// 전체적인 그림이 먼저 필요함
-	// A개의 Emiiter에서
-	// B개 종류의 파티클이 생성됨 (A = N_1(1번 종류) + N_2(2번 종류) + ... + N_B(B번 종류))
-	// 따라서 B개의 Sourcing, Simulating, Drawing 과정을 수행
-	// Emitter 별로 종류 B에 대한 세이더의 포인터 들을 들고 있거나
-	// 매니저가 전체적으로 수행...
-	// 
-	// 1. for (auto& emitter : m_emitters) emitter->SourceParticles(m_totalParticlePool, m_deathParticlePool); + 다형성(SparkEmitter, FireEmitter...)
-	// 와 같은 식으로 하거나 m_sourceCS->Dispatch()로 한번에 하고 내부에서 플래그를 보고 수행
-	// 
-	// 시뮬레이션에 사용될 Field는 어떻게 처리할 지 생각 필요..
 };
-

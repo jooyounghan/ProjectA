@@ -1,20 +1,28 @@
-#include "ParticleCommon.hlsli"
+#include "ParticleSimulateCommon.hlsli"
 
-StructuredBuffer<Particle> totalParticlePool : register(t0);
-AppendStructuredBuffer<uint> deathParticleSet : register(u0);
-AppendStructuredBuffer<uint> aliveParticleSet : register(u1);
+RWStructuredBuffer<Particle> totalParticles : register(u1);
+RWStructuredBuffer<uint> aliveFlags : register(u2);
+AppendStructuredBuffer<uint> deathParticleSet : register(u3);
 
 [numthreads(64, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
 {
 	uint index = DTid.x;
-	Particle currentParticle = totalParticlePool[index];
-	if (currentParticle.life < 1E-3f)
-	{
-		deathParticleSet.Append(index);
-	}
-	else
-	{
-		aliveParticleSet.Append(index);
-	}
+	if (index < Pmax)
+    {
+		Particle currentParticle = totalParticles[index];
+		
+        currentParticle.life -= dt;
+		if (currentParticle.life < 1E-3f)
+		{
+            deathParticleSet.Append(index);
+        }
+		else
+		{
+            currentParticle.velocity += currentParticle.accelerate * dt;
+            currentParticle.worldPos += currentParticle.velocity * dt;
+            aliveFlags[index] = 1;
+            totalParticles[index] = currentParticle;
+        }		
+    }
 }

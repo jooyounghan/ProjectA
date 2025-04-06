@@ -45,15 +45,6 @@
     <Filter Include="Shader\Particle\ParticleSimulation">
       <UniqueIdentifier>{20b98071-57f6-4f48-9361-28d155ba720b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shader\Particle\ParticlePooling">
-      <UniqueIdentifier>{fb361cb6-ade7-4ca7-ac42-e558ab5cfeb2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader\Particle\ParticlePooling\ParticleManager">
-      <UniqueIdentifier>{72d6b772-4d6a-43ed-89c5-b2329ea2c29e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader\Particle\ParticlePooling\ParticleEmitter">
-      <UniqueIdentifier>{094a9389-6ea8-4d79-98aa-b5c7113f7716}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -133,6 +124,9 @@
     <None Include="ParticleCommon.hlsli">
       <Filter>Shader\Particle</Filter>
     </None>
+    <None Include="ParticleSimulateCommon.hlsli">
+      <Filter>Shader\Particle\ParticleSimulation</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="EmitterDrawPS.hlsl">
@@ -154,13 +148,13 @@
       <Filter>Shader\Particle\ParticleSimulation</Filter>
     </FxCompile>
     <FxCompile Include="DefragmentPoolCS.hlsl">
-      <Filter>Shader\Particle\ParticlePooling\ParticleManager</Filter>
-    </FxCompile>
-    <FxCompile Include="SelectParticleSetCS.hlsl">
-      <Filter>Shader\Particle\ParticlePooling\ParticleManager</Filter>
+      <Filter>Shader\Particle\ParticleSimulation</Filter>
     </FxCompile>
     <FxCompile Include="ParticleSourceCS.hlsl">
-      <Filter>Shader\Particle\ParticlePooling\ParticleEmitter</Filter>
+      <Filter>Shader\Particle\ParticleSimulation</Filter>
+    </FxCompile>
+    <FxCompile Include="SelectParticleSetCS.hlsl">
+      <Filter>Shader\Particle\ParticleSimulation</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
