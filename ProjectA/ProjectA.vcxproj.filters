@@ -127,6 +127,9 @@
     <None Include="ParticleSimulateCommon.hlsli">
       <Filter>Shader\Particle\ParticleSimulation</Filter>
     </None>
+    <None Include="ScanCommon.hlsli">
+      <Filter>Shader\Particle\ParticleSimulation</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="EmitterDrawPS.hlsl">
@@ -154,6 +157,9 @@
       <Filter>Shader\Particle\ParticleSimulation</Filter>
     </FxCompile>
     <FxCompile Include="SelectParticleSetCS.hlsl">
+      <Filter>Shader\Particle\ParticleSimulation</Filter>
+    </FxCompile>
+    <FxCompile Include="CalculatePrefixSumCS.hlsl">
       <Filter>Shader\Particle\ParticleSimulation</Filter>
     </FxCompile>
   </ItemGroup>

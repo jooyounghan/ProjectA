@@ -62,7 +62,8 @@ public:
 
 #pragma region Particle 풀링 관련 PSO
 	static std::unique_ptr<D3D11::CComputeShader> GSelectParticleSetCS;
-	static std::unique_ptr<D3D11::CComputeShader> GDefragmenaPoolCS;
+	static std::unique_ptr<D3D11::CComputeShader> GCalculatePrefixSumCS;
+	//static std::unique_ptr<D3D11::CComputeShader> GDefragmenaPoolCS;
 	static void InitializePoolingPSO(ID3D11Device* device);
 #pragma endregion
 
@@ -113,7 +114,9 @@ public:
 private:
 	void SelectParticleSet(ID3D11DeviceContext* deviceContext);
 	void ActivateEmitter(ID3D11DeviceContext* deviceContext);
-	void DeframentPool(ID3D11DeviceContext* deviceContext);
-	void SimulateParticles(ID3D11DeviceContext* deviceContext);
-	void SortParticles(ID3D11DeviceContext* deviceContext);
+	void CalculatePrefixSum(ID3D11DeviceContext* deviceContext);
+
+	//void DeframentPool(ID3D11DeviceContext* deviceContext);
+	//void SimulateParticles(ID3D11DeviceContext* deviceContext);
+	//void SortParticles(ID3D11DeviceContext* deviceContext);
 };

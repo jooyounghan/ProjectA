@@ -15,7 +15,7 @@ cbuffer EmitterProperties : register(b1)
 };
 
 [numthreads(1, 1, 1)]
-void main( uint3 DTid : SV_DispatchThreadID )
+void main( )
 {
 	uint revivedIndex = deathParticleSet.Consume();
 
@@ -25,7 +25,10 @@ void main( uint3 DTid : SV_DispatchThreadID )
 
 	sourcedParticle.worldPos = worldPos.xyz;
 	sourcedParticle.life = 3.f;
-	sourcedParticle.velocity = mul(float4(emitVelocity, 0.f), toWorldTransformation).xyz;
+
+	float3 randomVelocity = float3(rand(float2(1.f / revivedIndex, dt)), rand(float2(2.f / revivedIndex, dt/ 2.f)), rand(float2(3.f / revivedIndex, dt / 3.f)));
+
+	sourcedParticle.velocity = mul(float4(emitVelocity + randomVelocity, 0.f), toWorldTransformation).xyz;
 	sourcedParticle.mass = particleMass;
 	sourcedParticle.accelerate = float3(0.f, -9.8f, 0.f);
 	sourcedParticle.type = emitterType;

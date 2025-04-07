@@ -75,12 +75,14 @@ void CParticleManager::InitializeEmitterDrawPSO(ID3D11Device* device)
 }
 
 unique_ptr<CComputeShader> CParticleManager::GSelectParticleSetCS = make_unique<CComputeShader>();
-unique_ptr<CComputeShader> CParticleManager::GDefragmenaPoolCS = make_unique<CComputeShader>();
+unique_ptr<CComputeShader> CParticleManager::GCalculatePrefixSumCS = make_unique<CComputeShader>();
+//unique_ptr<CComputeShader> CParticleManager::GDefragmenaPoolCS = make_unique<CComputeShader>();
 
 void CParticleManager::InitializePoolingPSO(ID3D11Device* device)
 {
 	GSelectParticleSetCS->CreateShader(L"./SelectParticleSetCS.hlsl", "main", "cs_5_0", device);
-	GDefragmenaPoolCS->CreateShader(L"./DefragmentPoolCS.hlsl", "main", "cs_5_0", device);
+	GCalculatePrefixSumCS->CreateShader(L"./CalculatePrefixSumCS.hlsl", "main", "cs_5_0", device);
+	//GDefragmenaPoolCS->CreateShader(L"./DefragmentPoolCS.hlsl", "main", "cs_5_0", device);
 }
 
 unique_ptr<CComputeShader> CParticleManager::GParticleSourcingCS = make_unique<CComputeShader>();
@@ -268,6 +270,7 @@ void CParticleManager::ExecuteParticleSystem(ID3D11DeviceContext* deviceContext)
 
 	SelectParticleSet(deviceContext);
 	ActivateEmitter(deviceContext);
+	CalculatePrefixSum(deviceContext);
 
 	deviceContext->CSSetUnorderedAccessViews(0, 1, &particleCountsNullUav, nullptr);
 }
@@ -306,17 +309,37 @@ void CParticleManager::ActivateEmitter(ID3D11DeviceContext* deviceContext)
 	deviceContext->CSSetUnorderedAccessViews(1, 3, selectSetNullUavs, nullptr);
 }
 
-void CParticleManager::DeframentPool(ID3D11DeviceContext* deviceContext)
+void CParticleManager::CalculatePrefixSum(ID3D11DeviceContext* deviceContext)
 {
+	ID3D11ShaderResourceView* aliveFlagsSrv[] = { m_aliveFlags->GetSRV() };
+	ID3D11UnorderedAccessView* prefixSumUav[] = { m_prefixSums->GetUAV() };
+	ID3D11ShaderResourceView* aliveFlagsNullSrv[] = { nullptr };
+	ID3D11UnorderedAccessView* prefixSumNullUav[] = { nullptr };
+
+	UINT initialValue = static_cast<UINT>(-1);
+
+	GCalculatePrefixSumCS->SetShader(deviceContext);
+
+	deviceContext->CSSetShaderResources(0, 1, aliveFlagsSrv);
+	deviceContext->CSSetUnorderedAccessViews(1, 1, prefixSumUav, &initialValue);
+
+	deviceContext->DispatchIndirect(m_particleDispatchBuffer->GetBuffer(), 0);
+
+	deviceContext->CSSetShaderResources(1, 1, aliveFlagsNullSrv);
+	deviceContext->CSSetUnorderedAccessViews(1, 1, prefixSumNullUav, nullptr);
 }
 
-void CParticleManager::SimulateParticles(ID3D11DeviceContext* deviceContext)
-{
-}
-
-void CParticleManager::SortParticles(ID3D11DeviceContext* deviceContext)
-{
-}
+//void CParticleManager::DeframentPool(ID3D11DeviceContext* deviceContext)
+//{
+//}
+//
+//void CParticleManager::SimulateParticles(ID3D11DeviceContext* deviceContext)
+//{
+//}
+//
+//void CParticleManager::SortParticles(ID3D11DeviceContext* deviceContext)
+//{
+//}
 
 void CParticleManager::DrawParticles(ID3D11DeviceContext* deviceContext)
 {
