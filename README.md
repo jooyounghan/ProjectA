@@ -37,7 +37,7 @@ gantt
 
 ### 25.04.02
 - Pooling 관련 자료 리서치 수행
-	- 자료 : Particle effect system for the needs of a modern video game using the GPU(Techland, 2016)
+	- 자료 : [Particle effect system for the needs of a modern video game using the GPU(Techland, 2016)](https://yadda.icm.edu.pl/baztech/element/bwmeta1.element.baztech-80fb5d33-b7e4-4e03-83d1-a6368816caa4/c/Particle_effect_.pdf)
 
 	- 내용
 		- Denotations
@@ -69,12 +69,27 @@ gantt
 - ParticleManager 클래스 작성 중
 	- DrawIndexedInstanced를 바탕으로 Emitter 디버그 Cube 그리기 기능 
 
-### 25.04.04
+### 25.04.04 ~ 25.04.06
 - AppendBuffer를 통한 SetD(죽은 파티클에 대한 세트) 구성 수행
 - 간단한 상황 예제 작성을 통하여 Set 구성, Sourcing, Simulation 수행(테스트 용으로 간이로 작성)
-
-### 25.04.05 ~ 25.04.06
 - 알고리즘 수정 정리
 	- 기존 알고리즘에서 Prefix Sum을 활용한 방법 추가
 	 ![Image](https://github.com/user-attachments/assets/985bf0b0-b258-494f-8fd2-41e8eaa46ec6)
 
+### 25.04.07
+- Prefix Sum 관련 알고리즘 정리
+	- 자료
+		1) [Single-pass Parallel Prefix Scan with Decoupled Look-back(NVidia, 2016)](https://research.nvidia.com/sites/default/files/pubs/2016-03_Single-pass-Parallel-Prefix/nvr-2016-002.pdf)
+		2) [Prefix Sums and Their Applications](https://www.cs.cmu.edu/~guyb/papers/Ble93.pdf)
+	- Prefix를 구하기 위해서는 블록 단위로 로컬 Prefix Sum을 계산하고, 이를 모든 블록에 대해 전파하여야한다. 후자의 방식에는 3가지가 존재한다.
+		1) Scan-Then-Propagate
+			각 블록 단위로 로컬 Prefix Sum을 계산하고, 각 블록은 이전 블록들의 합계를 참조하여 자신의 로컬 Prefix 합에 더함으로써 최종 결과를 얻는다.
+		2) Reduce-then-scan
+			각 블록 단위로 전체 합계(Reduction)을 계산하고 이를 별도의 버퍼에 저장한다.
+			이후 블록 단위 전체 합계가 저장된 버퍼에 대해 Prefix 합을 계산한다.
+			각 블록은 자신의 로컬 Prefix 합을 계산한 후, 블록 합계의 Prefix 합을 더하여 최종 글로벌 Prefix 합을 계산한다.
+		3) Chained-Scan
+			각 블록 단위로 로컬 Prefix Sum을 계산하되, 이전 블록의 프리픽스 값을 참조하여 자신의 결과에 더하므로 블록이 순차적으로 이전 블록을 기다려야한다.
+
+	- 이 프로젝트에서는 블록 단위 로컬 Prefix Sum을 계산하기 위하여 Blelloch 알고리즘을 채택하고, 모든 블록에 대한 전파를 위하여 Chained-Scan 방식을 활용하되, Decoupled Look-back 방식을 채택하여 효율성을 높인다.
+- 블록 단위 로컬 Prefix Sum 계산 알고리즘 구현 및 검증 수행

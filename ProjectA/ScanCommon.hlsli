@@ -4,6 +4,7 @@ StructuredBuffer<uint> aliveFlags : register(t0);
 RWStructuredBuffer<uint> prefixSums : register(u1);
 
 #define LocalThreadCount 64
+
 groupshared uint localPrefixSums[LocalThreadCount];
 
 void LocalUpSweep(uint groupThreadID, uint threadID)
