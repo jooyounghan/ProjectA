@@ -1,12 +1,24 @@
 #include "ScanCommon.hlsli"
 
 [numthreads(LocalThreadCount, 1, 1)]
-void main( uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID)
+void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID)
 {
+    uint groupID = Gid.x;
 	uint groupThreadID = GTid.x;
 	uint threadID = DTid.x;
-	LocalUpSweep(groupThreadID, threadID);
-	LocalDownSweep(groupThreadID, threadID);
+	
+    InitializePartitionDescriptor(groupID, groupThreadID);
+    DeviceMemoryBarrier();
+
+    LocalUpSweep(groupID, groupThreadID, threadID);
+    GroupMemoryBarrierWithGroupSync();
+
+    int exclusive = 0;
+    GetExclusivePrefixWithDecoupledLookback(groupID, groupThreadID, exclusive);
+    GroupMemoryBarrierWithGroupSync();
+
+    LocalDownSweep(groupID, groupThreadID, threadID, exclusive);
+    GroupMemoryBarrierWithGroupSync();
 }
 
 

@@ -85,10 +85,20 @@ public:
 #pragma endregion
 
 protected:
+	struct SPartitionDescriptor
+	{
+		int aggregate;
+		UINT statusFlag;
+		int inclusivePrefix;
+		int exclusivePrefix;
+	};
+
+protected:
 	UINT m_maxParticleCount;
 	std::unique_ptr<D3D11::CStructuredBuffer> m_totalParticles;
 	std::unique_ptr<D3D11::CStructuredBuffer> m_aliveFlags;
 	std::unique_ptr<D3D11::CStructuredBuffer> m_prefixSums;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_partitionDescriptors;
 	std::unique_ptr<D3D11::CStructuredBuffer> m_indexBuffers;
 	std::unique_ptr<D3D11::CAppendBuffer> m_deathParticleSet;
 
@@ -100,7 +110,7 @@ protected:
 	uint
 	uint
 	*/
-	std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DISPATCH_INDIRECT_ARGS>> m_particleDispatchBuffer;
+	//std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DISPATCH_INDIRECT_ARGS>> m_particleDispatchBuffer;
 
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;

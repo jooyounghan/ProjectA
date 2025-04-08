@@ -122,7 +122,7 @@ void CProjectAApp::Init()
 		m_width, m_height, 90.f, 0.01f, 100.000f
 		);
 
-	m_particleManager = make_unique<CParticleManager>(2, 1024 * 1024);
+	m_particleManager = make_unique<CParticleManager>(2, 1024);
 	m_particleManager->AddParticleEmitter(
 		XMVectorSet(-4.f, 0.f, 10.f, 1.f),
 		XMVectorZero(),
