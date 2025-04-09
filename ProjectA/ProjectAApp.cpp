@@ -122,7 +122,7 @@ void CProjectAApp::Init()
 		m_width, m_height, 90.f, 0.01f, 100000.000f
 		);
 
-	m_particleManager = make_unique<CParticleManager>(500, 1024 * 1024);
+	m_particleManager = make_unique<CParticleManager>(500, 2048 * 2048);
 
 	for (int x = -10; x < 10; ++x)
 	{
