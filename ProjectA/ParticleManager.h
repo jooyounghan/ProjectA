@@ -89,8 +89,8 @@ protected:
 	{
 		int aggregate;
 		UINT statusFlag;
-		int inclusivePrefix;
 		int exclusivePrefix;
+		int inclusivePrefix;
 	};
 
 protected:

@@ -81,15 +81,32 @@ gantt
 	- 자료
 		1) [Single-pass Parallel Prefix Scan with Decoupled Look-back(NVidia, 2016)](https://research.nvidia.com/sites/default/files/pubs/2016-03_Single-pass-Parallel-Prefix/nvr-2016-002.pdf)
 		2) [Prefix Sums and Their Applications](https://www.cs.cmu.edu/~guyb/papers/Ble93.pdf)
-	- Prefix를 구하기 위해서는 블록 단위로 로컬 Prefix Sum을 계산하고, 이를 모든 블록에 대해 전파하여야한다. 후자의 방식에는 3가지가 존재한다.
+	- Prefix를 구하기 위해서는 그룹 단위로 로컬 Prefix Sum을 계산하고, 이를 모든 그룹에 대해 전파하여야한다. 후자의 방식에는 3가지가 존재한다.
 		1) Scan-Then-Propagate
-			각 블록 단위로 로컬 Prefix Sum을 계산하고, 각 블록은 이전 블록들의 합계를 참조하여 자신의 로컬 Prefix 합에 더함으로써 최종 결과를 얻는다.
+			각 그룹 단위로 로컬 Prefix Sum을 계산하고, 각 그룹은 이전 그룹들의 합계를 참조하여 자신의 로컬 Prefix 합에 더함으로써 최종 결과를 얻는다.
 		2) Reduce-then-scan
-			각 블록 단위로 전체 합계(Reduction)을 계산하고 이를 별도의 버퍼에 저장한다.
-			이후 블록 단위 전체 합계가 저장된 버퍼에 대해 Prefix 합을 계산한다.
-			각 블록은 자신의 로컬 Prefix 합을 계산한 후, 블록 합계의 Prefix 합을 더하여 최종 글로벌 Prefix 합을 계산한다.
+			각 그룹 단위로 전체 합계(Reduction)을 계산하고 이를 별도의 버퍼에 저장한다.
+			이후 그룹 단위 전체 합계가 저장된 버퍼에 대해 Prefix 합을 계산한다.
+			각 그룹은 자신의 로컬 Prefix 합을 계산한 후, 그룹 합계의 Prefix 합을 더하여 최종 글로벌 Prefix 합을 계산한다.
 		3) Chained-Scan
-			각 블록 단위로 로컬 Prefix Sum을 계산하되, 이전 블록의 프리픽스 값을 참조하여 자신의 결과에 더하므로 블록이 순차적으로 이전 블록을 기다려야한다.
+			각 그룹 단위로 로컬 Prefix Sum을 계산하되, 이전 그룹의 Prefix 값을 참조하여 자신의 결과에 더하므로 순차적으로 이전 그룹을 기다려야한다.
 
-	- 이 프로젝트에서는 블록 단위 로컬 Prefix Sum을 계산하기 위하여 Blelloch 알고리즘을 채택하고, 모든 블록에 대한 전파를 위하여 Chained-Scan 방식을 활용하되, Decoupled Look-back 방식을 채택하여 효율성을 높인다.
-- 블록 단위 로컬 Prefix Sum 계산 알고리즘 구현 및 검증 수행
+	- 이 프로젝트에서는 그룹 단위 로컬 Prefix Sum을 계산하기 위하여 Blelloch 알고리즘을 채택하고, 모든 그룹에 대한 전파를 위하여 Chained-Scan 방식을 활용하되, Decoupled Look-back 방식을 채택하여 효율성을 높인다.
+- 그룹 단위 로컬 Prefix Sum 계산 알고리즘 구현 및 검증 수행
+
+### 25.04.08
+- Prefix Sum 알고리즘(Blelloch + Decoupled Look-Back) 구현 완료
+	- 스레드 그룹에 대한 상태 변수 설정
+		- 상태 X : 진행되지 않은 상태
+		- 상태 A : 해당 스레드 그룹의 로컬 Aggregate가 구해진 상태
+		- 상태 P : 해당 스레드 그룹의 Inclusive Prefix가 구해진 상태
+	- 알고리즘 구현
+		![Image](알고리즘 구현 그림 추가 예정)
+		1) Up-Sweep 과정을 통하여 i번째 스레드 그룹의 Aggregate(총합)을 구하고, i번째 스레드 그룹의 상태를 A로 변경한다. 이때 0번째 스레드 그룹의 경우, Aggregate를 Inclusive Prefix로 사용할 수 있으므로 상태를 P로 변경한다.
+		2) Decoupled - Lookback을 수행한다. i번째 스레드 그룹의 경우, i -1, i - 2, ... 0번째 스레드 그룹의 상태를 순차적으로 확인하고, m번째 스레드 그룹의 상태를 확인하였을 경우 아래와 같이 동작한다.
+			- 상태 X : Polling 대기 수행
+			- 상태 A : ExclusivePrefix$_{i}$ +=  Aggregate$_{m}$, continue Look-Back  
+			- 상태 P : ExclusivePrefix$_{i}$ +=  InclusivePrefix$_{m}$, break Look-Back 
+		3) i번째 스레드 그룹의 Look-Back을 마무리하면 상태를 P로 변경한다.
+		4)  Down-Sweep을 통하여 i번째 스레드 그룹에 대한 로컬 Prefix Sum을 계산하고, 이에 대해서 ExcluseivePrefix와 InclusivePrefix를 통하여 보정한다.
+		

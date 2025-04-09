@@ -119,23 +119,23 @@ void CProjectAApp::Init()
 	m_camera = make_unique<CCamera>(
 		XMVectorSet(0.f, 0.f, 0.f, 1.f),
 		XMVectorSet(0.f, 0.f, 0.f, 1.f),
-		m_width, m_height, 90.f, 0.01f, 100.000f
+		m_width, m_height, 90.f, 0.01f, 100000.000f
 		);
 
-	m_particleManager = make_unique<CParticleManager>(2, 1024);
-	m_particleManager->AddParticleEmitter(
-		XMVectorSet(-4.f, 0.f, 10.f, 1.f),
-		XMVectorZero(),
-		XMVectorSet(3.f, 3.f, 0.f, 1.f),
-		m_device, m_deviceContext
-	);
+	m_particleManager = make_unique<CParticleManager>(500, 1024 * 1024);
 
-	m_particleManager->AddParticleEmitter(
-		XMVectorSet(4.f, 0.f, 10.f, 1.f),
-		XMVectorZero(),
-		XMVectorSet(-3.f, 3.f, 0.f, 1.f),
-		m_device, m_deviceContext
-	);
+	for (int x = -10; x < 10; ++x)
+	{
+		for (int y = -10; y < 10; ++y)
+		{
+			m_particleManager->AddParticleEmitter(
+				XMVectorSet(4.f * x, 4.f * y, 50.f, 1.f),
+				XMVectorZero(),
+				XMVectorSet(3.f, 3.f, 0.f, 1.f),
+				m_device, m_deviceContext
+			);
+		}
+	}
 
 
 	m_updatables.emplace_back(m_camera.get());

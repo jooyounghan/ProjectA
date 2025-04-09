@@ -66,7 +66,7 @@ void CParticleEmitter::Update(ID3D11DeviceContext* deviceContext, float dt)
 {
 	//if (m_isThisWorldTransformChanged)
 	//{
-	m_angle = XMVectorAddAngles(m_angle, XMVectorSet(0.f, 15.f * dt, 0.f, 0.f));
+	m_angle = XMVectorAddAngles(m_angle, XMVectorSet(0.f, 5.f * dt, 0.f, 0.f));
 		m_emitterWorldTransform = XMMatrixAffineTransformation(
 			XMVectorSet(1.f, 1.f, 1.f, 0.f),
 			XMQuaternionIdentity(),

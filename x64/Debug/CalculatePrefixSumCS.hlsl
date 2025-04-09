@@ -1,5 +1,6 @@
 #include "ScanCommon.hlsli"
 
+
 [numthreads(LocalThreadCount, 1, 1)]
 void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID)
 {
@@ -13,11 +14,10 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
     LocalUpSweep(groupID, groupThreadID, threadID);
     GroupMemoryBarrierWithGroupSync();
 
-    int exclusive = 0;
-    GetExclusivePrefixWithDecoupledLookback(groupID, groupThreadID, exclusive);
+    DecoupledLookback(groupID, groupThreadID);
     GroupMemoryBarrierWithGroupSync();
 
-    LocalDownSweep(groupID, groupThreadID, threadID, exclusive);
+    LocalDownSweep(groupID, groupThreadID, threadID);
     GroupMemoryBarrierWithGroupSync();
 }
 

@@ -4,8 +4,8 @@ struct PartitionDescriptor
 {
     int     aggregate;
     uint    statusFlag; /* X : 0, A : 1, P : 2*/
+    int     exclusivePrefix;
     int     inclusivePrefix;
-    int     dummy;
 };
 
 StructuredBuffer<uint> aliveFlags : register(t0);
@@ -14,7 +14,7 @@ RWStructuredBuffer<PartitionDescriptor> partitionDescriptor : register(u2);
 
 #define LocalThreadCount 64
 
-groupshared uint localPrefixSums[LocalThreadCount];
+groupshared int localPrefixSums[LocalThreadCount];
 
 void InitializePartitionDescriptor(uint groupID, uint groupThreadID)
 {
@@ -59,12 +59,11 @@ void LocalUpSweep(uint groupID, uint groupThreadID, uint threadID)
     }
 }
 
-void GetExclusivePrefixWithDecoupledLookback(uint groupID, uint groupThreadID, out int exclusive)
+void DecoupledLookback(uint groupID, uint groupThreadID)
 {
     if (groupThreadID == 0 && groupID > 0)
     {
-        exclusive = 0;
-        bool terminateLookback = false;
+        uint exclusivePrefix = 0;
         
         for (int lookbackID = (groupID - 1); lookbackID >= 0; --lookbackID)
         {
@@ -79,21 +78,23 @@ void GetExclusivePrefixWithDecoupledLookback(uint groupID, uint groupThreadID, o
 
             if (currentStatus == 1)
             {
-                exclusive += partitionDescriptor[lookbackID].aggregate;
+                exclusivePrefix += partitionDescriptor[lookbackID].aggregate;
+                continue;
             }
             else if (currentStatus == 2)
             {
-                exclusive += partitionDescriptor[lookbackID].inclusivePrefix;
+                exclusivePrefix += partitionDescriptor[lookbackID].inclusivePrefix;
                 break;
             }
         }
         
-        partitionDescriptor[groupID].inclusivePrefix = partitionDescriptor[groupID].aggregate + exclusive;
+        partitionDescriptor[groupID].exclusivePrefix = exclusivePrefix;
+        partitionDescriptor[groupID].inclusivePrefix = partitionDescriptor[groupID].aggregate + exclusivePrefix;
         InterlockedCompareStore(partitionDescriptor[groupID].statusFlag, 1, 2);
     }
 }
 
-void LocalDownSweep(uint groupID, uint groupThreadID, uint threadID, uint exclusive)
+void LocalDownSweep(uint groupID, uint groupThreadID, uint threadID)
 {
     if (groupThreadID == (LocalThreadCount - 1))
     {
@@ -115,7 +116,7 @@ void LocalDownSweep(uint groupID, uint groupThreadID, uint threadID, uint exclus
 
     if (groupThreadID < (LocalThreadCount - 1))
     {
-        prefixSums[threadID] = localPrefixSums[groupThreadID + 1] + exclusive;        
+        prefixSums[threadID] = localPrefixSums[groupThreadID + 1] + partitionDescriptor[groupID].exclusivePrefix;
     }
     else
     {

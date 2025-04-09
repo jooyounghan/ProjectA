@@ -24,7 +24,7 @@ void main( )
 	worldPos.xyz /= worldPos.w;
 
 	sourcedParticle.worldPos = worldPos.xyz;
-	sourcedParticle.life = 3.f;
+	sourcedParticle.life = 6.f;
 
 	float3 randomVelocity = float3(rand(float2(1.f / revivedIndex, dt)), rand(float2(2.f / revivedIndex, dt/ 2.f)), rand(float2(3.f / revivedIndex, dt / 3.f)));
 
