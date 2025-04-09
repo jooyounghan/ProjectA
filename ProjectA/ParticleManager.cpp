@@ -137,7 +137,10 @@ UINT CParticleManager::AddParticleEmitter(
 	const DirectX::XMVECTOR& position, 
 	const DirectX::XMVECTOR& angle, 
 	const DirectX::XMVECTOR& emitVelocity,
-	ID3D11Device* device, ID3D11DeviceContext* deviceContext
+	const std::vector<SEmitTimeRate>& emitProfiles,
+	UINT emitterType,
+	ID3D11Device* device, 
+	ID3D11DeviceContext* deviceContext
 )
 {
 	if (!m_transformIndexQueue.empty())
@@ -146,8 +149,11 @@ UINT CParticleManager::AddParticleEmitter(
 		m_transformIndexQueue.pop();
 
 		m_particleEmitters.emplace_back(make_unique<CParticleEmitter>(
-			emitterID, m_isEmitterWorldTransformationChanged,
-			m_emitterWorldTransformCPU[emitterID], position, angle, emitVelocity
+			emitterID, emitterType, 
+			emitProfiles,
+			m_isEmitterWorldTransformationChanged,
+			m_emitterWorldTransformCPU[emitterID], 
+			position, angle, emitVelocity
 		));
 		m_particleEmitters.back()->Initialize(device, deviceContext);
 		return emitterID;
@@ -273,7 +279,7 @@ void CParticleManager::ExecuteParticleSystem(ID3D11DeviceContext* deviceContext)
 	deviceContext->CSSetUnorderedAccessViews(0, 1, &particleCountsUav, nullptr);
 
 	SelectParticleSet(deviceContext);
-	ActivateEmitter(deviceContext);
+	SourceEmitter(deviceContext);
 	CalculatePrefixSum(deviceContext);
 	GetCurrentIndices(deviceContext);
 	SortParticles(deviceContext);
@@ -296,7 +302,7 @@ void CParticleManager::SelectParticleSet(ID3D11DeviceContext* deviceContext)
 	deviceContext->CSSetUnorderedAccessViews(1, 3, selectSetNullUavs, initDeathParticleCount);
 }
 
-void CParticleManager::ActivateEmitter(ID3D11DeviceContext* deviceContext)
+void CParticleManager::SourceEmitter(ID3D11DeviceContext* deviceContext)
 {
 	ID3D11UnorderedAccessView* selectSetUavs[] = { m_totalParticles->GetUAV(), m_aliveFlags->GetUAV(), m_deathParticleSet->GetUAV() };
 	ID3D11UnorderedAccessView* selectSetNullUavs[] = { nullptr, nullptr, nullptr };
@@ -308,7 +314,7 @@ void CParticleManager::ActivateEmitter(ID3D11DeviceContext* deviceContext)
 	{
 		ID3D11Buffer* emitterPropertiesBuffer = particleEmitter->GetEmitterPropertiesBuffer();
 		deviceContext->CSSetConstantBuffers(1, 1, &emitterPropertiesBuffer);
-		deviceContext->Dispatch(1, 1, 1);
+		deviceContext->Dispatch(particleEmitter->GetCurrentEmitCount(), 1, 1);
 	}	
 	ID3D11Buffer* emitterPropertiesNullBuffer = nullptr;
 	deviceContext->CSSetConstantBuffers(1, 1, &emitterPropertiesNullBuffer);
@@ -357,6 +363,11 @@ void CParticleManager::GetCurrentIndices(ID3D11DeviceContext* deviceContext)
 
 void CParticleManager::SortParticles(ID3D11DeviceContext* deviceContext)
 {
+}
+
+void CParticleManager::SimulateParticles(ID3D11DeviceContext* deviceContext)
+{
+
 }
 
 void CParticleManager::DrawParticles(ID3D11DeviceContext* deviceContext)

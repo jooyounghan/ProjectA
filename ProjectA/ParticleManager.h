@@ -41,10 +41,16 @@ public:
 		const DirectX::XMVECTOR& position,
 		const DirectX::XMVECTOR& angle,
 		const DirectX::XMVECTOR& emitVelocity,
-		ID3D11Device* device, ID3D11DeviceContext* deviceContext
+		const std::vector<SEmitTimeRate>& emitProfiles,
+		UINT emitterType,
+		ID3D11Device* device, 
+		ID3D11DeviceContext* deviceContext
 
 	);
 	 void RemoveParticleEmitter(UINT emitterID);
+
+public:
+	 inline const std::vector<std::unique_ptr<CParticleEmitter>>& GetParticleEmitters() const noexcept { return m_particleEmitters; }
 #pragma endregion
 
 #pragma region Particle System ฐüทร PSO
@@ -121,8 +127,9 @@ public:
 
 private:
 	void SelectParticleSet(ID3D11DeviceContext* deviceContext);
-	void ActivateEmitter(ID3D11DeviceContext* deviceContext);
+	void SourceEmitter(ID3D11DeviceContext* deviceContext);
 	void CalculatePrefixSum(ID3D11DeviceContext* deviceContext);
 	void GetCurrentIndices(ID3D11DeviceContext* deviceContext);
 	void SortParticles(ID3D11DeviceContext* deviceContext);
+	void SimulateParticles(ID3D11DeviceContext* deviceContext);
 };

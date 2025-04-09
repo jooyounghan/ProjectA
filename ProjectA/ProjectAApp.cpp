@@ -20,12 +20,15 @@
 
 #include "Camera.h"
 #include "ParticleManager.h"
+
+#include <sstream>
 #pragma  endregion
 
 using namespace std;
 using namespace App;
 using namespace D3D11;
 using namespace DirectX;
+using namespace ImGui;
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
 	HWND hWnd,
@@ -90,10 +93,10 @@ void CProjectAApp::Init()
 #pragma region ImGui 초기화
 	IMGUI_CHECKVERSION();
 
-	ImGui::CreateContext();
-	ImGui::StyleColorsDark();
+	CreateContext();
+	StyleColorsDark();
 
-	ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO& io = GetIO();
 	io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\malgun.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesKorean());
 
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
@@ -104,8 +107,8 @@ void CProjectAApp::Init()
 	// ImGuiIO, Font Initializing
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
-	ImGui::EndFrame();
+	NewFrame();
+	EndFrame();
 #pragma endregion
 
 #pragma region 테스트 초기화
@@ -122,21 +125,16 @@ void CProjectAApp::Init()
 		m_width, m_height, 90.f, 0.01f, 100000.000f
 		);
 
-	m_particleManager = make_unique<CParticleManager>(500, 1024 * 2048);
-
-	for (int x = -10; x < 10; ++x)
-	{
-		for (int y = -10; y < 10; ++y)
-		{
-			m_particleManager->AddParticleEmitter(
-				XMVectorSet(4.f * x, 4.f * y, 50.f, 1.f),
-				XMVectorZero(),
-				XMVectorSet(3.f, 3.f, 0.f, 1.f),
-				m_device, m_deviceContext
-			);
-		}
-	}
-
+	m_particleManager = make_unique<CParticleManager>(500, 1024 * 1024);
+	
+	m_particleManager->AddParticleEmitter(
+		XMVectorSet(10.f, 0.f, 10.f, 1.f),
+		XMVectorSet(0.f, 0.f, -10.f, 1.f),
+		XMVectorSet(10.f, 0.f, 0.f, 1.f), 
+		vector<SEmitTimeRate>{
+			{0.f, 1}, { 5.f, 32 }, { 7.5f, 128 }, { 10.f, 32 }, { 15.f, 1 }},
+		0, m_device, m_deviceContext
+	);
 
 	m_updatables.emplace_back(m_camera.get());
 	m_updatables.emplace_back(m_particleManager.get());
@@ -207,7 +205,7 @@ void CProjectAApp::Update(float deltaTime)
 	DrawUI();
 #pragma endregion
 
-	HRESULT hResult = m_swapchain->Present(1, 0);
+	HRESULT hResult = m_swapchain->Present(0, 0);
 	if (FAILED(hResult)) throw exception("Present Failed");
 }
 
@@ -223,20 +221,67 @@ void CProjectAApp::DrawUI()
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 
-	ImGui::NewFrame();
+	NewFrame();
 
-	ImGui::Begin("System");
+	Begin("System");
 
-	ImGui::Text("Average %.3f ms/frame (%.1f FPS)",
-		1000.0f / ImGui::GetIO().Framerate,
-		ImGui::GetIO().Framerate);
+	Text("Average %.3f ms/frame (%.1f FPS)",
+		1000.0f / GetIO().Framerate,
+		GetIO().Framerate);
 
-	ImGui::End();
+	DrawEmitterHandler();
 
-	ImGui::Render();
-	ImGui::EndFrame();
+	End();
 
-	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	Render();
+	EndFrame();
+
+	ImGui_ImplDX11_RenderDrawData(GetDrawData());
+}
+
+void CProjectAApp::DrawEmitterHandler()
+{
+	constexpr int NotSelected = -1;
+	static int emitterIndex = -1;
+	const vector<unique_ptr<CParticleEmitter>>& particleEmitters = m_particleManager->GetParticleEmitters();
+
+	if (particleEmitters.size() > 0)
+	{
+		PushID("Emitter Handler");
+
+		ostringstream emitterName;
+		emitterName << "Emitter " << emitterIndex;
+		if (BeginCombo("Select Emitter", emitterIndex == NotSelected ? "Choose Emitter" : emitterName.str().c_str(), NULL))
+		{
+			for (int idx = 0; idx < particleEmitters.size(); idx++)
+			{
+				ostringstream emitterNamei;
+				emitterNamei << "Emitter " << idx;
+				const bool isSelected = (idx == emitterIndex);
+				if (Selectable(emitterNamei.str().c_str(), isSelected))
+				{
+					emitterIndex = idx;
+				}
+
+				if (isSelected)
+					SetItemDefaultFocus();
+			}
+			EndCombo();
+		}
+		PopID();
+	}
+
+	if (emitterIndex >= 0)
+	{
+		CParticleEmitter* emitter = particleEmitters[emitterIndex].get();
+		XMVECTOR emitterPos = emitter->GetPosition();
+		XMVECTOR emitterAngle = emitter->GetAngle();
+		XMVECTOR emitterVelocity = XMLoadFloat3(&emitter->GetEmitVelocity());
+
+		if (DragFloat3("Emitter Position", emitterPos.m128_f32, 0.1f, -100.f, 100.f)) emitter->SetPosition(emitterPos);
+		if (DragFloat3("Emitter Angle", emitterAngle.m128_f32, 0.1f, -360.f, 360.f)) emitter->SetAngle(emitterAngle);
+		if (DragFloat3("Emitter Velocity", emitterVelocity.m128_f32, 0.1f, 0.f, 100.f)) emitter->SetEmitVelocity(emitterVelocity);
+	}
 }
 
 void CProjectAApp::AppProcImpl(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)

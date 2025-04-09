@@ -80,5 +80,8 @@ private:
 	D3D11::CGeometryShader m_drawParticleGS;
 	D3D11::CPixelShader m_drawParticlePS;
 	std::unique_ptr<D3D11::CGraphicsPSOObject> m_drawParticlePSO;
+
+public:
+	void DrawEmitterHandler();
 #pragma endregion
 };

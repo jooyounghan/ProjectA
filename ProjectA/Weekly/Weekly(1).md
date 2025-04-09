@@ -25,9 +25,10 @@ gantt
 	dateFormat MM-DD
 	axisFormat %m-%d
     Particle Manager :a, 04-09, 04-15
-    파티클 정렬 :b, 04-09, 04-13
-    Emitter 타입 특수화 :c, 04-11, 04-15
+    Emitter 특수화 :b, 04-09, 04-14
+    Emitter 기본 렌더링 :c, 04-12, 04-15
 ```
 	- 프로젝트 예정사항
-		- Radix Sort를 활용하여 Index Buffer를 Depth 기준 정렬 수행
-		- Emitter Type에 따른 시뮬레이션 / 기본 렌더링 특수화 수행
+		- Emitter Type에 따른 시뮬레이션 / 기본 렌더링 수행
+			* Emitter Type 0 : 스파크
+			* Emitter Type 1 : 에너지 영역

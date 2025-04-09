@@ -21,6 +21,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		{
             currentParticle.velocity += currentParticle.accelerate * dt;
             currentParticle.worldPos += currentParticle.velocity * dt;
+
             aliveFlags[index] = 1;
             totalParticles[index] = currentParticle;
         }		
