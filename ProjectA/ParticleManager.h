@@ -24,12 +24,12 @@ namespace D3D11
 class CParticleManager : public IUpdatable
 {
 public:
-	CParticleManager(UINT maxEmitterCount, UINT maxParticleCount);
+	CParticleManager(UINT emitterMaxCount, UINT particleMaxCount);
 	~CParticleManager() = default;
 
 #pragma region Emitter 멤버 변수 / 함수
 protected:
-	UINT m_maxEmitterCount;
+	UINT m_emitterMaxCount;
 	std::queue<UINT> m_transformIndexQueue;
 	std::vector<std::unique_ptr<CParticleEmitter>> m_particleEmitters;
 	std::vector<DirectX::XMMATRIX> m_emitterWorldTransformCPU;
@@ -63,6 +63,7 @@ public:
 #pragma region Particle 풀링 관련 PSO
 	static std::unique_ptr<D3D11::CComputeShader> GSelectParticleSetCS;
 	static std::unique_ptr<D3D11::CComputeShader> GCalculatePrefixSumCS;
+	static std::unique_ptr<D3D11::CComputeShader> GUpdateCurrentIndicesCS;
 	//static std::unique_ptr<D3D11::CComputeShader> GDefragmenaPoolCS;
 	static void InitializePoolingPSO(ID3D11Device* device);
 #pragma endregion
@@ -94,23 +95,20 @@ protected:
 	};
 
 protected:
-	UINT m_maxParticleCount;
+	UINT m_particleMaxCount;
 	std::unique_ptr<D3D11::CStructuredBuffer> m_totalParticles;
 	std::unique_ptr<D3D11::CStructuredBuffer> m_aliveFlags;
 	std::unique_ptr<D3D11::CStructuredBuffer> m_prefixSums;
 	std::unique_ptr<D3D11::CStructuredBuffer> m_partitionDescriptors;
-	std::unique_ptr<D3D11::CStructuredBuffer> m_indexBuffers;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_indicesBuffers;
 	std::unique_ptr<D3D11::CAppendBuffer> m_deathParticleSet;
 
+public:
+	inline const UINT& GetParticleMaxCount() const noexcept { return m_particleMaxCount; };
+
 protected:
-	std::unique_ptr<D3D11::CStructuredBuffer> m_particleCountsGPU;
-	/*
-	uint Pmax
-	uint Pcurrent
-	uint
-	uint
-	*/
-	//std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DISPATCH_INDIRECT_ARGS>> m_particleDispatchBuffer;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_particleDrawIndirectStagingGPU;
+	std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DRAW_INSTANCED_INDIRECT_ARGS>> m_particleDrawIndirectBuffer;
 
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
@@ -125,7 +123,7 @@ private:
 	void SelectParticleSet(ID3D11DeviceContext* deviceContext);
 	void ActivateEmitter(ID3D11DeviceContext* deviceContext);
 	void CalculatePrefixSum(ID3D11DeviceContext* deviceContext);
-
+	void GetCurrentIndices(ID3D11DeviceContext* deviceContext);
 	//void DeframentPool(ID3D11DeviceContext* deviceContext);
 	//void SimulateParticles(ID3D11DeviceContext* deviceContext);
 	//void SortParticles(ID3D11DeviceContext* deviceContext);

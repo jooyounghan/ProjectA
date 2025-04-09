@@ -14,7 +14,7 @@ cbuffer EmitterProperties : register(b1)
 	uint emitterDummy[2];
 };
 
-[numthreads(64, 1, 1)]
+[numthreads(16, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
 	float threadID = DTid.x;

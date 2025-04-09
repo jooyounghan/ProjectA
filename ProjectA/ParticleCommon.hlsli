@@ -1,3 +1,5 @@
+#define LocalThreadCount 64
+
 struct Particle
 {
     float3 worldPos;
@@ -13,5 +15,5 @@ cbuffer AppParams : register(b0)
     float dt;
     float appWidth;
     float appHeight;
-    float appDummy;
+    uint particleMaxCount;
 };

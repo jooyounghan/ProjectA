@@ -25,3 +25,4 @@ cbuffer CameraViewProj : register(b1)
 };
 
 StructuredBuffer<Particle> particles : register(t0);
+StructuredBuffer<uint> currentIndices : register(t1);

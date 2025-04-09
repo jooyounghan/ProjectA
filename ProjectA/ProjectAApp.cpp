@@ -122,7 +122,7 @@ void CProjectAApp::Init()
 		m_width, m_height, 90.f, 0.01f, 100000.000f
 		);
 
-	m_particleManager = make_unique<CParticleManager>(500, 2048 * 2048);
+	m_particleManager = make_unique<CParticleManager>(500, 1024 * 2048);
 
 	for (int x = -10; x < 10; ++x)
 	{
@@ -157,6 +157,7 @@ void CProjectAApp::Update(float deltaTime)
 	m_appParamsCPU.dt = deltaTime;
 	m_appParamsCPU.appWidth = static_cast<float>(m_width);
 	m_appParamsCPU.appHeight = static_cast<float>(m_height);
+	m_appParamsCPU.particleMaxCount = m_particleManager->GetParticleMaxCount();
 	m_appParamsGPU.Stage(m_deviceContext);
 	m_appParamsGPU.Upload(m_deviceContext);
 #pragma endregion

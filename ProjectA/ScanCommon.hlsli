@@ -12,8 +12,6 @@ StructuredBuffer<uint> aliveFlags : register(t0);
 RWStructuredBuffer<uint> prefixSums : register(u1);
 RWStructuredBuffer<PartitionDescriptor> partitionDescriptor : register(u2);
 
-#define LocalThreadCount 64
-
 groupshared int localPrefixSums[LocalThreadCount];
 
 void InitializePartitionDescriptor(uint groupID, uint groupThreadID)
@@ -23,6 +21,7 @@ void InitializePartitionDescriptor(uint groupID, uint groupThreadID)
         PartitionDescriptor pd = partitionDescriptor[groupID];
         pd.aggregate = 0;
         pd.statusFlag = 0;
+        pd.exclusivePrefix = 0;
         pd.inclusivePrefix = 0;
         partitionDescriptor[groupID] = pd;
     }

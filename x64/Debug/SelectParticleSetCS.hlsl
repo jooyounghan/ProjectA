@@ -8,7 +8,7 @@ AppendStructuredBuffer<uint> deathParticleSet : register(u3);
 void main( uint3 DTid : SV_DispatchThreadID )
 {
 	uint index = DTid.x;
-	if (index < Pmax)
+	if (index < particleMaxCount)
     {
 		Particle currentParticle = totalParticles[index];
 		

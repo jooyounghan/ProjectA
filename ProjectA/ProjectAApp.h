@@ -67,7 +67,7 @@ private:
 		float dt;
 		float appWidth;
 		float appHeight;
-		float dummy;
+		UINT particleMaxCount;
 	} m_appParamsCPU;
 	D3D11::CDynamicBuffer m_appParamsGPU;
 

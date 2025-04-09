@@ -4,11 +4,11 @@ RWStructuredBuffer<Particle> totalParticles : register(u1);
 RWStructuredBuffer<uint> aliveFlags : register(u2);
 AppendStructuredBuffer<uint> deathParticleSet : register(u3);
 
-[numthreads(64, 1, 1)]
+[numthreads(LocalThreadCount, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
 {
 	uint index = DTid.x;
-	if (index < Pmax)
+	if (index < particleMaxCount)
     {
 		Particle currentParticle = totalParticles[index];
 		

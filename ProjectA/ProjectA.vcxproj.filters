@@ -162,5 +162,8 @@
     <FxCompile Include="CalculatePrefixSumCS.hlsl">
       <Filter>Shader\Particle\ParticleSimulation</Filter>
     </FxCompile>
+    <FxCompile Include="UpdateCurrentIndicesCS.hlsl">
+      <Filter>Shader\Particle\ParticleSimulation</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

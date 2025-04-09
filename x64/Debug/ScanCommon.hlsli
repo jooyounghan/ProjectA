@@ -23,6 +23,7 @@ void InitializePartitionDescriptor(uint groupID, uint groupThreadID)
         PartitionDescriptor pd = partitionDescriptor[groupID];
         pd.aggregate = 0;
         pd.statusFlag = 0;
+        pd.exclusivePrefix = 0;
         pd.inclusivePrefix = 0;
         partitionDescriptor[groupID] = pd;
     }
