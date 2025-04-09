@@ -276,7 +276,7 @@ void CParticleManager::ExecuteParticleSystem(ID3D11DeviceContext* deviceContext)
 	ActivateEmitter(deviceContext);
 	CalculatePrefixSum(deviceContext);
 	GetCurrentIndices(deviceContext);
-
+	SortParticles(deviceContext);
 
 	deviceContext->CSSetUnorderedAccessViews(0, 1, &particleCountsNullUav, nullptr);
 }
@@ -355,17 +355,9 @@ void CParticleManager::GetCurrentIndices(ID3D11DeviceContext* deviceContext)
 	deviceContext->CSSetUnorderedAccessViews(1, 1, currentIndicesNullUav, nullptr);
 }
 
-//void CParticleManager::DeframentPool(ID3D11DeviceContext* deviceContext)
-//{
-//}
-//
-//void CParticleManager::SimulateParticles(ID3D11DeviceContext* deviceContext)
-//{
-//}
-//
-//void CParticleManager::SortParticles(ID3D11DeviceContext* deviceContext)
-//{
-//}
+void CParticleManager::SortParticles(ID3D11DeviceContext* deviceContext)
+{
+}
 
 void CParticleManager::DrawParticles(ID3D11DeviceContext* deviceContext)
 {

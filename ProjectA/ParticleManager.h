@@ -124,7 +124,5 @@ private:
 	void ActivateEmitter(ID3D11DeviceContext* deviceContext);
 	void CalculatePrefixSum(ID3D11DeviceContext* deviceContext);
 	void GetCurrentIndices(ID3D11DeviceContext* deviceContext);
-	//void DeframentPool(ID3D11DeviceContext* deviceContext);
-	//void SimulateParticles(ID3D11DeviceContext* deviceContext);
-	//void SortParticles(ID3D11DeviceContext* deviceContext);
+	void SortParticles(ID3D11DeviceContext* deviceContext);
 };

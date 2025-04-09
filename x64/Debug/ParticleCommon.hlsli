@@ -1,3 +1,5 @@
+#define LocalThreadCount 64
+
 struct Particle
 {
     float3 worldPos;

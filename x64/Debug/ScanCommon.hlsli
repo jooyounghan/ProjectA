@@ -12,14 +12,18 @@ StructuredBuffer<uint> aliveFlags : register(t0);
 RWStructuredBuffer<uint> prefixSums : register(u1);
 RWStructuredBuffer<PartitionDescriptor> partitionDescriptor : register(u2);
 
-#define LocalThreadCount 64
-
 groupshared int localPrefixSums[LocalThreadCount];
 
 void InitializePartitionDescriptor(uint groupID, uint groupThreadID)
 {
     if (groupThreadID == 0)
     {
+        if (groupID == 0)
+        {
+            Pcurrent = 0;
+            InstanceCount = 1;
+        };
+
         PartitionDescriptor pd = partitionDescriptor[groupID];
         pd.aggregate = 0;
         pd.statusFlag = 0;
@@ -47,7 +51,12 @@ void LocalUpSweep(uint groupID, uint groupThreadID, uint threadID)
     
     if (groupThreadID == 0)
     {
-        partitionDescriptor[groupID].aggregate = localPrefixSums[LocalThreadCount - 1];
+        int aggregate = localPrefixSums[LocalThreadCount - 1];
+
+        partitionDescriptor[groupID].aggregate = aggregate;
+        uint Plast;
+        InterlockedAdd(Pcurrent, aggregate, Plast);
+
         if (groupID == 0)
         {
             partitionDescriptor[groupID].inclusivePrefix = partitionDescriptor[groupID].aggregate;

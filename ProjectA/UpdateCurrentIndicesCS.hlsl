@@ -11,20 +11,11 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
 	uint groupThreadID = GTid.x;
 	uint index = DTid.x;
 
-	if (groupID == 0 && groupThreadID == 0)
-	{
-		Pcurrent = 0;
-		InstanceCount = 1;
-	}
-	DeviceMemoryBarrier();
-
 	if (index < particleMaxCount)
 	{
 		if (aliveFlags[index])
 		{
 			currnetIndices[prefixSums[index] - 1] = index;
-			uint Plast;
-			InterlockedAdd(Pcurrent, 1, Plast);
 		}
 	}
 }

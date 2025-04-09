@@ -56,8 +56,8 @@ protected:
 		DirectX::XMFLOAT3 emitVelocity;
 		UINT emitterID;
 		UINT emitterType;
-		float particleMass;
-		UINT dummy[2];
+		float particleDensity;
+		UINT dummy[3];
 	} m_emitterPropertiesCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterPropertiesGPU;
 	bool m_isEmitterPropertiesChanged;
