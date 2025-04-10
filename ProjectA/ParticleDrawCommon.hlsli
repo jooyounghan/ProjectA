@@ -2,7 +2,8 @@
 
 struct ParticleVSOut
 {
-    float4 viewPos : POSITION;
+    float4 viewPos : POSITION0;
+    float3 worldPos : POSITION1;
     float life : LIFE;
 };
 
@@ -22,6 +23,7 @@ float smoothstep(float edge0, float edge1, float x)
 cbuffer CameraViewProj : register(b1)
 {
     matrix viewProjMatrix;
+    matrix invTransposeViewMatrix;
 };
 
 StructuredBuffer<Particle> particles : register(t0);

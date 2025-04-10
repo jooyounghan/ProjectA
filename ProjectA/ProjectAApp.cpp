@@ -24,11 +24,14 @@
 #include <sstream>
 #pragma  endregion
 
+#pragma execution_character_set("utf-8")
+
 using namespace std;
 using namespace App;
 using namespace D3D11;
 using namespace DirectX;
 using namespace ImGui;
+
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
 	HWND hWnd,
@@ -128,12 +131,10 @@ void CProjectAApp::Init()
 	m_particleManager = make_unique<CParticleManager>(500, 1024 * 1024);
 	
 	m_particleManager->AddParticleEmitter(
-		XMVectorSet(10.f, 0.f, 10.f, 1.f),
-		XMVectorSet(0.f, 0.f, -10.f, 1.f),
-		XMVectorSet(10.f, 0.f, 0.f, 1.f), 
-		vector<SEmitTimeRate>{
-			{0.f, 1}, { 5.f, 32 }, { 7.5f, 128 }, { 10.f, 32 }, { 15.f, 1 }},
-		0, m_device, m_deviceContext
+		0 /* Emitter Type */,
+		XMVectorSet(0.f, 0.f, 2.f, 1.f),
+		XMVectorSet(0.f, 0.f, 0.f, 1.f),
+		m_device, m_deviceContext
 	);
 
 	m_updatables.emplace_back(m_camera.get());
@@ -192,9 +193,11 @@ void CProjectAApp::Update(float deltaTime)
 		m_particleManager->ExecuteParticleSystem(m_deviceContext);
 		m_deviceContext->VSSetConstantBuffers(1, 1, &cameraCb);
 		m_deviceContext->GSSetConstantBuffers(1, 1, &cameraCb);
+		m_deviceContext->PSSetConstantBuffers(1, 1, &cameraCb);
 			m_particleManager->DrawParticles(m_deviceContext);
 		m_deviceContext->VSSetConstantBuffers(1, 1, &singleNullCb);
 		m_deviceContext->GSSetConstantBuffers(1, 1, &singleNullCb);
+		m_deviceContext->PSSetConstantBuffers(1, 1, &singleNullCb);
 	m_deviceContext->CSSetConstantBuffers(0, 1, &singleNullCb);
 	m_deviceContext->GSSetConstantBuffers(0, 1, &singleNullCb);
 #pragma endregion
@@ -274,13 +277,43 @@ void CProjectAApp::DrawEmitterHandler()
 	if (emitterIndex >= 0)
 	{
 		CParticleEmitter* emitter = particleEmitters[emitterIndex].get();
+		CParticleSpawnProperty* emitterProperty = emitter->GetParticleSpawnProperty();
+		
+		ImGui::SeparatorText("위치 / 자세");
 		XMVECTOR emitterPos = emitter->GetPosition();
 		XMVECTOR emitterAngle = emitter->GetAngle();
-		XMVECTOR emitterVelocity = XMLoadFloat3(&emitter->GetEmitVelocity());
-
 		if (DragFloat3("Emitter Position", emitterPos.m128_f32, 0.1f, -100.f, 100.f)) emitter->SetPosition(emitterPos);
 		if (DragFloat3("Emitter Angle", emitterAngle.m128_f32, 0.1f, -360.f, 360.f)) emitter->SetAngle(emitterAngle);
-		if (DragFloat3("Emitter Velocity", emitterVelocity.m128_f32, 0.1f, 0.f, 100.f)) emitter->SetEmitVelocity(emitterVelocity);
+
+		ImGui::SeparatorText("Emitter 입자 밀도");
+		float particleDensity = emitter->GetParticleDensity();
+		if (DragFloat("입자 밀도", &particleDensity, 0.001f, 0.f, 2.f)) emitter->SetParticleDensity(particleDensity);
+
+
+		ImGui::SeparatorText("Emitter 입자 방출 각");
+		bool isMinEmitAngleChanged = false;
+		bool isMaxEmitAngleChanged = false;
+		XMFLOAT2 minEmitRadians = emitterProperty->GetMinEmitRadians();
+		XMFLOAT2 maxEmitRadians = emitterProperty->GetMaxEmitRadians();
+		minEmitRadians.x *= (360.f / XM_2PI);
+		minEmitRadians.y *= (360.f / XM_2PI);
+		maxEmitRadians.x *= (360.f / XM_2PI);
+		maxEmitRadians.y *= (360.f / XM_2PI);
+		if (DragFloat("방출 최소 각(a)", &minEmitRadians.x, 0.1f, 0.f, 360.f)) isMinEmitAngleChanged = true;
+		if (DragFloat("방출 최소 각(b)", &minEmitRadians.y, 0.1f, 0.f, 360.f)) isMinEmitAngleChanged = true;
+		if (DragFloat("방출 최대 각(a)", &maxEmitRadians.x, 0.1f, minEmitRadians.x, 360.f)) isMaxEmitAngleChanged = true;
+		if (DragFloat("방출 최대 각(b)", &maxEmitRadians.y, 0.1f, minEmitRadians.y, 360.f)) isMaxEmitAngleChanged = true;
+		minEmitRadians.x *= (XM_2PI / 360.f);
+		minEmitRadians.y *= (XM_2PI / 360.f);
+		maxEmitRadians.x *= (XM_2PI / 360.f);
+		maxEmitRadians.y *= (XM_2PI / 360.f);
+
+		if (isMinEmitAngleChanged) emitterProperty->SetMinEmitRadians(minEmitRadians);
+		if (isMaxEmitAngleChanged) emitterProperty->SetMaxEmitRadians(maxEmitRadians);
+
+		ImGui::SeparatorText("Emitter 입자 방출 속력");
+		float emitSpeed = emitterProperty->GetEmitSpeed();
+		if (DragFloat("방출 속도", &emitSpeed, 0.1f, 0.f, 100.f)) emitterProperty->SetEmitSpeed(emitSpeed);
 	}
 }
 

@@ -87,11 +87,13 @@ void CParticleManager::InitializePoolingPSO(ID3D11Device* device)
 	GUpdateCurrentIndicesCS->CreateShader(L"./UpdateCurrentIndicesCS.hlsl", "main", "cs_5_0", device);
 }
 
-unique_ptr<CComputeShader> CParticleManager::GParticleSourcingCS = make_unique<CComputeShader>();
+unique_ptr<CComputeShader> CParticleManager::GParticleInitialSourceCS = make_unique<CComputeShader>();
+unique_ptr<CComputeShader> CParticleManager::GParticleRuntimeSourceCS = make_unique<CComputeShader>();
 
 void CParticleManager::InitializeEmitterSourcingPSO(ID3D11Device* device)
 {
-	GParticleSourcingCS->CreateShader(L"./ParticleSourceCS.hlsl", "main", "cs_5_0", device);
+	GParticleInitialSourceCS->CreateShader(L"./ParticleInitialSourceCS.hlsl", "main", "cs_5_0", device);
+	GParticleRuntimeSourceCS->CreateShader(L"./ParticleRuntimeSourceCS.hlsl", "main", "cs_5_0", device);
 }
 
 unique_ptr<CVertexShader> CParticleManager::GParticleDrawVS = make_unique<CVertexShader>(0);
@@ -134,11 +136,9 @@ CParticleManager::CParticleManager(UINT maxEmitterCount, UINT maxParticleCount)
 }
 
 UINT CParticleManager::AddParticleEmitter(
+	UINT emitterType,
 	const DirectX::XMVECTOR& position, 
 	const DirectX::XMVECTOR& angle, 
-	const DirectX::XMVECTOR& emitVelocity,
-	const std::vector<SEmitTimeRate>& emitProfiles,
-	UINT emitterType,
 	ID3D11Device* device, 
 	ID3D11DeviceContext* deviceContext
 )
@@ -149,11 +149,10 @@ UINT CParticleManager::AddParticleEmitter(
 		m_transformIndexQueue.pop();
 
 		m_particleEmitters.emplace_back(make_unique<CParticleEmitter>(
-			emitterID, emitterType, 
-			emitProfiles,
+			emitterID, emitterType, 1.f,
 			m_isEmitterWorldTransformationChanged,
 			m_emitterWorldTransformCPU[emitterID], 
-			position, angle, emitVelocity
+			position, angle
 		));
 		m_particleEmitters.back()->Initialize(device, deviceContext);
 		return emitterID;
@@ -307,17 +306,39 @@ void CParticleManager::SourceEmitter(ID3D11DeviceContext* deviceContext)
 	ID3D11UnorderedAccessView* selectSetUavs[] = { m_totalParticles->GetUAV(), m_aliveFlags->GetUAV(), m_deathParticleSet->GetUAV() };
 	ID3D11UnorderedAccessView* selectSetNullUavs[] = { nullptr, nullptr, nullptr };
 	UINT initialValue[3] = { NULL, NULL, static_cast<UINT>(-1) };
-	GParticleSourcingCS->SetShader(deviceContext);
 
 	deviceContext->CSSetUnorderedAccessViews(1, 3, selectSetUavs, initialValue);
+
+#pragma region 檬扁拳 家教
+	GParticleInitialSourceCS->SetShader(deviceContext);
 	for (auto& particleEmitter : m_particleEmitters)
 	{
-		ID3D11Buffer* emitterPropertiesBuffer = particleEmitter->GetEmitterPropertiesBuffer();
-		deviceContext->CSSetConstantBuffers(1, 1, &emitterPropertiesBuffer);
-		deviceContext->Dispatch(particleEmitter->GetCurrentEmitCount(), 1, 1);
+		CEmitterSpawnProperty* emitterSpawnProperty = particleEmitter->GetEmitterSpawnProperty();
+		if (!emitterSpawnProperty->IsSpawned())
+		{
+			ID3D11Buffer* propertiesBuffer[] = { particleEmitter->GetEmitterPropertyBuffer(), emitterSpawnProperty->GetEmitterSpawnPropertyBuffer() };
+			deviceContext->CSSetConstantBuffers(1, 2, propertiesBuffer);
+		
+			const UINT dispatchX = UINT(ceil(emitterSpawnProperty->GetInitialParticleCount() / LocalThreadCount));
+			deviceContext->Dispatch(dispatchX, 1, 1);
+			emitterSpawnProperty->SetSpawned();
+		}
+	}
+#pragma endregion
+
+#pragma region 繁鸥烙 家教
+	GParticleRuntimeSourceCS->SetShader(deviceContext);
+	for (auto& particleEmitter : m_particleEmitters)
+	{
+		CParticleSpawnProperty* particleSpawnProperty = particleEmitter->GetParticleSpawnProperty();
+		ID3D11Buffer* propertiesBuffer[] = { particleEmitter->GetEmitterPropertyBuffer(), particleSpawnProperty->GetParticleSpawnPropertyBuffer() };
+		deviceContext->CSSetConstantBuffers(1, 2, propertiesBuffer);
+		deviceContext->Dispatch(particleSpawnProperty->GetCurrentEmitRate(), 1, 1);
 	}	
-	ID3D11Buffer* emitterPropertiesNullBuffer = nullptr;
-	deviceContext->CSSetConstantBuffers(1, 1, &emitterPropertiesNullBuffer);
+#pragma endregion
+	ID3D11Buffer* emitterPropertiesNullBuffer[] = { nullptr, nullptr };
+	deviceContext->CSSetConstantBuffers(1, 2, emitterPropertiesNullBuffer);
+
 	deviceContext->CSSetUnorderedAccessViews(1, 3, selectSetNullUavs, nullptr);
 }
 

@@ -1,4 +1,4 @@
-#include "ParticleSimulateCommon.hlsli"
+#include "SimulateCommon.hlsli"
 
 StructuredBuffer<uint> aliveFlags : register(t0);
 StructuredBuffer<uint> prefixSums : register(t1);

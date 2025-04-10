@@ -42,8 +42,14 @@
     <Filter Include="Shader\Particle\ParticleDraw">
       <UniqueIdentifier>{40b1b466-11f0-4f5a-9354-0a730ab1ef35}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shader\Particle\ParticleSimulation">
+    <Filter Include="Shader\Particle\System">
       <UniqueIdentifier>{20b98071-57f6-4f48-9361-28d155ba720b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\Particle\System\Simulate">
+      <UniqueIdentifier>{e7ccd3b2-1121-4369-a7c4-4b317e72518b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\Particle\System\Source">
+      <UniqueIdentifier>{9d2cebf0-b8b2-4967-aab1-2719eced9fa1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -76,6 +82,12 @@
     </ClCompile>
     <ClCompile Include="GlobalVariable.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleSpawnProperty.cpp">
+      <Filter>소스 파일\Updatable\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="EmitterSpawnProperty.cpp">
+      <Filter>소스 파일\Updatable\ParticleSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -112,6 +124,12 @@
     <ClInclude Include="GlobalVariable.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="ParticleSpawnProperty.h">
+      <Filter>헤더 파일\Updatable\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="EmitterSpawnProperty.h">
+      <Filter>헤더 파일\Updatable\ParticleSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
@@ -124,11 +142,11 @@
     <None Include="ParticleCommon.hlsli">
       <Filter>Shader\Particle</Filter>
     </None>
-    <None Include="ParticleSimulateCommon.hlsli">
-      <Filter>Shader\Particle\ParticleSimulation</Filter>
+    <None Include="SourceCommon.hlsli">
+      <Filter>Shader\Particle\System\Source</Filter>
     </None>
-    <None Include="ScanCommon.hlsli">
-      <Filter>Shader\Particle\ParticleSimulation</Filter>
+    <None Include="SimulateCommon.hlsli">
+      <Filter>Shader\Particle\System</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -147,23 +165,20 @@
     <FxCompile Include="ParticleDrawPS.hlsl">
       <Filter>Shader\Particle\ParticleDraw</Filter>
     </FxCompile>
-    <FxCompile Include="ParticleSimulateCS.hlsl">
-      <Filter>Shader\Particle\ParticleSimulation</Filter>
-    </FxCompile>
-    <FxCompile Include="DefragmentPoolCS.hlsl">
-      <Filter>Shader\Particle\ParticleSimulation</Filter>
-    </FxCompile>
-    <FxCompile Include="ParticleSourceCS.hlsl">
-      <Filter>Shader\Particle\ParticleSimulation</Filter>
+    <FxCompile Include="CalculatePrefixSumCS.hlsl">
+      <Filter>Shader\Particle\System\Simulate</Filter>
     </FxCompile>
     <FxCompile Include="SelectParticleSetCS.hlsl">
-      <Filter>Shader\Particle\ParticleSimulation</Filter>
-    </FxCompile>
-    <FxCompile Include="CalculatePrefixSumCS.hlsl">
-      <Filter>Shader\Particle\ParticleSimulation</Filter>
+      <Filter>Shader\Particle\System\Simulate</Filter>
     </FxCompile>
     <FxCompile Include="UpdateCurrentIndicesCS.hlsl">
-      <Filter>Shader\Particle\ParticleSimulation</Filter>
+      <Filter>Shader\Particle\System\Simulate</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleRuntimeSourceCS.hlsl">
+      <Filter>Shader\Particle\System\Source</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleInitialSourceCS.hlsl">
+      <Filter>Shader\Particle\System\Source</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

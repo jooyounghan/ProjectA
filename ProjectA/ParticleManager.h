@@ -38,11 +38,9 @@ protected:
 
 public:
 	UINT AddParticleEmitter(
+		UINT emitterType,
 		const DirectX::XMVECTOR& position,
 		const DirectX::XMVECTOR& angle,
-		const DirectX::XMVECTOR& emitVelocity,
-		const std::vector<SEmitTimeRate>& emitProfiles,
-		UINT emitterType,
 		ID3D11Device* device, 
 		ID3D11DeviceContext* deviceContext
 
@@ -70,13 +68,13 @@ public:
 	static std::unique_ptr<D3D11::CComputeShader> GSelectParticleSetCS;
 	static std::unique_ptr<D3D11::CComputeShader> GCalculatePrefixSumCS;
 	static std::unique_ptr<D3D11::CComputeShader> GUpdateCurrentIndicesCS;
-	//static std::unique_ptr<D3D11::CComputeShader> GDefragmenaPoolCS;
 	static void InitializePoolingPSO(ID3D11Device* device);
 #pragma endregion
 
 #pragma region Particle 소싱 관련 PSO(추후 Emitter 상속을 통한 확장 설계)
 public:
-	static std::unique_ptr<D3D11::CComputeShader> GParticleSourcingCS;
+	static std::unique_ptr<D3D11::CComputeShader> GParticleInitialSourceCS;
+	static std::unique_ptr<D3D11::CComputeShader> GParticleRuntimeSourceCS;
 	static void InitializeEmitterSourcingPSO(ID3D11Device* device);
 #pragma endregion
 

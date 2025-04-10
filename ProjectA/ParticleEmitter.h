@@ -1,12 +1,6 @@
 #pragma once
-#include "Updatable.h"
-#include "DynamicBuffer.h"
-
-#include <d3d11.h>
-#include <DirectXMath.h>
-#include <vector>
-#include <map>
-#include <memory>
+#include "EmitterSpawnProperty.h"
+#include "ParticleSpawnProperty.h"
 
 struct SParticle
 {
@@ -26,24 +20,17 @@ struct SParticleSelector
 	UINT dummy;
 };
 
-struct SEmitTimeRate
-{
-	float time;
-	int emitCount;
-};
-
 class CParticleEmitter : public IUpdatable
 {
 public:
 	CParticleEmitter(
 		UINT emitterID,
 		UINT emitterType,
-		const std::vector<SEmitTimeRate>& emitProfiles,
+		float particleDensity,
 		bool& isEmitterWorldTransformChanged,
 		DirectX::XMMATRIX& emitterWorldTransform,
 		const DirectX::XMVECTOR& position,
-		const DirectX::XMVECTOR& angle,
-		const DirectX::XMVECTOR& emitVelocity
+		const DirectX::XMVECTOR& angle
 	);
 
 protected:
@@ -53,44 +40,41 @@ protected:
 	DirectX::XMMATRIX& m_emitterWorldTransform;
 	bool m_isThisWorldTransformChanged;
 
+protected:
+	struct
+	{
+		DirectX::XMMATRIX emitterWorldTransform;
+		UINT emitterID;
+		UINT emitterType;
+		float particleDenstiy;
+		float dummy;
+	} m_emitterPropertyCPU;
+	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterPropertyGPU;
+	bool m_isEmitterPropertyChanged = false;
+
+public:
+	inline UINT GetEmitterID() const noexcept { return m_emitterPropertyCPU.emitterID; }
+	inline UINT GetEmitterType() const noexcept { return m_emitterPropertyCPU.emitterType; }
+	inline float GetParticleDensity() const noexcept { return m_emitterPropertyCPU.particleDenstiy; }
+	void SetParticleDensity(float particleDensity);
+
+public:
+	inline ID3D11Buffer* GetEmitterPropertyBuffer() const noexcept { return m_emitterPropertyGPU->GetBuffer(); }
+
+protected:
+	std::unique_ptr<CEmitterSpawnProperty> m_emitterSpawnProperty;
+	std::unique_ptr<CParticleSpawnProperty> m_particleSpawnProperty;
+
+public:
+	inline CEmitterSpawnProperty* GetEmitterSpawnProperty() noexcept { return m_emitterSpawnProperty.get(); }
+	inline CParticleSpawnProperty* GetParticleSpawnProperty() noexcept { return m_particleSpawnProperty.get(); }
+
 public:
 	void SetPosition(const DirectX::XMVECTOR& position) noexcept;
 	void SetAngle(const DirectX::XMVECTOR& angle) noexcept;
 	inline const DirectX::XMVECTOR& GetPosition() const noexcept { return m_position; }
 	inline const DirectX::XMVECTOR& GetAngle() const noexcept { return m_angle; }
-
-protected:
-	float m_totalPlayTime;
-	UINT m_currentEmitCount;
-	std::vector<SEmitTimeRate> m_emitRateProfiles;
-
-protected:
-	void UpdateCurrentEmitCount();
-
-public:
-	inline UINT GetCurrentEmitCount() const noexcept { return m_currentEmitCount; }
-
-protected:
-	struct  
-	{
-		DirectX::XMMATRIX emitterWorldTransform;
-		DirectX::XMFLOAT3 emitVelocity;
-		UINT emitterID;
-		UINT emitterType;
-		float particleDensity;
-		UINT dummy[2];
-	} m_emitterPropertiesCPU;
-	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterPropertiesGPU;
-	bool m_isEmitterPropertiesChanged;
-
-public:
-	inline ID3D11Buffer* GetEmitterPropertiesBuffer() const noexcept { return m_emitterPropertiesGPU->GetBuffer(); }
-
-public:
-	void SetEmitVelocity(const DirectX::XMVECTOR& emitVelocity) noexcept;
-	inline const DirectX::XMFLOAT3& GetEmitVelocity() const noexcept { return m_emitterPropertiesCPU.emitVelocity; }
-	inline const UINT& GetEmitterID() const noexcept { return m_emitterPropertiesCPU.emitterID; }
-	inline const UINT& GetEmitterType() const noexcept { return m_emitterPropertiesCPU.emitterType; }
+	
 
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;

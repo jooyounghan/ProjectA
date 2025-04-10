@@ -1,4 +1,4 @@
-#include "ParticleSimulateCommon.hlsli"
+#include "SimulateCommon.hlsli"
 
 RWStructuredBuffer<Particle> totalParticles : register(u1);
 RWStructuredBuffer<uint> aliveFlags : register(u2);
@@ -16,6 +16,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		if (currentParticle.life < 1E-3f)
 		{
             deathParticleSet.Append(index);
+            aliveFlags[index] = 0;
         }
 		else
 		{
