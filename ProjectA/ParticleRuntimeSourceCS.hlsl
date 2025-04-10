@@ -23,7 +23,7 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 	sourcedParticle.worldPos = worldPos.xyz;
 	sourcedParticle.life = 3.f;
 
-	float2 randRads = lerp(minEmitRadians, maxEmitRadians, hash22(float2(index * dt, groupID * dt)));
+	float2 randRads = lerp(minEmitRadians, maxEmitRadians, hash22(float2(dt * dt, Pcurrent * dt)));
 	float3 randomVelocity = emitSpeed * float3(cos(randRads.x)*cos(randRads.y), sin(randRads.y), sin(randRads.x)*cos(randRads.y));
 
 	sourcedParticle.velocity = mul(float4(randomVelocity, 0.f), toWorldTransformation).xyz;
