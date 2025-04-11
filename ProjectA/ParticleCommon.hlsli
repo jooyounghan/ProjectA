@@ -8,6 +8,8 @@ struct Particle
     float density;
     float3 accelerate;
     uint type;
+    float radius;
+    float3 dummy;
 };
 
 cbuffer AppParams : register(b0)

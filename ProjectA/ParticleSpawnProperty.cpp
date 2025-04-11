@@ -96,5 +96,5 @@ void CParticleSpawnProperty::UpdateEmitCount(float dt)
 		else if (m_currentPlayTime > m_emitRateProfiles.back().time) m_currentEmitRate = m_emitRateProfiles.back().emitRate;
 		else;
 	}
-	m_currentEmitRate = 1;
+	m_currentEmitRate = static_cast<UINT>(m_currentEmitRate * dt);
 }

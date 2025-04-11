@@ -45,11 +45,17 @@
     <Filter Include="Shader\Particle\System">
       <UniqueIdentifier>{20b98071-57f6-4f48-9361-28d155ba720b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shader\Particle\System\Simulate">
-      <UniqueIdentifier>{e7ccd3b2-1121-4369-a7c4-4b317e72518b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shader\Particle\System\Source">
       <UniqueIdentifier>{9d2cebf0-b8b2-4967-aab1-2719eced9fa1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\Particle\System\Pooling">
+      <UniqueIdentifier>{e7ccd3b2-1121-4369-a7c4-4b317e72518b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\Particle\System\Simulate">
+      <UniqueIdentifier>{ea9671aa-67ce-43da-9b1f-8cbc51677135}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\Particle\System\Initalize">
+      <UniqueIdentifier>{2621a41f-4130-4e25-bd68-bb4cf99e1ee5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -145,8 +151,11 @@
     <None Include="SourceCommon.hlsli">
       <Filter>Shader\Particle\System\Source</Filter>
     </None>
+    <None Include="PoolingCommon.hlsli">
+      <Filter>Shader\Particle\System\Pooling</Filter>
+    </None>
     <None Include="SimulateCommon.hlsli">
-      <Filter>Shader\Particle\System</Filter>
+      <Filter>Shader\Particle\System\Simulate</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -166,19 +175,22 @@
       <Filter>Shader\Particle\ParticleDraw</Filter>
     </FxCompile>
     <FxCompile Include="CalculatePrefixSumCS.hlsl">
-      <Filter>Shader\Particle\System\Simulate</Filter>
-    </FxCompile>
-    <FxCompile Include="SelectParticleSetCS.hlsl">
-      <Filter>Shader\Particle\System\Simulate</Filter>
+      <Filter>Shader\Particle\System\Pooling</Filter>
     </FxCompile>
     <FxCompile Include="UpdateCurrentIndicesCS.hlsl">
-      <Filter>Shader\Particle\System\Simulate</Filter>
+      <Filter>Shader\Particle\System\Pooling</Filter>
     </FxCompile>
     <FxCompile Include="ParticleRuntimeSourceCS.hlsl">
       <Filter>Shader\Particle\System\Source</Filter>
     </FxCompile>
     <FxCompile Include="ParticleInitialSourceCS.hlsl">
       <Filter>Shader\Particle\System\Source</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleSimulateCS.hlsl">
+      <Filter>Shader\Particle\System\Simulate</Filter>
+    </FxCompile>
+    <FxCompile Include="InitializeParticleSetCS.hlsl">
+      <Filter>Shader\Particle\System\Initalize</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-#include "SimulateCommon.hlsli"
+#include "PoolingCommon.hlsli"
 
 struct PartitionDescriptor
 {
@@ -10,29 +10,10 @@ struct PartitionDescriptor
 
 StructuredBuffer<uint> aliveFlags : register(t0);
 
-RWStructuredBuffer<uint> prefixSums : register(u1);
-RWStructuredBuffer<PartitionDescriptor> partitionDescriptor : register(u2);
+RWStructuredBuffer<uint> prefixSums : register(u2);
+RWStructuredBuffer<PartitionDescriptor> partitionDescriptor : register(u3);
 
 groupshared int localPrefixSums[LocalThreadCount];
-
-void InitializePartitionDescriptor(uint groupID, uint groupThreadID)
-{
-    if (groupThreadID == 0)
-    {
-        if (groupID == 0)
-        {
-            Pcurrent = 0;
-            InstanceCount = 1;
-        };
-
-        PartitionDescriptor pd = partitionDescriptor[groupID];
-        pd.aggregate = 0;
-        pd.statusFlag = 0;
-        pd.exclusivePrefix = 0;
-        pd.inclusivePrefix = 0;
-        partitionDescriptor[groupID] = pd;
-    }
-}
 
 void LocalUpSweep(uint groupID, uint groupThreadID, uint threadID)
 {
@@ -142,7 +123,20 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
 	uint groupThreadID = GTid.x;
 	uint threadID = DTid.x;
 	
-    InitializePartitionDescriptor(groupID, groupThreadID);
+    if (groupThreadID == 0)
+    {
+        if (groupID == 0)
+        {
+            Pcurrent = 0;
+        };
+
+        PartitionDescriptor pd = partitionDescriptor[groupID];
+        pd.aggregate = 0;
+        pd.statusFlag = 0;
+        pd.exclusivePrefix = 0;
+        pd.inclusivePrefix = 0;
+        partitionDescriptor[groupID] = pd;
+    }
     DeviceMemoryBarrier();
 
     LocalUpSweep(groupID, groupThreadID, threadID);
@@ -152,7 +146,6 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
     GroupMemoryBarrierWithGroupSync();
 
     LocalDownSweep(groupID, groupThreadID, threadID);
-    GroupMemoryBarrierWithGroupSync();
 }
 
 

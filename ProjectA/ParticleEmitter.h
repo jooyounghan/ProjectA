@@ -10,6 +10,8 @@ struct SParticle
 	float mass;
 	DirectX::XMFLOAT3 accelerate;
 	UINT type;
+	float radius;
+	DirectX::XMFLOAT3 dummy;
 };
 
 struct SParticleSelector
@@ -27,10 +29,15 @@ public:
 		UINT emitterID,
 		UINT emitterType,
 		float particleDensity,
+		float particleRadius,
 		bool& isEmitterWorldTransformChanged,
 		DirectX::XMMATRIX& emitterWorldTransform,
 		const DirectX::XMVECTOR& position,
-		const DirectX::XMVECTOR& angle
+		const DirectX::XMVECTOR& angle,
+		const DirectX::XMFLOAT2& minInitRadians,
+		const DirectX::XMFLOAT2& maxInitRadians,
+		const DirectX::XMFLOAT2& minMaxRadius,
+		UINT initialParticleCount
 	);
 
 protected:
@@ -47,7 +54,7 @@ protected:
 		UINT emitterID;
 		UINT emitterType;
 		float particleDenstiy;
-		float dummy;
+		float particleRadius;
 	} m_emitterPropertyCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterPropertyGPU;
 	bool m_isEmitterPropertyChanged = false;
@@ -56,7 +63,9 @@ public:
 	inline UINT GetEmitterID() const noexcept { return m_emitterPropertyCPU.emitterID; }
 	inline UINT GetEmitterType() const noexcept { return m_emitterPropertyCPU.emitterType; }
 	inline float GetParticleDensity() const noexcept { return m_emitterPropertyCPU.particleDenstiy; }
+	inline float GetParticleRadius() const noexcept { return m_emitterPropertyCPU.particleRadius; }
 	void SetParticleDensity(float particleDensity);
+	void SetParticleRadius(float particleRadius);
 
 public:
 	inline ID3D11Buffer* GetEmitterPropertyBuffer() const noexcept { return m_emitterPropertyGPU->GetBuffer(); }

@@ -8,8 +8,8 @@ void main(
 	inout TriangleStream<ParticleGSOut> output
 )
 {
-    const float4 dx = float4(10.f / appWidth, 0.f, 0.f, 0.f);
-    const float4 dy = float4(0.f, 10.f / appHeight, 0.f, 0.f);
+    const float4 dx = float4(20.f / appWidth, 0.f, 0.f, 0.f);
+    const float4 dy = float4(0.f, 20.f / appHeight, 0.f, 0.f);
 
     ParticleGSOut element;
     element.life = input[0].life;

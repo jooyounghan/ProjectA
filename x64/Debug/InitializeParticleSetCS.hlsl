@@ -1,8 +1,8 @@
-#include "SimulateCommon.hlsli"
+#include "ParticleCommon.hlsli"
 
-RWStructuredBuffer<Particle> totalParticles : register(u1);
-RWStructuredBuffer<uint> aliveFlags : register(u2);
-AppendStructuredBuffer<uint> deathParticleSet : register(u3);
+RWStructuredBuffer<Particle> totalParticles : register(u0);
+RWStructuredBuffer<uint> aliveFlags : register(u1);
+AppendStructuredBuffer<uint> deathParticleSet : register(u2);
 
 [numthreads(LocalThreadCount, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
@@ -20,9 +20,6 @@ void main( uint3 DTid : SV_DispatchThreadID )
         }
 		else
 		{
-            currentParticle.velocity += currentParticle.accelerate * dt;
-            currentParticle.worldPos += currentParticle.velocity * dt;
-
             aliveFlags[index] = 1;
             totalParticles[index] = currentParticle;
         }		

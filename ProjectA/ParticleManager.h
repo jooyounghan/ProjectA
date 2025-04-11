@@ -39,13 +39,23 @@ protected:
 public:
 	UINT AddParticleEmitter(
 		UINT emitterType,
+		float paritlceDensity,
+		float particleRadius,
 		const DirectX::XMVECTOR& position,
 		const DirectX::XMVECTOR& angle,
+		const DirectX::XMFLOAT2& minInitRadians,
+		const DirectX::XMFLOAT2& maxInitRadians,
+		const DirectX::XMFLOAT2& minMaxRadius,
+		UINT initialParticleCount,
 		ID3D11Device* device, 
 		ID3D11DeviceContext* deviceContext
 
 	);
+	CParticleEmitter* GetEmitter(UINT emitterID);
 	 void RemoveParticleEmitter(UINT emitterID);
+
+private:
+	bool FindEmitterFromID(UINT emitterID, OUT std::vector<std::unique_ptr<CParticleEmitter>>::iterator& iter);
 
 public:
 	 inline const std::vector<std::unique_ptr<CParticleEmitter>>& GetParticleEmitters() const noexcept { return m_particleEmitters; }
@@ -64,8 +74,12 @@ public:
 	static void InitializeEmitterDrawPSO(ID3D11Device* device);
 #pragma endregion
 
+#pragma region Particle Initialize 관련 PSO
+	static std::unique_ptr<D3D11::CComputeShader> GInitializeParticleSetCS;
+	static void InitializeSetInitializingPSO(ID3D11Device* device);
+#pragma endregion
+
 #pragma region Particle 풀링 관련 PSO
-	static std::unique_ptr<D3D11::CComputeShader> GSelectParticleSetCS;
 	static std::unique_ptr<D3D11::CComputeShader> GCalculatePrefixSumCS;
 	static std::unique_ptr<D3D11::CComputeShader> GUpdateCurrentIndicesCS;
 	static void InitializePoolingPSO(ID3D11Device* device);
@@ -76,6 +90,12 @@ public:
 	static std::unique_ptr<D3D11::CComputeShader> GParticleInitialSourceCS;
 	static std::unique_ptr<D3D11::CComputeShader> GParticleRuntimeSourceCS;
 	static void InitializeEmitterSourcingPSO(ID3D11Device* device);
+#pragma endregion
+
+#pragma region Particle 시뮬레이션 관련 PSO(추후 Emitter 상속을 통한 확장 설계)
+public:
+	static std::unique_ptr<D3D11::CComputeShader> GParticleSimulateCS;
+	static void InitializeParticleSimulatePSO(ID3D11Device* device);
 #pragma endregion
 
 #pragma region Particle 그리기 관련 PSO
@@ -112,7 +132,9 @@ public:
 
 protected:
 	std::unique_ptr<D3D11::CStructuredBuffer> m_particleDrawIndirectStagingGPU;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_particleSimulateDispatchIndirectStagingGPU;
 	std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DRAW_INSTANCED_INDIRECT_ARGS>> m_particleDrawIndirectBuffer;
+	std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DISPATCH_INDIRECT_ARGS>> m_particleSimulateDispatchIndirectBuffer;
 
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
@@ -124,10 +146,8 @@ public:
 	void DrawParticles(ID3D11DeviceContext* deviceContext);
 
 private:
-	void SelectParticleSet(ID3D11DeviceContext* deviceContext);
+	void InitializeParticleSet(ID3D11DeviceContext* deviceContext);
 	void SourceEmitter(ID3D11DeviceContext* deviceContext);
-	void CalculatePrefixSum(ID3D11DeviceContext* deviceContext);
-	void GetCurrentIndices(ID3D11DeviceContext* deviceContext);
-	void SortParticles(ID3D11DeviceContext* deviceContext);
+	void PoolingParticles(ID3D11DeviceContext* deviceContext);
 	void SimulateParticles(ID3D11DeviceContext* deviceContext);
 };

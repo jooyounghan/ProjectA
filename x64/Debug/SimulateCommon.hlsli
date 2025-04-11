@@ -1,6 +1,8 @@
 #include "ParticleCommon.hlsli"
 
-#define Pcurrent particleCounts[0]
-#define InstanceCount particleCounts[1]
+#define Pcurrent particleDrawIndirectArgs[0]
 
-RWStructuredBuffer<uint> particleCounts : register(u0);
+StructuredBuffer<uint> particleDrawIndirectArgs: register(t0);
+StructuredBuffer<uint> currentIndices : register(t1);
+
+RWStructuredBuffer<Particle> particles : register(u0);

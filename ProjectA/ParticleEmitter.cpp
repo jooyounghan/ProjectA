@@ -9,10 +9,15 @@ CParticleEmitter::CParticleEmitter(
 	UINT emitterID,
 	UINT emitterType,
 	float particleDensity,
+	float particleRadius,
 	bool& isEmitterWorldTransformChanged,
 	XMMATRIX& emitterWorldTransform,
 	const XMVECTOR& position, 
-	const XMVECTOR& angle
+	const XMVECTOR& angle,
+	const DirectX::XMFLOAT2& minInitRadians,
+	const DirectX::XMFLOAT2& maxInitRadians,
+	const DirectX::XMFLOAT2& minMaxRadius,
+	UINT initialParticleCount
 )
 	: m_position(position), m_angle(angle),
 	m_isEmitterWorldTransformChanged(isEmitterWorldTransformChanged),
@@ -22,26 +27,29 @@ CParticleEmitter::CParticleEmitter(
 	m_emitterPropertyCPU.emitterID = emitterID;
 	m_emitterPropertyCPU.emitterType = emitterType;
 	m_emitterPropertyCPU.particleDenstiy = particleDensity;
+	m_emitterPropertyCPU.particleRadius = particleRadius;
 	m_isThisWorldTransformChanged = true;
 
-	// 테스트 =============================================================
 	m_emitterSpawnProperty = make_unique<CEmitterSpawnProperty>(
-		XMFLOAT2(0.f, 0.f), 
-		XMFLOAT2(XM_2PI, XM_2PI), 
-		XMFLOAT2(0, 1), 1500
-	);
+		minInitRadians, maxInitRadians, 
+		minMaxRadius, initialParticleCount
+);
 
 	m_particleSpawnProperty = make_unique<CParticleSpawnProperty>(
-		XMFLOAT2(0.f, 0.f), XMFLOAT2(XM_2PI, XM_2PI), 1.f, 
-		vector<SEmitRate>{ {0.f, 0}, { 10.f, 100000 } }, true, 10.f
-		);
-	// 테스트 =============================================================
+		XMFLOAT2(0.f, 0.f), XMFLOAT2(XM_2PI, XM_2PI), 0.f
+	);
 }
 
 
 void CParticleEmitter::SetParticleDensity(float particleDensity) 
 { 
 	m_emitterPropertyCPU.particleDenstiy = particleDensity; 
+	m_isEmitterPropertyChanged = true;
+}
+
+void CParticleEmitter::SetParticleRadius(float particleRadius)
+{
+	m_emitterPropertyCPU.particleRadius = particleRadius;
 	m_isEmitterPropertyChanged = true;
 }
 

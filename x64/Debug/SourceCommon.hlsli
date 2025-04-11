@@ -1,4 +1,4 @@
-#include "SimulateCommon.hlsli"
+#include "ParticleCommon.hlsli"
 
 cbuffer EmitterProperties : register(b1)
 {
@@ -9,9 +9,9 @@ cbuffer EmitterProperties : register(b1)
 	float emitterPropertyDummy;
 };
 
-RWStructuredBuffer<Particle> totalParticles : register(u1);
-RWStructuredBuffer<uint> aliveFlags : register(u2);
-ConsumeStructuredBuffer<uint> deathParticleSet : register(u3);
+RWStructuredBuffer<Particle> totalParticles : register(u0);
+RWStructuredBuffer<uint> aliveFlags : register(u1);
+ConsumeStructuredBuffer<uint> deathParticleSet : register(u2);
 
 float rand(float2 seed)
 {

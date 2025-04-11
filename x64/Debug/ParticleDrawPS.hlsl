@@ -12,7 +12,7 @@ float3 GetViewNormal(float2 uv)
 
 float4 main(ParticleGSOut input) : SV_TARGET
 {
-    float factor = input.life / 3.f;
+    float factor = input.life;
     float dist = length(0.5f - input.texCoord) * 2.f;
     float scale = smoothstep(0.f, 1.f, 1.f - dist);
     
@@ -21,6 +21,6 @@ float4 main(ParticleGSOut input) : SV_TARGET
     float4 worldNormal = mul(float4(viewNormal, 0.f), invTransposeViewMatrix);
     float lightPower = dot(worldNormal, float4(0.f, -1.f, 0.f, 0.f));
    
-    return float4(float3(0.f, 1.f, 1.f) * scale * factor, scale * factor);
+    return float4(float3(0.9f, 0.4f, 0.2f) * scale * factor, scale * factor);
     //return float4(float3(0.f, 1.f, 1.f)* lightPower * scale * factor, scale * factor);
 }

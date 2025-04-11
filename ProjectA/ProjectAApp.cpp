@@ -115,27 +115,104 @@ void CProjectAApp::Init()
 #pragma endregion
 
 #pragma region 테스트 초기화
+	CParticleManager::InitializeSetInitializingPSO(m_device);
 	CParticleManager::InitializeEmitterDrawPSO(m_device);
 	CParticleManager::InitializePoolingPSO(m_device);
 	CParticleManager::InitializeEmitterSourcingPSO(m_device);
+	CParticleManager::InitializeParticleSimulatePSO(m_device);
 	CParticleManager::InitializeParticleDrawPSO(m_device);
 #pragma endregion
 
 #pragma region 인스턴스 초기화
 	m_camera = make_unique<CCamera>(
-		XMVectorSet(0.f, 0.f, 0.f, 1.f),
-		XMVectorSet(0.f, 0.f, 0.f, 1.f),
+		XMVectorSet(0.f, 15.f, 0.f, 1.f),
+		XMVectorSet(60.f * XM_2PI / 360.f, 0.f, 0.f, 1.f),
 		m_width, m_height, 90.f, 0.01f, 100000.000f
 		);
 
 	m_particleManager = make_unique<CParticleManager>(500, 1024 * 1024);
 	
-	m_particleManager->AddParticleEmitter(
+#pragma region Radius 1E-4
+	UINT emitterID1 = m_particleManager->AddParticleEmitter(
 		0 /* Emitter Type */,
-		XMVectorSet(0.f, 0.f, 2.f, 1.f),
-		XMVectorSet(0.f, 0.f, 0.f, 1.f),
+		7874.0f/* Steel Density */,
+		1E-4f/* particle Radius */,
+		XMVectorSet(-10.f, 0.f, 15.f, 1.f),
+		XMVectorSet(0.f, -90.f * XM_2PI / 360.f, 0.f, 1.f),
+		XMFLOAT2(0.f, 0.f),
+		XMFLOAT2(XM_2PI, XM_2PI),
+		XMFLOAT2(0, 1), 0,
 		m_device, m_deviceContext
 	);
+
+	CParticleEmitter* emitter =  m_particleManager->GetEmitter(emitterID1);
+	CEmitterSpawnProperty* emitterSpawnProperty = emitter->GetEmitterSpawnProperty();
+	CParticleSpawnProperty* particleSpawnProperty = emitter->GetParticleSpawnProperty();
+
+	particleSpawnProperty->SetMinEmitRadians(XMFLOAT2(-10.f * XM_PI / 180.f, 120.f * XM_PI / 180.f));
+	particleSpawnProperty->SetMaxEmitRadians(XMFLOAT2(10.f * XM_PI / 180.f, 180.f * XM_PI / 180.f));
+	particleSpawnProperty->SetEmitSpeed(10.f);
+	particleSpawnProperty->SetLoopPlay(true, 7.f);
+	particleSpawnProperty->SetEmitRateProfiles(
+		vector<SEmitRate>{
+			{0.f, 0}, { 2.f, 0 }, { 3.f, 3000 }, { 3.5f, 3000 }, { 4.f, 10000 }, { 4.5f, 3000 }, { 5.f, 3000 }, { 6.f, 0 }, { 7.f, 0 }
+	});
+#pragma endregion
+
+#pragma region Radius 1
+	UINT emitterID2 = m_particleManager->AddParticleEmitter(
+		0 /* Emitter Type */,
+		7874.0f/* Steel Density */,
+		1.f/* particle Radius */,
+		XMVectorSet(0.f, 0.f, 15.f, 1.f),
+		XMVectorSet(0.f, -90.f * XM_2PI / 360.f, 0.f, 1.f),
+		XMFLOAT2(0.f, 0.f),
+		XMFLOAT2(XM_2PI, XM_2PI),
+		XMFLOAT2(0, 1), 0,
+		m_device, m_deviceContext
+	);
+
+	emitter = m_particleManager->GetEmitter(emitterID2);
+	emitterSpawnProperty = emitter->GetEmitterSpawnProperty();
+	particleSpawnProperty = emitter->GetParticleSpawnProperty();
+
+	particleSpawnProperty->SetMinEmitRadians(XMFLOAT2(-10.f * XM_PI / 180.f, 120.f * XM_PI / 180.f));
+	particleSpawnProperty->SetMaxEmitRadians(XMFLOAT2(10.f * XM_PI / 180.f, 180.f * XM_PI / 180.f));
+	particleSpawnProperty->SetEmitSpeed(10.f);
+	particleSpawnProperty->SetLoopPlay(true, 7.f);
+	particleSpawnProperty->SetEmitRateProfiles(
+		vector<SEmitRate>{
+			{0.f, 0}, { 2.f, 0 }, { 3.f, 3000 }, { 3.5f, 3000 }, { 4.f, 10000 }, { 4.5f, 3000 }, { 5.f, 3000 }, { 6.f, 0 }, { 7.f, 0 }
+	});
+#pragma endregion
+
+#pragma region Radius 0.005 And Ligter Than Air
+	UINT emitterID3 = m_particleManager->AddParticleEmitter(
+		0 /* Emitter Type */,
+		0.5f/* Lighter Than Air */,
+		0.005f/* particle Radius */,
+		XMVectorSet(10.f, 0.f, 15.f, 1.f),
+		XMVectorSet(0.f, -90.f * XM_2PI / 360.f, 0.f, 1.f),
+		XMFLOAT2(0.f, 0.f),
+		XMFLOAT2(XM_2PI, XM_2PI),
+		XMFLOAT2(0, 1), 0,
+		m_device, m_deviceContext
+	);
+
+	emitter = m_particleManager->GetEmitter(emitterID3);
+	emitterSpawnProperty = emitter->GetEmitterSpawnProperty();
+	particleSpawnProperty = emitter->GetParticleSpawnProperty();
+
+	particleSpawnProperty->SetMinEmitRadians(XMFLOAT2(-10.f * XM_PI / 180.f, 120.f * XM_PI / 180.f));
+	particleSpawnProperty->SetMaxEmitRadians(XMFLOAT2(10.f * XM_PI / 180.f, 180.f * XM_PI / 180.f));
+	particleSpawnProperty->SetEmitSpeed(10.f);
+	particleSpawnProperty->SetLoopPlay(true, 7.f);
+	particleSpawnProperty->SetEmitRateProfiles(
+		vector<SEmitRate>{
+			{0.f, 0}, { 2.f, 0 }, { 3.f, 3000 }, { 3.5f, 3000 }, { 4.f, 10000 }, { 4.5f, 3000 }, { 5.f, 3000 }, { 6.f, 0 }, { 7.f, 0 }
+	});
+#pragma endregion
+
 
 	m_updatables.emplace_back(m_camera.get());
 	m_updatables.emplace_back(m_particleManager.get());
@@ -282,25 +359,46 @@ void CProjectAApp::DrawEmitterHandler()
 		ImGui::SeparatorText("위치 / 자세");
 		XMVECTOR emitterPos = emitter->GetPosition();
 		XMVECTOR emitterAngle = emitter->GetAngle();
-		if (DragFloat3("Emitter Position", emitterPos.m128_f32, 0.1f, -100.f, 100.f)) emitter->SetPosition(emitterPos);
-		if (DragFloat3("Emitter Angle", emitterAngle.m128_f32, 0.1f, -360.f, 360.f)) emitter->SetAngle(emitterAngle);
+		emitterAngle = XMVectorScale(emitterAngle, 360.f / XM_2PI);
+		if (DragFloat3("Emitter 위치", emitterPos.m128_f32, 0.1f, -100.f, 100.f)) emitter->SetPosition(emitterPos);
+		if (DragFloat3("Emitter 자세", emitterAngle.m128_f32, 0.1f, -360.f, 360.f))
+		{
+			emitterAngle = XMVectorScale(emitterAngle, XM_2PI / 360.f);
+			emitter->SetAngle(emitterAngle);
+		}
 
-		ImGui::SeparatorText("Emitter 입자 밀도");
+		ImGui::SeparatorText("Emitter 입자 밀도(kg/m3)");
 		float particleDensity = emitter->GetParticleDensity();
-		if (DragFloat("입자 밀도", &particleDensity, 0.001f, 0.f, 2.f)) emitter->SetParticleDensity(particleDensity);
+		if (DragFloat("입자 밀도", &particleDensity, 0.1f, 0.1f, 10000.f)) emitter->SetParticleDensity(particleDensity);
 
+		ImGui::SeparatorText("Emitter 입자 반지름(m)");
+		float particleRadius = emitter->GetParticleRadius();
+		if (DragFloat("입자 반지름", &particleRadius, 1E-4f, 1E-4f, 1.f, "%.4f")) emitter->SetParticleRadius(particleRadius);
 
 		ImGui::SeparatorText("Emitter 입자 방출 각");
 		bool isMinEmitAngleChanged = false;
-		bool isMaxEmitAngleChanged = false;
 		XMFLOAT2 minEmitRadians = emitterProperty->GetMinEmitRadians();
-		XMFLOAT2 maxEmitRadians = emitterProperty->GetMaxEmitRadians();
 		minEmitRadians.x *= (360.f / XM_2PI);
 		minEmitRadians.y *= (360.f / XM_2PI);
+		if (DragFloat("방출 최소 각(a)", &minEmitRadians.x, 0.1f, -360.f, 360.f)) isMinEmitAngleChanged = true;
+		if (DragFloat("방출 최소 각(b)", &minEmitRadians.y, 0.1f, -360.f, 360.f)) isMinEmitAngleChanged = true;
+
+		bool isMaxEmitAngleChanged = false;
+		XMFLOAT2 maxEmitRadians = emitterProperty->GetMaxEmitRadians();
 		maxEmitRadians.x *= (360.f / XM_2PI);
 		maxEmitRadians.y *= (360.f / XM_2PI);
-		if (DragFloat("방출 최소 각(a)", &minEmitRadians.x, 0.1f, 0.f, 360.f)) isMinEmitAngleChanged = true;
-		if (DragFloat("방출 최소 각(b)", &minEmitRadians.y, 0.1f, 0.f, 360.f)) isMinEmitAngleChanged = true;
+
+		if (maxEmitRadians.x < minEmitRadians.x)
+		{
+			isMaxEmitAngleChanged = true;
+			maxEmitRadians.x = minEmitRadians.x;
+		}
+		if (maxEmitRadians.y < minEmitRadians.y)
+		{
+			isMaxEmitAngleChanged = true;
+			maxEmitRadians.y = minEmitRadians.y;
+		}
+
 		if (DragFloat("방출 최대 각(a)", &maxEmitRadians.x, 0.1f, minEmitRadians.x, 360.f)) isMaxEmitAngleChanged = true;
 		if (DragFloat("방출 최대 각(b)", &maxEmitRadians.y, 0.1f, minEmitRadians.y, 360.f)) isMaxEmitAngleChanged = true;
 		minEmitRadians.x *= (XM_2PI / 360.f);
@@ -311,7 +409,7 @@ void CProjectAApp::DrawEmitterHandler()
 		if (isMinEmitAngleChanged) emitterProperty->SetMinEmitRadians(minEmitRadians);
 		if (isMaxEmitAngleChanged) emitterProperty->SetMaxEmitRadians(maxEmitRadians);
 
-		ImGui::SeparatorText("Emitter 입자 방출 속력");
+		ImGui::SeparatorText("Emitter 입자 방출 속력(m/s)");
 		float emitSpeed = emitterProperty->GetEmitSpeed();
 		if (DragFloat("방출 속도", &emitSpeed, 0.1f, 0.f, 100.f)) emitterProperty->SetEmitSpeed(emitSpeed);
 	}
