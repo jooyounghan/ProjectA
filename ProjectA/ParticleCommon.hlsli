@@ -7,9 +7,10 @@ struct Particle
     float3 velocity;
     float density;
     float3 accelerate;
-    uint type;
+    uint emitterID;
+    uint emitterType;
     float radius;
-    float3 dummy;
+    float2 dummy;
 };
 
 cbuffer AppParams : register(b0)

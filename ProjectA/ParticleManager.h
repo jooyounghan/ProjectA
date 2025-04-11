@@ -34,6 +34,9 @@ protected:
 	std::vector<std::unique_ptr<CParticleEmitter>> m_particleEmitters;
 	std::vector<DirectX::XMMATRIX> m_emitterWorldTransformCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterWorldTransformGPU;
+	std::vector<DirectX::XMVECTOR> m_emitterWolrdPosCPU;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_emitterWorldPosGPU;
+	bool m_isEmitterWorldPositionChanged;
 	bool m_isEmitterWorldTransformationChanged;
 
 public:

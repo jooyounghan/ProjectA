@@ -31,9 +31,10 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 	sourcedParticle.velocity = mul(float4(randomVelocity, 0.f), toWorldTransformation).xyz;
 	sourcedParticle.density = particleDensity;
 	sourcedParticle.accelerate = float3(0.f, 0.f, 0.f);
-	sourcedParticle.type = emitterType;
+	sourcedParticle.emitterID = emitterID;
+	sourcedParticle.emitterType = emitterType;
 	sourcedParticle.radius = particleRadius;
-	sourcedParticle.dummy = float3(0.f, 0.f, 0.f);
+	sourcedParticle.dummy = float2(0.f, 0.f);
 
 	totalParticles[revivedIndex] = sourcedParticle;
     aliveFlags[revivedIndex] = 1;

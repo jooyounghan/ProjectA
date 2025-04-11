@@ -14,14 +14,13 @@ namespace D3D11
 			UINT elementSize, 
 			UINT arrayCount, 
 			const void* cpuData,
-			D3D11_BIND_FLAG bindFlag = D3D11_BIND_CONSTANT_BUFFER
+			UINT bindFlag = D3D11_BIND_CONSTANT_BUFFER
 		);
 		~CDynamicBuffer() override = default;
 
 	protected:
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_stagingBuffer;
-		D3D11_BIND_FLAG m_bindFlag;
-
+		UINT m_bindFlag;
 
 	protected:
 		virtual D3D11_BUFFER_DESC CreateBufferDesc() noexcept override;

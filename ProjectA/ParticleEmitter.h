@@ -30,8 +30,10 @@ public:
 		UINT emitterType,
 		float particleDensity,
 		float particleRadius,
+		bool& isEmitterWorldPositionChanged,
 		bool& isEmitterWorldTransformChanged,
-		DirectX::XMMATRIX& emitterWorldTransform,
+		DirectX::XMVECTOR& positionRef,
+		DirectX::XMMATRIX& emitterWorldTransformRef,
 		const DirectX::XMVECTOR& position,
 		const DirectX::XMVECTOR& angle,
 		const DirectX::XMFLOAT2& minInitRadians,
@@ -41,10 +43,13 @@ public:
 	);
 
 protected:
-	DirectX::XMVECTOR m_position;
 	DirectX::XMVECTOR m_angle;
+
+protected:
+	bool& m_isEmitterWorldPositionChanged;
 	bool& m_isEmitterWorldTransformChanged;
-	DirectX::XMMATRIX& m_emitterWorldTransform;
+	DirectX::XMVECTOR& m_positionRef;
+	DirectX::XMMATRIX& emitterWorldTransformRef;
 	bool m_isThisWorldTransformChanged;
 
 protected:
@@ -81,7 +86,7 @@ public:
 public:
 	void SetPosition(const DirectX::XMVECTOR& position) noexcept;
 	void SetAngle(const DirectX::XMVECTOR& angle) noexcept;
-	inline const DirectX::XMVECTOR& GetPosition() const noexcept { return m_position; }
+	inline const DirectX::XMVECTOR& GetPosition() const noexcept { return m_positionRef; }
 	inline const DirectX::XMVECTOR& GetAngle() const noexcept { return m_angle; }
 	
 

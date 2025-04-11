@@ -3,11 +3,11 @@
 #ifndef STRUCTUREDBUFFER_H
 #define STRUCTUREDBUFFER_H
 
-#include "ABuffer.h"
+#include "DynamicBuffer.h"
 
 namespace D3D11
 {
-	class D3D11MANAGER_API CStructuredBuffer : public ABuffer
+	class D3D11MANAGER_API CStructuredBuffer : public CDynamicBuffer
 	{
 	public:
 		CStructuredBuffer(

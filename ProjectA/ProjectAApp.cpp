@@ -132,11 +132,11 @@ void CProjectAApp::Init()
 
 	m_particleManager = make_unique<CParticleManager>(500, 1024 * 1024);
 	
-#pragma region Radius 1E-4
+#pragma region Radius 1E-3
 	UINT emitterID1 = m_particleManager->AddParticleEmitter(
 		0 /* Emitter Type */,
 		7874.0f/* Steel Density */,
-		1E-4f/* particle Radius */,
+		1E-3f/* particle Radius */,
 		XMVectorSet(-10.f, 0.f, 15.f, 1.f),
 		XMVectorSet(0.f, -90.f * XM_2PI / 360.f, 0.f, 1.f),
 		XMFLOAT2(0.f, 0.f),
@@ -190,7 +190,7 @@ void CProjectAApp::Init()
 	UINT emitterID3 = m_particleManager->AddParticleEmitter(
 		0 /* Emitter Type */,
 		0.5f/* Lighter Than Air */,
-		0.005f/* particle Radius */,
+		0.05f/* particle Radius */,
 		XMVectorSet(10.f, 0.f, 15.f, 1.f),
 		XMVectorSet(0.f, -90.f * XM_2PI / 360.f, 0.f, 1.f),
 		XMFLOAT2(0.f, 0.f),
@@ -211,6 +211,20 @@ void CProjectAApp::Init()
 		vector<SEmitRate>{
 			{0.f, 0}, { 2.f, 0 }, { 3.f, 3000 }, { 3.5f, 3000 }, { 4.f, 10000 }, { 4.5f, 3000 }, { 5.f, 3000 }, { 6.f, 0 }, { 7.f, 0 }
 	});
+#pragma endregion
+
+#pragma region Gravity Field
+	UINT emitterID4 = m_particleManager->AddParticleEmitter(
+		1 /* Emitter Type */,
+		7800/* Lighter Than Air */,
+		1.f/* particle Radius */,
+		XMVectorSet(0.f, 10.f, 10.f, 1.f),
+		XMVectorSet(0.f, -90.f * XM_2PI / 360.f, 0.f, 1.f),
+		XMFLOAT2(0.f, 0.f),
+		XMFLOAT2(XM_2PI, XM_2PI),
+		XMFLOAT2(0, 5), 1000,
+		m_device, m_deviceContext
+	);
 #pragma endregion
 
 

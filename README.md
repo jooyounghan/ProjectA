@@ -109,4 +109,23 @@ gantt
 			- 상태 P : ExclusivePrefix$_{i}$ +=  InclusivePrefix$_{m}$, break Look-Back 
 		3) i번째 스레드 그룹의 Look-Back을 마무리하면 상태를 P로 변경한다.
 		4)  Down-Sweep을 통하여 i번째 스레드 그룹에 대한 로컬 Prefix Sum을 계산하고, 이에 대해서 ExcluseivePrefix와 InclusivePrefix를 통하여 보정한다.
-		
+
+### 25.04.09
+- 주간 피드백 회의 수행
+- Emitter가 입자 방출 수를 시간 프로파일을 바탕으로 제어할 수 있도록 구현
+	- Emitter에 대한 입자 방출 수 시간 프로파일 데이터를 바탕으로 CPU에서 계산하고, 입자를 추가하는 Compute Shader의 스레드 그룹 수를 조절하여 방출 개수 제어
+
+### 25.04.10
+-  입자 생성 시 구면좌표계를 활용하여 속도, 위치가 결정되도록 수정
+	- 위도, 경도, 길이 값을 통하여 입자 제어 가능 
+	 ![Image](구면 좌표계 관련 그림 추가 예정)
+-  EmitterSpawnProperty, ParticleSpawnProperty 클래스 생성
+	- EmitterSpawnProperty를 통하여 Emitter가 생성되었을 때 초기 파티클 수, 파티클이 존재할 수 있는 위도 경도 제어
+	- ParticleSpawnProperty를 통하여 프레임마다 Emitter가 방출하는 파티클 수, 방사하는 위도, 경도, 속력 제어
+
+### 25.04.11
+- 기본 입자 시뮬레이션 구현
+	- Emitter Type 0 : 중력, 부력, 저항력(스토크스 법칙)을 바탕으로 알짜힘을 계산하고, 이를 바탕 가속도로 활용
+		 ![Image](알짜힘 관련 식 관련 그림 추가 예정)
+	- Emitter Type 1 : Emitter의 위치로 작용하는 중력 가속도와 Curl-Noise를 추가하여 가속도 활용 
+		- 가속도를 시간에 대해 적분하여 속도항을 구하고, 속도항을 시간에 대해 적분하여 위치항을 계산하는 방식으로 구현

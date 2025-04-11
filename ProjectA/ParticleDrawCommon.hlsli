@@ -4,6 +4,7 @@ struct ParticleVSOut
 {
     float4 viewPos : POSITION0;
     float3 worldPos : POSITION1;
+    float3 color : COLOR;
     float life : LIFE;
 };
 
@@ -11,6 +12,7 @@ struct ParticleGSOut
 {
     float4 viewPos : SV_Position;
     float2 texCoord : TEXCOORD;
+    float3 color : COLOR;
     float life : LIFE;
 };
 

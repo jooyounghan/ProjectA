@@ -3,7 +3,7 @@
 cbuffer EmitterProperties : register(b1)
 {
 	matrix toWorldTransformation;
-	uint emitterID;
+    uint emitterID;
 	uint emitterType;
     float particleDensity;
 	float particleRadius;

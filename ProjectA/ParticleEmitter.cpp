@@ -10,19 +10,24 @@ CParticleEmitter::CParticleEmitter(
 	UINT emitterType,
 	float particleDensity,
 	float particleRadius,
+	bool& isEmitterWorldPositionChanged,
 	bool& isEmitterWorldTransformChanged,
-	XMMATRIX& emitterWorldTransform,
-	const XMVECTOR& position, 
+	XMVECTOR& positionRef,
+	XMMATRIX& emitterWorldTransformRef,
+	const XMVECTOR& position,
 	const XMVECTOR& angle,
-	const DirectX::XMFLOAT2& minInitRadians,
-	const DirectX::XMFLOAT2& maxInitRadians,
-	const DirectX::XMFLOAT2& minMaxRadius,
+	const XMFLOAT2& minInitRadians,
+	const XMFLOAT2& maxInitRadians,
+	const XMFLOAT2& minMaxRadius,
 	UINT initialParticleCount
 )
-	: m_position(position), m_angle(angle),
+	: m_angle(angle),
+	m_isEmitterWorldPositionChanged(isEmitterWorldPositionChanged),
 	m_isEmitterWorldTransformChanged(isEmitterWorldTransformChanged),
-	m_emitterWorldTransform(emitterWorldTransform)
+	m_positionRef(positionRef),
+	emitterWorldTransformRef(emitterWorldTransformRef)
 {
+	m_positionRef = position;
 	m_emitterPropertyCPU.emitterWorldTransform = XMMatrixIdentity();
 	m_emitterPropertyCPU.emitterID = emitterID;
 	m_emitterPropertyCPU.emitterType = emitterType;
@@ -55,8 +60,9 @@ void CParticleEmitter::SetParticleRadius(float particleRadius)
 
 void CParticleEmitter::SetPosition(const DirectX::XMVECTOR& position) noexcept
 {
-	m_position = position;
+	m_positionRef = position;
 	m_isThisWorldTransformChanged = true;
+	m_isEmitterWorldPositionChanged = true;
 }
 
 
@@ -80,11 +86,11 @@ void CParticleEmitter::Update(ID3D11DeviceContext* deviceContext, float dt)
 {
 	if (m_isThisWorldTransformChanged)
 	{
-		m_emitterWorldTransform = XMMatrixAffineTransformation(
+		emitterWorldTransformRef = XMMatrixAffineTransformation(
 			XMVectorSet(1.f, 1.f, 1.f, 0.f),
 			XMQuaternionIdentity(),
 			XMQuaternionRotationRollPitchYawFromVector(m_angle),
-			m_position
+			m_positionRef
 		);
 			
 		m_isEmitterPropertyChanged = true;
@@ -94,7 +100,7 @@ void CParticleEmitter::Update(ID3D11DeviceContext* deviceContext, float dt)
 
 	if (m_isEmitterPropertyChanged)
 	{
-		m_emitterPropertyCPU.emitterWorldTransform = XMMatrixTranspose(m_emitterWorldTransform);
+		m_emitterPropertyCPU.emitterWorldTransform = XMMatrixTranspose(emitterWorldTransformRef);
 		m_emitterPropertyGPU->Stage(deviceContext);
 		m_emitterPropertyGPU->Upload(deviceContext);
 		m_isEmitterPropertyChanged = false;

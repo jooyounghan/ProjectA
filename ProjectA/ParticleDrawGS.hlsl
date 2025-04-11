@@ -13,7 +13,8 @@ void main(
 
     ParticleGSOut element;
     element.life = input[0].life;
-    
+    element.color = input[0].color;
+
     element.viewPos = input[0].viewPos - dx - dy;
     element.texCoord = float2(0.f, 1.f);
     output.Append(element);
