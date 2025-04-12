@@ -136,7 +136,7 @@ void CProjectAApp::Init()
 	UINT emitterID1 = m_particleManager->AddParticleEmitter(
 		0 /* Emitter Type */,
 		7874.0f/* Steel Density */,
-		1E-3f/* particle Radius */,
+		1E-4f/* particle Radius */,
 		XMVectorSet(-10.f, 0.f, 15.f, 1.f),
 		XMVectorSet(0.f, -90.f * XM_2PI / 360.f, 0.f, 1.f),
 		XMFLOAT2(0.f, 0.f),
@@ -151,7 +151,7 @@ void CProjectAApp::Init()
 
 	particleSpawnProperty->SetMinEmitRadians(XMFLOAT2(-10.f * XM_PI / 180.f, 120.f * XM_PI / 180.f));
 	particleSpawnProperty->SetMaxEmitRadians(XMFLOAT2(10.f * XM_PI / 180.f, 180.f * XM_PI / 180.f));
-	particleSpawnProperty->SetEmitSpeed(10.f);
+	particleSpawnProperty->SetEmitSpeed(30.f);
 	particleSpawnProperty->SetLoopPlay(true, 7.f);
 	particleSpawnProperty->SetEmitRateProfiles(
 		vector<SEmitRate>{
@@ -178,7 +178,7 @@ void CProjectAApp::Init()
 
 	particleSpawnProperty->SetMinEmitRadians(XMFLOAT2(-10.f * XM_PI / 180.f, 120.f * XM_PI / 180.f));
 	particleSpawnProperty->SetMaxEmitRadians(XMFLOAT2(10.f * XM_PI / 180.f, 180.f * XM_PI / 180.f));
-	particleSpawnProperty->SetEmitSpeed(10.f);
+	particleSpawnProperty->SetEmitSpeed(30.f);
 	particleSpawnProperty->SetLoopPlay(true, 7.f);
 	particleSpawnProperty->SetEmitRateProfiles(
 		vector<SEmitRate>{
@@ -189,8 +189,8 @@ void CProjectAApp::Init()
 #pragma region Radius 0.005 And Ligter Than Air
 	UINT emitterID3 = m_particleManager->AddParticleEmitter(
 		0 /* Emitter Type */,
-		0.5f/* Lighter Than Air */,
-		0.05f/* particle Radius */,
+		1.f/* Lighter Than Air */,
+		1.f/* particle Radius */,
 		XMVectorSet(10.f, 0.f, 15.f, 1.f),
 		XMVectorSet(0.f, -90.f * XM_2PI / 360.f, 0.f, 1.f),
 		XMFLOAT2(0.f, 0.f),
@@ -216,7 +216,7 @@ void CProjectAApp::Init()
 #pragma region Gravity Field
 	UINT emitterID4 = m_particleManager->AddParticleEmitter(
 		1 /* Emitter Type */,
-		7800/* Lighter Than Air */,
+		1.225f,
 		1.f/* particle Radius */,
 		XMVectorSet(0.f, 10.f, 10.f, 1.f),
 		XMVectorSet(0.f, -90.f * XM_2PI / 360.f, 0.f, 1.f),

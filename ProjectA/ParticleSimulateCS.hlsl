@@ -1,7 +1,7 @@
 #include "SimulateCommon.hlsli"
 
 #define airDensity 1.225
-#define airViscosity 1.81E-5f * 1E2
+#define sphereCd 0.47
 
 [numthreads(LocalThreadCount, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
@@ -15,28 +15,34 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		// 가속도 계산
 		const uint emitterID = currentParticle.emitterID;
 		const uint emitterType = currentParticle.emitterType;
+		const float3 velocity = currentParticle.velocity;
 		const float density = currentParticle.density;
 		const float radius = currentParticle.radius;
-		float3 accelerate = float3(0.f, 0.f, 0.f);
+        const float volume = radius * radius * radius * 4.f * 3.141592f / 3.f;
+        const float area = 3.141592f * radius * radius;
+        const float mass = volume * density;
+		const float3 gravity = float3(0.f, -9.8, 0.f);
+		
+		float3 force = float3(0.f, 0.f, 0.f);
+		
+        force += mass * gravity;
+        force -= volume * airDensity * gravity;
+        force -= airDensity * sphereCd * area * length(velocity) * velocity / 2.f;
 
 		if (emitterType == 0)
 		{
-			const float3 gravity = float3(0.f, -9.8, 0.f);
-			const float3 velocity = currentParticle.velocity;
-			accelerate += gravity;
-			accelerate -= (airDensity / density) * gravity;
-			accelerate -= (4.5 * airViscosity / (density * radius * radius)) * velocity;
-		}
+
+        }
 		else if (emitterType == 1)
 		{
 			float3 particleWorldPos = currentParticle.worldPos;
 			float3 parentEmitterWorldPos = emitterWorldPos[emitterID].xyz;
 			float3 gravityAcc = (parentEmitterWorldPos - particleWorldPos);
 			float3 curlAcc = CurlNoise(particleWorldPos, 0.1f);
-			accelerate += (gravityAcc + curlAcc * 3.f);
-		}
+            force += mass * (gravityAcc + curlAcc * 3.f);
+        }
 
-		currentParticle.accelerate = accelerate;
+        currentParticle.accelerate = force / mass;
 
 		// 가속도를 통한 적분
 		currentParticle.velocity += currentParticle.accelerate * dt;
