@@ -5,7 +5,7 @@ ParticleVSOut main(uint vertexID : SV_VertexID)
 	ParticleVSOut result;
     ParticleSelector particleSelector = currentIndices[vertexID];
     Particle currentPoint = particles[particleSelector.index];
-	result.viewPos = mul(float4(currentPoint.worldPos, 1.f), viewProjMatrix);
+    result.viewPos = particleSelector.viewPos;
 	result.life = currentPoint.life;
 
 	if (currentPoint.emitterType == 0)

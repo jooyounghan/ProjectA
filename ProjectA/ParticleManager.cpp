@@ -101,11 +101,11 @@ void CParticleManager::InitializeEmitterSourcingCS(ID3D11Device* device)
 	GParticleRuntimeSourceCS->CreateShader(L"./ParticleRuntimeSourceCS.hlsl", "main", "cs_5_0", device);
 }
 
-unique_ptr<CComputeShader> CParticleManager::GParticleSimulateCS = make_unique<CComputeShader>();
+unique_ptr<CComputeShader> CParticleManager::GCaculateParticleForceCS = make_unique<CComputeShader>();
 
 void CParticleManager::InitializeParticleSimulateCS(ID3D11Device* device)
 {
-	GParticleSimulateCS->CreateShader(L"./ParticleSimulateCS.hlsl", "main", "cs_5_0", device);
+	GCaculateParticleForceCS->CreateShader(L"./CalculateParticleForceCS.hlsl", "main", "cs_5_0", device);
 }
 
 unique_ptr<CComputeShader> CParticleManager::GCountIndexCS = make_unique<CComputeShader>();
@@ -361,7 +361,7 @@ void CParticleManager::ExecuteParticleSystem(ID3D11DeviceContext* deviceContext)
 	InitializeParticleSet(deviceContext);
 	SourceEmitter(deviceContext);
 	PoolingParticles(deviceContext);
-	SimulateParticles(deviceContext);
+	CaculateParticlesForce(deviceContext);
 }
 
 void CParticleManager::InitializeParticleSet(ID3D11DeviceContext* deviceContext)
@@ -471,7 +471,7 @@ void CParticleManager::PoolingParticles(ID3D11DeviceContext* deviceContext)
 	deviceContext->CSSetUnorderedAccessViews(0, 2, indirectArgsNullUavs, nullptr);
 }
 
-void CParticleManager::SimulateParticles(ID3D11DeviceContext* deviceContext)
+void CParticleManager::CaculateParticlesForce(ID3D11DeviceContext* deviceContext)
 {
 	ID3D11ShaderResourceView* simulateSrvs[] = { m_particleDrawIndirectStagingGPU->GetSRV(), m_indicesBuffers->GetSRV(), m_emitterWorldPosGPU->GetSRV() };
 	ID3D11ShaderResourceView* simulateNullSrvs[] = { nullptr, nullptr, nullptr };
@@ -479,7 +479,7 @@ void CParticleManager::SimulateParticles(ID3D11DeviceContext* deviceContext)
 	ID3D11UnorderedAccessView* simulateUav = m_totalParticles->GetUAV();
 	ID3D11UnorderedAccessView* simulateNullUav = nullptr;
 
-	GParticleSimulateCS->SetShader(deviceContext);
+	GCaculateParticleForceCS->SetShader(deviceContext);
 
 	deviceContext->CSSetShaderResources(0, 3, simulateSrvs);
 	deviceContext->CSSetUnorderedAccessViews(0, 1, &simulateUav, nullptr);

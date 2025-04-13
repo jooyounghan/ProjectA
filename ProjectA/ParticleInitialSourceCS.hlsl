@@ -19,7 +19,7 @@ void main( uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID )
 		uint revivedIndex = deathParticleSet.Consume();
 
 		float dt2 = dt * dt;
-		float2 randRads = lerp(minInitRadians, maxInitRadians, hash22(float2(index * dt2, index * dt2)));
+        float2 randRads = lerp(minInitRadians, maxInitRadians, hash22(float2(index * dt2, groupID * dt2)));
 		float randRadius = lerp(minMaxInitRadius.x, minMaxInitRadius.y, rand(float2(groupID * dt2, index * dt2)));
 		float3 randPos = randRadius * float3(cos(randRads.x) * cos(randRads.y), sin(randRads.y), sin(randRads.x) * cos(randRads.y));
 		float4 worldPos = mul(float4(randPos, 1.f), toWorldTransformation);

@@ -15,10 +15,11 @@ struct Particle
 
 struct ParticleSelector
 {
+    float4 viewPos;
     uint index;
     uint emitterType;
     float depth;
-    uint dummy;
+    float dummy;
 };
 
 

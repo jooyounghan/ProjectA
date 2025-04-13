@@ -97,7 +97,7 @@ public:
 
 #pragma region Particle 시뮬레이션 관련 CS(추후 Emitter 상속을 통한 확장 설계)
 public:
-	static std::unique_ptr<D3D11::CComputeShader> GParticleSimulateCS;
+	static std::unique_ptr<D3D11::CComputeShader> GCaculateParticleForceCS;
 	static void InitializeParticleSimulateCS(ID3D11Device* device);
 #pragma endregion
 
@@ -168,5 +168,5 @@ private:
 	void InitializeParticleSet(ID3D11DeviceContext* deviceContext);
 	void SourceEmitter(ID3D11DeviceContext* deviceContext);
 	void PoolingParticles(ID3D11DeviceContext* deviceContext);
-	void SimulateParticles(ID3D11DeviceContext* deviceContext);
+	void CaculateParticlesForce(ID3D11DeviceContext* deviceContext);
 };

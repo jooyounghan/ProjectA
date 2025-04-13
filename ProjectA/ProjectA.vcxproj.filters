@@ -51,14 +51,14 @@
     <Filter Include="Shader\Particle\System\Pooling">
       <UniqueIdentifier>{e7ccd3b2-1121-4369-a7c4-4b317e72518b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shader\Particle\System\Simulate">
-      <UniqueIdentifier>{ea9671aa-67ce-43da-9b1f-8cbc51677135}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shader\Particle\System\Initalize">
       <UniqueIdentifier>{2621a41f-4130-4e25-bd68-bb4cf99e1ee5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shader\Particle\System\Sorting">
       <UniqueIdentifier>{4a72e4be-fc3b-4514-a038-447b28caa182}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\Particle\System\CaculateForce">
+      <UniqueIdentifier>{ea9671aa-67ce-43da-9b1f-8cbc51677135}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -157,8 +157,8 @@
     <None Include="PoolingCommon.hlsli">
       <Filter>Shader\Particle\System\Pooling</Filter>
     </None>
-    <None Include="SimulateCommon.hlsli">
-      <Filter>Shader\Particle\System\Simulate</Filter>
+    <None Include="CaculateForceCommon.hlsli">
+      <Filter>Shader\Particle\System\CaculateForce</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -189,8 +189,8 @@
     <FxCompile Include="ParticleInitialSourceCS.hlsl">
       <Filter>Shader\Particle\System\Source</Filter>
     </FxCompile>
-    <FxCompile Include="ParticleSimulateCS.hlsl">
-      <Filter>Shader\Particle\System\Simulate</Filter>
+    <FxCompile Include="CalculateParticleForceCS.hlsl">
+      <Filter>Shader\Particle\System\CaculateForce</Filter>
     </FxCompile>
     <FxCompile Include="InitializeParticleSetCS.hlsl">
       <Filter>Shader\Particle\System\Initalize</Filter>

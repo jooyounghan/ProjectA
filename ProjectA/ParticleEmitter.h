@@ -16,10 +16,11 @@ struct SParticle
 
 struct SParticleSelector
 {
+	DirectX::XMVECTOR viewPos;
 	UINT index;
 	UINT emitterType;
 	float depth;
-	UINT dummy;
+	float dummy;
 };
 
 class CParticleEmitter : public IUpdatable
