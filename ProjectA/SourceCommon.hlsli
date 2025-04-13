@@ -1,6 +1,6 @@
 #include "ParticleCommon.hlsli"
 
-cbuffer EmitterProperties : register(b1)
+cbuffer EmitterProperties : register(b2)
 {
 	matrix toWorldTransformation;
     uint emitterID;

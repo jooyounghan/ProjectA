@@ -7,8 +7,20 @@ struct Particle
     float3 velocity;
     float density;
     float3 accelerate;
-    uint type;
+    uint emitterID;
+    uint emitterType;
+    float radius;
+    float2 dummy;
 };
+
+struct ParticleSelector
+{
+    uint index;
+    uint emitterType;
+    float depth;
+    uint dummy;
+};
+
 
 cbuffer AppParams : register(b0)
 {
@@ -16,4 +28,10 @@ cbuffer AppParams : register(b0)
     float appWidth;
     float appHeight;
     uint particleMaxCount;
+};
+
+cbuffer CameraViewProj : register(b1)
+{
+    matrix viewProjMatrix;
+    matrix invTransposeViewMatrix;
 };

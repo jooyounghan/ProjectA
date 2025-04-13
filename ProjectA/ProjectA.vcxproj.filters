@@ -57,6 +57,9 @@
     <Filter Include="Shader\Particle\System\Initalize">
       <UniqueIdentifier>{2621a41f-4130-4e25-bd68-bb4cf99e1ee5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader\Particle\System\Sorting">
+      <UniqueIdentifier>{4a72e4be-fc3b-4514-a038-447b28caa182}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -174,7 +177,7 @@
     <FxCompile Include="ParticleDrawPS.hlsl">
       <Filter>Shader\Particle\ParticleDraw</Filter>
     </FxCompile>
-    <FxCompile Include="CalculatePrefixSumCS.hlsl">
+    <FxCompile Include="CalculateIndexPrefixSumCS.hlsl">
       <Filter>Shader\Particle\System\Pooling</Filter>
     </FxCompile>
     <FxCompile Include="UpdateCurrentIndicesCS.hlsl">
@@ -191,6 +194,15 @@
     </FxCompile>
     <FxCompile Include="InitializeParticleSetCS.hlsl">
       <Filter>Shader\Particle\System\Initalize</Filter>
+    </FxCompile>
+    <FxCompile Include="CountIndexCS.hlsl">
+      <Filter>Shader\Particle\System\Sorting</Filter>
+    </FxCompile>
+    <FxCompile Include="CalculateCountPrefixSumCS.hlsl">
+      <Filter>Shader\Particle\System\Sorting</Filter>
+    </FxCompile>
+    <FxCompile Include="ReorderIndexCS.hlsl">
+      <Filter>Shader\Particle\System\Sorting</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

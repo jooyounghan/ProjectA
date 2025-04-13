@@ -1,6 +1,6 @@
 #include "PoolingCommon.hlsli"
 
-struct PartitionDescriptor
+struct PrefixDesciptor
 {
     int     aggregate;
     uint    statusFlag; /* X : 0, A : 1, P : 2*/
@@ -11,7 +11,7 @@ struct PartitionDescriptor
 StructuredBuffer<uint> aliveFlags : register(t0);
 
 RWStructuredBuffer<uint> prefixSums : register(u2);
-RWStructuredBuffer<PartitionDescriptor> partitionDescriptor : register(u3);
+RWStructuredBuffer<PrefixDesciptor> prefixDescriptor : register(u3);
 
 groupshared int localPrefixSums[LocalThreadCount];
 
@@ -35,18 +35,18 @@ void LocalUpSweep(uint groupID, uint groupThreadID, uint threadID)
     {
         int aggregate = localPrefixSums[LocalThreadCount - 1];
 
-        partitionDescriptor[groupID].aggregate = aggregate;
+        prefixDescriptor[groupID].aggregate = aggregate;
         uint Plast;
         InterlockedAdd(Pcurrent, aggregate, Plast);
 
         if (groupID == 0)
         {
-            partitionDescriptor[groupID].inclusivePrefix = partitionDescriptor[groupID].aggregate;
-            partitionDescriptor[groupID].statusFlag = 2;
+            prefixDescriptor[groupID].inclusivePrefix = prefixDescriptor[groupID].aggregate;
+            prefixDescriptor[groupID].statusFlag = 2;
         }
         else
         {
-            partitionDescriptor[groupID].statusFlag = 1;
+            prefixDescriptor[groupID].statusFlag = 1;
         }
     }
 }
@@ -63,25 +63,25 @@ void DecoupledLookback(uint groupID, uint groupThreadID)
 
             do
             {
-                InterlockedCompareExchange(partitionDescriptor[lookbackID].statusFlag, 0xFFFFFFFF, 0xFFFFFFFF, currentStatus);
+                InterlockedCompareExchange(prefixDescriptor[lookbackID].statusFlag, 0xFFFFFFFF, 0xFFFFFFFF, currentStatus);
             } while (currentStatus == 0);
 
 
             if (currentStatus == 1)
             {
-                exclusivePrefix += partitionDescriptor[lookbackID].aggregate;
+                exclusivePrefix += prefixDescriptor[lookbackID].aggregate;
                 continue;
             }
             else if (currentStatus == 2)
             {
-                exclusivePrefix += partitionDescriptor[lookbackID].inclusivePrefix;
+                exclusivePrefix += prefixDescriptor[lookbackID].inclusivePrefix;
                 break;
             }
         }
 
-        partitionDescriptor[groupID].exclusivePrefix = exclusivePrefix;
-        partitionDescriptor[groupID].inclusivePrefix = partitionDescriptor[groupID].aggregate + exclusivePrefix;
-        InterlockedCompareStore(partitionDescriptor[groupID].statusFlag, 1, 2);
+        prefixDescriptor[groupID].exclusivePrefix = exclusivePrefix;
+        prefixDescriptor[groupID].inclusivePrefix = prefixDescriptor[groupID].aggregate + exclusivePrefix;
+        InterlockedCompareStore(prefixDescriptor[groupID].statusFlag, 1, 2);
     }
 }
 
@@ -107,11 +107,11 @@ void LocalDownSweep(uint groupID, uint groupThreadID, uint threadID)
 
     if (groupThreadID < (LocalThreadCount - 1))
     {
-        prefixSums[threadID] = localPrefixSums[groupThreadID + 1] + partitionDescriptor[groupID].exclusivePrefix;
+        prefixSums[threadID] = localPrefixSums[groupThreadID + 1] + prefixDescriptor[groupID].exclusivePrefix;
     }
     else
     {
-        prefixSums[threadID] = partitionDescriptor[groupID].inclusivePrefix;
+        prefixSums[threadID] = prefixDescriptor[groupID].inclusivePrefix;
     }
 }
 
@@ -130,12 +130,12 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
             Pcurrent = 0;
         };
 
-        PartitionDescriptor pd = partitionDescriptor[groupID];
+        PrefixDesciptor pd = prefixDescriptor[groupID];
         pd.aggregate = 0;
         pd.statusFlag = 0;
         pd.exclusivePrefix = 0;
         pd.inclusivePrefix = 0;
-        partitionDescriptor[groupID] = pd;
+        prefixDescriptor[groupID] = pd;
     }
     DeviceMemoryBarrier();
 

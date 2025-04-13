@@ -1,6 +1,6 @@
 #include "SourceCommon.hlsli"
 
-cbuffer EmitterSpawnProperty : register(b2)
+cbuffer EmitterSpawnProperty : register(b3)
 {
 	float2 minInitRadians;
 	float2 maxInitRadians;

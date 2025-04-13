@@ -1,12 +1,12 @@
 #include "ParticleCommon.hlsli"
 
-cbuffer EmitterProperties : register(b1)
+cbuffer EmitterProperties : register(b2)
 {
 	matrix toWorldTransformation;
-	uint emitterID;
+    uint emitterID;
 	uint emitterType;
     float particleDensity;
-	float emitterPropertyDummy;
+	float particleRadius;
 };
 
 RWStructuredBuffer<Particle> totalParticles : register(u0);

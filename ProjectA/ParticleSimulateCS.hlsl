@@ -9,7 +9,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	uint index = DTid.x;
 	if (index < Pcurrent)
 	{
-		const uint particleIndex = currentIndices[index];
+		const uint particleIndex = currentIndices[index].index;
 		Particle currentParticle = particles[particleIndex];
 
 		// 가속도 계산
@@ -38,7 +38,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 			float3 particleWorldPos = currentParticle.worldPos;
 			float3 parentEmitterWorldPos = emitterWorldPos[emitterID].xyz;
 			float3 gravityAcc = (parentEmitterWorldPos - particleWorldPos);
-			float3 curlAcc = CurlNoise(particleWorldPos, 0.1f);
+			float3 curlAcc = CurlNoise(particleWorldPos, 1.1f);
             force += mass * (gravityAcc + curlAcc * 3.f);
         }
 

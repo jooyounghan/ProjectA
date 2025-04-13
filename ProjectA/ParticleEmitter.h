@@ -17,8 +17,8 @@ struct SParticle
 struct SParticleSelector
 {
 	UINT index;
-	UINT type;
-	float zValue;
+	UINT emitterType;
+	float depth;
 	UINT dummy;
 };
 

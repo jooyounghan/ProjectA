@@ -13,10 +13,25 @@ struct Particle
     float2 dummy;
 };
 
+struct ParticleSelector
+{
+    uint index;
+    uint emitterType;
+    float depth;
+    uint dummy;
+};
+
+
 cbuffer AppParams : register(b0)
 {
     float dt;
     float appWidth;
     float appHeight;
     uint particleMaxCount;
+};
+
+cbuffer CameraViewProj : register(b1)
+{
+    matrix viewProjMatrix;
+    matrix invTransposeViewMatrix;
 };

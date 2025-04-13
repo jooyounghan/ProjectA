@@ -1,6 +1,6 @@
 #include "SourceCommon.hlsli"
 
-cbuffer ParticleSpawnProperty : register(b2)
+cbuffer ParticleSpawnProperty : register(b3)
 {
 	float2 minEmitRadians;
 	float2 maxEmitRadians;

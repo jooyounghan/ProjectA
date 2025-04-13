@@ -117,10 +117,11 @@ void CProjectAApp::Init()
 #pragma region 테스트 초기화
 	CParticleManager::InitializeSetInitializingPSO(m_device);
 	CParticleManager::InitializeEmitterDrawPSO(m_device);
-	CParticleManager::InitializePoolingPSO(m_device);
-	CParticleManager::InitializeEmitterSourcingPSO(m_device);
-	CParticleManager::InitializeParticleSimulatePSO(m_device);
+	CParticleManager::InitializePoolingCS(m_device);
+	CParticleManager::InitializeEmitterSourcingCS(m_device);
+	CParticleManager::InitializeParticleSimulateCS(m_device);
 	CParticleManager::InitializeParticleDrawPSO(m_device);
+	CParticleManager::InitializeRadixSortCS(m_device);
 #pragma endregion
 
 #pragma region 인스턴스 초기화
@@ -152,10 +153,10 @@ void CProjectAApp::Init()
 	particleSpawnProperty->SetMinEmitRadians(XMFLOAT2(-10.f * XM_PI / 180.f, 120.f * XM_PI / 180.f));
 	particleSpawnProperty->SetMaxEmitRadians(XMFLOAT2(10.f * XM_PI / 180.f, 180.f * XM_PI / 180.f));
 	particleSpawnProperty->SetEmitSpeed(30.f);
-	particleSpawnProperty->SetLoopPlay(true, 7.f);
+	particleSpawnProperty->SetLoopPlay(true, 4.f);
 	particleSpawnProperty->SetEmitRateProfiles(
 		vector<SEmitRate>{
-			{0.f, 0}, { 2.f, 0 }, { 3.f, 3000 }, { 3.5f, 3000 }, { 4.f, 10000 }, { 4.5f, 3000 }, { 5.f, 3000 }, { 6.f, 0 }, { 7.f, 0 }
+			{0.f, 0}, { 2.f, 0 }, { 2.5f, 3000 }, { 3.f, 0 }, { 4.f, 0 }
 	});
 #pragma endregion
 
@@ -179,10 +180,10 @@ void CProjectAApp::Init()
 	particleSpawnProperty->SetMinEmitRadians(XMFLOAT2(-10.f * XM_PI / 180.f, 120.f * XM_PI / 180.f));
 	particleSpawnProperty->SetMaxEmitRadians(XMFLOAT2(10.f * XM_PI / 180.f, 180.f * XM_PI / 180.f));
 	particleSpawnProperty->SetEmitSpeed(30.f);
-	particleSpawnProperty->SetLoopPlay(true, 7.f);
+	particleSpawnProperty->SetLoopPlay(true, 4.f);
 	particleSpawnProperty->SetEmitRateProfiles(
 		vector<SEmitRate>{
-			{0.f, 0}, { 2.f, 0 }, { 3.f, 3000 }, { 3.5f, 3000 }, { 4.f, 10000 }, { 4.5f, 3000 }, { 5.f, 3000 }, { 6.f, 0 }, { 7.f, 0 }
+			{0.f, 0}, { 2.f, 0 }, { 2.5f, 3000 }, { 3.f, 0 }, { 4.f, 0 }
 	});
 #pragma endregion
 
@@ -206,10 +207,10 @@ void CProjectAApp::Init()
 	particleSpawnProperty->SetMinEmitRadians(XMFLOAT2(-10.f * XM_PI / 180.f, 120.f * XM_PI / 180.f));
 	particleSpawnProperty->SetMaxEmitRadians(XMFLOAT2(10.f * XM_PI / 180.f, 180.f * XM_PI / 180.f));
 	particleSpawnProperty->SetEmitSpeed(10.f);
-	particleSpawnProperty->SetLoopPlay(true, 7.f);
+	particleSpawnProperty->SetLoopPlay(true, 4.f);
 	particleSpawnProperty->SetEmitRateProfiles(
 		vector<SEmitRate>{
-			{0.f, 0}, { 2.f, 0 }, { 3.f, 3000 }, { 3.5f, 3000 }, { 4.f, 10000 }, { 4.5f, 3000 }, { 5.f, 3000 }, { 6.f, 0 }, { 7.f, 0 }
+			{0.f, 0}, { 2.f, 0 }, { 2.5f, 3000 }, { 3.f, 0 }, { 4.f, 0 }
 	});
 #pragma endregion
 
@@ -275,22 +276,21 @@ void CProjectAApp::Update(float deltaTime)
 
 	ID3D11Buffer* cameraCb = m_camera->GetPropertiesBuffer();
 	m_deviceContext->VSSetConstantBuffers(0, 1, &cameraCb);
-		m_particleManager->DrawEmittersDebugCube(m_camera->GetPropertiesBuffer(), m_deviceContext);
+		m_particleManager->DrawEmittersDebugCube(m_deviceContext);
 	m_deviceContext->VSSetConstantBuffers(0, 1, &singleNullCb);
 
-	ID3D11Buffer* appParamsCb = m_appParamsGPU.GetBuffer();
-	m_deviceContext->CSSetConstantBuffers(0, 1, &appParamsCb);
-	m_deviceContext->GSSetConstantBuffers(0, 1, &appParamsCb);
+	ID3D11Buffer* commonCbs[] = { m_appParamsGPU.GetBuffer(), m_camera->GetPropertiesBuffer() };
+	ID3D11Buffer* commonNullCbs[] = { nullptr, nullptr };
+	m_deviceContext->CSSetConstantBuffers(0, 2, commonCbs);
+	m_deviceContext->VSSetConstantBuffers(0, 2, commonCbs);
+	m_deviceContext->GSSetConstantBuffers(0, 2, commonCbs);
+	m_deviceContext->PSSetConstantBuffers(0, 2, commonCbs);
 		m_particleManager->ExecuteParticleSystem(m_deviceContext);
-		m_deviceContext->VSSetConstantBuffers(1, 1, &cameraCb);
-		m_deviceContext->GSSetConstantBuffers(1, 1, &cameraCb);
-		m_deviceContext->PSSetConstantBuffers(1, 1, &cameraCb);
-			m_particleManager->DrawParticles(m_deviceContext);
-		m_deviceContext->VSSetConstantBuffers(1, 1, &singleNullCb);
-		m_deviceContext->GSSetConstantBuffers(1, 1, &singleNullCb);
-		m_deviceContext->PSSetConstantBuffers(1, 1, &singleNullCb);
-	m_deviceContext->CSSetConstantBuffers(0, 1, &singleNullCb);
-	m_deviceContext->GSSetConstantBuffers(0, 1, &singleNullCb);
+		m_particleManager->DrawParticles(m_deviceContext);
+	m_deviceContext->CSSetConstantBuffers(0, 2, commonNullCbs);
+	m_deviceContext->VSSetConstantBuffers(0, 2, commonNullCbs);
+	m_deviceContext->GSSetConstantBuffers(0, 2, commonNullCbs);
+	m_deviceContext->PSSetConstantBuffers(0, 2, commonNullCbs);
 #pragma endregion
 
 #pragma region 카메라 -> 백버퍼 복사 및 UI 그리기

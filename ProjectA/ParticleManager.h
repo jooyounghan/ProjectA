@@ -77,28 +77,36 @@ public:
 	static void InitializeEmitterDrawPSO(ID3D11Device* device);
 #pragma endregion
 
-#pragma region Particle Initialize 관련 PSO
+#pragma region Particle Initialize 관련 CS
 	static std::unique_ptr<D3D11::CComputeShader> GInitializeParticleSetCS;
 	static void InitializeSetInitializingPSO(ID3D11Device* device);
 #pragma endregion
 
-#pragma region Particle 풀링 관련 PSO
-	static std::unique_ptr<D3D11::CComputeShader> GCalculatePrefixSumCS;
+#pragma region Particle 풀링 관련 CS
+	static std::unique_ptr<D3D11::CComputeShader> GCalculateIndexPrefixSumCS;
 	static std::unique_ptr<D3D11::CComputeShader> GUpdateCurrentIndicesCS;
-	static void InitializePoolingPSO(ID3D11Device* device);
+	static void InitializePoolingCS(ID3D11Device* device);
 #pragma endregion
 
-#pragma region Particle 소싱 관련 PSO(추후 Emitter 상속을 통한 확장 설계)
+#pragma region Particle 소싱 관련 CS(추후 Emitter 상속을 통한 확장 설계)
 public:
 	static std::unique_ptr<D3D11::CComputeShader> GParticleInitialSourceCS;
 	static std::unique_ptr<D3D11::CComputeShader> GParticleRuntimeSourceCS;
-	static void InitializeEmitterSourcingPSO(ID3D11Device* device);
+	static void InitializeEmitterSourcingCS(ID3D11Device* device);
 #pragma endregion
 
-#pragma region Particle 시뮬레이션 관련 PSO(추후 Emitter 상속을 통한 확장 설계)
+#pragma region Particle 시뮬레이션 관련 CS(추후 Emitter 상속을 통한 확장 설계)
 public:
 	static std::unique_ptr<D3D11::CComputeShader> GParticleSimulateCS;
-	static void InitializeParticleSimulatePSO(ID3D11Device* device);
+	static void InitializeParticleSimulateCS(ID3D11Device* device);
+#pragma endregion
+
+#pragma region Index Sorting(Radix Sorting) 관련 CS
+	static std::unique_ptr<D3D11::CComputeShader> GCountIndexCS;
+	static std::unique_ptr<D3D11::CComputeShader> GCaluclateCountPrefixSumCS;
+	static std::unique_ptr<D3D11::CComputeShader> GReorderCS;
+	static void InitializeRadixSortCS(ID3D11Device* device);
+
 #pragma endregion
 
 #pragma region Particle 그리기 관련 PSO
@@ -113,7 +121,7 @@ public:
 #pragma endregion
 
 protected:
-	struct SPartitionDescriptor
+	struct SPrefixDesciptor
 	{
 		int aggregate;
 		UINT statusFlag;
@@ -125,26 +133,34 @@ protected:
 	UINT m_particleMaxCount;
 	std::unique_ptr<D3D11::CStructuredBuffer> m_totalParticles;
 	std::unique_ptr<D3D11::CStructuredBuffer> m_aliveFlags;
-	std::unique_ptr<D3D11::CStructuredBuffer> m_prefixSums;
-	std::unique_ptr<D3D11::CStructuredBuffer> m_partitionDescriptors;
-	std::unique_ptr<D3D11::CStructuredBuffer> m_indicesBuffers;
 	std::unique_ptr<D3D11::CAppendBuffer> m_deathParticleSet;
+
+protected:
+	std::unique_ptr<D3D11::CStructuredBuffer> m_alivePrefixSums;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_alivePrefixDescriptors;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_indicesBuffers;
+
+protected:
+	std::unique_ptr<D3D11::CStructuredBuffer> m_countBuffers;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_countPrefixSums;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_countPrefixDescriptors;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_sortedIndicesBuffers;
 
 public:
 	inline const UINT& GetParticleMaxCount() const noexcept { return m_particleMaxCount; };
 
 protected:
 	std::unique_ptr<D3D11::CStructuredBuffer> m_particleDrawIndirectStagingGPU;
-	std::unique_ptr<D3D11::CStructuredBuffer> m_particleSimulateDispatchIndirectStagingGPU;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_IndexedParticleDispatchIndirectStagingGPU;
 	std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DRAW_INSTANCED_INDIRECT_ARGS>> m_particleDrawIndirectBuffer;
-	std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DISPATCH_INDIRECT_ARGS>> m_particleSimulateDispatchIndirectBuffer;
+	std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DISPATCH_INDIRECT_ARGS>> m_indexedParticleDispatchIndirectBuffer;
 
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
 	virtual void Update(ID3D11DeviceContext* deviceContext, float dt) override;
 
 public:
-	void DrawEmittersDebugCube(ID3D11Buffer* viewProjBuffer, ID3D11DeviceContext* deviceContext);
+	void DrawEmittersDebugCube(ID3D11DeviceContext* deviceContext);
 	void ExecuteParticleSystem(ID3D11DeviceContext* deviceContext);
 	void DrawParticles(ID3D11DeviceContext* deviceContext);
 

@@ -3,7 +3,7 @@
 struct ParticleVSOut
 {
     float4 viewPos : POSITION0;
-    float3 worldPos : POSITION1;
+    float3 color : COLOR;
     float life : LIFE;
 };
 
@@ -11,6 +11,7 @@ struct ParticleGSOut
 {
     float4 viewPos : SV_Position;
     float2 texCoord : TEXCOORD;
+    float3 color : COLOR;
     float life : LIFE;
 };
 
@@ -20,11 +21,5 @@ float smoothstep(float edge0, float edge1, float x)
     return x * x * (3.f - 2.f * x);
 }
 
-cbuffer CameraViewProj : register(b1)
-{
-    matrix viewProjMatrix;
-    matrix invTransposeViewMatrix;
-};
-
 StructuredBuffer<Particle> particles : register(t0);
-StructuredBuffer<uint> currentIndices : register(t1);
+StructuredBuffer<ParticleSelector> currentIndices : register(t1);

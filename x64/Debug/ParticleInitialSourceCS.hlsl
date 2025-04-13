@@ -1,6 +1,6 @@
 #include "SourceCommon.hlsli"
 
-cbuffer EmitterSpawnProperty : register(b2)
+cbuffer EmitterSpawnProperty : register(b3)
 {
 	float2 minInitRadians;
 	float2 maxInitRadians;
@@ -27,13 +27,14 @@ void main( uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID )
 
 		Particle sourcedParticle;
 		sourcedParticle.worldPos = worldPos.xyz;
-		sourcedParticle.life = 10.f;
+		sourcedParticle.life = 100.f;
 		sourcedParticle.velocity = float3(0.f, 0.f, 0.f);
 		sourcedParticle.density = particleDensity;
-		sourcedParticle.accelerate = float3(0.f, -9.8 * (particleDensity - 1.f), 0.f);
-		sourcedParticle.type = emitterType;
-
-
+		sourcedParticle.accelerate = float3(0.f, 0.f, 0.f);
+		sourcedParticle.emitterID = emitterID;
+		sourcedParticle.emitterType = emitterType;
+		sourcedParticle.radius = particleRadius;
+		sourcedParticle.dummy = float2(0.f, 0.f);
 		totalParticles[revivedIndex] = sourcedParticle;
 		aliveFlags[revivedIndex] = 1;
 	}
