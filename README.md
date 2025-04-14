@@ -74,7 +74,7 @@ gantt
 - 간단한 상황 예제 작성을 통하여 Set 구성, Sourcing, Simulation 수행(테스트 용으로 간이로 작성)
 - 알고리즘 수정 정리
 	- 기존 알고리즘에서 Prefix Sum을 활용한 방법 추가
-	 ![Image](https://github.com/user-attachments/assets/985bf0b0-b258-494f-8fd2-41e8eaa46ec6)
+	 ![Image](https://github.com/user-attachments/assets/cbfd8672-488a-41c4-b6b5-3eda735e59e5)
 
 ### 25.04.07
 - Prefix Sum 관련 알고리즘 정리
@@ -101,7 +101,6 @@ gantt
 		- 상태 A : 해당 스레드 그룹의 로컬 Aggregate가 구해진 상태
 		- 상태 P : 해당 스레드 그룹의 Inclusive Prefix가 구해진 상태
 	- 알고리즘 구현
-		![Image](알고리즘 구현 그림 추가 예정)
 		1) Up-Sweep 과정을 통하여 i번째 스레드 그룹의 Aggregate(총합)을 구하고, i번째 스레드 그룹의 상태를 A로 변경한다. 이때 0번째 스레드 그룹의 경우, Aggregate를 Inclusive Prefix로 사용할 수 있으므로 상태를 P로 변경한다.
 		2) Decoupled - Lookback을 수행한다. i번째 스레드 그룹의 경우, i -1, i - 2, ... 0번째 스레드 그룹의 상태를 순차적으로 확인하고, m번째 스레드 그룹의 상태를 확인하였을 경우 아래와 같이 동작한다.
 			- 상태 X : Polling 대기 수행
@@ -118,14 +117,17 @@ gantt
 ### 25.04.10
 -  입자 생성 시 구면좌표계를 활용하여 속도, 위치가 결정되도록 수정
 	- 위도, 경도, 길이 값을 통하여 입자 제어 가능 
-	 ![Image](구면 좌표계 관련 그림 추가 예정)
+![Image](https://github.com/user-attachments/assets/0a5bc206-4a53-49b9-84a6-dc9f17ac6987)
 -  EmitterSpawnProperty, ParticleSpawnProperty 클래스 생성
 	- EmitterSpawnProperty를 통하여 Emitter가 생성되었을 때 초기 파티클 수, 파티클이 존재할 수 있는 위도 경도 제어
 	- ParticleSpawnProperty를 통하여 프레임마다 Emitter가 방출하는 파티클 수, 방사하는 위도, 경도, 속력 제어
 
-### 25.04.11
+### 25.04.11 ~ 25.04.13
 - 기본 입자 시뮬레이션 구현
-	- Emitter Type 0 : 중력, 부력, 저항력(스토크스 법칙)을 바탕으로 알짜힘을 계산하고, 이를 바탕 가속도로 활용
-		 ![Image](알짜힘 관련 식 관련 그림 추가 예정)
-	- Emitter Type 1 : Emitter의 위치로 작용하는 중력 가속도와 Curl-Noise를 추가하여 가속도 활용 
-		- 가속도를 시간에 대해 적분하여 속도항을 구하고, 속도항을 시간에 대해 적분하여 위치항을 계산하는 방식으로 구현
+	- 기본 알짜힘 계산
+		![Image](https://github.com/user-attachments/assets/f40692ae-ec70-4888-8512-341cda09e969)
+		입자에 기본적으로 가해지는 알짜힘은 위 도식과 같다. 속도 	$\vec{v}$ 로 움직이는 입자에 작용하는 기본적인 힘은 3가지로, 중력, 부력, 저항력이 있다. 이 이외에 추가적인 외력이 작용할 수 있다.
+		중력의 경우 $\rho_{particle} V\vec{g}$, 부력의 경우 $-\rho_{air} V\vec{g}$로 계산될 수 있으며, 유체에 의해 발생할 수 있는 저항력의 경우 $-\frac{1}{2}C_{d}\rho_{air}A|\vec{v}|\vec{v}$ 로 표현할 수 있다. 항력 계수 $C_{d}$의 경우 구형 입자일 경우 실험적으로 구해진 0.47 값을 활용한다.
+	-  Emitter에서 방출하는 입자마다 작용하는 외력을 추가적으로 계산	
+	- Emitter Type 0 : 기본 알짜힘으로 가속도항 계산
+	- Emitter Type 1 : Emitter의 위치 방향으로 작용하는 인력과 Curl-Noise를 추가하여 가속도를 계산
