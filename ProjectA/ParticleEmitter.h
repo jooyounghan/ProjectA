@@ -5,13 +5,14 @@
 struct SParticle
 {
 	DirectX::XMFLOAT3 position;
-	float life;
 	DirectX::XMFLOAT3 velocity;
-	float mass;
 	DirectX::XMFLOAT3 accelerate;
-	UINT type;
+	float life;
+	float density;
+	UINT emitterType;
+	UINT emitterID;
 	float radius;
-	DirectX::XMFLOAT3 dummy;
+	float dummy[2];
 };
 
 struct SParticleSelector

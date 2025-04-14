@@ -1,12 +1,12 @@
-#define LocalThreadCount 64
+#define LocalThreadCount 128
 
 struct Particle
 {
     float3 worldPos;
-    float life;
     float3 velocity;
-    float density;
     float3 accelerate;
+    float life;
+    float density;
     uint emitterID;
     uint emitterType;
     float radius;
@@ -15,10 +15,11 @@ struct Particle
 
 struct ParticleSelector
 {
+    float4 viewPos;
     uint index;
     uint emitterType;
     float depth;
-    uint dummy;
+    float dummy;
 };
 
 

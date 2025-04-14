@@ -131,8 +131,9 @@ void CProjectAApp::Init()
 		m_width, m_height, 90.f, 0.01f, 100000.000f
 		);
 
-	m_particleManager = make_unique<CParticleManager>(500, 1024 * 1024);
-	
+	m_particleManager = make_unique<CParticleManager>(5000, 1024 * 1024);
+
+
 #pragma region Radius 1E-3
 	UINT emitterID1 = m_particleManager->AddParticleEmitter(
 		0 /* Emitter Type */,
@@ -152,7 +153,7 @@ void CProjectAApp::Init()
 
 	particleSpawnProperty->SetMinEmitRadians(XMFLOAT2(-10.f * XM_PI / 180.f, 120.f * XM_PI / 180.f));
 	particleSpawnProperty->SetMaxEmitRadians(XMFLOAT2(10.f * XM_PI / 180.f, 180.f * XM_PI / 180.f));
-	particleSpawnProperty->SetEmitSpeed(30.f);
+	particleSpawnProperty->SetMinMaxEmitSpeed(XMFLOAT2(20.f, 30.f));
 	particleSpawnProperty->SetLoopPlay(true, 4.f);
 	particleSpawnProperty->SetEmitRateProfiles(
 		vector<SEmitRate>{
@@ -179,7 +180,7 @@ void CProjectAApp::Init()
 
 	particleSpawnProperty->SetMinEmitRadians(XMFLOAT2(-10.f * XM_PI / 180.f, 120.f * XM_PI / 180.f));
 	particleSpawnProperty->SetMaxEmitRadians(XMFLOAT2(10.f * XM_PI / 180.f, 180.f * XM_PI / 180.f));
-	particleSpawnProperty->SetEmitSpeed(30.f);
+	particleSpawnProperty->SetMinMaxEmitSpeed(XMFLOAT2(20.f, 30.f));
 	particleSpawnProperty->SetLoopPlay(true, 4.f);
 	particleSpawnProperty->SetEmitRateProfiles(
 		vector<SEmitRate>{
@@ -206,7 +207,7 @@ void CProjectAApp::Init()
 
 	particleSpawnProperty->SetMinEmitRadians(XMFLOAT2(-10.f * XM_PI / 180.f, 120.f * XM_PI / 180.f));
 	particleSpawnProperty->SetMaxEmitRadians(XMFLOAT2(10.f * XM_PI / 180.f, 180.f * XM_PI / 180.f));
-	particleSpawnProperty->SetEmitSpeed(10.f);
+	particleSpawnProperty->SetMinMaxEmitSpeed(XMFLOAT2(8.f, 10.f));
 	particleSpawnProperty->SetLoopPlay(true, 4.f);
 	particleSpawnProperty->SetEmitRateProfiles(
 		vector<SEmitRate>{
@@ -385,9 +386,12 @@ void CProjectAApp::DrawEmitterHandler()
 		float particleDensity = emitter->GetParticleDensity();
 		if (DragFloat("입자 밀도", &particleDensity, 0.1f, 0.1f, 10000.f)) emitter->SetParticleDensity(particleDensity);
 
-		ImGui::SeparatorText("Emitter 입자 반지름(m)");
-		float particleRadius = emitter->GetParticleRadius();
-		if (DragFloat("입자 반지름", &particleRadius, 1E-4f, 1E-4f, 1.f, "%.4f")) emitter->SetParticleRadius(particleRadius);
+		ImGui::SeparatorText("Emitter 입자 반지름(mm)");
+		float particleRadius = emitter->GetParticleRadius() * 1000.f;
+		if (DragFloat("입자 반지름", &particleRadius, 1E-2f, 1E-2f, 1000.f, "%.3f"))
+		{
+			emitter->SetParticleRadius(particleRadius / 1000.f);
+		}
 
 		ImGui::SeparatorText("Emitter 입자 방출 각");
 		bool isMinEmitAngleChanged = false;
@@ -424,8 +428,15 @@ void CProjectAApp::DrawEmitterHandler()
 		if (isMaxEmitAngleChanged) emitterProperty->SetMaxEmitRadians(maxEmitRadians);
 
 		ImGui::SeparatorText("Emitter 입자 방출 속력(m/s)");
-		float emitSpeed = emitterProperty->GetEmitSpeed();
-		if (DragFloat("방출 속도", &emitSpeed, 0.1f, 0.f, 100.f)) emitterProperty->SetEmitSpeed(emitSpeed);
+		bool isMinMaxEmitSpeedsChanged = false;
+		XMFLOAT2 minMaxEmitSpeeds = emitterProperty->GetMinMaxEmitSpeed();
+		if (DragFloat("방출 최소 속도", &minMaxEmitSpeeds.x, 0.1f, 0.f, 100.f)) isMinMaxEmitSpeedsChanged = true;
+		if (minMaxEmitSpeeds.x > minMaxEmitSpeeds.y) minMaxEmitSpeeds.y = minMaxEmitSpeeds.x;
+		if (DragFloat("방출 최대 속도", &minMaxEmitSpeeds.y, 0.1f, 0.f, 100.f)) isMinMaxEmitSpeedsChanged = true;
+		if (isMinMaxEmitSpeedsChanged)
+		{
+			emitterProperty->SetMinMaxEmitSpeed(minMaxEmitSpeeds);
+		}
 	}
 }
 

@@ -123,10 +123,10 @@ public:
 protected:
 	struct SPrefixDesciptor
 	{
-		int aggregate;
+		UINT aggregate;
 		UINT statusFlag;
-		int exclusivePrefix;
-		int inclusivePrefix;
+		UINT exclusivePrefix;
+		UINT inclusivePrefix;
 	};
 
 protected:

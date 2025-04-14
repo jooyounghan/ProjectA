@@ -39,9 +39,8 @@ CParticleEmitter::CParticleEmitter(
 		minInitRadians, maxInitRadians, 
 		minMaxRadius, initialParticleCount
 );
-
 	m_particleSpawnProperty = make_unique<CParticleSpawnProperty>(
-		XMFLOAT2(0.f, 0.f), XMFLOAT2(XM_2PI, XM_2PI), 0.f
+		XMFLOAT2(0.f, 0.f), XMFLOAT2(XM_2PI, XM_2PI), XMFLOAT2(0.f, 0.f)
 	);
 }
 

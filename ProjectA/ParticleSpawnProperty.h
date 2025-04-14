@@ -19,7 +19,7 @@ public:
 	CParticleSpawnProperty(
 		const DirectX::XMFLOAT2& minEmitRadians,
 		const DirectX::XMFLOAT2& maxEmitRadians,
-		float emitSpeed,
+		const DirectX::XMFLOAT2& minMaxEmitSpeeds,
 		const std::vector<SEmitRate>& emitRateProfiles = std::vector<SEmitRate>(),
 		bool isPlayLoop = false,
 		float loopTime = 0.f
@@ -47,8 +47,8 @@ protected:
 	{
 		DirectX::XMFLOAT2 minEmitRadians;
 		DirectX::XMFLOAT2 maxEmitRadians;
-		float emitSpeed;
-		DirectX::XMFLOAT3 dummy;
+		DirectX::XMFLOAT2 minMaxEmitSpeeds;
+		DirectX::XMFLOAT2 dummy;
 	} m_particleSpawnPropertyCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_particleSpawnPropertyGPU;
 	bool m_isParticleSpawnPropertyChanged = false;
@@ -59,12 +59,12 @@ public:
 public:
 	void SetMinEmitRadians(const DirectX::XMFLOAT2& minEmitRadians);
 	void SetMaxEmitRadians(const DirectX::XMFLOAT2& maxEmitRadians);
-	void SetEmitSpeed(float emitSpeed);
+	void SetMinMaxEmitSpeed(const DirectX::XMFLOAT2& minMaxEmitSpeeds);
 
 public:
 	inline const DirectX::XMFLOAT2& GetMinEmitRadians() const noexcept { return m_particleSpawnPropertyCPU.minEmitRadians; }
 	inline const DirectX::XMFLOAT2& GetMaxEmitRadians() const noexcept { return m_particleSpawnPropertyCPU.maxEmitRadians; }
-	inline const float& GetEmitSpeed() const noexcept { return m_particleSpawnPropertyCPU.emitSpeed; }
+	inline const DirectX::XMFLOAT2& GetMinMaxEmitSpeed() const noexcept { return m_particleSpawnPropertyCPU.minMaxEmitSpeeds; }
 
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;

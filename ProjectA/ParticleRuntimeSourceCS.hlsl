@@ -4,8 +4,8 @@ cbuffer ParticleSpawnProperty : register(b3)
 {
 	float2 minEmitRadians;
 	float2 maxEmitRadians;
-	float emitSpeed;
-	float3 particleSpawnPropertyDummy;
+	float2 minMaxEmitSpeeds;
+	float2 particleSpawnPropertyDummy;
 }
 
 [numthreads(1, 1, 1)]
@@ -24,9 +24,11 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 	sourcedParticle.life = 3.f;
 
 	float dt2 = dt * dt;
+
 	float2 randHash = hash22(float2(revivedIndex * dt2, revivedIndex * dt2));
 	float2 randRads = lerp(minEmitRadians, maxEmitRadians, randHash);
-	float3 randomVelocity = length(sin(randHash * 3.141592)) * emitSpeed * float3(cos(randRads.x)*cos(randRads.y), sin(randRads.y), sin(randRads.x)*cos(randRads.y));
+	float randSpeed = lerp(minMaxEmitSpeeds.x, minMaxEmitSpeeds.y, rand(float2(revivedIndex * dt2, revivedIndex)));
+	float3 randomVelocity = length(sin(randHash * 3.141592)) * randSpeed * float3(cos(randRads.x)*cos(randRads.y), sin(randRads.y), sin(randRads.x)*cos(randRads.y));
 
 	sourcedParticle.velocity = mul(float4(randomVelocity, 0.f), toWorldTransformation).xyz;
 	sourcedParticle.density = particleDensity;

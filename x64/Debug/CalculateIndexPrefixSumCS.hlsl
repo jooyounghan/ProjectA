@@ -2,10 +2,10 @@
 
 struct PrefixDesciptor
 {
-    int     aggregate;
+    uint    aggregate;
     uint    statusFlag; /* X : 0, A : 1, P : 2*/
-    int     exclusivePrefix;
-    int     inclusivePrefix;
+    uint    exclusivePrefix;
+    uint    inclusivePrefix;
 };
 
 StructuredBuffer<uint> aliveFlags : register(t0);

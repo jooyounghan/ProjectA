@@ -131,3 +131,8 @@ gantt
 	-  Emitter에서 방출하는 입자마다 작용하는 외력을 추가적으로 계산	
 	- Emitter Type 0 : 기본 알짜힘으로 가속도항 계산
 	- Emitter Type 1 : Emitter의 위치 방향으로 작용하는 인력과 Curl-Noise를 추가하여 가속도를 계산
+
+### 25.04.14
+- 주간 피드백 회의(2차) 자료 작성
+- 인력에 대한 벡터장 수정(기존의 경우 $\vec{r} = \vec{p_{paritlce}} - \vec{p_{emitter}}$ 일 때, $-\vec{r}$로 간단히 표현하였는데, $-\frac{Const}{|\vec{r}|^{3}}\vec{r}$로 수정
+	- 해당하는 벡터장으로 수정하여 Curl-Noise를 추가하였을 때, Divergence-free한 벡터장의 성질은 유지하되, 회전 성분만 추가하도록 수정

@@ -10,7 +10,7 @@ using namespace DirectX;
 CParticleSpawnProperty::CParticleSpawnProperty(
 	const DirectX::XMFLOAT2& minEmitRadians,
 	const DirectX::XMFLOAT2& maxEmitRadians,
-	float emitSpeed,
+	const DirectX::XMFLOAT2& minMaxEmitSpeeds,
 	const vector<SEmitRate>& emitRateProfiles,
 	bool isPlayLoop,
 	float loopTime
@@ -20,8 +20,7 @@ CParticleSpawnProperty::CParticleSpawnProperty(
 	AutoZeroMemory(m_particleSpawnPropertyCPU);
 	m_particleSpawnPropertyCPU.minEmitRadians = minEmitRadians;
 	m_particleSpawnPropertyCPU.maxEmitRadians = maxEmitRadians;
-	m_particleSpawnPropertyCPU.emitSpeed = emitSpeed;
-
+	m_particleSpawnPropertyCPU.minMaxEmitSpeeds = minMaxEmitSpeeds;
 	m_isParticleSpawnPropertyChanged = true;
 }
 
@@ -38,9 +37,9 @@ void CParticleSpawnProperty::SetMaxEmitRadians(const XMFLOAT2& maxEmitRadians)
 }
 
 
-void CParticleSpawnProperty::SetEmitSpeed(float emitSpeed)
+void CParticleSpawnProperty::SetMinMaxEmitSpeed(const XMFLOAT2& minMaxEmitSpeeds)
 {
-	m_particleSpawnPropertyCPU.emitSpeed = emitSpeed;
+	m_particleSpawnPropertyCPU.minMaxEmitSpeeds = minMaxEmitSpeeds;
 	m_isParticleSpawnPropertyChanged = true;
 }
 

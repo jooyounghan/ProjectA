@@ -3,10 +3,10 @@
 struct Particle
 {
     float3 worldPos;
-    float life;
     float3 velocity;
-    float density;
     float3 accelerate;
+    float life;
+    float density;
     uint emitterID;
     uint emitterType;
     float radius;

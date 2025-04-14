@@ -84,7 +84,6 @@ void CParticleManager::InitializeSetInitializingPSO(ID3D11Device* device)
 
 unique_ptr<CComputeShader> CParticleManager::GCalculateIndexPrefixSumCS = make_unique<CComputeShader>();
 unique_ptr<CComputeShader> CParticleManager::GUpdateCurrentIndicesCS = make_unique<CComputeShader>();
-//unique_ptr<CComputeShader> CParticleManager::GDefragmenaPoolCS = make_unique<CComputeShader>();
 
 void CParticleManager::InitializePoolingCS(ID3D11Device* device)
 {

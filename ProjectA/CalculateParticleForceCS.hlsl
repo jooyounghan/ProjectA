@@ -37,9 +37,11 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		{
 			float3 particleWorldPos = currentParticle.worldPos;
 			float3 parentEmitterWorldPos = emitterWorldPos[emitterID].xyz;
-			float3 gravityAcc = (parentEmitterWorldPos - particleWorldPos);
-			float3 curlAcc = CurlNoise(particleWorldPos, 1.1f);
-            force += mass * (gravityAcc + curlAcc * 3.f);
+			float3 r = (particleWorldPos - parentEmitterWorldPos);
+			float distance = length(r);
+			float3 gravityAcc = -r / min((distance * distance * distance), 1.f);
+			float3 curlAcc = CurlNoise(particleWorldPos, 1.0f);
+            force += mass * (gravityAcc + curlAcc * 5.f);
         }
 
         currentParticle.accelerate = force / mass;

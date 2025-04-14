@@ -1,6 +1,7 @@
 #include "ProjectAApp.h"
 #include "GEngine.h"
 #include <iostream>
+#include <pix.h>
 
 int main()
 {

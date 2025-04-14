@@ -27,7 +27,7 @@ void main( uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID )
 
 		Particle sourcedParticle;
 		sourcedParticle.worldPos = worldPos.xyz;
-		sourcedParticle.life = 100.f;
+		sourcedParticle.life = 10000.f;
 		sourcedParticle.velocity = float3(0.f, 0.f, 0.f);
 		sourcedParticle.density = particleDensity;
 		sourcedParticle.accelerate = float3(0.f, 0.f, 0.f);
