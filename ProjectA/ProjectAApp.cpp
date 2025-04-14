@@ -131,7 +131,7 @@ void CProjectAApp::Init()
 		m_width, m_height, 90.f, 0.01f, 100000.000f
 		);
 
-	m_particleManager = make_unique<CParticleManager>(5000, 1024 * 1024);
+	m_particleManager = make_unique<CParticleManager>(100, 5000, 1024 * 1024);
 
 
 #pragma region Radius 1E-3
@@ -287,6 +287,7 @@ void CProjectAApp::Update(float deltaTime)
 	m_deviceContext->GSSetConstantBuffers(0, 2, commonCbs);
 	m_deviceContext->PSSetConstantBuffers(0, 2, commonCbs);
 		m_particleManager->ExecuteParticleSystem(m_deviceContext);
+		m_particleManager->CaculateParticlesForce(m_deviceContext);
 		m_particleManager->DrawParticles(m_deviceContext);
 	m_deviceContext->CSSetConstantBuffers(0, 2, commonNullCbs);
 	m_deviceContext->VSSetConstantBuffers(0, 2, commonNullCbs);

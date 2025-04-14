@@ -163,6 +163,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="DefineLinkedWithShader.h" />
     <ClInclude Include="EmitterSpawnProperty.h" />
     <ClInclude Include="ParticleSpawnProperty.h" />
     <ClInclude Include="External\imgui_impl_dx11.h" />
@@ -177,9 +178,11 @@
     <ClInclude Include="Updatable.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="DefineLinkedWithCpp.hlsli" />
     <None Include="EmitterDrawCommon.hlsli" />
     <None Include="PoolingCommon.hlsli" />
     <None Include="CaculateForceCommon.hlsli" />
+    <None Include="SortingCommon.hlsli" />
     <None Include="SourceCommon.hlsli" />
     <None Include="ParticleCommon.hlsli" />
     <None Include="ParticleDrawCommon.hlsli" />

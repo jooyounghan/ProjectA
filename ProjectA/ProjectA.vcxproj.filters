@@ -139,6 +139,9 @@
     <ClInclude Include="EmitterSpawnProperty.h">
       <Filter>헤더 파일\Updatable\ParticleSystem</Filter>
     </ClInclude>
+    <ClInclude Include="DefineLinkedWithShader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
@@ -159,6 +162,12 @@
     </None>
     <None Include="CaculateForceCommon.hlsli">
       <Filter>Shader\Particle\System\CaculateForce</Filter>
+    </None>
+    <None Include="DefineLinkedWithCpp.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="SortingCommon.hlsli">
+      <Filter>Shader\Particle\System\Sorting</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -1,13 +1,5 @@
 #include "PoolingCommon.hlsli"
 
-struct PrefixDesciptor
-{
-    uint    aggregate;
-    uint    statusFlag; /* X : 0, A : 1, P : 2*/
-    uint    exclusivePrefix;
-    uint    inclusivePrefix;
-};
-
 StructuredBuffer<uint> aliveFlags : register(t0);
 
 RWStructuredBuffer<uint> prefixSums : register(u2);
@@ -122,22 +114,6 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
     uint groupID = Gid.x;
 	uint groupThreadID = GTid.x;
 	uint threadID = DTid.x;
-	
-    if (groupThreadID == 0)
-    {
-        if (groupID == 0)
-        {
-            Pcurrent = 0;
-        };
-
-        PrefixDesciptor pd = prefixDescriptor[groupID];
-        pd.aggregate = 0;
-        pd.statusFlag = 0;
-        pd.exclusivePrefix = 0;
-        pd.inclusivePrefix = 0;
-        prefixDescriptor[groupID] = pd;
-    }
-    DeviceMemoryBarrier();
 
     LocalUpSweep(groupID, groupThreadID, threadID);
     GroupMemoryBarrierWithGroupSync();

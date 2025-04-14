@@ -24,7 +24,7 @@ namespace D3D11
 class CParticleManager : public IUpdatable
 {
 public:
-	CParticleManager(UINT emitterMaxCount, UINT particleMaxCount);
+	CParticleManager(UINT emitterTypeCount, UINT emitterMaxCount, UINT particleMaxCount);
 	~CParticleManager() = default;
 
 #pragma region Emitter 멤버 변수 / 함수
@@ -146,6 +146,10 @@ protected:
 	std::unique_ptr<D3D11::CStructuredBuffer> m_countPrefixDescriptors;
 	std::unique_ptr<D3D11::CStructuredBuffer> m_sortedIndicesBuffers;
 
+protected:
+	UINT m_emitterTypeCount;
+	std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DISPATCH_INDIRECT_ARGS>> m_emitterPerTypeDispatchIndirectBuffer;
+
 public:
 	inline const UINT& GetParticleMaxCount() const noexcept { return m_particleMaxCount; };
 
@@ -162,11 +166,12 @@ public:
 public:
 	void DrawEmittersDebugCube(ID3D11DeviceContext* deviceContext);
 	void ExecuteParticleSystem(ID3D11DeviceContext* deviceContext);
+	void CaculateParticlesForce(ID3D11DeviceContext* deviceContext);
 	void DrawParticles(ID3D11DeviceContext* deviceContext);
 
 private:
 	void InitializeParticleSet(ID3D11DeviceContext* deviceContext);
 	void SourceEmitter(ID3D11DeviceContext* deviceContext);
 	void PoolingParticles(ID3D11DeviceContext* deviceContext);
-	void CaculateParticlesForce(ID3D11DeviceContext* deviceContext);
+	void SortingParitcleIndices(ID3D11DeviceContext* deviceContext);
 };
