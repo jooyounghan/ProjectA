@@ -17,9 +17,6 @@ namespace D3D11
 		~CAppendBuffer() override = default;
 
 	public:
-		static void SwapConsumeAppend(CAppendBuffer* appendBuffer1, CAppendBuffer* appendBuffer2);
-
-	public:
 		virtual D3D11_UNORDERED_ACCESS_VIEW_DESC CreateUnorderedAccessViewDesc() noexcept override;
 	};
 }

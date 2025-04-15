@@ -1,6 +1,7 @@
 #include "ParticleManager.h"
 
 #include "DefineLinkedWithShader.h"
+#include "BufferMacroUtilities.h"
 #include "MacroUtilities.h"
 
 #include "ModelFactory.h"
@@ -107,15 +108,11 @@ void CParticleManager::InitializeParticleSimulateCS(ID3D11Device* device)
 	GCaculateParticleForceCS->CreateShader(L"./CalculateParticleForceCS.hlsl", "main", "cs_5_0", device);
 }
 
-unique_ptr<CComputeShader> CParticleManager::GCountIndexCS = make_unique<CComputeShader>();
-unique_ptr<CComputeShader> CParticleManager::GCaluclateCountPrefixSumCS = make_unique<CComputeShader>();
-unique_ptr<CComputeShader> CParticleManager::GReorderCS = make_unique<CComputeShader>();
+unique_ptr<CComputeShader> CParticleManager::GIndexRadixSortCS = make_unique<CComputeShader>();
 
 void CParticleManager::InitializeRadixSortCS(ID3D11Device* device)
 {
-	GCountIndexCS->CreateShader(L"./CountIndexCS.hlsl", "main", "cs_5_0", device);
-	GCaluclateCountPrefixSumCS->CreateShader(L"./CalculateCountPrefixSumCS.hlsl", "main", "cs_5_0", device);
-	GReorderCS->CreateShader(L"./ReorderIndexCS.hlsl", "main", "cs_5_0", device);
+	GIndexRadixSortCS->CreateShader(L"./IndexRadixSortCS.hlsl", "main", "cs_5_0", device);
 }
 
 unique_ptr<CVertexShader> CParticleManager::GParticleDrawVS = make_unique<CVertexShader>(0);
@@ -136,7 +133,7 @@ void CParticleManager::InitializeParticleDrawPSO(ID3D11Device* device)
 		GParticleDrawGS.get(),
 		GParticleDrawPS.get(),
 		CRasterizerState::GetRSSolidCWSS(),
-		CBlendState::GetBSAlphaBlendSS(),
+		CBlendState::GetBSAlphaBlend(),
 		CDepthStencilState::GetDSDraw(),
 		nullptr,
 		0
@@ -158,6 +155,8 @@ CParticleManager::CParticleManager(UINT emitterTypeCount, UINT maxEmitterCount, 
 	XMMATRIX zeroMatrix = ZERO_MATRIX;
 	m_emitterWorldTransformCPU.resize(m_emitterMaxCount, zeroMatrix);
 	m_emitterWolrdPosCPU.resize(m_emitterMaxCount, XMVectorZero());
+
+	AutoZeroMemory(m_sortStatusCPU);
 }
 
 UINT CParticleManager::AddParticleEmitter(
@@ -296,8 +295,10 @@ void CParticleManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* dev
 	m_alivePrefixDescriptors = make_unique<CStructuredBuffer>(static_cast<UINT>(sizeof(SPrefixDesciptor)), UINT(ceil(m_particleMaxCount / LocalThreadCount)), nullptr);
 	m_indicesBuffers = make_unique<CStructuredBuffer>(static_cast<UINT>(sizeof(SParticleSelector)), m_particleMaxCount, nullptr);
 
+	m_sortStatusGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_sortStatusCPU));
+
 	m_countBuffers = make_unique<CStructuredBuffer>(4, static_cast<UINT>(CountArraySizePerThread) * m_particleMaxCount, nullptr);
-	m_countPrefixSums = make_unique<CStructuredBuffer>(4, static_cast<UINT>(CountArraySizePerThread) * m_particleMaxCount, nullptr);
+
 	m_countPrefixDescriptors = make_unique<CStructuredBuffer>(static_cast<UINT>(sizeof(SPrefixDesciptor)), UINT(ceil(m_particleMaxCount / LocalThreadCount)), nullptr);
 	m_sortedIndicesBuffers = make_unique<CStructuredBuffer>(static_cast<UINT>(sizeof(SParticleSelector)), m_particleMaxCount, nullptr);
 
@@ -309,7 +310,11 @@ void CParticleManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* dev
 	m_alivePrefixDescriptors->InitializeBuffer(device);
 	m_indicesBuffers->InitializeBuffer(device);
 
+	m_sortStatusGPU->InitializeBuffer(device);
+
 	m_countBuffers->InitializeBuffer(device);
+
+	m_countPrefixDescriptors->InitializeBuffer(device);
 	m_sortedIndicesBuffers->InitializeBuffer(device);
 }
 
@@ -367,7 +372,7 @@ void CParticleManager::ExecuteParticleSystem(ID3D11DeviceContext* deviceContext)
 	InitializeParticleSet(deviceContext);
 	SourceEmitter(deviceContext);
 	PoolingParticles(deviceContext);
-
+	SortingParitcleIndices(deviceContext);
 }
 
 void CParticleManager::InitializeParticleSet(ID3D11DeviceContext* deviceContext)
@@ -475,11 +480,52 @@ void CParticleManager::PoolingParticles(ID3D11DeviceContext* deviceContext)
 #pragma endregion
 
 	deviceContext->CSSetUnorderedAccessViews(0, 2, indirectArgsNullUavs, nullptr);
+
+	deviceContext->CopyResource(m_particleDrawIndirectBuffer->GetBuffer(), m_particleDrawIndirectStagingGPU->GetBuffer());
+	deviceContext->CopyResource(m_indexedParticleDispatchIndirectBuffer->GetBuffer(), m_IndexedParticleDispatchIndirectStagingGPU->GetBuffer());
 }
 
 void CParticleManager::SortingParitcleIndices(ID3D11DeviceContext* deviceContext)
 {
+	//const UINT sortBytesCount = 64;
+	//const UINT bitOffset = static_cast<UINT>(log2(CountArraySizePerThread));
+	//const UINT SortPassCount = (sortBytesCount / bitOffset);
 
+	//ID3D11Buffer* sortCbs[] = { m_sortStatusGPU->GetBuffer() };
+	//ID3D11ShaderResourceView* sortSrvs[] = { m_particleDrawIndirectStagingGPU->GetSRV() };
+	//ID3D11UnorderedAccessView* sortUavs[] = { m_countBuffers->GetUAV(), m_countPrefixDescriptors->GetUAV() };
+	//ID3D11Buffer* sortNullCbs[] = { nullptr };
+	//ID3D11ShaderResourceView* sortNullSrvs[] = { nullptr };
+	//ID3D11UnorderedAccessView* sortNullUavs[] = { nullptr, nullptr };
+
+	//deviceContext->CSSetConstantBuffers(2, 1, sortCbs);
+	//deviceContext->CSSetShaderResources(0, 1, sortSrvs);
+	//deviceContext->CSSetUnorderedAccessViews(0, 2, sortUavs, nullptr);
+	//GIndexRadixSortCS->SetShader(deviceContext);
+
+	//for (UINT idx = 0; idx < SortPassCount; ++idx)
+	//{
+	//	m_sortStatusCPU.passCount = idx;
+	//	m_sortStatusCPU.bitOffset = bitOffset;
+	//	m_sortStatusGPU->Stage(deviceContext);
+	//	m_sortStatusGPU->Upload(deviceContext);
+
+	//	ID3D11ShaderResourceView* passSortSrvs[] = { m_indicesBuffers->GetSRV() };
+	//	ID3D11UnorderedAccessView* passSortUavs[] = { m_sortedIndicesBuffers->GetUAV() };
+	//	ID3D11ShaderResourceView* passSortNullSrvs[] = { nullptr };
+	//	ID3D11UnorderedAccessView* passSortNullUavs[] = { nullptr };
+	//	deviceContext->CSSetShaderResources(1, 1, passSortSrvs);
+	//	deviceContext->CSSetUnorderedAccessViews(2, 1, passSortUavs, nullptr);
+	//	deviceContext->DispatchIndirect(m_indexedParticleDispatchIndirectBuffer->GetBuffer(), NULL);
+	//	deviceContext->CSSetShaderResources(1, 1, passSortNullSrvs);
+	//	deviceContext->CSSetUnorderedAccessViews(2, 1, passSortNullUavs, nullptr);
+
+	//	CStructuredBuffer::Swap(m_indicesBuffers.get(), m_sortedIndicesBuffers.get());
+	//}
+	//CStructuredBuffer::Swap(m_indicesBuffers.get(), m_sortedIndicesBuffers.get());
+	//deviceContext->CSSetConstantBuffers(2, 1, sortNullCbs);
+	//deviceContext->CSSetShaderResources(0, 1, sortNullSrvs);
+	//deviceContext->CSSetUnorderedAccessViews(0, 2, sortNullUavs, nullptr);
 }
 
 void CParticleManager::CaculateParticlesForce(ID3D11DeviceContext* deviceContext)
@@ -495,7 +541,6 @@ void CParticleManager::CaculateParticlesForce(ID3D11DeviceContext* deviceContext
 	deviceContext->CSSetShaderResources(0, 3, simulateSrvs);
 	deviceContext->CSSetUnorderedAccessViews(0, 1, &simulateUav, nullptr);
 
-	deviceContext->CopyResource(m_indexedParticleDispatchIndirectBuffer->GetBuffer(), m_IndexedParticleDispatchIndirectStagingGPU->GetBuffer());
 	deviceContext->DispatchIndirect(m_indexedParticleDispatchIndirectBuffer->GetBuffer(), NULL);
 
 	deviceContext->CSSetShaderResources(0, 3, simulateNullSrvs);
@@ -512,7 +557,6 @@ void CParticleManager::DrawParticles(ID3D11DeviceContext* deviceContext)
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 	deviceContext->VSSetShaderResources(0, 2, patriclesSrvs);
 
-	deviceContext->CopyResource(m_particleDrawIndirectBuffer->GetBuffer(), m_particleDrawIndirectStagingGPU->GetBuffer());
 	deviceContext->DrawInstancedIndirect(m_particleDrawIndirectBuffer->GetBuffer(), NULL);
 
 	deviceContext->VSSetShaderResources(0, 2, patriclesNullSrvs);

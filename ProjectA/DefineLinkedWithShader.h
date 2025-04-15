@@ -1,3 +1,3 @@
 #pragma once
-#define LocalThreadCount 64.f
+#define LocalThreadCount 128.f
 #define CountArraySizePerThread 16

@@ -131,7 +131,7 @@ void CProjectAApp::Init()
 		m_width, m_height, 90.f, 0.01f, 100000.000f
 		);
 
-	m_particleManager = make_unique<CParticleManager>(100, 5000, 1024 * 1024);
+	m_particleManager = make_unique<CParticleManager>(100, 5000, 2048 * 2047);
 
 
 #pragma region Radius 1E-3
@@ -228,7 +228,6 @@ void CProjectAApp::Init()
 		m_device, m_deviceContext
 	);
 #pragma endregion
-
 
 	m_updatables.emplace_back(m_camera.get());
 	m_updatables.emplace_back(m_particleManager.get());

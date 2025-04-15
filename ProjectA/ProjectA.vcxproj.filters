@@ -204,13 +204,7 @@
     <FxCompile Include="InitializeParticleSetCS.hlsl">
       <Filter>Shader\Particle\System\Initalize</Filter>
     </FxCompile>
-    <FxCompile Include="CountIndexCS.hlsl">
-      <Filter>Shader\Particle\System\Sorting</Filter>
-    </FxCompile>
-    <FxCompile Include="CalculateCountPrefixSumCS.hlsl">
-      <Filter>Shader\Particle\System\Sorting</Filter>
-    </FxCompile>
-    <FxCompile Include="ReorderIndexCS.hlsl">
+    <FxCompile Include="IndexRadixSortCS.hlsl">
       <Filter>Shader\Particle\System\Sorting</Filter>
     </FxCompile>
   </ItemGroup>

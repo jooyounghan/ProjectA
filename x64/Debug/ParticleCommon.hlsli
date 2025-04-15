@@ -1,4 +1,4 @@
-#define LocalThreadCount 128
+#include "DefineLinkedWithCpp.hlsli"
 
 struct Particle
 {
@@ -18,8 +18,16 @@ struct ParticleSelector
     float4 viewPos;
     uint index;
     uint emitterType;
-    float depth;
-    float dummy;
+    uint depthInverseBit;
+    uint dummy;
+};
+
+struct PrefixDesciptor
+{
+    uint    aggregate;
+    uint    statusFlag; /* X : 0, A : 1, P : 2*/
+    uint    exclusivePrefix;
+    uint    inclusivePrefix;
 };
 
 

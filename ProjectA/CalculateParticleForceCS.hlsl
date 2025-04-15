@@ -25,13 +25,11 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		
 		float3 force = float3(0.f, 0.f, 0.f);
 		
-        force += mass * gravity;
-        force -= volume * airDensity * gravity;
-        force -= airDensity * sphereCd * area * length(velocity) * velocity / 2.f;
-
 		if (emitterType == 0)
 		{
-
+			force += mass * gravity;
+			force -= volume * airDensity * gravity;
+			force -= airDensity * sphereCd * area * length(velocity) * velocity / 2.f;
         }
 		else if (emitterType == 1)
 		{
@@ -41,8 +39,12 @@ void main( uint3 DTid : SV_DispatchThreadID )
 			float distance = length(r);
 			float3 gravityAcc = -r / min((distance * distance * distance), 1.f);
 			float3 curlAcc = CurlNoise(particleWorldPos, 1.0f);
-            force += mass * (gravityAcc + curlAcc * 5.f);
+            force += mass * (gravityAcc + curlAcc * 2.f);
         }
+		else if (emitterType == 2)
+		{
+
+		}
 
         currentParticle.accelerate = force / mass;
 		

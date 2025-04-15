@@ -18,8 +18,8 @@ struct ParticleSelector
     float4 viewPos;
     uint index;
     uint emitterType;
-    float depth;
-    float dummy;
+    uint depthInverseBit;
+    uint dummy;
 };
 
 struct PrefixDesciptor

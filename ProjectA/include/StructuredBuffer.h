@@ -17,6 +17,9 @@ namespace D3D11
 		);
 		~CStructuredBuffer() override = default;
 
+	public:
+		static void Swap(CStructuredBuffer* structuredBuffer1, CStructuredBuffer* structuredBuffer2);
+
 	protected:
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_structuredSRV;
 		Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> m_structuredUAV;

@@ -9,9 +9,6 @@ groupshared int localPrefixSums[LocalThreadCount];
 
 void LocalUpSweep(uint groupID, uint groupThreadID, uint threadID)
 {
-    localPrefixSums[groupThreadID] = aliveFlags[threadID];
-    GroupMemoryBarrierWithGroupSync();
-
     [unroll]
     for (uint stride = 1; stride < LocalThreadCount; stride *= 2)
     {
@@ -114,6 +111,9 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
     uint groupID = Gid.x;
 	uint groupThreadID = GTid.x;
 	uint threadID = DTid.x;
+
+    localPrefixSums[groupThreadID] = aliveFlags[threadID];
+    GroupMemoryBarrierWithGroupSync();
 
     LocalUpSweep(groupID, groupThreadID, threadID);
     GroupMemoryBarrierWithGroupSync();

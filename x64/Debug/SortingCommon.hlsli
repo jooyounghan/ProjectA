@@ -14,40 +14,6 @@ groupshared uint threadExclusive[LocalThreadCount];
 groupshared uint threadInclusive[LocalThreadCount];
 groupshared uint localCountsPrefixSums[LocalThreadCount * CountArraySizePerThread];
 
-void LocalUpSweep(uint groupID, uint groupThreadID, uint threadID)
-{
-    //[unroll]
-    //for (uint stride = 1; stride < LocalThreadCount; stride *= 2)
-    //{
-    //    uint index = (groupThreadID + 1) * stride * 2 - 1;
-    //    if (index < LocalThreadCount)
-    //    {
-    //        localPrefixSums[index] += localPrefixSums[index - stride];
-    //    }
-    //    GroupMemoryBarrierWithGroupSync();
-    //}
-
-    //if (groupThreadID == 0)
-    //{
-    //    int aggregate = localPrefixSums[LocalThreadCount - 1];
-
-    //    prefixDescriptor[groupID].aggregate = aggregate;
-    //    uint Plast;
-    //    InterlockedAdd(Pcurrent, aggregate, Plast);
-
-    //    if (groupID == 0)
-    //    {
-    //        prefixDescriptor[groupID].inclusivePrefix = prefixDescriptor[groupID].aggregate;
-    //        prefixDescriptor[groupID].statusFlag = 2;
-    //    }
-    //    else
-    //    {
-    //        prefixDescriptor[groupID].statusFlag = 1;
-    //    }
-    //}
-}
-
-// 영한 방법
 void LocalUpSweep1(uint groupID, uint groupThreadID, uint countIndex, uint threadID)
 {
     threadStatus[groupThreadID] = 0;
@@ -108,22 +74,6 @@ void LocalUpSweep1(uint groupID, uint groupThreadID, uint countIndex, uint threa
         localCountsPrefixSums[CountArraySizePerThread * groupThreadID + index] += (threadInclusive[groupThreadID] - 1);
         countsBuffer[CountArraySizePerThread * threadID + index] = localCountsPrefixSums[CountArraySizePerThread * groupThreadID + index];
     }
-
-    if (groupThreadID == LocalThreadCount - 1)
-   {
-       int aggregate = localCountsPrefixSums[CountArraySizePerThread * LocalThreadCount - 1];
-
-       countsPrefixDescriptors[groupID].aggregate = aggregate;
-       if (groupID == 0)
-       {
-           countsPrefixDescriptors[groupID].inclusivePrefix = countsPrefixDescriptors[groupID].aggregate;
-           countsPrefixDescriptors[groupID].statusFlag = 2;
-       }
-       else
-       {
-           countsPrefixDescriptors[groupID].statusFlag = 1;
-       }
-   }
 }
 
 

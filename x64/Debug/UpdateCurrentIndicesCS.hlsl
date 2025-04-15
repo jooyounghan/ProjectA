@@ -24,15 +24,14 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
             uint index = prefixSums[threadID] - 1;
             ParticleSelector particleSelector;
             particleSelector.index = threadID;
-            particleSelector.dummy = 0.f;
-            
+            particleSelector.dummy = 0;
+
             Particle currentParticle = totalParticles[threadID];
             particleSelector.emitterType = currentParticle.emitterType;
             
             float4 viewPos = mul(float4(currentParticle.worldPos, 1.f), viewProjMatrix);
             particleSelector.viewPos = viewPos;
-            particleSelector.depth = viewPos.z / viewPos.w;
-            
+            particleSelector.depthInverseBit = asuint(1.f - viewPos.z / viewPos.w);
             currnetIndices[index] = particleSelector;
         }
 	}

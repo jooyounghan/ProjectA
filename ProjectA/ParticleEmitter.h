@@ -20,8 +20,8 @@ struct SParticleSelector
 	DirectX::XMVECTOR viewPos;
 	UINT index;
 	UINT emitterType;
-	float depth;
-	float dummy;
+	UINT depthInverseBit;
+	UINT dummy;
 };
 
 class CParticleEmitter : public IUpdatable

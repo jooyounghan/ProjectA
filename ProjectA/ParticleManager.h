@@ -102,9 +102,7 @@ public:
 #pragma endregion
 
 #pragma region Index Sorting(Radix Sorting) ฐüทร CS
-	static std::unique_ptr<D3D11::CComputeShader> GCountIndexCS;
-	static std::unique_ptr<D3D11::CComputeShader> GCaluclateCountPrefixSumCS;
-	static std::unique_ptr<D3D11::CComputeShader> GReorderCS;
+	static std::unique_ptr<D3D11::CComputeShader> GIndexRadixSortCS;
 	static void InitializeRadixSortCS(ID3D11Device* device);
 
 #pragma endregion
@@ -141,8 +139,14 @@ protected:
 	std::unique_ptr<D3D11::CStructuredBuffer> m_indicesBuffers;
 
 protected:
+	struct
+	{
+		UINT passCount;
+		UINT bitOffset;
+		UINT dummy[2];
+	} m_sortStatusCPU;
+	std::unique_ptr<D3D11::CDynamicBuffer> m_sortStatusGPU;
 	std::unique_ptr<D3D11::CStructuredBuffer> m_countBuffers;
-	std::unique_ptr<D3D11::CStructuredBuffer> m_countPrefixSums;
 	std::unique_ptr<D3D11::CStructuredBuffer> m_countPrefixDescriptors;
 	std::unique_ptr<D3D11::CStructuredBuffer> m_sortedIndicesBuffers;
 

@@ -28,15 +28,14 @@ namespace D3D11
 		static void InitializeDefaultBlendStates(ID3D11Device* device);
 
 	private:
-		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAccumulateSS;
-		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAccumulateMS;
-		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAlphaBlendSS;
-		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAlphaBlendMS;
+		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAccumulate;
+		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAccumulateWithAlpha;
+		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAlphaBlend;
+
 	public:
-		static inline ID3D11BlendState* GetBSAccumulateSS() { return gBSAccumulateSS.Get(); }
-		static inline ID3D11BlendState* GetBSAccumulateMS() { return gBSAccumulateMS.Get(); }
-		static inline ID3D11BlendState* GetBSAlphaBlendSS() { return gBSAlphaBlendSS.Get(); }
-		static inline ID3D11BlendState* GetBSAlphaBlendMS() { return gBSAlphaBlendMS.Get(); }
+		static inline ID3D11BlendState* GetBSAccumulate() { return gBSAccumulate.Get(); }
+		static inline ID3D11BlendState* GetBSAccumulateWithAlpha() { return gBSAccumulateWithAlpha.Get(); }
+		static inline ID3D11BlendState* GetBSAlphaBlend() { return gBSAlphaBlend.Get(); }
 	};
 }
 #endif
