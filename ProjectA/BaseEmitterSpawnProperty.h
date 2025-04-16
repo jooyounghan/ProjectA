@@ -1,38 +1,37 @@
 #pragma once
-#include "Updatable.h"
+#include "IProperty.h"
 #include "DynamicBuffer.h"
 
 #include <d3d11.h>
 #include <DirectXMath.h>
-#include <memory>
 
-class CEmitterSpawnProperty : public IUpdatable
+class BaseEmitterSpawnProperty : public IProperty<BaseEmitterSpawnProperty>
 {
 public:
-	CEmitterSpawnProperty(
-		const DirectX::XMFLOAT2& minInitRadians,
-		const DirectX::XMFLOAT2& maxInitRadians,
+	BaseEmitterSpawnProperty(
+		const DirectX::XMFLOAT2& minInitRadian,
+		const DirectX::XMFLOAT2& maxInitRadian,
 		const DirectX::XMFLOAT2& minMaxRadius,
-		UINT initialParticleCount
+		UINT initialParticleCount,
+		float initialParticleLife
 	);
-public:
-	~CEmitterSpawnProperty() = default;
+	virtual ~BaseEmitterSpawnProperty() = default;
 
 protected:
 	bool m_isSpawned = false;
 
 public:
 	inline bool IsSpawned() const noexcept { return m_isSpawned; }
-	inline void SetSpawned() { m_isSpawned = true; }
+	inline void SetSpawned(bool isSpawned) { m_isSpawned = isSpawned; }
 
 protected:
-	struct  
+	struct
 	{
-		const DirectX::XMFLOAT2 minInitRadians;
-		const DirectX::XMFLOAT2 maxInitRadians;
+		const DirectX::XMFLOAT2 minInitRadian;
+		const DirectX::XMFLOAT2 maxInitRadian;
 		const DirectX::XMFLOAT2 minMaxRadius;
 		const UINT initialParticleCount;
-		const UINT dummy;
+		const float initialParticleLife;
 	} m_emitterSpawnPropertyCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterSpawnPropertyGPU;
 
@@ -43,5 +42,9 @@ public:
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
 	virtual void Update(ID3D11DeviceContext* deviceContext, float dt) override;
+	virtual void DrawPropertyUI() override;
+
+public:
+	static std::unique_ptr<BaseEmitterSpawnProperty> DrawPropertyCreator();
 };
 

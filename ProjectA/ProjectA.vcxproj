@@ -122,7 +122,8 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)External</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/execution-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -148,33 +149,42 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AEmitter.cpp" />
+    <ClCompile Include="BaseEmitterSpawnProperty.cpp" />
+    <ClCompile Include="BaseEmitterUpdateProperty.cpp" />
+    <ClCompile Include="BaseParticleSpawnProperty.cpp" />
+    <ClCompile Include="BaseParticleUpdateProperty.cpp" />
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="EmitterSpawnProperty.cpp" />
-    <ClCompile Include="ParticleSpawnProperty.cpp" />
     <ClCompile Include="External\imgui_impl_dx11.cpp" />
     <ClCompile Include="External\imgui_impl_win32.cpp" />
     <ClCompile Include="GlobalVariable.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="ModelFactory.cpp" />
-    <ClCompile Include="ParticleEmitter.cpp" />
     <ClCompile Include="ParticleManager.cpp" />
     <ClCompile Include="ProjectAApp.cpp" />
+    <ClCompile Include="InterpolateHelper.cpp" />
+    <ClCompile Include="ShapedVectorSelector.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AEmitter.h" />
+    <ClInclude Include="BaseEmitterSpawnProperty.h" />
+    <ClInclude Include="BaseEmitterUpdateProperty.h" />
+    <ClInclude Include="BaseParticleSpawnProperty.h" />
+    <ClInclude Include="BaseParticleUpdateProperty.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="DefineLinkedWithShader.h" />
-    <ClInclude Include="EmitterSpawnProperty.h" />
-    <ClInclude Include="ParticleSpawnProperty.h" />
+    <ClInclude Include="IProperty.h" />
     <ClInclude Include="External\imgui_impl_dx11.h" />
     <ClInclude Include="External\imgui_impl_win32.h" />
     <ClInclude Include="GlobalVariable.h" />
     <ClInclude Include="MacroUtilities.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="ModelFactory.h" />
-    <ClInclude Include="ParticleEmitter.h" />
     <ClInclude Include="ParticleManager.h" />
     <ClInclude Include="ProjectAApp.h" />
+    <ClInclude Include="InterpolateHelper.h" />
+    <ClInclude Include="ShapedVectorSelector.h" />
     <ClInclude Include="Updatable.h" />
   </ItemGroup>
   <ItemGroup>

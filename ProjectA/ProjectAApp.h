@@ -62,18 +62,17 @@ private:
 	std::vector<IUpdatable*> m_updatables;
 
 private:
-	struct  
+	struct alignas(16)
 	{
 		float dt;
 		float appWidth;
 		float appHeight;
-		UINT particleMaxCount;
 	} m_appParamsCPU;
 	D3D11::CDynamicBuffer m_appParamsGPU;
 
 #pragma region 테스트 변수
 	std::unique_ptr<CCamera> m_camera;
-	std::unique_ptr<CParticleManager> m_particleManager;
+	//std::unique_ptr<CParticleManager> m_particleManager;
 
 private:
 	D3D11::CVertexShader m_drawParticleVS;
