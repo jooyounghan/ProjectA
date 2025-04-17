@@ -2,13 +2,18 @@
   "name": "projecta",
   "version-semver": "0.0.1",
   "dependencies": [
-    "imgui"
+    "imgui",
+    "implot"
   ],
-  "builtin-baseline": "ea2a964f9303270322cf3f2d51c265ba146c422d",
+  "builtin-baseline": "13c48e3ed90263797e37d6a320c64aca659d5f53",
   "overrides": [
     {
       "name": "imgui",
       "version": "1.91.9"
+    },
+    {
+      "name": "implot",
+      "version": "0.16"
     }
   ]
 }

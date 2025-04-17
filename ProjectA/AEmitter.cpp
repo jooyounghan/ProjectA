@@ -1,10 +1,5 @@
 #include "AEmitter.h"
 
-#include "BaseEmitterSpawnProperty.h"
-#include "BaseEmitterUpdateProperty.h"
-#include "BaseParticleSpawnProperty.h"
-#include "BaseParticleUpdateProperty.h"
-
 using namespace std;
 using namespace DirectX;
 
@@ -13,6 +8,8 @@ AEmitter::AEmitter(
 	UINT emitterID,  
 	bool& isEmitterWorldTransformChanged, 
 	XMMATRIX& emitterWorldTransformRef, 
+	bool& isEmitterForceChanged,
+	SEmitterForceProperty& emitterForceRef,
 	const XMVECTOR& position, 
 	const XMVECTOR& angle
 )
@@ -23,6 +20,29 @@ AEmitter::AEmitter(
 	m_angle(angle)
 {
 
+}
+
+AEmitter::InjectAEmitterSpawnProperty(unique_ptr<BaseEmitterSpawnProperty> emitterSpawnProperty) noexcept 
+{ 
+	m_emitterSpawnProperty = std::move(emitterSpawnProperty); 
+}
+
+AEmitter::InjectAEmitterUpdateProperty(unique_ptr<BaseEmitterUpdateProperty> emitterUpdateProperty) noexcept 
+{ 
+	m_emitterUpdateProperty = std::move(emitterUpdateProperty); 
+	m_emitterUpdateProperty->SetEmitterCurrentTime(&m_currnetEmitter);
+}
+
+AEmitter::InjectAParticleSpawnProperty(unique_ptr<BaseParticleSpawnProperty> particleSpawnProperty) noexcept 
+{ 
+	m_particleSpawnProperty = std::move(particleSpawnProperty); 
+	m_particleSpawnProperty->SetEmitterCurrentTime(&m_currnetEmitter);
+}
+
+AEmitter::InjectAParticleUpdateProperty(unique_ptr<BaseParticleUpdateProperty> particleSpawnProperty) noexcept
+{ 
+	m_particleUpdateProperty = std::move(particleSpawnProperty); 
+	m_particleUpdateProperty->SetEmitterForceProperty(&m_isEmitterForceChanged, &m_emitterForceRef);
 }
 
 void AEmitter::SetPosition(const XMVECTOR& position) noexcept

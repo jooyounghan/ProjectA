@@ -42,30 +42,54 @@ constexpr UINT DecrementNForceCount(UINT nForceCount, ENForceKind forceKind)
 }
 
 
-BaseParticleUpdateProperty::BaseParticleUpdateProperty(
-	bool& isEmitterForceChanged, 
-	SEmitterForceProperty& emitterForceRef
-)
-	: m_isEmitterForceChangedRef(isEmitterForceChanged),
-	m_emitterPropertyRef(emitterForceRef)
+BaseParticleUpdateProperty::BaseParticleUpdateProperty()
 {
-	sizeof(SEmitterForceProperty);
 }
 
 #define OnFlag(flag)													\
-m_emitterPropertyRef.forceFlag |= GetForceFlagOffset(flag);				\
-m_isEmitterForceChangedRef = true;										\
+if (m_emitterForceProperty)												\
+{																		\
+	m_emitterForceProperty->forceFlag |= GetForceFlagOffset(flag);		\
+}																		\
+else																	\
+{																		\
+	m_emitterForecPropertyStage.forceFlag |= GetForceFlagOffset(flag);	\
+}																		\
+if (m_isEmitterForceChanged) *m_isEmitterForceChanged = true;			\
 
 #define OffFlag(flag)													\
-m_emitterPropertyRef.forceFlag &= !GetForceFlagOffset(flag);			\
-m_isEmitterForceChangedRef = true;										\
+if (m_emitterForceProperty)												\
+{																		\
+	m_emitterForceProperty->forceFlag &= !GetForceFlagOffset(flag);		\
+}																		\
+else																	\
+{																		\
+	m_emitterForecPropertyStage.forceFlag &= !GetForceFlagOffset(flag);	\
+}																		\
+if (m_isEmitterForceChanged) *m_isEmitterForceChanged = true;			\
 
+void BaseParticleUpdateProperty::SetEmitterForceProperty(bool* isEmitterForceChanged, SEmitterForceProperty* emitterForceProperty)
+{
+	m_isEmitterForceChanged = isEmitterForceChanged;
+	m_emitterForceProperty = emitterForceProperty;
+	memcpy(m_emitterForceProperty, &m_emitterForecPropertyStage, sizeof(SEmitterForceProperty));
+	*m_isEmitterForceChanged = true;
+}
 
+#define SetForceProperty(force)						  		\
+if (m_emitterForceProperty)					  		\
+{											  		\
+	m_emitterForceProperty->force = force;	  		\
+}											  		\
+else										  		\
+{											  		\
+	m_emitterForecPropertyStage.force = force;		\
+}													\
 
 void BaseParticleUpdateProperty::ApplyGravityForce(const DirectX::XMFLOAT3& gravityForce) noexcept
 {
 	OnFlag(EForceFlag::Gravity);
-	m_emitterPropertyRef.gravityForce = gravityForce;
+	SetForceProperty(gravityForce);
 }
 
 void BaseParticleUpdateProperty::RemoveGravityForce() noexcept
@@ -76,7 +100,7 @@ void BaseParticleUpdateProperty::RemoveGravityForce() noexcept
 void BaseParticleUpdateProperty::ApplyDragForce(float dragCoefficient) noexcept
 {
 	OnFlag(EForceFlag::Drag);
-	m_emitterPropertyRef.dragCoefficient = dragCoefficient;
+	SetForceProperty(dragCoefficient);
 }
 
 void BaseParticleUpdateProperty::RemoveDragForce() noexcept
@@ -87,8 +111,8 @@ void BaseParticleUpdateProperty::RemoveDragForce() noexcept
 void BaseParticleUpdateProperty::ApplyCurlNoiseForce(float curlNoiseOctave, float curlNoiseCoefficient) noexcept
 {
 	OnFlag(EForceFlag::CurNoise);
-	m_emitterPropertyRef.curlNoiseOctave = curlNoiseOctave;
-	m_emitterPropertyRef.curlNoiseCoefficient = curlNoiseCoefficient;
+	SetForceProperty(curlNoiseOctave);
+	SetForceProperty(curlNoiseCoefficient);
 }
 
 void BaseParticleUpdateProperty::RemoveCurlNoiseForce() noexcept
@@ -268,7 +292,7 @@ void BaseParticleUpdateProperty::DrawPropertyUI()
 
 }
 
-std::unique_ptr<BaseParticleUpdateProperty> BaseParticleUpdateProperty::DrawPropertyCreator()
+std::unique_ptr<BaseParticleUpdateProperty> BaseParticleUpdateProperty::DrawPropertyCreator(bool& isApplied)
 {
 	SeparatorText("파티클 업데이트 프로퍼티");
 	return nullptr;

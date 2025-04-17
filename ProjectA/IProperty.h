@@ -2,10 +2,11 @@
 #include "Updatable.h"
 #include <memory>
 
-template <typename T>
 class IProperty : public IUpdatable
 {
 public:
     virtual ~IProperty() = default;
+
+public:
     virtual void DrawPropertyUI() = 0;
 };

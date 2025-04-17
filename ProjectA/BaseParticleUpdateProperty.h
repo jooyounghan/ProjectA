@@ -73,18 +73,22 @@ struct SEmitterForceProperty
 	SPointInteractionForce nPointInteractionForce[MaxNForceCount];
 };
 
-class BaseParticleUpdateProperty : public IProperty<BaseParticleUpdateProperty>
+class BaseParticleUpdateProperty : public IProperty
 {
 public:
-	BaseParticleUpdateProperty(
-		bool& isEmitterForceChanged,
-		SEmitterForceProperty& emitterForceRef
-	);
+	BaseParticleUpdateProperty();
 	virtual ~BaseParticleUpdateProperty() = default;
 
 protected:
-	bool& m_isEmitterForceChangedRef;
-	SEmitterForceProperty& m_emitterPropertyRef;
+	bool* m_isEmitterForceChanged = nullptr;
+	SEmitterForceProperty* m_emitterForceProperty = nullptr;
+	SEmitterForceProperty m_emitterForecPropertyStage;
+
+public:
+	void SetEmitterForceProperty(
+		bool* isEmitterForceChanged,
+		SEmitterForceProperty* emitterForceProperty
+	);
 
 public:
 	void ApplyGravityForce(const DirectX::XMFLOAT3& gravityForce) noexcept;
@@ -127,9 +131,11 @@ public:
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
 	virtual void Update(ID3D11DeviceContext* deviceContext, float dt) override;
+
+public:
 	virtual void DrawPropertyUI() override;
 
 public:
-	static std::unique_ptr<BaseParticleUpdateProperty> DrawPropertyCreator();
+	static std::unique_ptr<BaseParticleUpdateProperty> DrawPropertyCreator(bool& isApplied);
 };
 

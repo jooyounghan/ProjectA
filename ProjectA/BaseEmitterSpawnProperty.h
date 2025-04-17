@@ -1,17 +1,15 @@
 #pragma once
 #include "IProperty.h"
 #include "DynamicBuffer.h"
+#include "ShapedVectorSelector.h"
 
 #include <d3d11.h>
-#include <DirectXMath.h>
 
-class BaseEmitterSpawnProperty : public IProperty<BaseEmitterSpawnProperty>
+class BaseEmitterSpawnProperty : public IProperty
 {
 public:
 	BaseEmitterSpawnProperty(
-		const DirectX::XMFLOAT2& minInitRadian,
-		const DirectX::XMFLOAT2& maxInitRadian,
-		const DirectX::XMFLOAT2& minMaxRadius,
+		const SShapedVectorProperty& shapedVectorProperty,
 		UINT initialParticleCount,
 		float initialParticleLife
 	);
@@ -25,11 +23,9 @@ public:
 	inline void SetSpawned(bool isSpawned) { m_isSpawned = isSpawned; }
 
 protected:
-	struct
+	struct alignas(16)
 	{
-		const DirectX::XMFLOAT2 minInitRadian;
-		const DirectX::XMFLOAT2 maxInitRadian;
-		const DirectX::XMFLOAT2 minMaxRadius;
+		const SShapedVectorProperty shapedVectorSelector;
 		const UINT initialParticleCount;
 		const float initialParticleLife;
 	} m_emitterSpawnPropertyCPU;
@@ -42,9 +38,11 @@ public:
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
 	virtual void Update(ID3D11DeviceContext* deviceContext, float dt) override;
+
+public:
 	virtual void DrawPropertyUI() override;
 
 public:
-	static std::unique_ptr<BaseEmitterSpawnProperty> DrawPropertyCreator();
+	static std::unique_ptr<BaseEmitterSpawnProperty> DrawPropertyCreator(bool& isApplied);
 };
 

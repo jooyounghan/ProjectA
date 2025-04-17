@@ -1,97 +1,151 @@
 #include "InterpolateHelper.h"
+#include <exception>
 
 using namespace std;
 using namespace DirectX;
 
-unordered_map<EInterpolationMethod, FPoint1Interpolater> InterpolateHelper::GPoint1InterpolaterMapper
+bool AInterpolater::GetCoefficients(const std::vector<SControlPoint>& controlPoints) noexcept
 {
-	{ EInterpolationMethod::Linear, bind(InterpolateHelper::Point1LinearInterpolate, placeholders::_1, placeholders::_2) },
-	{ EInterpolationMethod::CubicSpline, bind(InterpolateHelper::Point1CubieSplineInterpolate, placeholders::_1, placeholders::_2) }
-};
-
-unordered_map<EInterpolationMethod, FPoint2Interpolater> InterpolateHelper::GPoint2InterpolaterMapper
-{
-	{ EInterpolationMethod::Linear, bind(InterpolateHelper::Point2LinearInterpolate, placeholders::_1, placeholders::_2) },
-	{ EInterpolationMethod::CubicSpline, bind(InterpolateHelper::Point2CubieSplineInterpolate, placeholders::_1, placeholders::_2) }
-};
-
-unordered_map<EInterpolationMethod, FPoint3Interpolater> InterpolateHelper::GPoint3InterpolaterMapper
-{
-	{ EInterpolationMethod::Linear, bind(InterpolateHelper::Point3LinearInterpolate, placeholders::_1, placeholders::_2) },
-	{ EInterpolationMethod::CubicSpline, bind(InterpolateHelper::Point3CubieSplineInterpolate, placeholders::_1, placeholders::_2) }
-};
-
-float InterpolateHelper::Point1LinearInterpolate(const vector<SControlPoint1>& controlPoint1s, float x)
-{
-	if (controlPoint1s.size() > 0)
+	xs.clear();
+	for (auto& controlPoint : controlPoints)
 	{
-
-
-		return 0.f;
+		xs.emplace_back(controlPoint.x);
 	}
-	else
-	{
-		throw exception("Linear Interpolation Need More Than One Control Point");
-	}
+	return true;
 }
 
-float InterpolateHelper::Point1CubieSplineInterpolate(const vector<SControlPoint1>& controlPoint1s, float x)
+bool LinearInterpolater::IsInterpolatable(size_t controlPointsCount) noexcept
 {
-	return 0.f;
+	return controlPointsCount > 1;
 }
 
-XMFLOAT2 InterpolateHelper::Point2LinearInterpolate(const vector<SControlPoint2>& controlPoint1s, float x)
+bool LinearInterpolater::GetCoefficients(const std::vector<SControlPoint>& controlPoints) noexcept
 {
-	return XMFLOAT2(0.f, 0.f);
-}
+	AInterpolater::GetCoefficients(controlPoints);
+	coefficients.clear();
 
-XMFLOAT2 InterpolateHelper::Point2CubieSplineInterpolate(const vector<SControlPoint2>& controlPoint1s, float x)
-{
-	return XMFLOAT2(0.f, 0.f);
-}
+	const size_t controlPointsCount = controlPoints.size();
+	if (controlPointsCount < 2) return false;
 
-XMFLOAT3 InterpolateHelper::Point3LinearInterpolate(const vector<SControlPoint3>& controlPoint1s, float x)
-{
-	return XMFLOAT3(0.f, 0.f, 0.f);
-}
-
-XMFLOAT3 InterpolateHelper::Point3CubieSplineInterpolate(const vector<SControlPoint3>& controlPoint1s, float x)
-{
-	return XMFLOAT3(0.f, 0.f, 0.f);
-}
-
-FPoint1Interpolater InterpolateHelper::GetPoint1Interpolater(EInterpolationMethod interpolationMethod)
-{
-	if (GPoint1InterpolaterMapper.find(interpolationMethod) != GPoint1InterpolaterMapper.end())
+	const size_t controlPointsStepCount = controlPointsCount - 2;
+	for (size_t idx = 0; idx <= controlPointsStepCount; ++idx)
 	{
-		return GPoint1InterpolaterMapper[interpolationMethod];
+		const SControlPoint& point1 = controlPoints[idx];
+		const SControlPoint& point2 = controlPoints[idx + 1];
+
+		XMFLOAT2 coefficient;
+		coefficient.x = (point1.y - point2.y) / (point1.x - point2.x);
+		coefficient.y = (point1.y + point2.y - coefficient.x * (point1.x + point2.x)) / 2.f;
+		coefficients.emplace_back(coefficient);
 	}
-	else
-	{
-		throw exception("No Interpolater matches With EInterpolateMethod");
-	}
+	return true;
 }
 
-FPoint2Interpolater InterpolateHelper::GetPoint2Interpolater(EInterpolationMethod interpolationMethod)
+float LinearInterpolater::GetInterpolated(float x) noexcept
 {
-	if (GPoint2InterpolaterMapper.find(interpolationMethod) != GPoint2InterpolaterMapper.end())
-	{
-		return GPoint2InterpolaterMapper[interpolationMethod];
-	}
-	else
-	{
-		throw exception("No Interpolater matches With EInterpolateMethod");
-	}
+	size_t intervalIndex = GetIntervalIndex(x);
+	XMFLOAT2 coefficient = coefficients[intervalIndex];
+	return coefficient.x * x + coefficient.y;
 }
 
-FPoint3Interpolater InterpolateHelper::GetPoint3Interpolater(EInterpolationMethod interpolationMethod)
+size_t LinearInterpolater::GetIntervalIndex(float x) noexcept
 {
-	if (GPoint3InterpolaterMapper.find(interpolationMethod) != GPoint3InterpolaterMapper.end())
+	const size_t controlPointsCount = xs.size();
+	const size_t lastIndex = controlPointsCount - 2;
+
+	for (size_t idx = 0; idx <= lastIndex; ++idx)
 	{
-		return GPoint3InterpolaterMapper[interpolationMethod];
+		if (xs[idx] <= x && x < xs[idx + 1])
+		{
+			return idx;
+		}
 	}
-	else
+
+	return lastIndex;
+}
+
+bool CubicSplineInterpolater::IsInterpolatable(size_t controlPointsCount) noexcept
+{
+	return controlPointsCount > 2;
+
+}
+
+bool CubicSplineInterpolater::GetCoefficients(const std::vector<SControlPoint>& controlPoints) noexcept
+{
+	AInterpolater::GetCoefficients(controlPoints);
+	coefficients.clear();
+
+	const size_t controlPointsCount = controlPoints.size();
+	if (controlPointsCount < 3) return false;
+	const size_t controlPointsStepCount = controlPointsCount - 2;
+	for (size_t idx = 0; idx <= controlPointsStepCount; ++idx) 
 	{
-		throw exception("No Interpolater matches With EInterpolateMethod");
+		const float y0 = (idx == 0) ? controlPoints[idx].y : controlPoints[idx - 1].y;
+		const float y1 = controlPoints[idx].y;
+		const float y2 = controlPoints[idx + 1].y;
+		const float y3 = (idx + 2 < controlPointsCount) ? controlPoints[idx + 2].y : controlPoints[idx + 1].y;
+
+		XMVECTOR coefficient = XMVectorSet(
+			0.5f * (-y0 + 3.0f * y1 - 3.0f * y2 + y3),
+			0.5f * (2.0f * y0 - 5.0f * y1 + 4.0f * y2 - y3),
+			0.5f * (-y0 + y2),
+			0.5f * (2.0f * y1)
+		);
+
+		coefficients.emplace_back(coefficient);
 	}
+	return true;
+}
+
+float CubicSplineInterpolater::GetInterpolated(float x) noexcept
+{
+	const size_t intervalIndex = GetIntervalIndex(x);
+
+	float x1 = xs[intervalIndex];
+	float x2 = xs[intervalIndex + 1];
+	float t = (x - x1) / (x2 - x1);
+
+	XMVECTOR coefficient = coefficients[intervalIndex];
+	float a = XMVectorGetX(coefficient);
+	float b = XMVectorGetY(coefficient);
+	float c = XMVectorGetZ(coefficient);
+	float d = XMVectorGetW(coefficient);
+	return ((a * t + b) * t + c) * t + d;
+}
+
+size_t CubicSplineInterpolater::GetIntervalIndex(float x) noexcept
+{
+	const size_t controlPointsCount = xs.size();
+	const size_t lastIndex = controlPointsCount - 2;
+
+	for (size_t idx = 0; idx <= lastIndex; ++idx) 
+	{
+		if (xs[idx] <= x && x < xs[idx + 1])
+		{
+			return idx;
+		}
+	}
+
+	return lastIndex;
+}
+
+unique_ptr<AInterpolater> InterpolaterHelper::GetInterpolater(EInterpolationMethod interpolationMethod)
+{
+	unique_ptr<AInterpolater> result;
+	switch (interpolationMethod)
+	{
+	case EInterpolationMethod::None:
+		result = nullptr;
+		break;
+	case EInterpolationMethod::Linear:
+		result = make_unique<LinearInterpolater>();
+		break;
+	case EInterpolationMethod::CubicSpline:
+		result = make_unique<CubicSplineInterpolater>();
+		break;
+	default:
+		break;
+	}
+
+	return result;
 }

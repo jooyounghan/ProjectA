@@ -131,6 +131,12 @@
     <ClCompile Include="ShapedVectorSelector.cpp">
       <Filter>소스 파일\Updatable\Emitter\UI</Filter>
     </ClCompile>
+    <ClCompile Include="InterpolationSelector.cpp">
+      <Filter>소스 파일\Updatable\Emitter\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseSelector.cpp">
+      <Filter>소스 파일\Updatable\Emitter\UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ProjectAApp.h">
@@ -188,6 +194,12 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="ShapedVectorSelector.h">
+      <Filter>헤더 파일\Updatable\Emitter\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="InterpolationSelector.h">
+      <Filter>헤더 파일\Updatable\Emitter\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseSelector.h">
       <Filter>헤더 파일\Updatable\Emitter\UI</Filter>
     </ClInclude>
   </ItemGroup>

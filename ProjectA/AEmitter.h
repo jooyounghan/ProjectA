@@ -4,10 +4,10 @@
 #include <DirectXMath.h>
 #include <memory>
 
-class BaseEmitterSpawnProperty;
-class BaseEmitterUpdateProperty;
-class BaseParticleSpawnProperty;
-class BaseParticleUpdateProperty;
+#include "BaseEmitterSpawnProperty.h"
+#include "BaseEmitterUpdateProperty.h"
+#include "BaseParticleSpawnProperty.h"
+#include "BaseParticleUpdateProperty.h"
 
 struct SParticle
 {
@@ -27,6 +27,8 @@ public:
 		UINT emitterID,
 		bool& isEmitterWorldTransformChanged,
 		DirectX::XMMATRIX& emitterWorldTransformRef,
+		bool& isEmitterForceChanged,
+		SEmitterForceProperty& emitterForceRef,
 		const DirectX::XMVECTOR& position,
 		const DirectX::XMVECTOR& angle
 	);
@@ -41,16 +43,23 @@ protected:
 	bool m_isThisWorldTransformChanged;
 
 protected:
+	bool& m_isEmitterForceChanged;
+	SEmitterForceProperty& m_emitterForceRef;
+
+protected:
+	float m_currnetEmitter = 0.f;
+
+protected:
 	std::unique_ptr<BaseEmitterSpawnProperty> m_emitterSpawnProperty;
 	std::unique_ptr<BaseEmitterUpdateProperty> m_emitterUpdateProperty;
 	std::unique_ptr<BaseParticleSpawnProperty> m_particleSpawnProperty;
 	std::unique_ptr<BaseParticleUpdateProperty> m_particleUpdateProperty;
 
 public:
-	inline void InjectAEmitterSpawnProperty(std::unique_ptr<BaseEmitterSpawnProperty> emitterSpawnProperty) noexcept { m_emitterSpawnProperty = std::move(emitterSpawnProperty); }
-	inline void InjectAEmitterUpdateProperty(std::unique_ptr<BaseEmitterUpdateProperty> emitterUpdateProperty) noexcept { m_emitterUpdateProperty = std::move(emitterUpdateProperty); }
-	inline void InjectAParticleSpawnProperty(std::unique_ptr<BaseParticleSpawnProperty> particleSpawnProperty) noexcept { m_particleSpawnProperty = std::move(particleSpawnProperty); }
-	inline void InjectAParticleUpdateProperty(std::unique_ptr<BaseParticleUpdateProperty> particleSpawnProperty) noexcept { m_particleUpdateProperty = std::move(particleSpawnProperty); }
+	void InjectAEmitterSpawnProperty(std::unique_ptr<BaseEmitterSpawnProperty> emitterSpawnProperty) noexcept;
+	void InjectAEmitterUpdateProperty(std::unique_ptr<BaseEmitterUpdateProperty> emitterUpdateProperty) noexcept;
+	void InjectAParticleSpawnProperty(std::unique_ptr<BaseParticleSpawnProperty> particleSpawnProperty) noexcept;
+	void InjectAParticleUpdateProperty(std::unique_ptr<BaseParticleUpdateProperty> particleSpawnProperty) noexcept;
 
 public:
 	inline BaseEmitterSpawnProperty* GetAEmitterSpawnProperty() const noexcept { return m_emitterSpawnProperty.get(); }

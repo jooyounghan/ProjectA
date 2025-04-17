@@ -119,10 +119,10 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)External</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalOptions>/execution-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -154,10 +154,12 @@
     <ClCompile Include="BaseEmitterUpdateProperty.cpp" />
     <ClCompile Include="BaseParticleSpawnProperty.cpp" />
     <ClCompile Include="BaseParticleUpdateProperty.cpp" />
+    <ClCompile Include="BaseSelector.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="External\imgui_impl_dx11.cpp" />
     <ClCompile Include="External\imgui_impl_win32.cpp" />
     <ClCompile Include="GlobalVariable.cpp" />
+    <ClCompile Include="InterpolationSelector.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="ModelFactory.cpp" />
@@ -172,8 +174,10 @@
     <ClInclude Include="BaseEmitterUpdateProperty.h" />
     <ClInclude Include="BaseParticleSpawnProperty.h" />
     <ClInclude Include="BaseParticleUpdateProperty.h" />
+    <ClInclude Include="BaseSelector.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="DefineLinkedWithShader.h" />
+    <ClInclude Include="InterpolationSelector.h" />
     <ClInclude Include="IProperty.h" />
     <ClInclude Include="External\imgui_impl_dx11.h" />
     <ClInclude Include="External\imgui_impl_win32.h" />

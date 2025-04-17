@@ -2,14 +2,14 @@ Package: vcpkg-cmake-config
 Version: 2024-05-23
 Architecture: x64-windows
 Multi-Arch: same
-Abi: efe9baf93afb63a473ebdb5a7499b242c7248cf1ff284f987ac5d27d77393783
+Abi: a8a9d360eddd57d9c3cd5a4545970b6036fa2fd61734dadc4899e0f5652380b4
 Status: install ok installed
 
 Package: vcpkg-cmake
 Version: 2024-04-23
 Architecture: x64-windows
 Multi-Arch: same
-Abi: 2e2c67388664350b81b2c3eb4166edd8b98eb9d80937537d700d8417b8530230
+Abi: b74711341bfe759da1a56d9885af55228f24b1430d14670f6ef4bab97f68fd94
 Status: install ok installed
 
 Package: imgui
@@ -17,7 +17,16 @@ Version: 1.91.9
 Depends: vcpkg-cmake, vcpkg-cmake-config
 Architecture: x64-windows
 Multi-Arch: same
-Abi: d40fc453c61c9c4fe3a71be8f96c3445d31ba397e0ff41e151ace3a47edb8d30
+Abi: 1488a36b76d7e9cc5c1870fda798ad43fed4552a4ad6762c6f59bdb17fc6a86a
 Description: Bloat-free Immediate Mode Graphical User interface for C++ with minimal dependencies.
+Status: install ok installed
+
+Package: implot
+Version: 0.16
+Depends: imgui, vcpkg-cmake, vcpkg-cmake-config
+Architecture: x64-windows
+Multi-Arch: same
+Abi: 63f4a1ebe6bf9a3d732b36ba08b9b6d7e7223b6d30c8791662eb9e4ea551bfbb
+Description: Advanced 2D Plotting for Dear ImGui
 Status: install ok installed
 

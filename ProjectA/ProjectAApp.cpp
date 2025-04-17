@@ -7,6 +7,8 @@
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
 
+#include "implot.h"
+#include "implot_internal.h"
 
 #pragma region Test
 #include "MacroUtilities.h"
@@ -99,7 +101,8 @@ void CProjectAApp::Init()
 #pragma region ImGui 초기화
 	IMGUI_CHECKVERSION();
 
-	CreateContext();
+	ImGui::CreateContext();
+	ImPlot::CreateContext();
 	StyleColorsDark();
 
 	ImGuiIO& io = GetIO();
@@ -239,61 +242,62 @@ void CProjectAApp::DrawUI()
 	ImGui_ImplDX11_RenderDrawData(GetDrawData());
 }
 
-#define GetProperty(from, to) if (auto result = from) to = std::move(result);
+
+#define GetProperty(from, to, isApplied)								\
+if (auto result = from) to = std::move(result);							\
+if (!isApplied && to != nullptr) to.release();							\
 
 void CProjectAApp::DrawEmitterHandler()
 {
-	if (ImGui::Button("Create Particle Emitter"))
-		ImGui::OpenPopup("CreateParticleEmitter");
+	if (Button("이미터 생성"))
+		OpenPopup("CreateEmitter");
 
-	if (ImGui::BeginPopupModal("CreateParticleEmitter", NULL, ImGuiWindowFlags_MenuBar))
+	if (BeginPopupModal("CreateEmitter", NULL, ImGuiWindowFlags_MenuBar))
 	{
-		if (ImGui::BeginTabBar("EmitterKinds", ImGuiTabBarFlags_None))
+		if (BeginTabBar("EmitterKinds", ImGuiTabBarFlags_None))
 		{
+			static bool isEmitterSpawnPropertyApplied = false;
+			static bool isEmitterUpdatePropertyApplied = false;
+			static bool isParticleSpawnPropertyApplied = false;
+			static bool isParticleUpdatePropertyApplied = false;
 			static std::unique_ptr<BaseEmitterSpawnProperty> emitterSpawnProperty;
 			static std::unique_ptr<BaseEmitterUpdateProperty> emitterUpdateProperty;
 			static std::unique_ptr<BaseParticleSpawnProperty> particleSpawnProperty;
 			static std::unique_ptr<BaseParticleUpdateProperty> particleUpdateProperty;
 
-			if (ImGui::BeginTabItem("Particle Emitter"))
+			if (BeginTabItem("Particle Emitter"))
 			{
-				GetProperty(BaseEmitterSpawnProperty::DrawPropertyCreator(), emitterSpawnProperty);
-				GetProperty(BaseEmitterUpdateProperty::DrawPropertyCreator(), emitterUpdateProperty);
-				GetProperty(BaseParticleSpawnProperty::DrawPropertyCreator(), particleSpawnProperty);
-				GetProperty(BaseParticleUpdateProperty::DrawPropertyCreator(), particleUpdateProperty);
-				ImGui::EndTabItem();
+				GetProperty(BaseEmitterSpawnProperty::DrawPropertyCreator(isEmitterSpawnPropertyApplied), emitterSpawnProperty, isEmitterSpawnPropertyApplied);
+				GetProperty(BaseEmitterUpdateProperty::DrawPropertyCreator(isEmitterUpdatePropertyApplied, emitterCurrentTimeRef), emitterUpdateProperty, isEmitterUpdatePropertyApplied);
+				GetProperty(BaseParticleSpawnProperty::DrawPropertyCreator(isParticleSpawnPropertyApplied), particleSpawnProperty, isParticleSpawnPropertyApplied);
+				GetProperty(BaseParticleUpdateProperty::DrawPropertyCreator(isParticleUpdatePropertyApplied), particleUpdateProperty, isParticleUpdatePropertyApplied);
+				EndTabItem();
 			}
-			if (ImGui::BeginTabItem("Ribbon Emitter"))
+			if (BeginTabItem("Ribbon Emitter"))
 			{
-				ImGui::Text("This is Ribbon Emitter");
-				ImGui::EndTabItem();
+				Text("This is Ribbon Emitter");
+				EndTabItem();
 			}
-			if (ImGui::BeginTabItem("Sprite Emitter"))
+			if (BeginTabItem("Sprite Emitter"))
 			{
-				ImGui::Text("This is Sprite Emitter");
-				ImGui::EndTabItem();
+				Text("This is Sprite Emitter");
+				EndTabItem();
 			}
-			if (ImGui::BeginTabItem("Mesh Emitter"))
+			if (BeginTabItem("Mesh Emitter"))
 			{
-				ImGui::Text("This is Mesh Emitter");
-				ImGui::EndTabItem();
+				Text("This is Mesh Emitter");
+				EndTabItem();
 			}
-			ImGui::EndTabBar();
+			EndTabBar();
 		}
+		if (ImGui::Button("이미터 생성하기"))
+		{
 
-
-		//bool unused_open = true;
-		//if (ImGui::BeginPopupModal("Stacked 2", &unused_open))
-		//{
-		//	ImGui::Text("Hello from Stacked The Second!");
-		//	ImGui::ColorEdit4("Color", color); // Allow opening another nested popup
-		//	if (ImGui::Button("Close"))
-		//		ImGui::CloseCurrentPopup();
-		//	ImGui::EndPopup();
-		//}
-
-		if (ImGui::Button("Close"))
+		}
+		if (ImGui::Button("종료"))
+		{
 			ImGui::CloseCurrentPopup();
+		}
 		ImGui::EndPopup();
 	}
 

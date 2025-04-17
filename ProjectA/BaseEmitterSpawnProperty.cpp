@@ -1,8 +1,7 @@
 #include "BaseEmitterSpawnProperty.h"
 #include "BufferMacroUtilities.h"
-#include "ShapedVectorSelector.h"
 
-#include "imgui.h"
+#include <limits>
 
 using namespace std;
 using namespace D3D11;
@@ -10,13 +9,11 @@ using namespace DirectX;
 using namespace ImGui;
 
 BaseEmitterSpawnProperty::BaseEmitterSpawnProperty(
-	const DirectX::XMFLOAT2& minInitRadian, 
-	const DirectX::XMFLOAT2& maxInitRadian, 
-	const DirectX::XMFLOAT2& minMaxRadius, 
+	const SShapedVectorProperty& shapedVectorProperty,
 	UINT initialParticleCount,
 	float initialParticleLife
 )
-	: m_emitterSpawnPropertyCPU{ minInitRadian, maxInitRadian, minMaxRadius, initialParticleCount, initialParticleLife }
+	: m_emitterSpawnPropertyCPU{ shapedVectorProperty, initialParticleCount, initialParticleLife }
 {
 }
 
@@ -35,32 +32,75 @@ void BaseEmitterSpawnProperty::DrawPropertyUI()
 {
 }
 
-std::unique_ptr<BaseEmitterSpawnProperty> BaseEmitterSpawnProperty::DrawPropertyCreator()
+std::unique_ptr<BaseEmitterSpawnProperty> BaseEmitterSpawnProperty::DrawPropertyCreator(bool& isApplied)
 {
 	static UINT initialParticleCount = 0;
+	static bool isImmortal = true;
 	static float initialParticleLife = 1.f;
-	static XMFLOAT2 minInitRadian = XMFLOAT2(0.f, 0.f);
-	static XMFLOAT2 maxInitRadian = XMFLOAT2(0.f, 0.f);
-	static XMFLOAT2 minMaxRadius = XMFLOAT2(0.f, 0.f);
+	static SShapedVectorProperty shapedVectorSelector;
+	static EShapedVector positionShapedVector = EShapedVector::None;
 	static bool isChanged = true;
-	static bool isImmortal = false;
-	EShapedVector positionShapedVector = EShapedVector::None;
 
-	SeparatorText("이미터 생성 프로퍼티");
-	isChanged |= DragInt("초기 파티클 개수", (int*)&initialParticleCount, 1.f, 0, 100000);
+	bool makeProperty = false;
 
-	BeginDisabled(isImmortal);
-	isChanged |= DragFloat("초기 파티클 생명", &initialParticleLife, 0.1f, 0.f, 1000.f);
-	EndDisabled();
-	SameLine();
-	Checkbox("초기 파티클 수명 여부", &isImmortal);
+	if (!ImGui::CollapsingHeader("이미터 생성 프로퍼티"))
+		return nullptr;
 
-	ShapedVectorSelector::SelectShapedVector(positionShapedVector);
+	BeginDisabled(isApplied);
+	{	
+		isChanged |= DragInt("초기 파티클 개수", (int*)&initialParticleCount, 1.f, 0, 100000);
+
+		BeginDisabled(isImmortal);
+		isChanged |= DragFloat("초기 파티클 생명", &initialParticleLife, 0.1f, 0.f, 1000.f);
+		EndDisabled();
+		SameLine();
+		Checkbox("Immortal 설정", &isImmortal);
+
+		EShapedVector lastShapedVectorKind = positionShapedVector;
+		ShapedVectorSelector::SelectEnums("위치 초기 위치", ShapedVectorSelector::GShapedVectorStringMap, positionShapedVector);
+		if (lastShapedVectorKind != positionShapedVector) isChanged = true;
+
+		isChanged |= ShapedVectorSelector::SetShapedVectorProperty(positionShapedVector, shapedVectorSelector);
+		EndDisabled();
+	}
 
 	BeginDisabled(!isChanged);
-	Button("이미터 생성 프로퍼티 설정");
-	EndDisabled();
+	{
+		if (Button("이미터 생성 프로퍼티 설정"))
+		{
+			isChanged = false;
+			isApplied = true;
+			makeProperty = true;
+		}
+		else
+		{
 
+		}
+		EndDisabled();
+	}
+	SameLine();
+	BeginDisabled(isChanged);
+	{
+		if (Button("이미터 생성 프로퍼티 재설정"))
+		{
+			isChanged = true;
+			isApplied = false;
+		}
+		else
+		{
+
+		}
+		EndDisabled();
+	}
+
+	if (makeProperty)
+	{
+		return make_unique<BaseEmitterSpawnProperty>(
+			shapedVectorSelector, initialParticleCount, 
+			isImmortal ? numeric_limits<float>::max() : initialParticleLife
+		);
+	}
 	return nullptr;
-
 }
+
+

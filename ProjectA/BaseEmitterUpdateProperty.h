@@ -1,46 +1,49 @@
 #pragma once
 #include "IProperty.h"
-#include "InterpolateHelper.h"
+#include "InterpolationSelector.h"
 
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <vector>
 
 
-#define LoopInfinity static_cast<uint8_t>(~0)
+#define LoopInfinity static_cast<UINT8>(~0)
 
 
 typedef std::function<void(class BaseEmitterUpdateProperty*)> OnEmitterDispose;
 
-class BaseEmitterUpdateProperty : public IProperty<BaseEmitterUpdateProperty>
+class BaseEmitterUpdateProperty : public IProperty
 {
 public:
 	BaseEmitterUpdateProperty(
-		float& emitterCurrentTimeRef,
 		UINT8 loopCount,
 		float loopTime,
-		const std::vector<SControlPoint1>& spawnControlPoints = std::vector<SControlPoint1>(),
-		EInterpolationMethod spawnRateInterpolationMethod = EInterpolationMethod::Linear
+		const std::vector<SControlPoint>& spawnControlPoints,
+		EInterpolationMethod spawnRateInterpolationMethod
 	);
 	virtual ~BaseEmitterUpdateProperty() = default;
 
 protected:
-	float& m_emitterCurrentTimeRef;
-
-protected:
-	UINT m_loopCount;
-	float m_loopTime;
-	std::vector<SControlPoint1> m_spawnControlPoints;
-	EInterpolationMethod m_spawnRateInterpolationMethod;
-	FPoint1Interpolater m_spawnRateInterpolater;
+	float* m_emitterCurrentTime = nullptr;
 
 public:
-	void SetSpawnControlPoints(const std::vector<SControlPoint1>& spawnControlPoints) noexcept;
+	inline void SetEmitterCurrentTime(const float* emitterCurrentTime) { m_emitterCurrentTime = m_emitterCurrentTime; }
+
+
+protected:
+	UINT8 m_loopCount;
+	float m_loopTime;
+	std::vector<SControlPoint> m_spawnControlPoints;
+	EInterpolationMethod m_spawnRateInterpolationMethod;
+	std::unique_ptr<AInterpolater> m_spawnRateInterpolater;
+
+public:
+	void SetSpawnControlPoints(const std::vector<SControlPoint>& spawnControlPoints) noexcept;
 	void SetSpawnRateInterpolationMethod(EInterpolationMethod spawnRateInterpolationMethod);
 
 public:
 	inline UINT GetLoopCount() const noexcept { return m_loopCount; }
-	inline const std::vector<SControlPoint1>& GetSpawnControlPoints() const noexcept { return m_spawnControlPoints; }
+	inline const std::vector<SControlPoint>& GetSpawnControlPoints() const noexcept { return m_spawnControlPoints; }
 	inline EInterpolationMethod GetSpawnRateInterpolationMethod() const noexcept { return m_spawnRateInterpolationMethod; }
 
 protected:
@@ -56,9 +59,11 @@ public:
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
 	virtual void Update(ID3D11DeviceContext* deviceContext, float dt) override;
+
+public:
 	virtual void DrawPropertyUI() override;
 
 public:
-	static std::unique_ptr<BaseEmitterUpdateProperty> DrawPropertyCreator();
+	static std::unique_ptr<BaseEmitterUpdateProperty> DrawPropertyCreator(bool& isApplied, float& emitterCurrentTimeRef);
 };
 
