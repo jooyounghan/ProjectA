@@ -1,7 +1,5 @@
 #pragma once
-
-struct ID3D11Device;
-struct ID3D11DeviceContext;
+#include <d3d11.h>
 
 class IUpdatable
 {

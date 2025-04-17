@@ -47,8 +47,8 @@ void BaseParticleSpawnProperty::SetSpeedControlPoints(
 
 void BaseParticleSpawnProperty::SetSpeedInterpolationMethod(EInterpolationMethod speedInterpolationMethod)
 {
-	m_speedXInterpolater = InterpolaterHelper::GetInterpolater(speedInterpolationMethod);
-	m_speedYInterpolater = InterpolaterHelper::GetInterpolater(speedInterpolationMethod);
+	//m_speedXInterpolater = InterpolaterHelper::GetInterpolater(speedInterpolationMethod);
+	//m_speedYInterpolater = InterpolaterHelper::GetInterpolater(speedInterpolationMethod);
 	m_speedInterpolationMethod = speedInterpolationMethod;
 	m_isSpeedInterpolaterChanged = true;
 }
@@ -68,9 +68,9 @@ void BaseParticleSpawnProperty::SetColorControlPoints(
 
 void BaseParticleSpawnProperty::SetColorInterpolationMethod(EInterpolationMethod colorInterpolationMethod)
 {
-	m_colorRInterpolater = InterpolaterHelper::GetInterpolater(colorInterpolationMethod);
-	m_colorGInterpolater = InterpolaterHelper::GetInterpolater(colorInterpolationMethod);
-	m_colorBInterpolater = InterpolaterHelper::GetInterpolater(colorInterpolationMethod);
+	//m_colorRInterpolater = InterpolaterHelper::GetInterpolater(colorInterpolationMethod);
+	//m_colorGInterpolater = InterpolaterHelper::GetInterpolater(colorInterpolationMethod);
+	//m_colorBInterpolater = InterpolaterHelper::GetInterpolater(colorInterpolationMethod);
 	m_colorInterpolationMethod = colorInterpolationMethod;
 	m_isColorInterpolaterChanged = true;
 }
@@ -85,14 +85,14 @@ void BaseParticleSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float
 {
 	if (m_isSpeedInterpolaterChanged)
 	{
-		m_speedXInterpolater->GetCoefficients(m_speedXControlPoints);
-		m_speedYInterpolater->GetCoefficients(m_speedYControlPoints);
+		//m_speedXInterpolater->GetCoefficients(m_speedXControlPoints);
+		//m_speedYInterpolater->GetCoefficients(m_speedYControlPoints);
 	}
 	if (m_isColorInterpolaterChanged)
 	{
-		m_colorRInterpolater->GetCoefficients(m_colorRControlPoints);
-		m_colorGInterpolater->GetCoefficients(m_colorGControlPoints);
-		m_colorBInterpolater->GetCoefficients(m_colorBControlPoints);
+		//m_colorRInterpolater->GetCoefficients(m_colorRControlPoints);
+		//m_colorGInterpolater->GetCoefficients(m_colorGControlPoints);
+		//m_colorBInterpolater->GetCoefficients(m_colorBControlPoints);
 	}
 
 	if (m_isParticleSpawnPropertyChanged)

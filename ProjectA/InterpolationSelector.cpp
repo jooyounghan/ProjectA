@@ -10,57 +10,101 @@ using namespace ImGui;
 
 unordered_map<EInterpolationMethod, string> InterpolationSelector::GInterpolationMethodStringMap
 {
-	{ EInterpolationMethod::None, "선택 안함" },
-	{ EInterpolationMethod::Linear, "Linear" },
-	{ EInterpolationMethod::CubicSpline, "Cubic Spline" }
+	{ EInterpolationMethod::Linear, "선형 보간" },
+	{ EInterpolationMethod::CubicSpline, "Cubic Spline 보간" }
 };
 
 
-void InterpolationSelector::GridViewControlPoint1s(
+std::unique_ptr<IInterpolater> InterpolationSelector::CreateInterpolater(
+	EInterpolationMethod interpolationMethod, 
+	const SControlPoint& startPoint, 
+	const SControlPoint& endPoint, 
+	const std::vector<SControlPoint>& controlPoints
+)
+{
+	switch (interpolationMethod)
+	{
+		case EInterpolationMethod::Linear:
+			return make_unique<LinearInterpolater>(startPoint, endPoint, controlPoints);
+			break;
+		case EInterpolationMethod::CubicSpline:
+			return make_unique<CubicSplineInterpolater>(startPoint, endPoint, controlPoints);
+			break;
+	}
+	return nullptr;
+}
+
+void InterpolationSelector::GridViewControlPoints(
+	const std::string& yValueName,
 	const string& controlPointsName,
+	const SControlPoint& startPoint,
+	const SControlPoint& endPoint,
 	const vector<SControlPoint>& controlPoints
 )
 {
-	if (ImGui::BeginTable(controlPointsName.c_str(), 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+	if (BeginTable(controlPointsName.c_str(), 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
 	{
 
-		ImGui::TableSetupColumn("Time");
-		ImGui::TableSetupColumn("Value");
-		ImGui::TableHeadersRow();
+		TableSetupColumn("시간");
+		TableSetupColumn(yValueName.c_str());
+		TableHeadersRow();
+
+		string pointIn = format("{:.2f}", startPoint.x);
+		string pointOut = format("{:.2f}", startPoint.y);
+		TableNextRow();
+		TableSetColumnIndex(0);
+		TextUnformatted(pointIn.c_str());
+		TableSetColumnIndex(1);
+		TextUnformatted(pointOut.c_str());
 
 		for (auto& controlPoint : controlPoints)
 		{
-			const string pointIn = format("{:.1f}", controlPoint.x);
-			const string pointOut = format("{:.1f}", controlPoint.y);
-			ImGui::TableNextRow();
-			ImGui::TableSetColumnIndex(0);
-			ImGui::TextUnformatted(pointIn.c_str());
-			ImGui::TableSetColumnIndex(1);
-			ImGui::TextUnformatted(pointOut.c_str());
+			pointIn = format("{:.2f}", controlPoint.x);
+			pointOut = format("{:.2f}", controlPoint.y);
+			TableNextRow();
+			TableSetColumnIndex(0);
+			TextUnformatted(pointIn.c_str());
+			TableSetColumnIndex(1);
+			TextUnformatted(pointOut.c_str());
 		}
-		ImGui::EndTable();
+
+		pointIn = format("{:.2f}", endPoint.x);
+		pointOut = format("{:.2f}", endPoint.y);
+		TableNextRow();
+		TableSetColumnIndex(0);
+		TextUnformatted(pointIn.c_str());
+		TableSetColumnIndex(1);
+		TextUnformatted(pointOut.c_str());
+
+		EndTable();
 	}
 }
 
 void InterpolationSelector::ViewInterpolatedPoints(
-	AInterpolater* interpolater,
+	IInterpolater* interpolater,
 	const string& graphTitle,
 	const string& scatterLabels,
 	const string& lineLabels,
+	const SControlPoint& startPoint,
+	const SControlPoint& endPoint,
 	const std::vector<SControlPoint>& controlPoints
 )
 {
 	std::vector<float> pointIns;
 	std::vector<float> pointOuts;
 
-	pointIns.reserve(controlPoints.size());
-	pointOuts.reserve(controlPoints.size());
+	pointIns.reserve(controlPoints.size() + 2);
+	pointOuts.reserve(controlPoints.size() + 2);
 
+	pointIns.emplace_back(startPoint.x);
+	pointOuts.emplace_back(startPoint.y);
 	for (const auto& cp : controlPoints) 
 	{
 		pointIns.emplace_back(cp.x);
 		pointOuts.emplace_back(cp.y);
 	}
+	pointIns.emplace_back(endPoint.x);
+	pointOuts.emplace_back(endPoint.y);
 
 	if (ImPlot::BeginPlot(graphTitle.c_str(), ImVec2(-1, 0)))
 	{
@@ -83,12 +127,6 @@ void InterpolationSelector::ViewInterpolatedPoints(
  vector<float> InterpolationSelector::MakeUniformStepsFromX(const vector<float>& xs, size_t numSteps)
 {
 	vector<float> result;
-
-	if (xs.empty() || numSteps == 0)
-	{
-		throw exception("No X Array For Control Points");
-		return result;
-	}
 
 	float start = xs.front();
 	float end = xs.back();

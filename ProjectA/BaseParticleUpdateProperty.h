@@ -1,6 +1,5 @@
 #pragma once
 #include "IProperty.h"
-#include <Windows.h>
 #include <DirectXMath.h>
 
 enum class EForceFlag

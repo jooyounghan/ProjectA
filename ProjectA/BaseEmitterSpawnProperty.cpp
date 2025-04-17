@@ -12,6 +12,8 @@ using namespace ImGui;
 BaseEmitterSpawnProperty::BaseEmitterSpawnProperty()
 {
 	AutoZeroMemory(m_emitterSpawnPropertyCPU);
+	m_emitterSpawnPropertyCPU.initialParticleCount = 0;
+	m_emitterSpawnPropertyCPU.initialParticleLife = 1.f;
 }
 
 void BaseEmitterSpawnProperty::SetShapedVectorProperty(const SShapedVectorProperty& shapedVectorSelector)

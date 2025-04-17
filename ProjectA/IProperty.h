@@ -1,6 +1,5 @@
 #pragma once
 #include "Updatable.h"
-#include <memory>
 
 class IProperty : public IUpdatable
 {

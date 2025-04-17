@@ -3,7 +3,7 @@
 #include "DynamicBuffer.h"
 #include "ShapedVectorSelector.h"
 
-#include <d3d11.h>
+#include <memory>
 
 class BaseEmitterSpawnProperty : public IProperty
 {

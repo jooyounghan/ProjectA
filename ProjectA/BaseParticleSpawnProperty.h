@@ -1,10 +1,7 @@
 #pragma once
 #include "IProperty.h"
 #include "DynamicBuffer.h"
-#include "InterpolateHelper.h"
-
-#include <d3d11.h>
-#include <vector>
+#include "InterpolationSelector.h"
 
 class BaseParticleSpawnProperty : public IProperty
 {
@@ -32,11 +29,15 @@ protected:
 	bool m_isParticleSpawnPropertyChanged = false;
 
 protected:
+	SControlPoint m_speedXInitControlPoint;
+	SControlPoint m_speedYInitControlPoint;
+	SControlPoint m_speedXFinalControlPoint;
+	SControlPoint m_speedYFinalControlPoint;
 	std::vector<SControlPoint> m_speedXControlPoints;
 	std::vector<SControlPoint> m_speedYControlPoints;
 	EInterpolationMethod m_speedInterpolationMethod;
-	std::unique_ptr<AInterpolater> m_speedXInterpolater;
-	std::unique_ptr<AInterpolater> m_speedYInterpolater;
+	std::unique_ptr<IInterpolater> m_speedXInterpolater;
+	std::unique_ptr<IInterpolater> m_speedYInterpolater;
 	bool m_isSpeedInterpolaterChanged = false;
 
 public:
@@ -51,9 +52,9 @@ protected:
 	std::vector<SControlPoint> m_colorGControlPoints;
 	std::vector<SControlPoint> m_colorBControlPoints;
 	EInterpolationMethod m_colorInterpolationMethod;
-	std::unique_ptr<AInterpolater> m_colorRInterpolater;
-	std::unique_ptr<AInterpolater> m_colorGInterpolater;
-	std::unique_ptr<AInterpolater> m_colorBInterpolater;
+	std::unique_ptr<IInterpolater> m_colorRInterpolater;
+	std::unique_ptr<IInterpolater> m_colorGInterpolater;
+	std::unique_ptr<IInterpolater> m_colorBInterpolater;
 	bool m_isColorInterpolaterChanged = false;
 
 public:

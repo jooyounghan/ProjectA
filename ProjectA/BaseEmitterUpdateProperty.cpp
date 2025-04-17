@@ -1,5 +1,4 @@
 #include "BaseEmitterUpdateProperty.h"
-#include <exception>
 
 
 using namespace std;
@@ -8,25 +7,49 @@ using namespace ImGui;
 
 BaseEmitterUpdateProperty::BaseEmitterUpdateProperty(float& emitterCurrentTime)
 	: m_emitterCurrentTime(emitterCurrentTime),
+	m_loopCount(LoopInfinity),
+	m_loopTime(10.f),
+	m_spawnInitControlPoint{ 0.f, 0.f },
+	m_spawnFinalControlPoint{ 10.f, 0.f },
+	m_spawnRateInterpolationMethod(EInterpolationMethod::Linear),
 	m_isNotDisposed(true)
 {
 }
 
-float BaseEmitterUpdateProperty::GetSpawnRate() const
+void BaseEmitterUpdateProperty::SetLoopTime(float loopTime) noexcept
 {
-	return m_spawnRateInterpolater->GetInterpolated(m_emitterCurrentTime);
+	m_loopTime = loopTime;
+	m_spawnFinalControlPoint.x = m_loopTime;
+	m_spawnRateInterpolater = InterpolationSelector::CreateInterpolater(
+		m_spawnRateInterpolationMethod,
+		m_spawnInitControlPoint, m_spawnFinalControlPoint,
+		m_spawnControlPoints
+	);
 }
 
 void BaseEmitterUpdateProperty::SetSpawnControlPoints(const std::vector<SControlPoint>& spawnControlPoints) noexcept
 {
 	m_spawnControlPoints = spawnControlPoints;
-	m_spawnRateInterpolater->GetCoefficients(spawnControlPoints);
+	m_spawnRateInterpolater = InterpolationSelector::CreateInterpolater(
+		m_spawnRateInterpolationMethod,
+		m_spawnInitControlPoint, m_spawnFinalControlPoint,
+		m_spawnControlPoints
+	);
 }
 
 void BaseEmitterUpdateProperty::SetSpawnRateInterpolationMethod(EInterpolationMethod spawnRateInterpolationMethod)
 {
-	m_spawnRateInterpolater = InterpolaterHelper::GetInterpolater(spawnRateInterpolationMethod);
 	m_spawnRateInterpolationMethod = spawnRateInterpolationMethod;
+	m_spawnRateInterpolater = InterpolationSelector::CreateInterpolater(
+		m_spawnRateInterpolationMethod,
+		m_spawnInitControlPoint, m_spawnFinalControlPoint,
+		m_spawnControlPoints
+	);
+}
+
+float BaseEmitterUpdateProperty::GetSpawnRate() const
+{
+	return m_spawnRateInterpolater->GetInterpolated(m_emitterCurrentTime);
 }
 
 void BaseEmitterUpdateProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)

@@ -146,7 +146,10 @@
     <ClCompile Include="EmitterSelector.cpp">
       <Filter>소스 파일\Updatable\Emitter\UI</Filter>
     </ClCompile>
-    <ClCompile Include="InterpolateHelper.cpp">
+    <ClCompile Include="LinearInterpolater.cpp">
+      <Filter>소스 파일\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="CubicSplineInterpolater.cpp">
       <Filter>소스 파일\Math</Filter>
     </ClCompile>
   </ItemGroup>
@@ -208,14 +211,20 @@
     <ClInclude Include="EmitterSelector.h">
       <Filter>헤더 파일\Updatable\Emitter\UI</Filter>
     </ClInclude>
-    <ClInclude Include="InterpolateHelper.h">
-      <Filter>헤더 파일\Math</Filter>
-    </ClInclude>
     <ClInclude Include="MacroUtilities.h">
       <Filter>헤더 파일\Macro</Filter>
     </ClInclude>
     <ClInclude Include="DefineLinkedWithShader.h">
       <Filter>헤더 파일\Macro</Filter>
+    </ClInclude>
+    <ClInclude Include="Interpolater.h">
+      <Filter>헤더 파일\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="LinearInterpolater.h">
+      <Filter>헤더 파일\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="CubicSplineInterpolater.h">
+      <Filter>헤더 파일\Math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
