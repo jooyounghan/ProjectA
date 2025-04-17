@@ -3,6 +3,7 @@
 #include <functional>
 #include <unordered_map>
 #include <DirectXMath.h>
+#include <memory>
 
 enum class EInterpolationMethod
 {

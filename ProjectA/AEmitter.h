@@ -1,13 +1,15 @@
 #pragma once
 #include "Updatable.h"
-#include <Windows.h>
-#include <DirectXMath.h>
-#include <memory>
-
 #include "BaseEmitterSpawnProperty.h"
 #include "BaseEmitterUpdateProperty.h"
 #include "BaseParticleSpawnProperty.h"
 #include "BaseParticleUpdateProperty.h"
+#include "StructuredBuffer.h"
+
+#include <DirectXMath.h>
+#include <memory>
+#include <queue>
+
 
 struct SParticle
 {
@@ -21,14 +23,31 @@ struct SParticle
 
 class AEmitter : public IUpdatable
 {
+protected:
+	static UINT GEmitterMaxCount;
+	static std::queue<UINT> GEmitterIDQueue;
+
+public:
+	static std::vector<DirectX::XMMATRIX> GEmitterWorldTransformCPU;
+	static std::unique_ptr<D3D11::CDynamicBuffer> GEmitterWorldTransformGPU;
+	static std::vector<SEmitterForceProperty> GEmitterForcePropertyCPU;
+	static std::unique_ptr<D3D11::CStructuredBuffer> GEmitterForcePropertyGPU;
+	static bool GIsEmitterWorldPositionChanged;
+	static bool GIsEmitterForceChanged;
+
+public:
+	static void InitializeGlobalEmitterProperty(UINT emitterMaxCount);
+	static void UpdateGlobalEmitterProperty(ID3D11DeviceContext* deviceContext);
+	static UINT IssueAvailableEmitterID();
+
 public:
 	AEmitter(
 		UINT emitterType,
 		UINT emitterID,
 		bool& isEmitterWorldTransformChanged,
-		DirectX::XMMATRIX& emitterWorldTransformRef,
+		DirectX::XMMATRIX& emitterWorldTransform,
 		bool& isEmitterForceChanged,
-		SEmitterForceProperty& emitterForceRef,
+		SEmitterForceProperty& emitterForce,
 		const DirectX::XMVECTOR& position,
 		const DirectX::XMVECTOR& angle
 	);
@@ -38,16 +57,21 @@ protected:
 	DirectX::XMVECTOR m_angle;
 
 protected:
-	bool& m_isEmitterWorldTransformChangedRef;
-	DirectX::XMMATRIX& m_emitterWorldTransformRef;
+	bool& m_isEmitterWorldTransformChanged;
+	DirectX::XMMATRIX& m_emitterWorldTransform;
 	bool m_isThisWorldTransformChanged;
 
 protected:
 	bool& m_isEmitterForceChanged;
-	SEmitterForceProperty& m_emitterForceRef;
+	SEmitterForceProperty& m_emitterForce;
 
 protected:
 	float m_currnetEmitter = 0.f;
+
+public:
+	bool& GetIsEmitterForceChanged() { return m_isEmitterForceChanged; }
+	SEmitterForceProperty& GetEmitterForce() { return m_emitterForce; }
+	float& GetCurrnetEmitter() { return m_currnetEmitter; }
 
 protected:
 	std::unique_ptr<BaseEmitterSpawnProperty> m_emitterSpawnProperty;
@@ -56,10 +80,10 @@ protected:
 	std::unique_ptr<BaseParticleUpdateProperty> m_particleUpdateProperty;
 
 public:
-	void InjectAEmitterSpawnProperty(std::unique_ptr<BaseEmitterSpawnProperty> emitterSpawnProperty) noexcept;
-	void InjectAEmitterUpdateProperty(std::unique_ptr<BaseEmitterUpdateProperty> emitterUpdateProperty) noexcept;
-	void InjectAParticleSpawnProperty(std::unique_ptr<BaseParticleSpawnProperty> particleSpawnProperty) noexcept;
-	void InjectAParticleUpdateProperty(std::unique_ptr<BaseParticleUpdateProperty> particleSpawnProperty) noexcept;
+	void InjectAEmitterSpawnProperty(std::unique_ptr<BaseEmitterSpawnProperty>& emitterSpawnProperty) noexcept;
+	void InjectAEmitterUpdateProperty(std::unique_ptr<BaseEmitterUpdateProperty>& emitterUpdateProperty) noexcept;
+	void InjectAParticleSpawnProperty(std::unique_ptr<BaseParticleSpawnProperty>& particleSpawnProperty) noexcept;
+	void InjectAParticleUpdateProperty(std::unique_ptr<BaseParticleUpdateProperty>& particleSpawnProperty) noexcept;
 
 public:
 	inline BaseEmitterSpawnProperty* GetAEmitterSpawnProperty() const noexcept { return m_emitterSpawnProperty.get(); }

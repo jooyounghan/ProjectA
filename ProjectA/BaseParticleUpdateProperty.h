@@ -76,19 +76,15 @@ struct SEmitterForceProperty
 class BaseParticleUpdateProperty : public IProperty
 {
 public:
-	BaseParticleUpdateProperty();
+	BaseParticleUpdateProperty(
+		bool& isEmitterForceChanged,
+		SEmitterForceProperty& emitterForceProperty
+	);
 	virtual ~BaseParticleUpdateProperty() = default;
 
 protected:
-	bool* m_isEmitterForceChanged = nullptr;
-	SEmitterForceProperty* m_emitterForceProperty = nullptr;
-	SEmitterForceProperty m_emitterForecPropertyStage;
-
-public:
-	void SetEmitterForceProperty(
-		bool* isEmitterForceChanged,
-		SEmitterForceProperty* emitterForceProperty
-	);
+	bool& m_isEmitterForceChanged;
+	SEmitterForceProperty& m_emitterForceProperty;
 
 public:
 	void ApplyGravityForce(const DirectX::XMFLOAT3& gravityForce) noexcept;
@@ -134,8 +130,5 @@ public:
 
 public:
 	virtual void DrawPropertyUI() override;
-
-public:
-	static std::unique_ptr<BaseParticleUpdateProperty> DrawPropertyCreator(bool& isApplied);
 };
 

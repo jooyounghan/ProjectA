@@ -9,25 +9,14 @@
 class BaseParticleSpawnProperty : public IProperty
 {
 public:
-	BaseParticleSpawnProperty(
-		const DirectX::XMFLOAT2& minMaxLifeTime,
-		const DirectX::XMFLOAT2& minEmitRadian,
-		const DirectX::XMFLOAT2& maxEmitRadian,
-		EInterpolationMethod speedInterpolationMethod = EInterpolationMethod::Linear,
-		const std::vector<SControlPoint>& speedXControlPoints = std::vector<SControlPoint>(),
-		const std::vector<SControlPoint>& speedYControlPoints = std::vector<SControlPoint>(),
-		EInterpolationMethod colorInterpolationMethod = EInterpolationMethod::Linear,
-		const std::vector<SControlPoint>& colorRControlPoints = std::vector<SControlPoint>(),
-		const std::vector<SControlPoint>& colorGControlPoints = std::vector<SControlPoint>(),
-		const std::vector<SControlPoint>& colorBControlPoints = std::vector<SControlPoint>()
-	);
+	BaseParticleSpawnProperty(float& emitterCurrentTime);
 	virtual ~BaseParticleSpawnProperty() = default;
 
 protected:
-	const float* m_emitterCurrentTime = nullptr;
+	float& m_emitterCurrentTime;
 
 public:
-	inline void SetEmitterCurrentTime(const float* emitterCurrentTime) { m_emitterCurrentTime = emitterCurrentTime; }
+	inline void SetEmitterCurrentTime(float emitterCurrentTime) { m_emitterCurrentTime = emitterCurrentTime; }
 
 protected:
 	struct  
@@ -91,8 +80,5 @@ public:
 
 public:
 	virtual void DrawPropertyUI() override;
-
-public:
-	static std::unique_ptr<BaseParticleSpawnProperty> DrawPropertyCreator(bool& isApplied);
 };
 

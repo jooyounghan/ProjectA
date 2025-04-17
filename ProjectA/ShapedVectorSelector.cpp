@@ -6,7 +6,7 @@ using namespace std;
 using namespace DirectX;
 using namespace ImGui;
 
-unordered_map<EShapedVector, string> ShapedVectorSelector::GShapedVectorStringMap
+unordered_map<EShapedVector, string> ShapedVectorSelector::GShapedVectorStringMaps
 {
 	{ EShapedVector::None, "선택 안함" },
 	{ EShapedVector::Sphere, "Sphere" },

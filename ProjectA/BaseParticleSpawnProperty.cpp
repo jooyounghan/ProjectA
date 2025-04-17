@@ -10,36 +10,10 @@ using namespace D3D11;
 using namespace DirectX;
 using namespace ImGui;
 
-BaseParticleSpawnProperty::BaseParticleSpawnProperty(
-	const XMFLOAT2& minMaxLifeTime, 
-	const XMFLOAT2& minEmitRadian, 
-	const XMFLOAT2& maxEmitRadian, 
-	EInterpolationMethod speedInterpolationMethod /*= EInterpolationMethod::Linear*/, 
-	const std::vector<SControlPoint>& speedXControlPoints/* = std::vector<SControlPoint>()*/,
-	const std::vector<SControlPoint>& speedYControlPoints/* = std::vector<SControlPoint>()*/,
-	EInterpolationMethod colorInterpolationMethod /*= EInterpolationMethod::Linear*/,
-	const std::vector<SControlPoint>& colorRControlPoints/* = std::vector<SControlPoint>()*/,
-	const std::vector<SControlPoint>& colorGControlPoints/* = std::vector<SControlPoint>()*/,
-	const std::vector<SControlPoint>& colorBControlPoints/* = std::vector<SControlPoint>()*/
-)
-	: m_speedXControlPoints(speedXControlPoints),
-	m_speedYControlPoints(speedYControlPoints),
-	m_speedInterpolationMethod(speedInterpolationMethod),
-	m_speedXInterpolater(InterpolaterHelper::GetInterpolater(speedInterpolationMethod)),
-	m_speedYInterpolater(InterpolaterHelper::GetInterpolater(speedInterpolationMethod)),
-	m_colorRControlPoints(colorRControlPoints),
-	m_colorGControlPoints(colorGControlPoints),
-	m_colorBControlPoints(colorBControlPoints),
-	m_colorInterpolationMethod(colorInterpolationMethod),
-	m_colorRInterpolater(InterpolaterHelper::GetInterpolater(colorInterpolationMethod)),
-	m_colorGInterpolater(InterpolaterHelper::GetInterpolater(colorInterpolationMethod)),
-	m_colorBInterpolater(InterpolaterHelper::GetInterpolater(colorInterpolationMethod))
+BaseParticleSpawnProperty::BaseParticleSpawnProperty(float& emitterCurrentTime)
+	: m_emitterCurrentTime(emitterCurrentTime)
 {
 	AutoZeroMemory(m_baseParticleSpawnPropertyCPU);
-	m_baseParticleSpawnPropertyCPU.minMaxLifeTime = minMaxLifeTime;
-	m_baseParticleSpawnPropertyCPU.minEmitRadian = minEmitRadian;
-	m_baseParticleSpawnPropertyCPU.maxEmitRadian = maxEmitRadian;
-	m_isParticleSpawnPropertyChanged = true;
 }
 
 void BaseParticleSpawnProperty::SetMinMaxLifeTime(const DirectX::XMFLOAT2& minMaxLifeTime)
@@ -123,15 +97,14 @@ void BaseParticleSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float
 
 	if (m_isParticleSpawnPropertyChanged)
 	{
-		const float& emitterCurrentTime = *m_emitterCurrentTime;
 		m_baseParticleSpawnPropertyCPU.minMaxSpeed = XMFLOAT2(
-			m_speedXInterpolater->GetInterpolated(emitterCurrentTime),
-			m_speedYInterpolater->GetInterpolated(emitterCurrentTime)
+			m_speedXInterpolater->GetInterpolated(m_emitterCurrentTime),
+			m_speedYInterpolater->GetInterpolated(m_emitterCurrentTime)
 		);
 		m_baseParticleSpawnPropertyCPU.color = XMFLOAT3(
-			m_colorRInterpolater->GetInterpolated(emitterCurrentTime),
-			m_colorGInterpolater->GetInterpolated(emitterCurrentTime),
-			m_colorBInterpolater->GetInterpolated(emitterCurrentTime)
+			m_colorRInterpolater->GetInterpolated(m_emitterCurrentTime),
+			m_colorGInterpolater->GetInterpolated(m_emitterCurrentTime),
+			m_colorBInterpolater->GetInterpolated(m_emitterCurrentTime)
 		);
 
 		m_baseParticleSpawnPropertyGPU->Stage(deviceContext);
@@ -145,9 +118,4 @@ void BaseParticleSpawnProperty::DrawPropertyUI()
 {
 }
 
-std::unique_ptr<BaseParticleSpawnProperty> BaseParticleSpawnProperty::DrawPropertyCreator(bool& isApplied)
-{
-	SeparatorText("파티클 생성 프로퍼티");
-	return nullptr;
-}
 

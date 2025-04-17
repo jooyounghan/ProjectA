@@ -1,20 +1,90 @@
 #include "AEmitter.h"
+#include "MacroUtilities.h"
+#include "BufferMacroUtilities.h"
+
+#include <exception>
 
 using namespace std;
 using namespace DirectX;
+using namespace D3D11;
+
+UINT AEmitter::GEmitterMaxCount = 0;
+queue<UINT> AEmitter::GEmitterIDQueue;
+vector<DirectX::XMMATRIX> AEmitter::GEmitterWorldTransformCPU;
+unique_ptr<D3D11::CDynamicBuffer> AEmitter::GEmitterWorldTransformGPU = nullptr;
+vector<SEmitterForceProperty> AEmitter::GEmitterForcePropertyCPU;
+unique_ptr<D3D11::CStructuredBuffer> AEmitter::GEmitterForcePropertyGPU = nullptr;
+bool AEmitter::GIsEmitterWorldPositionChanged = false;
+bool AEmitter::GIsEmitterForceChanged = false;
+
+void AEmitter::InitializeGlobalEmitterProperty(UINT emitterMaxCount)
+{
+	GEmitterMaxCount = emitterMaxCount;
+	for (UINT idx = 0; idx < GEmitterMaxCount; ++idx)
+	{
+		GEmitterIDQueue.push(idx);
+	}
+
+	GIsEmitterWorldPositionChanged = false;
+	GIsEmitterForceChanged = false;
+
+	SEmitterForceProperty initialForceProperty;
+	AutoZeroMemory(initialForceProperty);
+	GEmitterWorldTransformCPU.resize(GEmitterMaxCount, XMMatrixIdentity());
+	GEmitterForcePropertyCPU.resize(GEmitterMaxCount, initialForceProperty);
+
+	GEmitterWorldTransformGPU = make_unique<CDynamicBuffer>(
+		static_cast<UINT>(sizeof(XMMATRIX)),
+		static_cast<UINT>(GEmitterWorldTransformCPU.size()),
+		GEmitterWorldTransformCPU.data(),
+		D3D11_BIND_VERTEX_BUFFER
+	);
+	GEmitterForcePropertyGPU = make_unique<CStructuredBuffer>(
+		static_cast<UINT>(sizeof(CStructuredBuffer)),
+		static_cast<UINT>(GEmitterForcePropertyCPU.size()),
+		GEmitterForcePropertyCPU.data()
+	);
+}
+
+void AEmitter::UpdateGlobalEmitterProperty(ID3D11DeviceContext* deviceContext)
+{
+	if (GIsEmitterWorldPositionChanged)
+	{
+		GEmitterWorldTransformGPU->Stage(deviceContext);
+		GEmitterWorldTransformGPU->Upload(deviceContext);
+	}
+
+	if (GIsEmitterForceChanged)
+	{
+		GEmitterForcePropertyGPU->Stage(deviceContext);
+		GEmitterForcePropertyGPU->Upload(deviceContext);
+	}
+}
+
+UINT AEmitter::IssueAvailableEmitterID()
+{
+	if (GEmitterIDQueue.empty()) { throw exception("No Emitter ID To Issue"); }
+
+	UINT emitterID = GEmitterIDQueue.front();
+	GEmitterIDQueue.pop();
+
+	return emitterID;
+}
 
 AEmitter::AEmitter(
 	UINT emitterType, 
 	UINT emitterID,  
 	bool& isEmitterWorldTransformChanged, 
-	XMMATRIX& emitterWorldTransformRef, 
+	XMMATRIX& emitterWorldTransform, 
 	bool& isEmitterForceChanged,
-	SEmitterForceProperty& emitterForceRef,
+	SEmitterForceProperty& emitterForce,
 	const XMVECTOR& position, 
 	const XMVECTOR& angle
 )
-	: m_isEmitterWorldTransformChangedRef(isEmitterWorldTransformChanged),
-	m_emitterWorldTransformRef(emitterWorldTransformRef),
+	: m_isEmitterWorldTransformChanged(isEmitterWorldTransformChanged),
+	m_emitterWorldTransform(emitterWorldTransform),
+	m_isEmitterForceChanged(isEmitterForceChanged),
+	m_emitterForce(emitterForce),
 	m_isThisWorldTransformChanged(false),
 	m_position(position),
 	m_angle(angle)
@@ -22,27 +92,24 @@ AEmitter::AEmitter(
 
 }
 
-AEmitter::InjectAEmitterSpawnProperty(unique_ptr<BaseEmitterSpawnProperty> emitterSpawnProperty) noexcept 
+void AEmitter::InjectAEmitterSpawnProperty(unique_ptr<BaseEmitterSpawnProperty>& emitterSpawnProperty) noexcept 
 { 
 	m_emitterSpawnProperty = std::move(emitterSpawnProperty); 
 }
 
-AEmitter::InjectAEmitterUpdateProperty(unique_ptr<BaseEmitterUpdateProperty> emitterUpdateProperty) noexcept 
+void AEmitter::InjectAEmitterUpdateProperty(unique_ptr<BaseEmitterUpdateProperty>& emitterUpdateProperty) noexcept
 { 
 	m_emitterUpdateProperty = std::move(emitterUpdateProperty); 
-	m_emitterUpdateProperty->SetEmitterCurrentTime(&m_currnetEmitter);
 }
 
-AEmitter::InjectAParticleSpawnProperty(unique_ptr<BaseParticleSpawnProperty> particleSpawnProperty) noexcept 
+void AEmitter::InjectAParticleSpawnProperty(unique_ptr<BaseParticleSpawnProperty>& particleSpawnProperty) noexcept
 { 
 	m_particleSpawnProperty = std::move(particleSpawnProperty); 
-	m_particleSpawnProperty->SetEmitterCurrentTime(&m_currnetEmitter);
 }
 
-AEmitter::InjectAParticleUpdateProperty(unique_ptr<BaseParticleUpdateProperty> particleSpawnProperty) noexcept
+void AEmitter::InjectAParticleUpdateProperty(unique_ptr<BaseParticleUpdateProperty>& particleSpawnProperty) noexcept
 { 
 	m_particleUpdateProperty = std::move(particleSpawnProperty); 
-	m_particleUpdateProperty->SetEmitterForceProperty(&m_isEmitterForceChanged, &m_emitterForceRef);
 }
 
 void AEmitter::SetPosition(const XMVECTOR& position) noexcept
@@ -73,7 +140,7 @@ void AEmitter::Update(ID3D11DeviceContext* deviceContext, float dt)
 {
 	if (m_isThisWorldTransformChanged)
 	{
-		m_emitterWorldTransformRef = XMMatrixAffineTransformation(
+		m_emitterWorldTransform = XMMatrixAffineTransformation(
 			XMVectorSet(1.f, 1.f, 1.f, 0.f),
 			XMQuaternionIdentity(),
 			XMQuaternionRotationRollPitchYawFromVector(m_angle),
@@ -81,7 +148,7 @@ void AEmitter::Update(ID3D11DeviceContext* deviceContext, float dt)
 		);
 
 		m_isThisWorldTransformChanged = false;
-		m_isEmitterWorldTransformChangedRef = true;
+		m_isEmitterWorldTransformChanged = true;
 	}
 	UPDATE_PROPRTY(m_emitterSpawnProperty, deviceContext, dt);
 	UPDATE_PROPRTY(m_emitterUpdateProperty, deviceContext, dt);

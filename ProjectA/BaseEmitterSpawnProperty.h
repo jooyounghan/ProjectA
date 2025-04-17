@@ -8,11 +8,7 @@
 class BaseEmitterSpawnProperty : public IProperty
 {
 public:
-	BaseEmitterSpawnProperty(
-		const SShapedVectorProperty& shapedVectorProperty,
-		UINT initialParticleCount,
-		float initialParticleLife
-	);
+	BaseEmitterSpawnProperty();
 	virtual ~BaseEmitterSpawnProperty() = default;
 
 protected:
@@ -25,11 +21,17 @@ public:
 protected:
 	struct alignas(16)
 	{
-		const SShapedVectorProperty shapedVectorSelector;
-		const UINT initialParticleCount;
-		const float initialParticleLife;
+		SShapedVectorProperty shapedVectorSelector;
+		UINT initialParticleCount;
+		float initialParticleLife;
 	} m_emitterSpawnPropertyCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterSpawnPropertyGPU;
+	bool m_isEmitterSpawnPropertyChanged = false;
+
+public:
+	void SetShapedVectorProperty(const SShapedVectorProperty& shapedVectorSelector);
+	void SetInitialParticleCount(UINT initialParticleCount);
+	void SetInitialParticleLife(float initialParticleLife);
 
 public:
 	inline ID3D11Buffer* GetEmitterSpawnPropertyBuffer() const noexcept { return m_emitterSpawnPropertyGPU->GetBuffer(); }
@@ -41,8 +43,5 @@ public:
 
 public:
 	virtual void DrawPropertyUI() override;
-
-public:
-	static std::unique_ptr<BaseEmitterSpawnProperty> DrawPropertyCreator(bool& isApplied);
 };
 

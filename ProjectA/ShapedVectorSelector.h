@@ -21,7 +21,7 @@ struct SShapedVectorProperty
 class ShapedVectorSelector : public BaseSelector<EShapedVector>
 {
 public:
-	static std::unordered_map<EShapedVector, std::string> GShapedVectorStringMap;
+	static std::unordered_map<EShapedVector, std::string> GShapedVectorStringMaps;
 	
 public:
 	static bool SetShapedVectorProperty(EShapedVector selectedShapedVector, SShapedVectorProperty& shapedVectorProperty);

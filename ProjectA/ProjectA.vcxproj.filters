@@ -81,6 +81,15 @@
     <Filter Include="소스 파일\Updatable\Emitter\UI">
       <UniqueIdentifier>{739f7dbc-b303-4b2c-8816-9279efc99deb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Math">
+      <UniqueIdentifier>{b3872207-4b99-44f6-a836-8c989ec909c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Math">
+      <UniqueIdentifier>{f075a1ab-bc9f-4799-8ba6-57d57e46fa7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Macro">
+      <UniqueIdentifier>{8228aaf2-3b49-4106-a598-1a61a1a90860}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -125,9 +134,6 @@
     <ClCompile Include="BaseParticleUpdateProperty.cpp">
       <Filter>소스 파일\Updatable\Emitter\Property</Filter>
     </ClCompile>
-    <ClCompile Include="InterpolateHelper.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="ShapedVectorSelector.cpp">
       <Filter>소스 파일\Updatable\Emitter\UI</Filter>
     </ClCompile>
@@ -136,6 +142,12 @@
     </ClCompile>
     <ClCompile Include="BaseSelector.cpp">
       <Filter>소스 파일\Updatable\Emitter\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="EmitterSelector.cpp">
+      <Filter>소스 파일\Updatable\Emitter\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="InterpolateHelper.cpp">
+      <Filter>소스 파일\Math</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -147,9 +159,6 @@
     </ClInclude>
     <ClInclude Include="External\imgui_impl_win32.h">
       <Filter>External</Filter>
-    </ClInclude>
-    <ClInclude Include="MacroUtilities.h">
-      <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="ParticleManager.h">
       <Filter>헤더 파일\Updatable\ParticleManager</Filter>
@@ -167,9 +176,6 @@
       <Filter>헤더 파일\Updatable</Filter>
     </ClInclude>
     <ClInclude Include="GlobalVariable.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="DefineLinkedWithShader.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="AEmitter.h">
@@ -190,9 +196,6 @@
     <ClInclude Include="IProperty.h">
       <Filter>헤더 파일\Updatable\Emitter\Property</Filter>
     </ClInclude>
-    <ClInclude Include="InterpolateHelper.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="ShapedVectorSelector.h">
       <Filter>헤더 파일\Updatable\Emitter\UI</Filter>
     </ClInclude>
@@ -201,6 +204,18 @@
     </ClInclude>
     <ClInclude Include="BaseSelector.h">
       <Filter>헤더 파일\Updatable\Emitter\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="EmitterSelector.h">
+      <Filter>헤더 파일\Updatable\Emitter\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="InterpolateHelper.h">
+      <Filter>헤더 파일\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="MacroUtilities.h">
+      <Filter>헤더 파일\Macro</Filter>
+    </ClInclude>
+    <ClInclude Include="DefineLinkedWithShader.h">
+      <Filter>헤더 파일\Macro</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

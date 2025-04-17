@@ -15,20 +15,11 @@ typedef std::function<void(class BaseEmitterUpdateProperty*)> OnEmitterDispose;
 class BaseEmitterUpdateProperty : public IProperty
 {
 public:
-	BaseEmitterUpdateProperty(
-		UINT8 loopCount,
-		float loopTime,
-		const std::vector<SControlPoint>& spawnControlPoints,
-		EInterpolationMethod spawnRateInterpolationMethod
-	);
+	BaseEmitterUpdateProperty(float& emitterCurrentTime);
 	virtual ~BaseEmitterUpdateProperty() = default;
 
 protected:
-	float* m_emitterCurrentTime = nullptr;
-
-public:
-	inline void SetEmitterCurrentTime(const float* emitterCurrentTime) { m_emitterCurrentTime = m_emitterCurrentTime; }
-
+	float& m_emitterCurrentTime;
 
 protected:
 	UINT8 m_loopCount;
@@ -62,8 +53,5 @@ public:
 
 public:
 	virtual void DrawPropertyUI() override;
-
-public:
-	static std::unique_ptr<BaseEmitterUpdateProperty> DrawPropertyCreator(bool& isApplied, float& emitterCurrentTimeRef);
 };
 

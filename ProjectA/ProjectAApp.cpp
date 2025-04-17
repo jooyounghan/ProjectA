@@ -20,15 +20,10 @@
 #include "SamplerState.h"
 
 #include "Camera.h"
-
-#include "BaseEmitterSpawnProperty.h"
-#include "BaseEmitterUpdateProperty.h"
-#include "BaseParticleSpawnProperty.h"
-#include "BaseParticleUpdateProperty.h"
-
 #include "ParticleManager.h"
 
-#include <sstream>
+#include "AEmitter.h"
+#include "EmitterSelector.h"
 #pragma  endregion
 
 using namespace std;
@@ -120,6 +115,8 @@ void CProjectAApp::Init()
 #pragma endregion
 
 #pragma region 테스트 초기화
+	AEmitter::InitializeGlobalEmitterProperty(100);
+
 	//CParticleManager::InitializeSetInitializingPSO(m_device);
 	//CParticleManager::InitializeEmitterDrawPSO(m_device);
 	//CParticleManager::InitializePoolingCS(m_device);
@@ -242,11 +239,6 @@ void CProjectAApp::DrawUI()
 	ImGui_ImplDX11_RenderDrawData(GetDrawData());
 }
 
-
-#define GetProperty(from, to, isApplied)								\
-if (auto result = from) to = std::move(result);							\
-if (!isApplied && to != nullptr) to.release();							\
-
 void CProjectAApp::DrawEmitterHandler()
 {
 	if (Button("이미터 생성"))
@@ -254,47 +246,16 @@ void CProjectAApp::DrawEmitterHandler()
 
 	if (BeginPopupModal("CreateEmitter", NULL, ImGuiWindowFlags_MenuBar))
 	{
-		if (BeginTabBar("EmitterKinds", ImGuiTabBarFlags_None))
-		{
-			static bool isEmitterSpawnPropertyApplied = false;
-			static bool isEmitterUpdatePropertyApplied = false;
-			static bool isParticleSpawnPropertyApplied = false;
-			static bool isParticleUpdatePropertyApplied = false;
-			static std::unique_ptr<BaseEmitterSpawnProperty> emitterSpawnProperty;
-			static std::unique_ptr<BaseEmitterUpdateProperty> emitterUpdateProperty;
-			static std::unique_ptr<BaseParticleSpawnProperty> particleSpawnProperty;
-			static std::unique_ptr<BaseParticleUpdateProperty> particleUpdateProperty;
+		static EEmitterType emttierType = EEmitterType::ParticleEmitter;
+		static std::unique_ptr<AEmitter> createdEmitter = nullptr;
+		EmitterSelector::SelectEnums("생성할 이미터 종류를 선택하세요", EmitterSelector::GEmitterStringMaps, emttierType);
 
-			if (BeginTabItem("Particle Emitter"))
-			{
-				GetProperty(BaseEmitterSpawnProperty::DrawPropertyCreator(isEmitterSpawnPropertyApplied), emitterSpawnProperty, isEmitterSpawnPropertyApplied);
-				GetProperty(BaseEmitterUpdateProperty::DrawPropertyCreator(isEmitterUpdatePropertyApplied, emitterCurrentTimeRef), emitterUpdateProperty, isEmitterUpdatePropertyApplied);
-				GetProperty(BaseParticleSpawnProperty::DrawPropertyCreator(isParticleSpawnPropertyApplied), particleSpawnProperty, isParticleSpawnPropertyApplied);
-				GetProperty(BaseParticleUpdateProperty::DrawPropertyCreator(isParticleUpdatePropertyApplied), particleUpdateProperty, isParticleUpdatePropertyApplied);
-				EndTabItem();
-			}
-			if (BeginTabItem("Ribbon Emitter"))
-			{
-				Text("This is Ribbon Emitter");
-				EndTabItem();
-			}
-			if (BeginTabItem("Sprite Emitter"))
-			{
-				Text("This is Sprite Emitter");
-				EndTabItem();
-			}
-			if (BeginTabItem("Mesh Emitter"))
-			{
-				Text("This is Mesh Emitter");
-				EndTabItem();
-			}
-			EndTabBar();
-		}
-		if (ImGui::Button("이미터 생성하기"))
+		if (EmitterSelector::CreateEmitter(emttierType, createdEmitter))
 		{
-
+			ImGui::CloseCurrentPopup();
 		}
-		if (ImGui::Button("종료"))
+
+		if (ImGui::Button("이미터 생성 종료"))
 		{
 			ImGui::CloseCurrentPopup();
 		}
