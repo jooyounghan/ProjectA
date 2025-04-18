@@ -8,17 +8,25 @@
 - https://www.youtube.com/watch?v=f2TYIinAf2E
 
 ### 기능 구현
-1. 3D Particle Manager 구현
-
+1. Particle Manager 구현
 	- 여러 파티클 Emitter을 하나의 Manager가 관리하고, 각 Emitter가 생성 / 삭제되는 과정에서 발생할 수 있는 GPU 오버헤드(메모리 할당 등)를 줄이기 위하여 Particle을 Pooling하는 방식으로 구현 
-
 	- Append Buffer의 카운터를 활용하여 Indirect Draw Call을 지원하여 렌더링 파이프라인에서 발생할 수 있는 오버헤드 최소화 
 
-	- 시간에 종속한 변수(Emission Rate / Life Time / Size)를 사용자가 변경할 수 있도록 구현
-
-2. 입자 간 인력/척력이 있을 경우, 전체 입자에 대해 연산하지 않고 영향을 받을 수 있는 입자를 찾는 Neighborhood Particle Search 알고리즘 구현
-3. Particle 및 Emitter에 대한 Rendering 기능 구현
-	- Motion Blur / Glow 등으로 사실적인 렌더링 구현
+2. Particle Emitter 구현
+	- AParticleEmitter를 구현하고, 이를 상속받아 Particle을 Rendering 하는 방법에 대해 구체화한 Emitter 구현
+	```mermaid
+	classDiagram
+		class AParticleEmitter
+		class ParticleEmitter
+		class RibbonEmitter
+		class SpriteEmitter
+		class MeshEmitter
+		AParticleEmitter <|-- ParticleEmitter
+		AParticleEmitter <|-- RibbonEmitter
+		AParticleEmitter <|-- SpriteEmitter
+		AParticleEmitter <|-- MeshEmitter
+	```
+	- 구체화한 Emitter 별로 설정할 수 있는 변수를 제공하여 유연하게 Emitter를 수정할 수 있도록 설계
 
 ## 프로젝트 계획
 
@@ -29,8 +37,7 @@ gantt
 	dateFormat MM-DD
 	axisFormat %m-%d
     Particle Manager :a, 04-01, 05-07
-    Neighborhood Search :b, 04-16, 05-14
-    Rendering :c, 05-07, 05-23
+    Particle Emitter :b, 04-16, 05-23
 ```
 
 ## 프로젝트 일지
@@ -136,3 +143,30 @@ gantt
 - 주간 피드백 회의(2차) 자료 작성
 - 인력에 대한 벡터장 수정(기존의 경우 $\vec{r} = \vec{p_{paritlce}} - \vec{p_{emitter}}$ 일 때, $-\vec{r}$로 간단히 표현하였는데, $-\frac{Const}{|\vec{r}|^{3}}\vec{r}$로 수정
 	- 해당하는 벡터장으로 수정하여 Curl-Noise를 추가하였을 때, Divergence-free한 벡터장의 성질은 유지하되, 회전 성분만 추가하도록 수정
+
+### 25.04.15
+- 주간 피드백 회의 수행
+- 프로젝트 목표 수정
+	- 기존의 경우 '3D Particle Manager 설계'를 기반으로 한 참고 영상 구현이었는데, 이를 ParticleManager 설계와 ParticleEmitter 설계로 구분
+	-  ParticleEmitter 설계의 경우 네 가지 Emitter에 대해 설계
+		1) Particle Emitter
+		2) Ribbon Emitter
+		3) Sprite Emitter
+		4) Mesh Emitter
+	- 최종적으로 이들을 조합하여 다양한 효과를 구현
+
+### 25.04.16
+-  이미터와 파티클에 대한 프로퍼티 관련 클래스 재설계
+    -   BaseEmitterSpawnProperty
+        -   이미터 생성 시 초기 파티클에 대한 설정(위치, 갯수, 생명주기 등)
+    -   BaseEmitterUpdateProperty
+        -   파티클을 방출하는 이미터에 대한 설정(방출 개수, 루프 설정 등)
+    -   BaseParticleSpawnProperty
+        -   파티클 생성시 가지는 물리량에 대한 설정(속도, 생명주기 등)
+    -   BaseParticleUpdateProperty
+        -   파티클에 작용하는 힘에 대한 설정(중력, 항력, Vortex 등)
+
+### 25.04.17
+- 방출 속도, Life 등에 대한 Interpolation을 위한 Linear / Cubic Spline 기법 추가
+	- IInterpolater를 상속받는 LineInterpolater, CubicSplineInterpolater 클래스 작성
+- Particle Emitter 생성 관련 UI 작성 
