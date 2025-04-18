@@ -1,85 +1,90 @@
 #pragma once
 #include <vector>
 #include <DirectXMath.h>
+#include <concepts>
 
+template <size_t Dim, size_t... Indices>
+constexpr std::array<float, Dim> MakeZeroArrayImpl(std::index_sequence<Indices...>) 
+{
+	return { ((void)Indices, 0.f)... }; 
+}
+
+template <size_t Dim>
+constexpr std::array<float, Dim> MakeZeroArray() {
+	return MakeZeroArrayImpl<Dim>(std::make_index_sequence<Dim>{});
+}
+
+template<typename T, uint32_t Dim>
+concept IsControlPoint = requires(T t)
+{
+	{ t.x } -> std::same_as<float>;
+	{ t.y } -> std::same_as<std::array<float, Dim>>;
+};
+
+template<uint32_t Dim>
 struct SControlPoint
 {
 	float x = 0.f;
-	float y = 0.f;
+	std::array<float, Dim> y;
 };
 
-struct SControlVector2D
-{
-	float x = 0.f;
-	DirectX::XMFLOAT2 y = DirectX::XMFLOAT2(0.f, 0.f);
-};
-
-struct SControlVector3D
-{
-	float x = 0.f;
-	DirectX::XMFLOAT3 y = DirectX::XMFLOAT3(0.f, 0.f, 0.f);
-};
-
-
-
+template<uint32_t Dim>
 class IInterpolater
 {
 public:
-	virtual float GetInterpolated(float x) noexcept = 0;
+	virtual std::array<float, Dim> GetInterpolated(float x) noexcept = 0;
 };
 
-
-
-
-template<typename T>
-class AInterpolater : public IInterpolater
+template<uint32_t Dim, size_t Multiplier = 2>
+class AInterpolater : public IInterpolater<Dim>
 {
 public:
 	AInterpolater(
-		const SControlPoint& startPoint, 
-		const SControlPoint& endPoint, 
-		const std::vector<SControlPoint>& controlPoints
+		const SControlPoint<Dim>& startPoint,
+		const SControlPoint<Dim>& endPoint,
+		const std::vector<SControlPoint<Dim>>& controlPoints
 	);
 	virtual ~AInterpolater() = default;
 
 protected:
 	std::vector<float> xProfiles;
-	std::vector<T> coefficients;
+	using CoeffType = std::array<float, Multiplier * Dim>;
+	std::vector<CoeffType> coefficients;
 
 protected:
-	virtual std::vector<SControlPoint> GetControlPoints(
-		const SControlPoint& startPoint,
-		const SControlPoint& endPoint,
-		const std::vector<SControlPoint>& controlPoints
+	virtual std::vector<SControlPoint<Dim>> GetControlPoints(
+		const SControlPoint<Dim>& startPoint,
+		const SControlPoint<Dim>& endPoint,
+		const std::vector<SControlPoint<Dim>>& controlPoints
 	);
 
 protected:
 	size_t GetCoefficientIndex(float x) noexcept;
 };
 
-template<typename T>
-inline AInterpolater<T>::AInterpolater(
-	const SControlPoint& startPoint, 
-	const SControlPoint& endPoint, 
-	const std::vector<SControlPoint>& controlPoints
+template<uint32_t Dim, size_t Multiplier>
+inline AInterpolater<Dim, Multiplier>::AInterpolater(
+	const SControlPoint<Dim>& startPoint, 
+	const SControlPoint<Dim>& endPoint, 
+	const std::vector<SControlPoint<Dim>>& controlPoints
 )
 {
 	xProfiles.emplace_back(startPoint.x);
-	for (const SControlPoint& controlPoint : controlPoints)
+	for (const SControlPoint<Dim>& controlPoint : controlPoints)
 	{
 		xProfiles.emplace_back(controlPoint.x);
 	}
 	xProfiles.emplace_back(endPoint.x);
 }
 
-template<typename T>
-inline std::vector<SControlPoint> AInterpolater<T>::GetControlPoints(
-	const SControlPoint& startPoint, 
-	const SControlPoint& endPoint, 
-	const std::vector<SControlPoint>& controlPoints
+template<uint32_t Dim, size_t Multiplier>
+inline std::vector<SControlPoint<Dim>> AInterpolater<Dim, Multiplier>::GetControlPoints(
+	const SControlPoint<Dim>& startPoint, 
+	const SControlPoint<Dim>& endPoint, 
+	const std::vector<SControlPoint<Dim>>& controlPoints
 )
 {
-	std::vector<SControlPoint> result;
+	std::vector<SControlPoint<Dim>> result;
 	result.reserve(2 + controlPoints.size());
 	result.emplace_back(startPoint);
 	result.insert(result.end(), controlPoints.begin(), controlPoints.end());
@@ -87,11 +92,11 @@ inline std::vector<SControlPoint> AInterpolater<T>::GetControlPoints(
 	return result;
 }
 
-template<typename T>
-inline size_t AInterpolater<T>::GetCoefficientIndex(float x) noexcept
+template<uint32_t Dim, size_t Multiplier>
+inline size_t AInterpolater<Dim, Multiplier>::GetCoefficientIndex(float x) noexcept
 {
 	const size_t xProfileStepCounts = xProfiles.size() - 1;
-
+		
 	for (size_t idx = 0; idx < xProfileStepCounts; ++idx)
 	{
 		if (xProfiles[idx] <= x && x < xProfiles[idx + 1])

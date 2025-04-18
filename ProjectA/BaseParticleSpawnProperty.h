@@ -26,55 +26,42 @@ protected:
 		UINT dummy;
 	} m_baseParticleSpawnPropertyCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_baseParticleSpawnPropertyGPU;
-	bool m_isParticleSpawnPropertyChanged = false;
-
-protected:
-	SControlPoint m_speedXInitControlPoint;
-	SControlPoint m_speedYInitControlPoint;
-	std::vector<SControlPoint> m_speedXControlPoints;
-	SControlPoint m_speedXFinalControlPoint;
-	SControlPoint m_speedYFinalControlPoint;
-	std::vector<SControlPoint> m_speedYControlPoints;
-	EInterpolationMethod m_speedInterpolationMethod;
-	std::unique_ptr<IInterpolater> m_speedXInterpolater;
-	std::unique_ptr<IInterpolater> m_speedYInterpolater;
-
-public:
-	void SetInitSpeedX(const SControlPoint& speedX) noexcept;
-	void SetFinalSpeedX(const SControlPoint& speedX) noexcept;
-	void SetSpeedXControlPoints(const std::vector<SControlPoint>& speedXControlPoints);
-	void SetInitSpeedY(const SControlPoint& speedY) noexcept;
-	void SetFinalSpeedY(const SControlPoint& speedY) noexcept;
-	void SetSpeedYControlPoints(const std::vector<SControlPoint>& speedYControlPoints);
-	void SetSpeedInterpolationMethod(EInterpolationMethod spawnRateInterpolationMethod);
-
-protected:
-	std::vector<SControlPoint> m_colorRControlPoints;
-	std::vector<SControlPoint> m_colorGControlPoints;
-	std::vector<SControlPoint> m_colorBControlPoints;
-	EInterpolationMethod m_colorInterpolationMethod;
-	std::unique_ptr<IInterpolater> m_colorRInterpolater;
-	std::unique_ptr<IInterpolater> m_colorGInterpolater;
-	std::unique_ptr<IInterpolater> m_colorBInterpolater;
-	bool m_isColorInterpolaterChanged = false;
-
-public:
-	void SetColorControlPoints(
-		const std::vector<SControlPoint>& colorRControlPoints,
-		const std::vector<SControlPoint>& colorGControlPoints,
-		const std::vector<SControlPoint>& colorBControlPoints
-	);
-	void SetColorInterpolationMethod(EInterpolationMethod spawnRateInterpolationMethod);
 
 public:
 	void SetMinMaxLifeTime(const DirectX::XMFLOAT2& minMaxLifeTime);
 	void SetMinEmitRadian(const DirectX::XMFLOAT2& minEmitRadian);
 	void SetMaxEmitRadian(const DirectX::XMFLOAT2& maxEmitRadian);
-	
+
 public:
 	inline const DirectX::XMFLOAT2& GetMinMaxLifeTime() const noexcept { return m_baseParticleSpawnPropertyCPU.minMaxLifeTime; }
 	inline const DirectX::XMFLOAT2& GetMinEmitRadian() const noexcept { return m_baseParticleSpawnPropertyCPU.minEmitRadian; }
 	inline const DirectX::XMFLOAT2& GetMaxEmitRadian() const noexcept { return m_baseParticleSpawnPropertyCPU.maxEmitRadian; }
+
+protected:
+	SControlPoint<2> m_speedInitControlPoint;
+	SControlPoint<2> m_speedFinalControlPoint;
+	std::vector<SControlPoint<2>> m_speedControlPoints;
+	EInterpolationMethod m_speedInterpolationMethod;
+	std::unique_ptr<IInterpolater<2>> m_speedInterpolater;
+
+public:
+	void SetInitSpeed(const SControlPoint<2>& speed) noexcept;
+	void SetFinalSpeed(const SControlPoint<2>& speed) noexcept;
+	void SetSpeedControlPoints(const std::vector<SControlPoint<2>>& speedControlPoints);
+	void SetSpeedInterpolationMethod(EInterpolationMethod speedInterpolationMethod);
+
+protected:
+	SControlPoint<3> m_colorInitControlPoint;
+	SControlPoint<3> m_colorFinalControlPoint;
+	std::vector<SControlPoint<3>> m_colorControlPoints;
+	EInterpolationMethod m_colorInterpolationMethod;
+	std::unique_ptr<IInterpolater<3>> m_colorInterpolater;
+
+public:
+	void SetInitColor(const SControlPoint<3>& color) noexcept;
+	void SetFinalColor(const SControlPoint<3>& color) noexcept;
+	void SetColorControlPoints(const std::vector<SControlPoint<3>>& colorControlPoints);
+	void SetColorInterpolationMethod(EInterpolationMethod colorInterpolationMethod);
 
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;

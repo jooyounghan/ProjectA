@@ -157,13 +157,11 @@
     <ClCompile Include="BaseSelector.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ControlPointGridView.cpp" />
-    <ClCompile Include="CubicSplineInterpolater.cpp" />
     <ClCompile Include="EmitterSelector.cpp" />
     <ClCompile Include="External\imgui_impl_dx11.cpp" />
     <ClCompile Include="External\imgui_impl_win32.cpp" />
     <ClCompile Include="GlobalVariable.cpp" />
     <ClCompile Include="InterpolationSelector.cpp" />
-    <ClCompile Include="LinearInterpolater.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="ModelFactory.cpp" />

@@ -21,11 +21,11 @@ protected:
 protected:
 	UINT8 m_loopCount;
 	float m_loopTime;
-	SControlPoint m_spawnInitControlPoint;
-	SControlPoint m_spawnFinalControlPoint;
-	std::vector<SControlPoint> m_spawnControlPoints;
+	SControlPoint<1> m_spawnInitControlPoint;
+	SControlPoint<1> m_spawnFinalControlPoint;
+	std::vector<SControlPoint<1>> m_spawnControlPoints;
 	EInterpolationMethod m_spawnRateInterpolationMethod;
-	std::unique_ptr<IInterpolater> m_spawnRateInterpolater;
+	std::unique_ptr<IInterpolater<1>> m_spawnRateInterpolater;
 
 //public:
 //	inline UINT8 GetLoopCount() const noexcept { return m_loopCount; }
@@ -36,9 +36,9 @@ protected:
 public:
 	inline void SetLoopCount(UINT loopCount) noexcept { m_loopCount = loopCount; }
 	void SetLoopTime(float loopTime) noexcept;
-	void SetInitSpawnRate(const SControlPoint& spawnRate) noexcept;
-	void SetFinalSpawnRate(const SControlPoint& spawnRate) noexcept;
-	void SetSpawnControlPoints(const std::vector<SControlPoint>& spawnControlPoints) noexcept;
+	void SetInitSpawnRate(const SControlPoint<1>& spawnRate) noexcept;
+	void SetFinalSpawnRate(const SControlPoint<1>& spawnRate) noexcept;
+	void SetSpawnControlPoints(const std::vector<SControlPoint<1>>& spawnControlPoints) noexcept;
 	void SetSpawnRateInterpolationMethod(EInterpolationMethod spawnRateInterpolationMethod);
 
 protected:

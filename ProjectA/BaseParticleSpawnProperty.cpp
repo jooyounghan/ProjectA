@@ -10,86 +10,88 @@ using namespace D3D11;
 using namespace DirectX;
 using namespace ImGui;
 
+#define CreateSpeedInterpolater()									\
+m_speedInterpolater = InterpolationSelector::CreateInterpolater<2>(	\
+	m_speedInterpolationMethod,										\
+	m_speedInitControlPoint, m_speedFinalControlPoint,				\
+	m_speedControlPoints											\
+)																	\
+
+#define CreateColorInterpolater()									\
+m_colorInterpolater = InterpolationSelector::CreateInterpolater<3>(	\
+	m_colorInterpolationMethod,										\
+	m_colorInitControlPoint, m_colorFinalControlPoint,				\
+	m_colorControlPoints											\
+)					
+
 BaseParticleSpawnProperty::BaseParticleSpawnProperty(float& emitterCurrentTime)
 	: m_emitterCurrentTime(emitterCurrentTime)
 {
 	AutoZeroMemory(m_baseParticleSpawnPropertyCPU);
+
 }
 
 void BaseParticleSpawnProperty::SetMinMaxLifeTime(const DirectX::XMFLOAT2& minMaxLifeTime)
 {
 	m_baseParticleSpawnPropertyCPU.minMaxLifeTime = minMaxLifeTime;
-	m_isParticleSpawnPropertyChanged = true;
 }
 
 void BaseParticleSpawnProperty::SetMinEmitRadian(const XMFLOAT2& minEmitRadian)
 {
 	m_baseParticleSpawnPropertyCPU.minEmitRadian = minEmitRadian;
-	m_isParticleSpawnPropertyChanged = true;
 }
 
 void BaseParticleSpawnProperty::SetMaxEmitRadian(const XMFLOAT2& maxEmitRadian)
 {
 	m_baseParticleSpawnPropertyCPU.maxEmitRadian = maxEmitRadian;
-	m_isParticleSpawnPropertyChanged = true;
 }
 
-void BaseParticleSpawnProperty::SetInitSpeedX(const SControlPoint& speedX) noexcept
+void BaseParticleSpawnProperty::SetInitSpeed(const SControlPoint<2>& speed) noexcept
 {
-
+	m_speedInitControlPoint = speed;
+	CreateSpeedInterpolater();
 }
 
-void BaseParticleSpawnProperty::SetFinalSpeedX(const SControlPoint& speedX) noexcept
+void BaseParticleSpawnProperty::SetFinalSpeed(const SControlPoint<2>& speed) noexcept
 {
-
+	m_speedFinalControlPoint = speed;
+	CreateSpeedInterpolater();
 }
 
-void BaseParticleSpawnProperty::SetSpeedXControlPoints(const std::vector<SControlPoint>& speedXControlPoints)
+void BaseParticleSpawnProperty::SetSpeedControlPoints(const std::vector<SControlPoint<2>>& speedControlPoints)
 {
-}
-
-void BaseParticleSpawnProperty::SetInitSpeedY(const SControlPoint& speedY) noexcept
-{
-
-}
-
-void BaseParticleSpawnProperty::SetFinalSpeedY(const SControlPoint& speedY) noexcept
-{
-
-}
-
-void BaseParticleSpawnProperty::SetSpeedYControlPoints(const std::vector<SControlPoint>& speedXControlPoints)
-{
+	m_speedControlPoints = speedControlPoints;
+	CreateSpeedInterpolater();
 }
 
 void BaseParticleSpawnProperty::SetSpeedInterpolationMethod(EInterpolationMethod speedInterpolationMethod)
 {
-	//m_speedXInterpolater = InterpolaterHelper::GetInterpolater(speedInterpolationMethod);
-	//m_speedYInterpolater = InterpolaterHelper::GetInterpolater(speedInterpolationMethod);
 	m_speedInterpolationMethod = speedInterpolationMethod;
-	m_isSpeedInterpolaterChanged = true;
+	CreateSpeedInterpolater();
 }
 
-void BaseParticleSpawnProperty::SetColorControlPoints(
-	const vector<SControlPoint>& colorRControlPoints,
-	const vector<SControlPoint>& colorGControlPoints, 
-	const vector<SControlPoint>& colorBControlPoints
-)
+void BaseParticleSpawnProperty::SetInitColor(const SControlPoint<3>& color) noexcept
 {
-	m_colorRControlPoints = colorRControlPoints;
-	m_colorGControlPoints = colorGControlPoints;
-	m_colorBControlPoints = colorBControlPoints;
-	m_isParticleSpawnPropertyChanged = true;
-	m_isColorInterpolaterChanged = true;
+	m_colorInitControlPoint = color;
+	CreateColorInterpolater();
+}
+
+void BaseParticleSpawnProperty::SetFinalColor(const SControlPoint<3>& color) noexcept
+{
+	m_colorFinalControlPoint = color;
+	CreateColorInterpolater();
+}
+
+void BaseParticleSpawnProperty::SetColorControlPoints(const std::vector<SControlPoint<3>>& colorControlPoints)
+{
+	m_colorControlPoints = colorControlPoints;
+	CreateColorInterpolater();
 }
 
 void BaseParticleSpawnProperty::SetColorInterpolationMethod(EInterpolationMethod colorInterpolationMethod)
 {
-	//m_colorRInterpolater = InterpolaterHelper::GetInterpolater(colorInterpolationMethod);
-	//m_colorGInterpolater = InterpolaterHelper::GetInterpolater(colorInterpolationMethod);
-	//m_colorBInterpolater = InterpolaterHelper::GetInterpolater(colorInterpolationMethod);
 	m_colorInterpolationMethod = colorInterpolationMethod;
-	m_isColorInterpolaterChanged = true;
+	CreateColorInterpolater();
 }
 
 void BaseParticleSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
@@ -100,35 +102,18 @@ void BaseParticleSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceCon
 
 void BaseParticleSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 {
-	if (m_isSpeedInterpolaterChanged)
-	{
-		//m_speedXInterpolater->GetCoefficients(m_speedXControlPoints);
-		//m_speedYInterpolater->GetCoefficients(m_speedYControlPoints);
-	}
-	if (m_isColorInterpolaterChanged)
-	{
-		//m_colorRInterpolater->GetCoefficients(m_colorRControlPoints);
-		//m_colorGInterpolater->GetCoefficients(m_colorGControlPoints);
-		//m_colorBInterpolater->GetCoefficients(m_colorBControlPoints);
-	}
+	//m_baseParticleSpawnPropertyCPU.minMaxSpeed = XMFLOAT2(
+	//	m_speedXInterpolater->GetInterpolated(m_emitterCurrentTime),
+	//	m_speedYInterpolater->GetInterpolated(m_emitterCurrentTime)
+	//);
+	//m_baseParticleSpawnPropertyCPU.color = XMFLOAT3(
+	//	m_colorRInterpolater->GetInterpolated(m_emitterCurrentTime),
+	//	m_colorGInterpolater->GetInterpolated(m_emitterCurrentTime),
+	//	m_colorBInterpolater->GetInterpolated(m_emitterCurrentTime)
+	//);
 
-	if (m_isParticleSpawnPropertyChanged)
-	{
-		m_baseParticleSpawnPropertyCPU.minMaxSpeed = XMFLOAT2(
-			m_speedXInterpolater->GetInterpolated(m_emitterCurrentTime),
-			m_speedYInterpolater->GetInterpolated(m_emitterCurrentTime)
-		);
-		m_baseParticleSpawnPropertyCPU.color = XMFLOAT3(
-			m_colorRInterpolater->GetInterpolated(m_emitterCurrentTime),
-			m_colorGInterpolater->GetInterpolated(m_emitterCurrentTime),
-			m_colorBInterpolater->GetInterpolated(m_emitterCurrentTime)
-		);
-
-		m_baseParticleSpawnPropertyGPU->Stage(deviceContext);
-		m_baseParticleSpawnPropertyGPU->Upload(deviceContext);
-
-		m_isParticleSpawnPropertyChanged = false;
-	}
+	m_baseParticleSpawnPropertyGPU->Stage(deviceContext);
+	m_baseParticleSpawnPropertyGPU->Upload(deviceContext);
 }
 
 void BaseParticleSpawnProperty::DrawPropertyUI()

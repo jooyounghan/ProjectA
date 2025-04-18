@@ -5,11 +5,11 @@ using namespace std;
 using namespace DirectX;
 using namespace ImGui;
 
-#define CreateInterpolater()											\
-m_spawnRateInterpolater = InterpolationSelector::CreateInterpolater(	\
-m_spawnRateInterpolationMethod,											\
-m_spawnInitControlPoint, m_spawnFinalControlPoint,						\
-m_spawnControlPoints													\
+#define CreateSpawnRateInterpolater()									\
+m_spawnRateInterpolater = InterpolationSelector::CreateInterpolater<1>(	\
+	m_spawnRateInterpolationMethod,										\
+	m_spawnInitControlPoint, m_spawnFinalControlPoint,					\
+	m_spawnControlPoints												\
 )																		\
 
 BaseEmitterUpdateProperty::BaseEmitterUpdateProperty(float& emitterCurrentTime)
@@ -21,43 +21,43 @@ BaseEmitterUpdateProperty::BaseEmitterUpdateProperty(float& emitterCurrentTime)
 	m_spawnRateInterpolationMethod(EInterpolationMethod::Linear),
 	m_isNotDisposed(true)
 {
-	CreateInterpolater();
+	CreateSpawnRateInterpolater();
 }
 
 void BaseEmitterUpdateProperty::SetLoopTime(float loopTime) noexcept
 {
 	m_loopTime = loopTime;
 	m_spawnFinalControlPoint.x = m_loopTime;
-	CreateInterpolater();
+	CreateSpawnRateInterpolater();
 }
 
-void BaseEmitterUpdateProperty::SetInitSpawnRate(const SControlPoint& spawnRate) noexcept
+void BaseEmitterUpdateProperty::SetInitSpawnRate(const SControlPoint<1>& spawnRate) noexcept
 {
 	m_spawnInitControlPoint = spawnRate;
-	CreateInterpolater();
+	CreateSpawnRateInterpolater();
 }
 
-void BaseEmitterUpdateProperty::SetFinalSpawnRate(const SControlPoint& spawnRate) noexcept
+void BaseEmitterUpdateProperty::SetFinalSpawnRate(const SControlPoint<1>& spawnRate) noexcept
 {
 	m_spawnFinalControlPoint = spawnRate;
-	CreateInterpolater();
+	CreateSpawnRateInterpolater();
 }
 
-void BaseEmitterUpdateProperty::SetSpawnControlPoints(const std::vector<SControlPoint>& spawnControlPoints) noexcept
+void BaseEmitterUpdateProperty::SetSpawnControlPoints(const std::vector<SControlPoint<1>>& spawnControlPoints) noexcept
 {
 	m_spawnControlPoints = spawnControlPoints;
-	CreateInterpolater();
+	CreateSpawnRateInterpolater();
 }
 
 void BaseEmitterUpdateProperty::SetSpawnRateInterpolationMethod(EInterpolationMethod spawnRateInterpolationMethod)
 {
 	m_spawnRateInterpolationMethod = spawnRateInterpolationMethod;
-	CreateInterpolater();
+	CreateSpawnRateInterpolater();
 }
 
 float BaseEmitterUpdateProperty::GetSpawnRate() const
 {
-	return m_spawnRateInterpolater->GetInterpolated(m_emitterCurrentTime);
+	return m_spawnRateInterpolater->GetInterpolated(m_emitterCurrentTime)[0];
 }
 
 void BaseEmitterUpdateProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
@@ -121,20 +121,22 @@ void BaseEmitterUpdateProperty::DrawPropertyUI()
 		SetSpawnRateInterpolationMethod(currnetInterpolateKind);
 	}
 
-	if (ControlPointGridView::HandleControlPointsGridView(
-		"시간", "Spawn Rate", "생성 프로파일",
+	if (ControlPointGridView::HandleControlPointsGridView<1>(
+		"시간", 
+		{ "Spawn Rate" },
+		"생성 프로파일",
 		1.f, 0.f, 10000.f,
 		m_spawnInitControlPoint,
 		m_spawnFinalControlPoint,
 		m_spawnControlPoints
 	))
 	{
-		CreateInterpolater();
+		CreateSpawnRateInterpolater();
 	}
-	InterpolationSelector::ViewInterpolatedPoints(
+	InterpolationSelector::ViewInterpolatedPoints<1>(
 		m_spawnRateInterpolater.get(),
-		"Spawn Rate", "Spawn Control Points",
-		"Spawn Interpolated",
+		"Spawn Control Points",
+		{ "Spawn Rate" },
 		m_spawnInitControlPoint,
 		m_spawnFinalControlPoint,
 		m_spawnControlPoints

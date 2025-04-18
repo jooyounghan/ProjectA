@@ -146,14 +146,8 @@
     <ClCompile Include="EmitterSelector.cpp">
       <Filter>소스 파일\Updatable\Emitter\UI</Filter>
     </ClCompile>
-    <ClCompile Include="LinearInterpolater.cpp">
-      <Filter>소스 파일\Math</Filter>
-    </ClCompile>
-    <ClCompile Include="CubicSplineInterpolater.cpp">
-      <Filter>소스 파일\Math</Filter>
-    </ClCompile>
     <ClCompile Include="ControlPointGridView.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\Updatable\Emitter\UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -230,7 +224,7 @@
       <Filter>헤더 파일\Math</Filter>
     </ClInclude>
     <ClInclude Include="ControlPointGridView.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>헤더 파일\Updatable\Emitter\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
