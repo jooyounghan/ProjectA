@@ -35,9 +35,9 @@ protected:
 
 public:
 	inline void SetLoopCount(UINT loopCount) noexcept { m_loopCount = loopCount; }
-	void SetLoopTime( float loopTime) noexcept;
-	inline void SetInitSpawnRate(float spawnRate) noexcept { m_spawnInitControlPoint.y = spawnRate; }
-	inline void SetFinalSpawnRate(float spawnRate) noexcept { m_spawnFinalControlPoint.y = spawnRate; }
+	void SetLoopTime(float loopTime) noexcept;
+	void SetInitSpawnRate(const SControlPoint& spawnRate) noexcept;
+	void SetFinalSpawnRate(const SControlPoint& spawnRate) noexcept;
 	void SetSpawnControlPoints(const std::vector<SControlPoint>& spawnControlPoints) noexcept;
 	void SetSpawnRateInterpolationMethod(EInterpolationMethod spawnRateInterpolationMethod);
 

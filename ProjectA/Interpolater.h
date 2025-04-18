@@ -8,11 +8,28 @@ struct SControlPoint
 	float y = 0.f;
 };
 
+struct SControlVector2D
+{
+	float x = 0.f;
+	DirectX::XMFLOAT2 y = DirectX::XMFLOAT2(0.f, 0.f);
+};
+
+struct SControlVector3D
+{
+	float x = 0.f;
+	DirectX::XMFLOAT3 y = DirectX::XMFLOAT3(0.f, 0.f, 0.f);
+};
+
+
+
 class IInterpolater
 {
 public:
 	virtual float GetInterpolated(float x) noexcept = 0;
 };
+
+
+
 
 template<typename T>
 class AInterpolater : public IInterpolater

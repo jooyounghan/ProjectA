@@ -34,15 +34,32 @@ void BaseParticleSpawnProperty::SetMaxEmitRadian(const XMFLOAT2& maxEmitRadian)
 	m_isParticleSpawnPropertyChanged = true;
 }
 
-void BaseParticleSpawnProperty::SetSpeedControlPoints(
-	const vector<SControlPoint>& speedXControlPoints, 
-	const vector<SControlPoint>& speedYControlPoints
-)
+void BaseParticleSpawnProperty::SetInitSpeedX(const SControlPoint& speedX) noexcept
 {
-	m_speedXControlPoints = speedXControlPoints;
-	m_speedYControlPoints = speedYControlPoints;
-	m_isParticleSpawnPropertyChanged = true;
-	m_isSpeedInterpolaterChanged = true;
+
+}
+
+void BaseParticleSpawnProperty::SetFinalSpeedX(const SControlPoint& speedX) noexcept
+{
+
+}
+
+void BaseParticleSpawnProperty::SetSpeedXControlPoints(const std::vector<SControlPoint>& speedXControlPoints)
+{
+}
+
+void BaseParticleSpawnProperty::SetInitSpeedY(const SControlPoint& speedY) noexcept
+{
+
+}
+
+void BaseParticleSpawnProperty::SetFinalSpeedY(const SControlPoint& speedY) noexcept
+{
+
+}
+
+void BaseParticleSpawnProperty::SetSpeedYControlPoints(const std::vector<SControlPoint>& speedXControlPoints)
+{
 }
 
 void BaseParticleSpawnProperty::SetSpeedInterpolationMethod(EInterpolationMethod speedInterpolationMethod)

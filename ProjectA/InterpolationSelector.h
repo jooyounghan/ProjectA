@@ -23,15 +23,6 @@ public:
 	);
 
 public:
-	static void GridViewControlPoints(
-		const std::string& yValueName,
-		const std::string& controlPointsName,
-		const SControlPoint& startPoint,
-		const SControlPoint& endPoint,
-		const std::vector<SControlPoint>& controlPoints
-	);
-
-public:
 	static void ViewInterpolatedPoints(
 		IInterpolater* interpolater,
 		const std::string& graphTitle,

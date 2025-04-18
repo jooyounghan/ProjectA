@@ -57,60 +57,26 @@ void BaseEmitterSpawnProperty::DrawPropertyUI()
 	if (!ImGui::CollapsingHeader("이미터 생성 프로퍼티"))
 		return;
 
-	DragInt("초기 파티클 개수", (int*)&m_emitterSpawnPropertyCPU.initialParticleCount, 1.f, 0, 100000);
+	if (DragInt("초기 파티클 개수", (int*)&m_emitterSpawnPropertyCPU.initialParticleCount, 1.f, 0, 100000))
+	{
+		m_isEmitterSpawnPropertyChanged = true;
+	}
 
 	BeginDisabled(isImmortal);
 	{
-		DragFloat("초기 파티클 생명", &m_emitterSpawnPropertyCPU.initialParticleLife, 0.1f, 0.f, 1000.f);
+		if (DragFloat("초기 파티클 생명", &m_emitterSpawnPropertyCPU.initialParticleLife, 0.1f, 0.f, 1000.f))
+		{
+			m_isEmitterSpawnPropertyChanged = true;
+		}
 	}
 	EndDisabled();
 	SameLine();
 	Checkbox("Immortal 설정", &isImmortal);
 
-	EShapedVector lastShapedVectorKind = shapedVector;
 	ShapedVectorSelector::SelectEnums("위치 초기 위치", ShapedVectorSelector::GShapedVectorStringMaps, shapedVector);
-
-	//isChanged |= ShapedVectorSelector::SetShapedVectorProperty(positionShapedVector, shapedVectorSelector);
-	//EndDisabled();
-
-	//BeginDisabled(!isChanged);
-	//{
-	//	if (Button("이미터 생성 프로퍼티 설정"))
-	//	{
-	//		isChanged = false;
-	//		isApplied = true;
-	//		makeProperty = true;
-	//	}
-	//	else
-	//	{
-
-	//	}
-	//	EndDisabled();
-	//}
-	//SameLine();
-	//BeginDisabled(isChanged);
-	//{
-	//	if (Button("이미터 생성 프로퍼티 재설정"))
-	//	{
-	//		isChanged = true;
-	//		isApplied = false;
-	//	}
-	//	else
-	//	{
-
-	//	}
-	//	EndDisabled();
-	//}
-
-	//if (makeProperty)
-	//{
-	//	return make_unique<BaseEmitterSpawnProperty>(
-	//		shapedVectorSelector, initialParticleCount, 
-	//		isImmortal ? numeric_limits<float>::max() : initialParticleLife
-	//	);
-	//}
-	//return nullptr;
-
-
+	if (ShapedVectorSelector::SetShapedVectorProperty(shapedVector, m_emitterSpawnPropertyCPU.shapedVectorSelector))
+	{
+		m_isEmitterSpawnPropertyChanged = true;
+	}
 }
 

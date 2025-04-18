@@ -31,20 +31,21 @@ protected:
 protected:
 	SControlPoint m_speedXInitControlPoint;
 	SControlPoint m_speedYInitControlPoint;
+	std::vector<SControlPoint> m_speedXControlPoints;
 	SControlPoint m_speedXFinalControlPoint;
 	SControlPoint m_speedYFinalControlPoint;
-	std::vector<SControlPoint> m_speedXControlPoints;
 	std::vector<SControlPoint> m_speedYControlPoints;
 	EInterpolationMethod m_speedInterpolationMethod;
 	std::unique_ptr<IInterpolater> m_speedXInterpolater;
 	std::unique_ptr<IInterpolater> m_speedYInterpolater;
-	bool m_isSpeedInterpolaterChanged = false;
 
 public:
-	void SetSpeedControlPoints(
-		const std::vector<SControlPoint>& speedXControlPoints,
-		const std::vector<SControlPoint>& speedYControlPoints
-	);
+	void SetInitSpeedX(const SControlPoint& speedX) noexcept;
+	void SetFinalSpeedX(const SControlPoint& speedX) noexcept;
+	void SetSpeedXControlPoints(const std::vector<SControlPoint>& speedXControlPoints);
+	void SetInitSpeedY(const SControlPoint& speedY) noexcept;
+	void SetFinalSpeedY(const SControlPoint& speedY) noexcept;
+	void SetSpeedYControlPoints(const std::vector<SControlPoint>& speedYControlPoints);
 	void SetSpeedInterpolationMethod(EInterpolationMethod spawnRateInterpolationMethod);
 
 protected:

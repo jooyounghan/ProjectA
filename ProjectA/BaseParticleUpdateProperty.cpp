@@ -51,13 +51,16 @@ BaseParticleUpdateProperty::BaseParticleUpdateProperty(
 {
 }
 
-#define OnFlag(flag)											\
-m_emitterForceProperty.forceFlag |= GetForceFlagOffset(flag);	\
-m_isEmitterForceChanged = true;									\
+#define GetFlag(flag)												\
+(m_emitterForceProperty.forceFlag >> static_cast<UINT>(flag)) & 0b1	\
 
-#define OffFlag(flag)											\
-m_emitterForceProperty.forceFlag &= !GetForceFlagOffset(flag);	\
-m_isEmitterForceChanged = true;									\
+#define OnFlag(flag)												\
+m_emitterForceProperty.forceFlag |= GetForceFlagOffset(flag);		\
+m_isEmitterForceChanged = true;										\
+
+#define OffFlag(flag)												\
+m_emitterForceProperty.forceFlag &= !GetForceFlagOffset(flag);		\
+m_isEmitterForceChanged = true;										\
 
 void BaseParticleUpdateProperty::ApplyGravityForce(const DirectX::XMFLOAT3& gravityForce) noexcept
 {
@@ -262,5 +265,59 @@ void BaseParticleUpdateProperty::Update(ID3D11DeviceContext* deviceContext, floa
 
 void BaseParticleUpdateProperty::DrawPropertyUI()
 {
+	bool isGravitySet = GetFlag(EForceFlag::Gravity);
+	bool isDragSet = GetFlag(EForceFlag::Drag);
+	bool isCurNoiseSet = GetFlag(EForceFlag::CurNoise);
+	bool isVortexSet = GetFlag(EForceFlag::Vortex);
+	bool isLineInteractionSet = GetFlag(EForceFlag::LineInteraction);
+	bool isPointInteractionSet = GetFlag(EForceFlag::PointInteraction);
 
+	if (!isGravitySet)
+	{
+		static XMFLOAT3 gravityForce = XMFLOAT3(0.f, 0.f, 0.f);
+		DragFloat3("중력 벡터", &gravityForce.x, 0.1f, -1000.f, 1000.f, "%.1f");
+		if (Button("중력 추가")) { ApplyGravityForce(gravityForce); }
+	}
+
+	if (isGravitySet)
+	{
+		ImGui::SeparatorText("중력");
+		if (DragFloat3("중력 벡터", &m_emitterForceProperty.gravityForce.x, 0.1f, -1000.f, 1000.f, "%.1f"))
+		{
+			m_isEmitterForceChanged = true;
+		}
+	}
+	else
+	{
+
+	}
+
+	if (isDragSet)
+	{
+		ImGui::SeparatorText("항력");
+		if (DragFloat("항력계수", &m_emitterForceProperty.dragCoefficient, 0.1f, 0.f, 1000.f, "%.1f"))
+		{
+			m_isEmitterForceChanged = true;
+		}
+	}
+
+	if (GetFlag(EForceFlag::CurNoise))
+	{
+
+	}
+
+	if (GetFlag(EForceFlag::Vortex))
+	{
+
+	}
+
+	if (GetFlag(EForceFlag::LineInteraction))
+	{
+
+	}
+
+	if (GetFlag(EForceFlag::PointInteraction))
+	{
+
+	}
 }

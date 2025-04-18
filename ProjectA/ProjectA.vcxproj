@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -156,6 +156,7 @@
     <ClCompile Include="BaseParticleUpdateProperty.cpp" />
     <ClCompile Include="BaseSelector.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="ControlPointGridView.cpp" />
     <ClCompile Include="CubicSplineInterpolater.cpp" />
     <ClCompile Include="EmitterSelector.cpp" />
     <ClCompile Include="External\imgui_impl_dx11.cpp" />
@@ -178,6 +179,7 @@
     <ClInclude Include="BaseParticleUpdateProperty.h" />
     <ClInclude Include="BaseSelector.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="ControlPointGridView.h" />
     <ClInclude Include="CubicSplineInterpolater.h" />
     <ClInclude Include="DefineLinkedWithShader.h" />
     <ClInclude Include="EmitterSelector.h" />

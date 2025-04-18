@@ -34,52 +34,6 @@ std::unique_ptr<IInterpolater> InterpolationSelector::CreateInterpolater(
 	return nullptr;
 }
 
-void InterpolationSelector::GridViewControlPoints(
-	const std::string& yValueName,
-	const string& controlPointsName,
-	const SControlPoint& startPoint,
-	const SControlPoint& endPoint,
-	const vector<SControlPoint>& controlPoints
-)
-{
-	if (BeginTable(controlPointsName.c_str(), 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
-	{
-
-		TableSetupColumn("½Ã°£");
-		TableSetupColumn(yValueName.c_str());
-		TableHeadersRow();
-
-		string pointIn = format("{:.2f}", startPoint.x);
-		string pointOut = format("{:.2f}", startPoint.y);
-		TableNextRow();
-		TableSetColumnIndex(0);
-		TextUnformatted(pointIn.c_str());
-		TableSetColumnIndex(1);
-		TextUnformatted(pointOut.c_str());
-
-		for (auto& controlPoint : controlPoints)
-		{
-			pointIn = format("{:.2f}", controlPoint.x);
-			pointOut = format("{:.2f}", controlPoint.y);
-			TableNextRow();
-			TableSetColumnIndex(0);
-			TextUnformatted(pointIn.c_str());
-			TableSetColumnIndex(1);
-			TextUnformatted(pointOut.c_str());
-		}
-
-		pointIn = format("{:.2f}", endPoint.x);
-		pointOut = format("{:.2f}", endPoint.y);
-		TableNextRow();
-		TableSetColumnIndex(0);
-		TextUnformatted(pointIn.c_str());
-		TableSetColumnIndex(1);
-		TextUnformatted(pointOut.c_str());
-
-		EndTable();
-	}
-}
-
 void InterpolationSelector::ViewInterpolatedPoints(
 	IInterpolater* interpolater,
 	const string& graphTitle,
@@ -106,8 +60,9 @@ void InterpolationSelector::ViewInterpolatedPoints(
 	pointIns.emplace_back(endPoint.x);
 	pointOuts.emplace_back(endPoint.y);
 
-	if (ImPlot::BeginPlot(graphTitle.c_str(), ImVec2(-1, 0)))
+	if (ImPlot::BeginPlot(graphTitle.c_str(), ImVec2(-1, 0), ImPlotFlags_NoInputs))
 	{
+		ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
 		ImPlot::PlotScatter(scatterLabels.c_str(), pointIns.data(), pointOuts.data(), static_cast<int>(controlPoints.size()));
 
 		if (interpolater)
