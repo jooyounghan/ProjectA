@@ -17,7 +17,7 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 	uint revivedIndex = deathParticleSet.Consume();
 
 	Particle sourcedParticle;
-	float4 worldPos = mul(float4(0.f, 0.f, 0.f, 1.f), toWorldTransformation);
+	float4 worldPos = mul(float4(0.f, 0.f, 0.f, 1.f), emitterWorldTransformation);
 	worldPos.xyz /= worldPos.w;
 
 	sourcedParticle.worldPos = worldPos.xyz;
@@ -30,14 +30,11 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 	float randSpeed = lerp(minMaxEmitSpeeds.x, minMaxEmitSpeeds.y, rand(float2(revivedIndex * dt2, revivedIndex)));
 	float3 randomVelocity = length(sin(randHash * 3.141592)) * randSpeed * float3(cos(randRads.x)*cos(randRads.y), sin(randRads.y), sin(randRads.x)*cos(randRads.y));
 
-	sourcedParticle.velocity = mul(float4(randomVelocity, 0.f), toWorldTransformation).xyz;
-	sourcedParticle.density = particleDensity;
+	sourcedParticle.velocity = mul(float4(randomVelocity, 0.f), emitterWorldTransformation).xyz;
 	sourcedParticle.accelerate = float3(0.f, 0.f, 0.f);
 	sourcedParticle.emitterID = emitterID;
 	sourcedParticle.emitterType = emitterType;
-	sourcedParticle.radius = particleRadius;
-	sourcedParticle.dummy = float2(0.f, 0.f);
-
+	
 	totalParticles[revivedIndex] = sourcedParticle;
     aliveFlags[revivedIndex] = 1;
 }

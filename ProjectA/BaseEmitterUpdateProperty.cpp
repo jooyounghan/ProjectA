@@ -24,36 +24,6 @@ BaseEmitterUpdateProperty::BaseEmitterUpdateProperty(float& emitterCurrentTime)
 	CreateSpawnRateInterpolater();
 }
 
-void BaseEmitterUpdateProperty::SetLoopTime(float loopTime) noexcept
-{
-	m_loopTime = loopTime;
-	m_spawnFinalControlPoint.x = m_loopTime;
-	CreateSpawnRateInterpolater();
-}
-
-void BaseEmitterUpdateProperty::SetInitSpawnRate(const SControlPoint<1>& spawnRate) noexcept
-{
-	m_spawnInitControlPoint = spawnRate;
-	CreateSpawnRateInterpolater();
-}
-
-void BaseEmitterUpdateProperty::SetFinalSpawnRate(const SControlPoint<1>& spawnRate) noexcept
-{
-	m_spawnFinalControlPoint = spawnRate;
-	CreateSpawnRateInterpolater();
-}
-
-void BaseEmitterUpdateProperty::SetSpawnControlPoints(const std::vector<SControlPoint<1>>& spawnControlPoints) noexcept
-{
-	m_spawnControlPoints = spawnControlPoints;
-	CreateSpawnRateInterpolater();
-}
-
-void BaseEmitterUpdateProperty::SetSpawnRateInterpolationMethod(EInterpolationMethod spawnRateInterpolationMethod)
-{
-	m_spawnRateInterpolationMethod = spawnRateInterpolationMethod;
-	CreateSpawnRateInterpolater();
-}
 
 float BaseEmitterUpdateProperty::GetSpawnRate() const
 {
@@ -97,6 +67,7 @@ void BaseEmitterUpdateProperty::Update(ID3D11DeviceContext* deviceContext, float
 void BaseEmitterUpdateProperty::DrawPropertyUI()
 {
 	static bool isLoopInfinity = true;
+	static bool isSpawnRateInterpolaterChanged = false;
 
 	if (!ImGui::CollapsingHeader("이미터 업데이트 프로퍼티"))
 		return;
@@ -112,13 +83,18 @@ void BaseEmitterUpdateProperty::DrawPropertyUI()
 		m_loopCount = isLoopInfinity ? LoopInfinity : 1;
 	}
 
-	DragFloat("루프 당 시간", &m_loopTime, 0.1f, 0.f, 100.f, "%.1f");
-
-	EInterpolationMethod currnetInterpolateKind = m_spawnRateInterpolationMethod;
-	InterpolationSelector::SelectEnums("생성 프로파일 보간 방법", InterpolationSelector::GInterpolationMethodStringMap, currnetInterpolateKind);
-	if (m_spawnRateInterpolationMethod != currnetInterpolateKind)
+	if (DragFloat("루프 당 시간", &m_loopTime, 0.1f, 0.f, 100.f, "%.1f"))
 	{
-		SetSpawnRateInterpolationMethod(currnetInterpolateKind);
+		m_spawnFinalControlPoint.x = m_loopTime;
+		isSpawnRateInterpolaterChanged = true;
+	}
+
+	EInterpolationMethod currentSpawnRateInterpolateKind = m_spawnRateInterpolationMethod;
+	InterpolationSelector::SelectEnums("생성 프로파일 보간 방법", InterpolationSelector::GInterpolationMethodStringMap, currentSpawnRateInterpolateKind);
+	if (m_spawnRateInterpolationMethod != currentSpawnRateInterpolateKind)
+	{
+		m_spawnRateInterpolationMethod = currentSpawnRateInterpolateKind;
+		isSpawnRateInterpolaterChanged = true;
 	}
 
 	if (ControlPointGridView::HandleControlPointsGridView<1>(
@@ -131,7 +107,7 @@ void BaseEmitterUpdateProperty::DrawPropertyUI()
 		m_spawnControlPoints
 	))
 	{
-		CreateSpawnRateInterpolater();
+		isSpawnRateInterpolaterChanged = true;
 	}
 	InterpolationSelector::ViewInterpolatedPoints<1>(
 		m_spawnRateInterpolater.get(),
@@ -142,5 +118,10 @@ void BaseEmitterUpdateProperty::DrawPropertyUI()
 		m_spawnControlPoints
 	);
 
+	if (isSpawnRateInterpolaterChanged)
+	{
+		CreateSpawnRateInterpolater();
+		isSpawnRateInterpolaterChanged = false;
+	}
 
 }

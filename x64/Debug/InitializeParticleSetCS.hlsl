@@ -57,7 +57,6 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
                 currentParticle.velocity.z = currentParticle.velocity.z * 0.2f;
             }
 
-            
             totalParticles[threadID] = currentParticle;
         }		
     }

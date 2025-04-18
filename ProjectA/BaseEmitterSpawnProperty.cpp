@@ -14,24 +14,9 @@ BaseEmitterSpawnProperty::BaseEmitterSpawnProperty()
 	AutoZeroMemory(m_emitterSpawnPropertyCPU);
 	m_emitterSpawnPropertyCPU.initialParticleCount = 0;
 	m_emitterSpawnPropertyCPU.initialParticleLife = 1.f;
-}
-
-void BaseEmitterSpawnProperty::SetShapedVectorProperty(const SShapedVectorProperty& shapedVectorSelector)
-{
-	m_emitterSpawnPropertyCPU.shapedVectorSelector = shapedVectorSelector;
-	m_isEmitterSpawnPropertyChanged = true;
-}
-
-void BaseEmitterSpawnProperty::SetInitialParticleCount(UINT initialParticleCount)
-{
-	m_emitterSpawnPropertyCPU.initialParticleCount = initialParticleCount;
-	m_isEmitterSpawnPropertyChanged = true;
-}
-
-void BaseEmitterSpawnProperty::SetInitialParticleLife(float initialParticleLife)
-{
-	m_emitterSpawnPropertyCPU.initialParticleLife = initialParticleLife;
-	m_isEmitterSpawnPropertyChanged = true;
+	m_origin = XMFLOAT3(0.f, 0.f, 0.f);
+	m_upVector = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+	sizeof(m_emitterSpawnPropertyCPU);
 }
 
 void BaseEmitterSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
@@ -46,6 +31,7 @@ void BaseEmitterSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float 
 	{
 		m_emitterSpawnPropertyGPU->Stage(deviceContext);
 		m_emitterSpawnPropertyGPU->Upload(deviceContext);
+		m_isEmitterSpawnPropertyChanged = false;
 	}
 }
 
@@ -61,10 +47,11 @@ void BaseEmitterSpawnProperty::DrawPropertyUI()
 	{
 		m_isEmitterSpawnPropertyChanged = true;
 	}
-
+	
 	BeginDisabled(isImmortal);
 	{
-		if (DragFloat("초기 파티클 생명", &m_emitterSpawnPropertyCPU.initialParticleLife, 0.1f, 0.f, 1000.f))
+		m_emitterSpawnPropertyCPU.initialParticleLife = isImmortal ? numeric_limits<float>::max() : m_emitterSpawnPropertyCPU.initialParticleLife;
+		if (DragFloat("초기 파티클 생명", &m_emitterSpawnPropertyCPU.initialParticleLife, 0.1f, 0.f, 1000.f, isImmortal ? "무한" : "%.1f"))
 		{
 			m_isEmitterSpawnPropertyChanged = true;
 		}
@@ -73,8 +60,8 @@ void BaseEmitterSpawnProperty::DrawPropertyUI()
 	SameLine();
 	Checkbox("Immortal 설정", &isImmortal);
 
-	ShapedVectorSelector::SelectEnums("위치 초기 위치", ShapedVectorSelector::GShapedVectorStringMaps, shapedVector);
-	if (ShapedVectorSelector::SetShapedVectorProperty(shapedVector, m_emitterSpawnPropertyCPU.shapedVectorSelector))
+	ShapedVectorSelector::SelectEnums("초기 위치 벡터", ShapedVectorSelector::GShapedVectorStringMaps, shapedVector);
+	if (ShapedVectorSelector::SetShapedVectorProperty(m_origin, m_upVector, shapedVector, m_emitterSpawnPropertyCPU.shapedPositionVectorProperty))
 	{
 		m_isEmitterSpawnPropertyChanged = true;
 	}

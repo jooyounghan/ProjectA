@@ -24,9 +24,6 @@
     <Filter Include="소스 파일\Updatable\Model">
       <UniqueIdentifier>{2bffac91-cbc4-4575-84b6-833768272db6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\Updatable\ParticleSystem">
-      <UniqueIdentifier>{198e43d0-0740-4739-add3-c5a51b4ddd09}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shader">
       <UniqueIdentifier>{0b4dd9dd-53f9-4b72-8a88-0c45f82be677}</UniqueIdentifier>
     </Filter>
@@ -38,27 +35,6 @@
     </Filter>
     <Filter Include="Shader\Particle\ParticleDraw">
       <UniqueIdentifier>{40b1b466-11f0-4f5a-9354-0a730ab1ef35}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader\Particle\System">
-      <UniqueIdentifier>{20b98071-57f6-4f48-9361-28d155ba720b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader\Particle\System\Source">
-      <UniqueIdentifier>{9d2cebf0-b8b2-4967-aab1-2719eced9fa1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader\Particle\System\Pooling">
-      <UniqueIdentifier>{e7ccd3b2-1121-4369-a7c4-4b317e72518b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader\Particle\System\Initalize">
-      <UniqueIdentifier>{2621a41f-4130-4e25-bd68-bb4cf99e1ee5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader\Particle\System\Sorting">
-      <UniqueIdentifier>{4a72e4be-fc3b-4514-a038-447b28caa182}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader\Particle\System\CaculateForce">
-      <UniqueIdentifier>{ea9671aa-67ce-43da-9b1f-8cbc51677135}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="헤더 파일\Updatable\ParticleManager">
-      <UniqueIdentifier>{a0286594-b018-4141-b1af-b6fb85b6c42b}</UniqueIdentifier>
     </Filter>
     <Filter Include="헤더 파일\Updatable\Emitter">
       <UniqueIdentifier>{4d9c18d7-bbdd-433d-a436-0e2eb2a80628}</UniqueIdentifier>
@@ -75,12 +51,6 @@
     <Filter Include="소스 파일\Updatable\Emitter\Extended">
       <UniqueIdentifier>{552f5f9c-8b37-4a13-a863-0aa49d4bba8f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="헤더 파일\Updatable\Emitter\UI">
-      <UniqueIdentifier>{9619344b-2ad0-45a4-871a-594f83c59cdd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\Updatable\Emitter\UI">
-      <UniqueIdentifier>{739f7dbc-b303-4b2c-8816-9279efc99deb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\Math">
       <UniqueIdentifier>{b3872207-4b99-44f6-a836-8c989ec909c6}</UniqueIdentifier>
     </Filter>
@@ -89,6 +59,36 @@
     </Filter>
     <Filter Include="헤더 파일\Macro">
       <UniqueIdentifier>{8228aaf2-3b49-4106-a598-1a61a1a90860}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Updatable\EmitterManager">
+      <UniqueIdentifier>{a0286594-b018-4141-b1af-b6fb85b6c42b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Updatable\EmitterManager">
+      <UniqueIdentifier>{198e43d0-0740-4739-add3-c5a51b4ddd09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\UI">
+      <UniqueIdentifier>{739f7dbc-b303-4b2c-8816-9279efc99deb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\UI">
+      <UniqueIdentifier>{9619344b-2ad0-45a4-871a-594f83c59cdd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\Particle\ExecuteEmitter">
+      <UniqueIdentifier>{20b98071-57f6-4f48-9361-28d155ba720b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\Particle\ExecuteEmitter\Source">
+      <UniqueIdentifier>{9d2cebf0-b8b2-4967-aab1-2719eced9fa1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\Particle\ExecuteEmitter\Pooling">
+      <UniqueIdentifier>{e7ccd3b2-1121-4369-a7c4-4b317e72518b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\Particle\ExecuteEmitter\Initalize">
+      <UniqueIdentifier>{2621a41f-4130-4e25-bd68-bb4cf99e1ee5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\Particle\ExecuteEmitter\Sorting">
+      <UniqueIdentifier>{4a72e4be-fc3b-4514-a038-447b28caa182}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\Particle\ExecuteEmitter\CaculateForce">
+      <UniqueIdentifier>{ea9671aa-67ce-43da-9b1f-8cbc51677135}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -104,8 +104,8 @@
     <ClCompile Include="External\imgui_impl_win32.cpp">
       <Filter>External</Filter>
     </ClCompile>
-    <ClCompile Include="ParticleManager.cpp">
-      <Filter>소스 파일\Updatable\ParticleSystem</Filter>
+    <ClCompile Include="EmitterManager.cpp">
+      <Filter>소스 파일\Updatable\EmitterManager</Filter>
     </ClCompile>
     <ClCompile Include="Model.cpp">
       <Filter>소스 파일\Updatable\Model</Filter>
@@ -135,19 +135,19 @@
       <Filter>소스 파일\Updatable\Emitter\Property</Filter>
     </ClCompile>
     <ClCompile Include="ShapedVectorSelector.cpp">
-      <Filter>소스 파일\Updatable\Emitter\UI</Filter>
+      <Filter>소스 파일\UI</Filter>
     </ClCompile>
     <ClCompile Include="InterpolationSelector.cpp">
-      <Filter>소스 파일\Updatable\Emitter\UI</Filter>
+      <Filter>소스 파일\UI</Filter>
     </ClCompile>
     <ClCompile Include="BaseSelector.cpp">
-      <Filter>소스 파일\Updatable\Emitter\UI</Filter>
+      <Filter>소스 파일\UI</Filter>
     </ClCompile>
     <ClCompile Include="EmitterSelector.cpp">
-      <Filter>소스 파일\Updatable\Emitter\UI</Filter>
+      <Filter>소스 파일\UI</Filter>
     </ClCompile>
     <ClCompile Include="ControlPointGridView.cpp">
-      <Filter>소스 파일\Updatable\Emitter\UI</Filter>
+      <Filter>소스 파일\UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -160,8 +160,8 @@
     <ClInclude Include="External\imgui_impl_win32.h">
       <Filter>External</Filter>
     </ClInclude>
-    <ClInclude Include="ParticleManager.h">
-      <Filter>헤더 파일\Updatable\ParticleManager</Filter>
+    <ClInclude Include="EmitterManager.h">
+      <Filter>헤더 파일\Updatable\EmitterManager</Filter>
     </ClInclude>
     <ClInclude Include="Model.h">
       <Filter>헤더 파일\Updatable\Model</Filter>
@@ -197,16 +197,16 @@
       <Filter>헤더 파일\Updatable\Emitter\Property</Filter>
     </ClInclude>
     <ClInclude Include="ShapedVectorSelector.h">
-      <Filter>헤더 파일\Updatable\Emitter\UI</Filter>
+      <Filter>헤더 파일\UI</Filter>
     </ClInclude>
     <ClInclude Include="InterpolationSelector.h">
-      <Filter>헤더 파일\Updatable\Emitter\UI</Filter>
+      <Filter>헤더 파일\UI</Filter>
     </ClInclude>
     <ClInclude Include="BaseSelector.h">
-      <Filter>헤더 파일\Updatable\Emitter\UI</Filter>
+      <Filter>헤더 파일\UI</Filter>
     </ClInclude>
     <ClInclude Include="EmitterSelector.h">
-      <Filter>헤더 파일\Updatable\Emitter\UI</Filter>
+      <Filter>헤더 파일\UI</Filter>
     </ClInclude>
     <ClInclude Include="MacroUtilities.h">
       <Filter>헤더 파일\Macro</Filter>
@@ -224,7 +224,7 @@
       <Filter>헤더 파일\Math</Filter>
     </ClInclude>
     <ClInclude Include="ControlPointGridView.h">
-      <Filter>헤더 파일\Updatable\Emitter\UI</Filter>
+      <Filter>헤더 파일\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -239,19 +239,19 @@
       <Filter>Shader\Particle</Filter>
     </None>
     <None Include="SourceCommon.hlsli">
-      <Filter>Shader\Particle\System\Source</Filter>
+      <Filter>Shader\Particle\ExecuteEmitter\Source</Filter>
     </None>
     <None Include="PoolingCommon.hlsli">
-      <Filter>Shader\Particle\System\Pooling</Filter>
+      <Filter>Shader\Particle\ExecuteEmitter\Pooling</Filter>
     </None>
     <None Include="CaculateForceCommon.hlsli">
-      <Filter>Shader\Particle\System\CaculateForce</Filter>
+      <Filter>Shader\Particle\ExecuteEmitter\CaculateForce</Filter>
     </None>
     <None Include="DefineLinkedWithCpp.hlsli">
       <Filter>Shader</Filter>
     </None>
     <None Include="SortingCommon.hlsli">
-      <Filter>Shader\Particle\System\Sorting</Filter>
+      <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -271,25 +271,25 @@
       <Filter>Shader\Particle\ParticleDraw</Filter>
     </FxCompile>
     <FxCompile Include="CalculateIndexPrefixSumCS.hlsl">
-      <Filter>Shader\Particle\System\Pooling</Filter>
+      <Filter>Shader\Particle\ExecuteEmitter\Pooling</Filter>
     </FxCompile>
     <FxCompile Include="UpdateCurrentIndicesCS.hlsl">
-      <Filter>Shader\Particle\System\Pooling</Filter>
+      <Filter>Shader\Particle\ExecuteEmitter\Pooling</Filter>
     </FxCompile>
     <FxCompile Include="ParticleRuntimeSourceCS.hlsl">
-      <Filter>Shader\Particle\System\Source</Filter>
+      <Filter>Shader\Particle\ExecuteEmitter\Source</Filter>
     </FxCompile>
     <FxCompile Include="ParticleInitialSourceCS.hlsl">
-      <Filter>Shader\Particle\System\Source</Filter>
+      <Filter>Shader\Particle\ExecuteEmitter\Source</Filter>
     </FxCompile>
     <FxCompile Include="CalculateParticleForceCS.hlsl">
-      <Filter>Shader\Particle\System\CaculateForce</Filter>
+      <Filter>Shader\Particle\ExecuteEmitter\CaculateForce</Filter>
     </FxCompile>
     <FxCompile Include="InitializeParticleSetCS.hlsl">
-      <Filter>Shader\Particle\System\Initalize</Filter>
+      <Filter>Shader\Particle\ExecuteEmitter\Initalize</Filter>
     </FxCompile>
     <FxCompile Include="IndexRadixSortCS.hlsl">
-      <Filter>Shader\Particle\System\Sorting</Filter>
+      <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

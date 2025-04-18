@@ -10,29 +10,29 @@ cbuffer SortStatus : register(b2)
 [numthreads(LocalThreadCount, 1, 1)]
 void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID)
 {
-	uint groupID = Gid.x;
-	uint groupThreadID = GTid.x;
-	uint threadID = DTid.x;
+	//uint groupID = Gid.x;
+	//uint groupThreadID = GTid.x;
+	//uint threadID = DTid.x;
 
-	uint offset = passCount * bitOffset;
-	
+	//uint offset = passCount * bitOffset;
+	//
+	//if (threadID < Pcurrent)
+	//{
+	//	uint countIndex = (indicesBuffer[threadID].depthInverseBit >> offset) & (CountArraySizePerThread - 1);
 
-		uint countIndex = (indicesBuffer[threadID].depthInverseBit >> offset) & (CountArraySizePerThread - 1);
+	//	LocalUpSweep1(groupID, groupThreadID, countIndex, threadID);
+	//	GroupMemoryBarrierWithGroupSync();
 
-		LocalUpSweep1(groupID, groupThreadID, countIndex, threadID);
+	//	DecoupledLookback(groupID, groupThreadID);
+	//	GroupMemoryBarrierWithGroupSync();
 
-		DecoupledLookback(groupID, groupThreadID);
-		GroupMemoryBarrierWithGroupSync();
+	//	LocalDownSweep(groupID, groupThreadID, threadID);
+	//	GroupMemoryBarrierWithGroupSync();
 
-		LocalDownSweep(groupID, groupThreadID, threadID);
-		GroupMemoryBarrierWithGroupSync();
-
-		Reorder(groupID, groupThreadID, threadID);
+	//	Reorder(groupID, groupThreadID, threadID);
 		// LocalUpSweep
 		// Decoupled-Lookback
 		// LocalDownSweep
 		// Reorder
-
-
-
+	//}
 }

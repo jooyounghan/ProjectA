@@ -1,20 +1,20 @@
 #include "BaseParticleSpawnProperty.h"
-
+#include "ControlPointGridView.h"
 #include "MacroUtilities.h"
 #include "BufferMacroUtilities.h"
-
 #include "imgui.h"
+
 
 using namespace std;
 using namespace D3D11;
 using namespace DirectX;
 using namespace ImGui;
 
-#define CreateSpeedInterpolater()									\
-m_speedInterpolater = InterpolationSelector::CreateInterpolater<2>(	\
-	m_speedInterpolationMethod,										\
-	m_speedInitControlPoint, m_speedFinalControlPoint,				\
-	m_speedControlPoints											\
+#define CreateLifeInterpolater()									\
+m_lifeInterpolater = InterpolationSelector::CreateInterpolater<2>(	\
+	m_lifeInterpolationMethod,										\
+	m_lifeInitControlPoint, m_lifeFinalControlPoint,				\
+	m_lifeControlPoints												\
 )																	\
 
 #define CreateColorInterpolater()									\
@@ -25,73 +25,20 @@ m_colorInterpolater = InterpolationSelector::CreateInterpolater<3>(	\
 )					
 
 BaseParticleSpawnProperty::BaseParticleSpawnProperty(float& emitterCurrentTime)
-	: m_emitterCurrentTime(emitterCurrentTime)
+	: m_emitterCurrentTime(emitterCurrentTime),
+	m_lifeInitControlPoint{ 0.f, MakeArray(8.f, 12.f)},
+	m_lifeFinalControlPoint{ 10.f, MakeArray(0.f, 2.f)},
+	m_lifeInterpolationMethod(EInterpolationMethod::Linear),
+	m_colorInitControlPoint{ 0.f, MakeArray(0.f, 0.f, 0.f)},
+	m_colorFinalControlPoint{ 10.f, MakeArray(1.f, 1.f ,1.f)},
+	m_colorInterpolationMethod(EInterpolationMethod::Linear)
 {
 	AutoZeroMemory(m_baseParticleSpawnPropertyCPU);
-
-}
-
-void BaseParticleSpawnProperty::SetMinMaxLifeTime(const DirectX::XMFLOAT2& minMaxLifeTime)
-{
-	m_baseParticleSpawnPropertyCPU.minMaxLifeTime = minMaxLifeTime;
-}
-
-void BaseParticleSpawnProperty::SetMinEmitRadian(const XMFLOAT2& minEmitRadian)
-{
-	m_baseParticleSpawnPropertyCPU.minEmitRadian = minEmitRadian;
-}
-
-void BaseParticleSpawnProperty::SetMaxEmitRadian(const XMFLOAT2& maxEmitRadian)
-{
-	m_baseParticleSpawnPropertyCPU.maxEmitRadian = maxEmitRadian;
-}
-
-void BaseParticleSpawnProperty::SetInitSpeed(const SControlPoint<2>& speed) noexcept
-{
-	m_speedInitControlPoint = speed;
-	CreateSpeedInterpolater();
-}
-
-void BaseParticleSpawnProperty::SetFinalSpeed(const SControlPoint<2>& speed) noexcept
-{
-	m_speedFinalControlPoint = speed;
-	CreateSpeedInterpolater();
-}
-
-void BaseParticleSpawnProperty::SetSpeedControlPoints(const std::vector<SControlPoint<2>>& speedControlPoints)
-{
-	m_speedControlPoints = speedControlPoints;
-	CreateSpeedInterpolater();
-}
-
-void BaseParticleSpawnProperty::SetSpeedInterpolationMethod(EInterpolationMethod speedInterpolationMethod)
-{
-	m_speedInterpolationMethod = speedInterpolationMethod;
-	CreateSpeedInterpolater();
-}
-
-void BaseParticleSpawnProperty::SetInitColor(const SControlPoint<3>& color) noexcept
-{
-	m_colorInitControlPoint = color;
+	CreateLifeInterpolater();
 	CreateColorInterpolater();
-}
 
-void BaseParticleSpawnProperty::SetFinalColor(const SControlPoint<3>& color) noexcept
-{
-	m_colorFinalControlPoint = color;
-	CreateColorInterpolater();
-}
-
-void BaseParticleSpawnProperty::SetColorControlPoints(const std::vector<SControlPoint<3>>& colorControlPoints)
-{
-	m_colorControlPoints = colorControlPoints;
-	CreateColorInterpolater();
-}
-
-void BaseParticleSpawnProperty::SetColorInterpolationMethod(EInterpolationMethod colorInterpolationMethod)
-{
-	m_colorInterpolationMethod = colorInterpolationMethod;
-	CreateColorInterpolater();
+	m_origin = XMFLOAT3(0.f, 0.f, 0.f);
+	m_upVector = XMVectorSet(0.f, 1.f, 0.f, 0.f);
 }
 
 void BaseParticleSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
@@ -102,15 +49,17 @@ void BaseParticleSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceCon
 
 void BaseParticleSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 {
-	//m_baseParticleSpawnPropertyCPU.minMaxSpeed = XMFLOAT2(
-	//	m_speedXInterpolater->GetInterpolated(m_emitterCurrentTime),
-	//	m_speedYInterpolater->GetInterpolated(m_emitterCurrentTime)
-	//);
-	//m_baseParticleSpawnPropertyCPU.color = XMFLOAT3(
-	//	m_colorRInterpolater->GetInterpolated(m_emitterCurrentTime),
-	//	m_colorGInterpolater->GetInterpolated(m_emitterCurrentTime),
-	//	m_colorBInterpolater->GetInterpolated(m_emitterCurrentTime)
-	//);
+	if (m_lifeInterpolater)
+	{
+		array<float, 2> minMaxLifeInterpolated = m_lifeInterpolater->GetInterpolated(m_emitterCurrentTime);
+		m_baseParticleSpawnPropertyCPU.minMaxLifeTime = XMFLOAT2(minMaxLifeInterpolated[0], minMaxLifeInterpolated[1]);
+	}
+
+	if (m_colorInterpolater)
+	{
+		array<float, 3> colorInterpolated = m_colorInterpolater->GetInterpolated(m_emitterCurrentTime);
+		m_baseParticleSpawnPropertyCPU.color = XMFLOAT3(colorInterpolated[0], colorInterpolated[1], colorInterpolated[2]);
+	}
 
 	m_baseParticleSpawnPropertyGPU->Stage(deviceContext);
 	m_baseParticleSpawnPropertyGPU->Upload(deviceContext);
@@ -118,6 +67,87 @@ void BaseParticleSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float
 
 void BaseParticleSpawnProperty::DrawPropertyUI()
 {
+	static EShapedVector shapedVector = EShapedVector::None;
+	static bool isLifeInterpolaterChanged = false;
+	static bool isColorInterpolaterChanged = false;
+
+	if (!ImGui::CollapsingHeader("파티클 생성 프로퍼티"))
+		return;
+
+	ShapedVectorSelector::SelectEnums("생성 속도 벡터", ShapedVectorSelector::GShapedVectorStringMaps, shapedVector);
+	ShapedVectorSelector::SetShapedVectorProperty(m_origin, m_upVector, shapedVector, m_baseParticleSpawnPropertyCPU.shapedSpeedVectorSelector);
+
+	EInterpolationMethod currnetLifeInterpolateKind = m_lifeInterpolationMethod;
+	InterpolationSelector::SelectEnums("생성 파티클 생명 보간 방법", InterpolationSelector::GInterpolationMethodStringMap, currnetLifeInterpolateKind);
+	if (m_lifeInterpolationMethod != currnetLifeInterpolateKind)
+	{
+		m_lifeInterpolationMethod = currnetLifeInterpolateKind;
+		isLifeInterpolaterChanged = true;
+	}
+
+	if (ControlPointGridView::HandleControlPointsGridView<2>(
+		"시간",
+		{ "최소 생명", "최대 생명" },
+		"생명 주기",
+		0.1f, 0.f, 10.f,
+		m_lifeInitControlPoint,
+		m_lifeFinalControlPoint,
+		m_lifeControlPoints	
+	))
+	{
+		isLifeInterpolaterChanged = true;
+	}
+
+	InterpolationSelector::ViewInterpolatedPoints<2>(
+		m_lifeInterpolater.get(),
+		"Life Control Points",
+		{ "최소 생명", "최대 생명" },
+		m_lifeInitControlPoint,
+		m_lifeFinalControlPoint,
+		m_lifeControlPoints
+	);
+
+	if (isLifeInterpolaterChanged)
+	{
+		CreateLifeInterpolater();
+		isLifeInterpolaterChanged = false;
+	}
+
+	EInterpolationMethod currnetColorInterpolateKind = m_colorInterpolationMethod;
+	InterpolationSelector::SelectEnums("파티클 색상 보간 방법", InterpolationSelector::GInterpolationMethodStringMap, currnetColorInterpolateKind);
+	if (m_colorInterpolationMethod != currnetColorInterpolateKind)
+	{
+		m_colorInterpolationMethod = currnetColorInterpolateKind;
+		isColorInterpolaterChanged = true;
+	}
+
+	if (ControlPointGridView::HandleControlPointsGridView<3>(
+		"시간",
+		{ "R", "G", "B"},
+		"색상값",
+		0.01f, 0.f, 1.f,
+		m_colorInitControlPoint,
+		m_colorFinalControlPoint,
+		m_colorControlPoints
+	))
+	{
+		isColorInterpolaterChanged = true;
+	}
+
+	InterpolationSelector::ViewInterpolatedPoints<3>(
+		m_colorInterpolater.get(),
+		"Color Control Points",
+		{ "R", "G", "B" },
+		m_colorInitControlPoint,
+		m_colorFinalControlPoint,
+		m_colorControlPoints
+	);
+
+	if (isColorInterpolaterChanged)
+	{
+		CreateColorInterpolater();
+		isColorInterpolaterChanged = false;
+	}
 }
 
 

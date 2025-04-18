@@ -2,11 +2,10 @@
 
 cbuffer EmitterProperties : register(b2)
 {
-	matrix toWorldTransformation;
+	matrix emitterWorldTransformation;
     uint emitterID;
 	uint emitterType;
-    float particleDensity;
-	float particleRadius;
+    uint2 emitterPropertyDummy;
 };
 
 RWStructuredBuffer<Particle> totalParticles : register(u0);

@@ -5,16 +5,8 @@
 #include <memory>
 #include <vector>
 
-#include "VertexShader.h"
-#include "GeometryShader.h"
-#include "PixelShader.h"
-#include "ComputeShader.h"
-
-#include "DynamicBuffer.h"
-
-class IUpdatable;
-class CCamera;
-class CParticleManager;
+#include "Camera.h"
+#include "EmitterManager.h"
 
 namespace D3D11
 {
@@ -67,18 +59,13 @@ private:
 		float dt;
 		float appWidth;
 		float appHeight;
+		UINT particleTotalCount;
 	} m_appParamsCPU;
 	D3D11::CDynamicBuffer m_appParamsGPU;
 
 #pragma region 테스트 변수
 	std::unique_ptr<CCamera> m_camera;
-	//std::unique_ptr<CParticleManager> m_particleManager;
-
-private:
-	D3D11::CVertexShader m_drawParticleVS;
-	D3D11::CGeometryShader m_drawParticleGS;
-	D3D11::CPixelShader m_drawParticlePS;
-	std::unique_ptr<D3D11::CGraphicsPSOObject> m_drawParticlePSO;
+	std::unique_ptr<CEmitterManager> m_particleManager;
 
 public:
 	void DrawEmitterHandler();

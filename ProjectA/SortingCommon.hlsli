@@ -3,11 +3,11 @@
 #define Pcurrent particleDrawIndirectArgs[0]
 
 StructuredBuffer<uint> particleDrawIndirectArgs : register(t0);
-StructuredBuffer<ParticleSelector> indicesBuffer : register(t1);
+StructuredBuffer<uint> indicesBuffer : register(t1);
 
 RWStructuredBuffer<uint> countsBuffer : register(u0);
 RWStructuredBuffer<PrefixDesciptor> countsPrefixDescriptors : register(u1);
-RWStructuredBuffer<ParticleSelector> sortedIndicesBuffer : register(u2);
+RWStructuredBuffer<uint> sortedIndicesBuffer : register(u2);
 
 groupshared uint threadStatus[LocalThreadCount];
 groupshared uint threadExclusive[LocalThreadCount];

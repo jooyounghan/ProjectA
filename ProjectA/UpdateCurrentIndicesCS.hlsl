@@ -3,7 +3,7 @@
 StructuredBuffer<uint> aliveFlags : register(t0);
 StructuredBuffer<uint> prefixSums : register(t1);
 RWStructuredBuffer<Particle> totalParticles : register(u2);
-RWStructuredBuffer<ParticleSelector> currnetIndices : register(u3);
+RWStructuredBuffer<uint> currnetIndices : register(u3);
 
 [numthreads(LocalThreadCount, 1, 1)]
 void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID )
@@ -22,17 +22,7 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
         if (aliveFlags[threadID])
 		{
             uint index = prefixSums[threadID] - 1;
-            ParticleSelector particleSelector;
-            particleSelector.index = threadID;
-            particleSelector.dummy = 0;
-
-            Particle currentParticle = totalParticles[threadID];
-            particleSelector.emitterType = currentParticle.emitterType;
-            
-            float4 viewPos = mul(float4(currentParticle.worldPos, 1.f), viewProjMatrix);
-            particleSelector.viewPos = viewPos;
-            particleSelector.depthInverseBit = asuint(1.f - viewPos.z / viewPos.w);
-            currnetIndices[index] = particleSelector;
+            currnetIndices[index] = threadID;
         }
 	}
 }

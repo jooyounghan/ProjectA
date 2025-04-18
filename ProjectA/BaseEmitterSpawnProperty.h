@@ -12,26 +12,19 @@ public:
 	virtual ~BaseEmitterSpawnProperty() = default;
 
 protected:
-	bool m_isSpawned = false;
-
-public:
-	inline bool IsSpawned() const noexcept { return m_isSpawned; }
-	inline void SetSpawned(bool isSpawned) { m_isSpawned = isSpawned; }
-
-protected:
 	struct alignas(16)
 	{
-		SShapedVectorProperty shapedVectorSelector;
+		SShapedVectorProperty shapedPositionVectorProperty;
 		UINT initialParticleCount;
 		float initialParticleLife;
+		DirectX::XMFLOAT2 dummy;
 	} m_emitterSpawnPropertyCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterSpawnPropertyGPU;
 	bool m_isEmitterSpawnPropertyChanged = false;
 
-public:
-	void SetShapedVectorProperty(const SShapedVectorProperty& shapedVectorSelector);
-	void SetInitialParticleCount(UINT initialParticleCount);
-	void SetInitialParticleLife(float initialParticleLife);
+protected:
+	DirectX::XMFLOAT3 m_origin;
+	DirectX::XMVECTOR m_upVector;
 
 public:
 	inline ID3D11Buffer* GetEmitterSpawnPropertyBuffer() const noexcept { return m_emitterSpawnPropertyGPU->GetBuffer(); }

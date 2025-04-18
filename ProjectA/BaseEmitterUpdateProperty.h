@@ -27,20 +27,6 @@ protected:
 	EInterpolationMethod m_spawnRateInterpolationMethod;
 	std::unique_ptr<IInterpolater<1>> m_spawnRateInterpolater;
 
-//public:
-//	inline UINT8 GetLoopCount() const noexcept { return m_loopCount; }
-//	inline float GetLoopTime() const noexcept { return m_loopTime; }
-//	inline const std::vector<SControlPoint>& GetSpawnControlPoints() const noexcept { return m_spawnControlPoints; }
-//	inline EInterpolationMethod GetSpawnRateInterpolationMethod() const noexcept { return m_spawnRateInterpolationMethod; }
-
-public:
-	inline void SetLoopCount(UINT loopCount) noexcept { m_loopCount = loopCount; }
-	void SetLoopTime(float loopTime) noexcept;
-	void SetInitSpawnRate(const SControlPoint<1>& spawnRate) noexcept;
-	void SetFinalSpawnRate(const SControlPoint<1>& spawnRate) noexcept;
-	void SetSpawnControlPoints(const std::vector<SControlPoint<1>>& spawnControlPoints) noexcept;
-	void SetSpawnRateInterpolationMethod(EInterpolationMethod spawnRateInterpolationMethod);
-
 protected:
 	bool m_isNotDisposed;
 	OnEmitterDispose m_emitterDisposeHandler = bind([&](BaseEmitterUpdateProperty*) {}, std::placeholders::_1);

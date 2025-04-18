@@ -5,21 +5,9 @@ struct Particle
     float3 worldPos;
     float3 velocity;
     float3 accelerate;
-    float life;
-    float density;
+    uint emitterType;
     uint emitterID;
-    uint emitterType;
-    float radius;
-    float2 dummy;
-};
-
-struct ParticleSelector
-{
-    float4 viewPos;
-    uint index;
-    uint emitterType;
-    uint depthInverseBit;
-    uint dummy;
+    float life;
 };
 
 struct PrefixDesciptor

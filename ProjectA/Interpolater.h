@@ -14,6 +14,12 @@ constexpr std::array<float, Dim> MakeZeroArray() {
 	return MakeZeroArrayImpl<Dim>(std::make_index_sequence<Dim>{});
 }
 
+template <typename... Args>
+constexpr auto MakeArray(Args... args)->std::array<float, sizeof...(Args)> 
+{
+	return { static_cast<float>(args)... };
+}
+
 template<typename T, uint32_t Dim>
 concept IsControlPoint = requires(T t)
 {

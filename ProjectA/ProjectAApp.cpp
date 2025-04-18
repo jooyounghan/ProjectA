@@ -19,12 +19,10 @@
 #include "DepthStencilState.h"
 #include "SamplerState.h"
 
-#include "Camera.h"
-#include "ParticleManager.h"
-
-#include "AEmitter.h"
 #include "EmitterSelector.h"
 #pragma  endregion
+
+#define TotalParticleCount 1024 * 1024
 
 using namespace std;
 using namespace App;
@@ -41,8 +39,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
 );
 
 CProjectAApp::CProjectAApp() noexcept
-	: CBaseApp(), m_drawParticleVS(1),
-	m_appParamsGPU(sizeof(m_appParamsCPU), 1, &m_appParamsCPU)
+	: CBaseApp(), m_appParamsGPU(sizeof(m_appParamsCPU), 1, &m_appParamsCPU)
 {
 }
 
@@ -114,29 +111,30 @@ void CProjectAApp::Init()
 	EndFrame();
 #pragma endregion
 
-#pragma region 테스트 초기화
-	AEmitter::InitializeGlobalEmitterProperty(100);
+#pragma region 글로벌 변수 초기화
+	AEmitter::InitializeGlobalEmitterProperty(100, m_device);
+	AEmitter::InitializeEmitterDrawPSO(m_device);
 
-	//CParticleManager::InitializeSetInitializingPSO(m_device);
-	//CParticleManager::InitializeEmitterDrawPSO(m_device);
-	//CParticleManager::InitializePoolingCS(m_device);
-	//CParticleManager::InitializeEmitterSourcingCS(m_device);
-	//CParticleManager::InitializeParticleSimulateCS(m_device);
-	//CParticleManager::InitializeParticleDrawPSO(m_device);
-	//CParticleManager::InitializeRadixSortCS(m_device);
+	CEmitterManager::InitializeSetInitializingPSO(m_device);
+	CEmitterManager::InitializePoolingCS(m_device);
+	CEmitterManager::InitializeEmitterSourcingCS(m_device);
+	CEmitterManager::InitializeParticleSimulateCS(m_device);
+	CEmitterManager::InitializeRadixSortCS(m_device);
+	CEmitterManager::InitializeParticleDrawPSO(m_device);
 #pragma endregion
 
 #pragma region 인스턴스 초기화
 	m_camera = make_unique<CCamera>(
-		XMVectorSet(0.f, 15.f, 0.f, 1.f),
-		XMVectorSet(60.f * XM_2PI / 360.f, 0.f, 0.f, 1.f),
+		XMVectorSet(0.f, 0.f, -10.f, 1.f),
+		XMVectorSet(0.f, 0.f, 0.f, 1.f),
 		m_width, m_height, 90.f, 0.01f, 100000.000f
 		);
 
-	//m_particleManager = make_unique<CParticleManager>(100, 5000, 2048 * 2047);
+	m_particleManager = make_unique<CEmitterManager>(10, TotalParticleCount);
 
 	m_updatables.emplace_back(m_camera.get());
-	//m_updatables.emplace_back(m_particleManager.get());
+	m_updatables.emplace_back(m_particleManager.get());
+
 	for (auto& updatable : m_updatables)
 	{
 		updatable->Initialize(m_device, m_deviceContext);
@@ -154,8 +152,14 @@ void CProjectAApp::Update(float deltaTime)
 	m_appParamsCPU.dt = deltaTime;
 	m_appParamsCPU.appWidth = static_cast<float>(m_width);
 	m_appParamsCPU.appHeight = static_cast<float>(m_height);
+	m_appParamsCPU.particleTotalCount = TotalParticleCount;
+
 	m_appParamsGPU.Stage(m_deviceContext);
 	m_appParamsGPU.Upload(m_deviceContext);
+#pragma endregion
+
+#pragma region 글로벌 변수 업데이트
+	AEmitter::UpdateGlobalEmitterProperty(m_deviceContext);
 #pragma endregion
 
 #pragma region 인스턴스 업데이트
@@ -177,26 +181,25 @@ void CProjectAApp::Update(float deltaTime)
 #pragma endregion
 
 #pragma region ParticleManager 메인 로직
-	//ID3D11Buffer* singleNullCb = nullptr;
+	ID3D11Buffer* cameraCb = m_camera->GetPropertiesBuffer();
+	ID3D11Buffer* singleNullCb = nullptr;
+	m_deviceContext->VSSetConstantBuffers(0, 1, &cameraCb);
+		AEmitter::DrawEmittersDebugCube(m_deviceContext);
+	m_deviceContext->VSSetConstantBuffers(0, 1, &singleNullCb);
 
-	//ID3D11Buffer* cameraCb = m_camera->GetPropertiesBuffer();
-	//m_deviceContext->VSSetConstantBuffers(0, 1, &cameraCb);
-	//	m_particleManager->DrawEmittersDebugCube(m_deviceContext);
-	//m_deviceContext->VSSetConstantBuffers(0, 1, &singleNullCb);
-
-	//ID3D11Buffer* commonCbs[] = { m_appParamsGPU.GetBuffer(), m_camera->GetPropertiesBuffer() };
-	//ID3D11Buffer* commonNullCbs[] = { nullptr, nullptr };
-	//m_deviceContext->CSSetConstantBuffers(0, 2, commonCbs);
-	//m_deviceContext->VSSetConstantBuffers(0, 2, commonCbs);
-	//m_deviceContext->GSSetConstantBuffers(0, 2, commonCbs);
-	//m_deviceContext->PSSetConstantBuffers(0, 2, commonCbs);
-	//	m_particleManager->ExecuteParticleSystem(m_deviceContext);
-	//	m_particleManager->CaculateParticlesForce(m_deviceContext);
-	//	m_particleManager->DrawParticles(m_deviceContext);
-	//m_deviceContext->CSSetConstantBuffers(0, 2, commonNullCbs);
-	//m_deviceContext->VSSetConstantBuffers(0, 2, commonNullCbs);
-	//m_deviceContext->GSSetConstantBuffers(0, 2, commonNullCbs);
-	//m_deviceContext->PSSetConstantBuffers(0, 2, commonNullCbs);
+	ID3D11Buffer* commonCbs[] = { m_appParamsGPU.GetBuffer(), m_camera->GetPropertiesBuffer() };
+	ID3D11Buffer* commonNullCbs[] = { nullptr, nullptr };
+	m_deviceContext->CSSetConstantBuffers(0, 2, commonCbs);
+	m_deviceContext->VSSetConstantBuffers(0, 2, commonCbs);
+	m_deviceContext->GSSetConstantBuffers(0, 2, commonCbs);
+	m_deviceContext->PSSetConstantBuffers(0, 2, commonCbs);
+		m_particleManager->ExecuteParticleSystem(m_deviceContext);
+		m_particleManager->CaculateParticlesForce(m_deviceContext);
+		m_particleManager->DrawParticles(m_deviceContext);
+	m_deviceContext->CSSetConstantBuffers(0, 2, commonNullCbs);
+	m_deviceContext->VSSetConstantBuffers(0, 2, commonNullCbs);
+	m_deviceContext->GSSetConstantBuffers(0, 2, commonNullCbs);
+	m_deviceContext->PSSetConstantBuffers(0, 2, commonNullCbs);
 #pragma endregion
 
 #pragma region 카메라 -> 백버퍼 복사 및 UI 그리기
@@ -252,6 +255,7 @@ void CProjectAApp::DrawEmitterHandler()
 
 		if (EmitterSelector::CreateEmitter(emttierType, createdEmitter))
 		{
+			m_particleManager->AddParticleEmitter(createdEmitter, m_device, m_deviceContext);
 			ImGui::CloseCurrentPopup();
 		}
 

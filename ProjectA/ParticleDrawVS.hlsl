@@ -3,9 +3,9 @@
 ParticleVSOut main(uint vertexID : SV_VertexID)
 {
 	ParticleVSOut result;
-    ParticleSelector particleSelector = currentIndices[vertexID];
-    Particle currentPoint = particles[particleSelector.index];
-    result.viewPos = particleSelector.viewPos;
+    uint particleIndex = currentIndices[vertexID];
+    Particle currentPoint = particles[particleIndex];
+    result.viewPos = mul(float4(currentPoint.worldPos, 1.f), viewProjMatrix);
 	result.life = currentPoint.life;
 
 	if (currentPoint.emitterType == 0)
@@ -18,7 +18,7 @@ ParticleVSOut main(uint vertexID : SV_VertexID)
 	}
 	else
 	{
-		result.color = float3(0.0f, 0.0f, 0.0f);
+		result.color = float3(1.0f, 0.0f, 0.0f);
 	}
 
 	return result;

@@ -49,15 +49,14 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
             currentParticle.velocity += currentParticle.accelerate * dt;
             currentParticle.worldPos += currentParticle.velocity * dt;
 
-            if (currentParticle.worldPos.y < 0.f)
-            {
-                currentParticle.worldPos.y = 1E-3;
-                currentParticle.velocity.x = currentParticle.velocity.x * 0.2f;
-                currentParticle.velocity.y = currentParticle.velocity.y * -0.2f;
-                currentParticle.velocity.z = currentParticle.velocity.z * 0.2f;
-            }
+            //if (currentParticle.worldPos.y < 0.f)
+            //{
+            //    currentParticle.worldPos.y = 1E-3;
+            //    currentParticle.velocity.x = currentParticle.velocity.x * 0.2f;
+            //    currentParticle.velocity.y = currentParticle.velocity.y * -0.2f;
+            //    currentParticle.velocity.z = currentParticle.velocity.z * 0.2f;
+            //}
 
-            
             totalParticles[threadID] = currentParticle;
         }		
     }

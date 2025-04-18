@@ -3,7 +3,7 @@
 #define Pcurrent particleDrawIndirectArgs[0]
 
 StructuredBuffer<uint> particleDrawIndirectArgs: register(t0);
-StructuredBuffer<ParticleSelector> currentIndices : register(t1);
+StructuredBuffer<uint> currentIndices : register(t1);
 StructuredBuffer<float4> emitterWorldPos : register(t2);
 
 RWStructuredBuffer<Particle> particles : register(u0);

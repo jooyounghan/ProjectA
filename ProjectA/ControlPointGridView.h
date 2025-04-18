@@ -34,25 +34,40 @@ inline bool ControlPointGridView::HandleControlPointsGridView(
 {
 	bool isChanged = false;
 
-	ImGui::Text("Control Point 추가");
+	std::string controlPointID = std::format("{} 추가", controlPointsName);
+	std::string controlAddPopup = std::format("{} 추가 버튼", controlPointsName);
+	std::string controlAddButton = std::format("+##{}", controlPointsName);
+	ImGui::Text(controlPointID.c_str());
 	ImGui::SameLine();
-	if (ImGui::SmallButton("+"))
+
+	if (ImGui::SmallButton(controlAddButton.c_str()))
 	{
-		ImGui::OpenPopup("AddControlPoints");
+		ImGui::OpenPopup(controlAddPopup.c_str());
 	}
 
 	bool addControlPointsFlag = true;
-	if (ImGui::BeginPopupModal("AddControlPoints", &addControlPointsFlag))
+	if (ImGui::BeginPopupModal(controlAddPopup.c_str(), &addControlPointsFlag))
 	{
 		static float x = 0.f;
 		static std::array<float, Dim> y = MakeZeroArray<Dim>();
 
 		x = std::min(std::max(startPoint.x, x), endPoint.x);
 		ImGui::DragFloat(xValueName.c_str(), &x, 0.1f, startPoint.x, endPoint.x, "%.1f");
-		for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+
+		// ========================================================================
+		if (Dim == 3)
 		{
-			ImGui::DragFloat(yValueNames[dimension].c_str(), &y[dimension], yStep, yMin, yMax, "%.2f");
+			ImGui::ColorPicker3("색상 선택", y.data());
 		}
+		else
+		{
+			for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+			{
+				ImGui::DragFloat(yValueNames[dimension].c_str(), &y[dimension], yStep, yMin, yMax, "%.2f");
+			}
+		}
+		// ===========================================================================
+
 		if (isChanged |= ImGui::Button("추가"))
 		{
 			controlPoints.emplace_back(x, y);
@@ -74,13 +89,24 @@ inline bool ControlPointGridView::HandleControlPointsGridView(
 		ImGui::EndPopup();
 	}
 
-	if (ImGui::BeginTable(controlPointsName.c_str(), 1 + Dim + 1, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+	if (ImGui::BeginTable(controlPointsName.c_str(), Dim == 3 ?  3 : 1 + Dim + 1, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
 	{
 		ImGui::TableSetupColumn(xValueName.c_str());
-		for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+
+		// ======================================================================================
+		if (Dim == 3)
 		{
-			ImGui::TableSetupColumn(yValueNames[dimension].c_str());
+			ImGui::TableSetupColumn("RGB 색상 값");
 		}
+		else
+		{
+			for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+			{
+				ImGui::TableSetupColumn(yValueNames[dimension].c_str());
+			}
+		}
+		// ======================================================================================
+
 		ImGui::TableSetupColumn("제거");
 		ImGui::TableHeadersRow();
 
@@ -89,11 +115,21 @@ inline bool ControlPointGridView::HandleControlPointsGridView(
 		ImGui::TableSetColumnIndex(0);
 		ImGui::TextUnformatted(pointIn.c_str());
 
-		for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+		// ======================================================================================
+		if (Dim == 3)
 		{
-			ImGui::TableSetColumnIndex(dimension + 1);
-			isChanged |= ImGui::DragFloat(std::format("##StartPoint{}", dimension).c_str(), &startPoint.y[dimension], yStep, yMin, yMax, "%.2f");
+			ImGui::TableSetColumnIndex(1);
+			ImGui::ColorEdit3("##StartPoint", startPoint.y.data());
 		}
+		else
+		{
+			for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+			{
+				ImGui::TableSetColumnIndex(dimension + 1);
+				isChanged |= ImGui::DragFloat(std::format("##StartPoint{}", dimension).c_str(), &startPoint.y[dimension], yStep, yMin, yMax, "%.2f");
+			}
+		}
+		// ======================================================================================
 
 		uint32_t removeIdx = ~0;
 		uint32_t controlPointsCount = static_cast<uint32_t>(controlPoints.size());
@@ -105,12 +141,27 @@ inline bool ControlPointGridView::HandleControlPointsGridView(
 			pointIn = std::format("{:.2f}", controlPoint.x);
 			ImGui::TextUnformatted(pointIn.c_str());
 			
-			for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+			// ======================================================================================
+			if (Dim == 3)
 			{
-				ImGui::TableSetColumnIndex(dimension + 1);
-				isChanged |= ImGui::DragFloat(std::format("##MidPoint{}{}", idx, dimension).c_str(), &controlPoint.y[dimension], yStep, yMin, yMax, "%.2f");
+				ImGui::TableSetColumnIndex(1);
+				ImGui::ColorEdit3(std::format("##MidPoint{}", idx).c_str(), controlPoint.y.data());
 			}
-			ImGui::TableSetColumnIndex(Dim + 1);
+			else
+			{
+				for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+				{
+					ImGui::TableSetColumnIndex(dimension + 1);
+					isChanged |= ImGui::DragFloat(std::format("##MidPoint{}{}", idx, dimension).c_str(), &controlPoint.y[dimension], yStep, yMin, yMax, "%.2f");
+				}
+			}
+
+			// ======================================================================================
+
+			// ======================================================================================
+			ImGui::TableSetColumnIndex(Dim == 3 ? 2 : Dim + 1);
+			// ======================================================================================
+
 			ImGui::PushID(std::format("##삭제{}", idx).c_str());
 			if (ImGui::SmallButton("삭제"))
 			{
@@ -129,11 +180,21 @@ inline bool ControlPointGridView::HandleControlPointsGridView(
 		ImGui::TableNextRow();
 		ImGui::TableSetColumnIndex(0);
 		ImGui::TextUnformatted(pointIn.c_str());
-		for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+		// ======================================================================================
+		if (Dim == 3)
 		{
-			ImGui::TableSetColumnIndex(dimension + 1);
-			isChanged |= ImGui::DragFloat(std::format("##EndPoint{}", dimension).c_str(), &endPoint.y[dimension], yStep, yMin, yMax, "%.2f");
+			ImGui::TableSetColumnIndex(1);
+			ImGui::ColorEdit3("##EndPoint", endPoint.y.data());
 		}
+		else
+		{
+			for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+			{
+				ImGui::TableSetColumnIndex(dimension + 1);
+				isChanged |= ImGui::DragFloat(std::format("##EndPoint{}", dimension).c_str(), &endPoint.y[dimension], yStep, yMin, yMax, "%.2f");
+			}
+		}
+		// ======================================================================================
 		ImGui::EndTable();
 	}
 	return isChanged;

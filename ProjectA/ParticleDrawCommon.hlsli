@@ -22,4 +22,4 @@ float smoothstep(float edge0, float edge1, float x)
 }
 
 StructuredBuffer<Particle> particles : register(t0);
-StructuredBuffer<ParticleSelector> currentIndices : register(t1);
+StructuredBuffer<uint> currentIndices : register(t1);

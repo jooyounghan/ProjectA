@@ -165,7 +165,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="ModelFactory.cpp" />
-    <ClCompile Include="ParticleManager.cpp" />
+    <ClCompile Include="EmitterManager.cpp" />
     <ClCompile Include="ProjectAApp.cpp" />
     <ClCompile Include="ShapedVectorSelector.cpp" />
   </ItemGroup>
@@ -191,7 +191,7 @@
     <ClInclude Include="MacroUtilities.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="ModelFactory.h" />
-    <ClInclude Include="ParticleManager.h" />
+    <ClInclude Include="EmitterManager.h" />
     <ClInclude Include="ProjectAApp.h" />
     <ClInclude Include="ShapedVectorSelector.h" />
     <ClInclude Include="Updatable.h" />
