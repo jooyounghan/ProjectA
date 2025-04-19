@@ -19,14 +19,15 @@ enum class EEmitterType
 class EmitterSelector : public BaseSelector<EEmitterType>
 {
 public:
-	static std::unordered_map<EEmitterType, std::string> GEmitterStringMaps;
+	EmitterSelector(const std::string& selectorName);
+	~EmitterSelector() override = default;
 
 public:
-	static bool CreateEmitter(EEmitterType emitterType, std::unique_ptr<AEmitter>& emitter);
+	bool CreateEmitter(EEmitterType emitterType, std::unique_ptr<AEmitter>& emitter);
 
 protected:
-	static bool CreateParticleEmitter(std::unique_ptr<AEmitter>& emitter);
-	static void InitializeParticleEmitterArgs(
+	bool CreateParticleEmitter(std::unique_ptr<AEmitter>& emitter);
+	void InitializeParticleEmitterArgs(
 		DirectX::XMVECTOR& position, DirectX::XMVECTOR& angle,
 		uint32_t& particleEmitterID, std::unique_ptr<AEmitter/*ParticleEmitter*/>& particleEmitter,
 		std::unique_ptr<BaseEmitterSpawnProperty>& baseEmitterSpawnProperty,

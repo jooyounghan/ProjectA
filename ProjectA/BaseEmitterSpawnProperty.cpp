@@ -16,7 +16,13 @@ BaseEmitterSpawnProperty::BaseEmitterSpawnProperty()
 	m_emitterSpawnPropertyCPU.initialParticleLife = 1.f;
 	m_origin = XMFLOAT3(0.f, 0.f, 0.f);
 	m_upVector = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-	sizeof(m_emitterSpawnPropertyCPU);
+
+	m_shapedPositionSelector = make_unique<ShapedVectorSelector>(
+		"초기 위치 벡터",
+		m_origin,
+		m_upVector,
+		m_emitterSpawnPropertyCPU.shapedPositionVectorProperty
+	);
 }
 
 void BaseEmitterSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
@@ -60,8 +66,8 @@ void BaseEmitterSpawnProperty::DrawPropertyUI()
 	SameLine();
 	Checkbox("Immortal 설정", &isImmortal);
 
-	ShapedVectorSelector::SelectEnums("초기 위치 벡터", ShapedVectorSelector::GShapedVectorStringMaps, shapedVector);
-	if (ShapedVectorSelector::SetShapedVectorProperty(m_origin, m_upVector, shapedVector, m_emitterSpawnPropertyCPU.shapedPositionVectorProperty))
+	m_shapedPositionSelector->SelectEnums(shapedVector);
+	if (m_shapedPositionSelector->SetShapedVectorProperty(shapedVector))
 	{
 		m_isEmitterSpawnPropertyChanged = true;
 	}

@@ -14,133 +14,126 @@ unordered_map<EShapedVector, string> ShapedVectorSelector::GShapedVectorStringMa
 	{ EShapedVector::Cone, "Cone" }
 };
 
-bool ShapedVectorSelector::SetShapedVectorProperty(
-	XMFLOAT3& origin,
-	XMVECTOR& upVector,
-	EShapedVector selectedShapedVector, 
+ShapedVectorSelector::ShapedVectorSelector(
+	const string& selectorName, 
+	XMFLOAT3& origin, 
+	XMVECTOR& upVector, 
 	SShapedVectorProperty& shapedVectorProperty
 )
+	: BaseSelector<EShapedVector>(selectorName, GShapedVectorStringMaps),
+	m_selectorName(selectorName),
+	m_origin(origin),
+	m_upVector(upVector),
+	m_shapedVectorProperty(shapedVectorProperty)
+{
+}
+
+bool ShapedVectorSelector::SetShapedVectorProperty(EShapedVector selectedShapedVector)
 {
 	bool isChanged = false;
 	switch (selectedShapedVector)
 	{
 	case EShapedVector::None:
-		ShapedVectorSelector::ResetShapedVector(origin, upVector, shapedVectorProperty);
+		ShapedVectorSelector::ResetShapedVector();
 		break;
 	case EShapedVector::Sphere:
-		isChanged |= ShapedVectorSelector::SetSphereShapedVector(origin, upVector, shapedVectorProperty);
+		isChanged |= ShapedVectorSelector::SetSphereShapedVector();
 		break;
 	case EShapedVector::HemiSphere:
-		isChanged |= ShapedVectorSelector::SetHemiSphereShapedVector(origin, upVector, shapedVectorProperty);
+		isChanged |= ShapedVectorSelector::SetHemiSphereShapedVector();
 		break;
 	case EShapedVector::Cone:
-		isChanged |= ShapedVectorSelector::SetConeShapedVector(origin, upVector, shapedVectorProperty);
+		isChanged |= ShapedVectorSelector::SetConeShapedVector();
 		break;
 	}
 	return isChanged;
 }
 
-void ShapedVectorSelector::ResetShapedVector(
-	XMFLOAT3& origin,
-	XMVECTOR& upVector,
-	SShapedVectorProperty& shapedVectorProperty
-)
+void ShapedVectorSelector::ResetShapedVector()
 {
-	AutoZeroMemory(origin);
-	upVector = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-	AutoZeroMemory(shapedVectorProperty);
+	AutoZeroMemory(m_origin);
+	m_upVector = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+	AutoZeroMemory(m_shapedVectorProperty);
 }
 
-bool ShapedVectorSelector::SetSphereShapedVector(
-	XMFLOAT3& origin,
-	XMVECTOR& upVector,
-	SShapedVectorProperty& shapedVectorProperty
-)
+bool ShapedVectorSelector::SetSphereShapedVector()
 {
 	static XMFLOAT2 minMaxRadius = XMFLOAT2(0.f, 10.f);
 
 	bool isChanged = false;
 
-	isChanged |= DragFloat3("구 중심", &origin.x, 0.1f, -1000.f, 1000.f, "%.1f");
+	isChanged |= DragFloat3("구 중심", &m_origin.x, 0.1f, -1000.f, 1000.f, "%.1f");
 	isChanged |= DragFloat("구 반지름(최소)", &minMaxRadius.x, 0.1f, 0.f, 1000.f, "%.1f");
 	isChanged |= DragFloat("구 반지름(최대)", &minMaxRadius.y, 0.1f, minMaxRadius.x, 1000.f, "%.1f");
 
-	upVector = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-	shapedVectorProperty.transformation = XMMatrixTranspose(XMMatrixTranslation(origin.x, origin.y, origin.z));
-	shapedVectorProperty.minInitRadian = XMFLOAT2(0.f, 0.f);
-	shapedVectorProperty.maxInitRadian = XMFLOAT2(XM_2PI, XM_2PI);
-	shapedVectorProperty.minMaxRadius = minMaxRadius;
+	m_upVector = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+	m_shapedVectorProperty.transformation = XMMatrixTranspose(XMMatrixTranslation(m_origin.x, m_origin.y, m_origin.z));
+	m_shapedVectorProperty.minInitRadian = XMFLOAT2(0.f, 0.f);
+	m_shapedVectorProperty.maxInitRadian = XMFLOAT2(XM_2PI, XM_2PI);
+	m_shapedVectorProperty.minMaxRadius = minMaxRadius;
 	
 	return isChanged;
 }
 
-bool ShapedVectorSelector::SetHemiSphereShapedVector(
-	XMFLOAT3& origin,
-	XMVECTOR& upVector,
-	SShapedVectorProperty& shapedVectorProperty
-)
+bool ShapedVectorSelector::SetHemiSphereShapedVector()
 {
 	static XMFLOAT2 minMaxRadius = XMFLOAT2(0.f, 10.f);
 
 	bool isChanged = false;
 
-	isChanged |= DragFloat3("구 중심", &origin.x, 0.1f, -1000.f, 1000.f, "%.1f");
-	isChanged |= DragFloat3("Up 벡터", upVector.m128_f32, 0.01f, -1.f, 1.f, "%.2f");
+	isChanged |= DragFloat3("구 중심", &m_origin.x, 0.1f, -1000.f, 1000.f, "%.1f");
+	isChanged |= DragFloat3("Up 벡터", m_upVector.m128_f32, 0.01f, -1.f, 1.f, "%.2f");
 	isChanged |= DragFloat("구 반지름(최소)", &minMaxRadius.x, 0.1f, 0.f, 1000.f, "%.1f");
 	isChanged |= DragFloat("구 반지름(최대)", &minMaxRadius.y, 0.1f, minMaxRadius.x, 1000.f, "%.1f");
 
-	XMVector3Normalize(upVector);
+	XMVector3Normalize(m_upVector);
 	XMVECTOR defaultUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-	XMVECTOR originVector = XMLoadFloat3(&origin);
+	XMVECTOR originVector = XMLoadFloat3(&m_origin);
 
-	shapedVectorProperty.transformation = XMMatrixTranspose(
+	m_shapedVectorProperty.transformation = XMMatrixTranspose(
 		XMMatrixAffineTransformation(
 			XMVectorSet(1.f, 1.f, 1.f, 0.f),
 			XMQuaternionIdentity(),
-			GetRotationQuaternion(defaultUp, upVector),
+			GetRotationQuaternion(defaultUp, m_upVector),
 			originVector
 		)
 	);
-	shapedVectorProperty.minInitRadian = XMFLOAT2(0.f, 0.f);
-	shapedVectorProperty.maxInitRadian = XMFLOAT2(XM_2PI, XM_PI);
-	shapedVectorProperty.minMaxRadius = minMaxRadius;
+	m_shapedVectorProperty.minInitRadian = XMFLOAT2(0.f, 0.f);
+	m_shapedVectorProperty.maxInitRadian = XMFLOAT2(XM_2PI, XM_PI);
+	m_shapedVectorProperty.minMaxRadius = minMaxRadius;
 
 	return isChanged;
 }
 
-bool ShapedVectorSelector::SetConeShapedVector(
-	XMFLOAT3& origin,
-	XMVECTOR& upVector,
-	SShapedVectorProperty& shapedVectorProperty
-)
+bool ShapedVectorSelector::SetConeShapedVector()
 {
 	static float centerAngle = 15.f;
 	static XMFLOAT2 minMaxRadius = XMFLOAT2(0.f, 10.f);
 
 	bool isChanged = false;
 
-	isChanged |= DragFloat3("구 중심", &origin.x, 0.1f, -1000.f, 1000.f, "%.1f");
-	isChanged |= DragFloat3("Up 벡터", upVector.m128_f32, 0.01f, -1.f, 1.f, "%.2f");
+	isChanged |= DragFloat3("구 중심", &m_origin.x, 0.1f, -1000.f, 1000.f, "%.1f");
+	isChanged |= DragFloat3("Up 벡터", m_upVector.m128_f32, 0.01f, -1.f, 1.f, "%.2f");
 	isChanged |= DragFloat("각도(Up 벡터)", &centerAngle, 0.1f, 0.f, 360.f, "%.1f");
 	isChanged |= DragFloat("구 반지름(최소)", &minMaxRadius.x, 0.1f, 0.f, 1000.f, "%.1f");
 	isChanged |= DragFloat("구 반지름(최대)", &minMaxRadius.y, 0.1f, minMaxRadius.x, 1000.f, "%.1f");
 
-	XMVector3Normalize(upVector);
+	XMVector3Normalize(m_upVector);
 	XMVECTOR defaultUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-	XMVECTOR originVector = XMLoadFloat3(&origin);
+	XMVECTOR originVector = XMLoadFloat3(&m_origin);
 
-	shapedVectorProperty.transformation = XMMatrixTranspose(
+	m_shapedVectorProperty.transformation = XMMatrixTranspose(
 		XMMatrixAffineTransformation(
 			XMVectorSet(1.f, 1.f, 1.f, 0.f),
 			XMQuaternionIdentity(),
-			GetRotationQuaternion(defaultUp, upVector),
+			GetRotationQuaternion(defaultUp, m_upVector),
 			originVector
 		)
 	);
 
-	shapedVectorProperty.minInitRadian = XMFLOAT2(0.f, XM_PIDIV2 - (centerAngle * XM_PI / 180.f));
-	shapedVectorProperty.maxInitRadian = XMFLOAT2(XM_2PI, XM_PIDIV2 + (centerAngle * XM_PI / 180.f));
-	shapedVectorProperty.minMaxRadius = minMaxRadius;
+	m_shapedVectorProperty.minInitRadian = XMFLOAT2(0.f, XM_PIDIV2 - (centerAngle * XM_PI / 180.f));
+	m_shapedVectorProperty.maxInitRadian = XMFLOAT2(XM_2PI, XM_PIDIV2 + (centerAngle * XM_PI / 180.f));
+	m_shapedVectorProperty.minMaxRadius = minMaxRadius;
 
 	return isChanged;
 }

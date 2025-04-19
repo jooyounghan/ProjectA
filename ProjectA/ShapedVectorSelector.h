@@ -21,37 +21,31 @@ struct SShapedVectorProperty
 class ShapedVectorSelector : public BaseSelector<EShapedVector>
 {
 public:
+	ShapedVectorSelector(
+		const std::string& selectorName,
+		DirectX::XMFLOAT3& origin,
+		DirectX::XMVECTOR& upVector,
+		SShapedVectorProperty& shapedVectorProperty
+	);
+	~ShapedVectorSelector() override = default;
+
+public:
 	static std::unordered_map<EShapedVector, std::string> GShapedVectorStringMaps;
 	
+protected:
+	std::string m_selectorName;
+	DirectX::XMFLOAT3& m_origin;
+	DirectX::XMVECTOR& m_upVector;
+	SShapedVectorProperty& m_shapedVectorProperty;
+
 public:
-	static bool SetShapedVectorProperty(
-		DirectX::XMFLOAT3& origin,
-		DirectX::XMVECTOR& upVector,
-		EShapedVector selectedShapedVector, 
-		SShapedVectorProperty& shapedVectorProperty
-	);
+	bool SetShapedVectorProperty(EShapedVector selectedShapedVector);
 
 protected:
-	static void ResetShapedVector(
-		DirectX::XMFLOAT3& origin,
-		DirectX::XMVECTOR& upVector,
-		SShapedVectorProperty& shapedVectorProperty
-	);
-	static bool SetSphereShapedVector(
-		DirectX::XMFLOAT3& origin,
-		DirectX::XMVECTOR& upVector,
-		SShapedVectorProperty& shapedVectorProperty
-	);
-	static bool SetHemiSphereShapedVector(
-		DirectX::XMFLOAT3& origin,
-		DirectX::XMVECTOR& upVector,
-		SShapedVectorProperty& shapedVectorProperty
-	);
-	static bool SetConeShapedVector(
-		DirectX::XMFLOAT3& origin,
-		DirectX::XMVECTOR& upVector,
-		SShapedVectorProperty& shapedVectorProperty
-	);
+	void ResetShapedVector();
+	bool SetSphereShapedVector();
+	bool SetHemiSphereShapedVector();
+	bool SetConeShapedVector();
 
 protected:
 	static DirectX::XMVECTOR GetRotationQuaternion(

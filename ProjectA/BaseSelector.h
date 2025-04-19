@@ -14,15 +14,32 @@ template<IsEnumClass T>
 class BaseSelector
 {
 public:
-	static void SelectEnums(const std::string& selectorName, const std::unordered_map<T, std::string>& stringMaps, T& enumResult);
+	BaseSelector(const std::string& selectorName, const std::unordered_map<T, std::string>& stringMaps);
+	virtual ~BaseSelector() = default;
+
+protected:
+	std::string m_selectorName;
+	std::unordered_map<T, std::string> m_stringMaps;
+
+public:
+	void SelectEnums(T& enumResult);
 };
 
 template<IsEnumClass T>
-void BaseSelector<T>::SelectEnums(const std::string& selectorName, const std::unordered_map<T, std::string>& stringMaps, T& enumResult)
+inline BaseSelector<T>::BaseSelector(
+	const std::string& selectorName, 
+	const std::unordered_map<T, std::string>& stringMaps
+)
+	: m_selectorName(selectorName), m_stringMaps(stringMaps)
 {
-	if (ImGui::BeginCombo(selectorName.c_str(), stringMaps.at(enumResult).c_str()))
+}
+
+template<IsEnumClass T>
+void BaseSelector<T>::SelectEnums(T& enumResult)
+{
+	if (ImGui::BeginCombo(m_selectorName.c_str(), m_stringMaps.at(enumResult).c_str()))
 	{
-		for (auto& stringMap : stringMaps)
+		for (auto& stringMap : m_stringMaps)
 		{
 			T enumType = stringMap.first;
 			const char* enumString = stringMap.second.c_str();

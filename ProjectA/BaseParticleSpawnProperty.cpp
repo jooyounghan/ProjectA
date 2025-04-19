@@ -1,28 +1,12 @@
 #include "BaseParticleSpawnProperty.h"
-#include "ControlPointGridView.h"
 #include "MacroUtilities.h"
 #include "BufferMacroUtilities.h"
-#include "imgui.h"
-
+#include "ControlPointGridView.h"
 
 using namespace std;
 using namespace D3D11;
 using namespace DirectX;
-using namespace ImGui;
-
-#define CreateLifeInterpolater()									\
-m_lifeInterpolater = InterpolationSelector::CreateInterpolater<2>(	\
-	m_lifeInterpolationMethod,										\
-	m_lifeInitControlPoint, m_lifeFinalControlPoint,				\
-	m_lifeControlPoints												\
-)																	\
-
-#define CreateColorInterpolater()									\
-m_colorInterpolater = InterpolationSelector::CreateInterpolater<3>(	\
-	m_colorInterpolationMethod,										\
-	m_colorInitControlPoint, m_colorFinalControlPoint,				\
-	m_colorControlPoints											\
-)					
+using namespace ImGui;		
 
 BaseParticleSpawnProperty::BaseParticleSpawnProperty(float& emitterCurrentTime, float& loopTime)
 	: APropertyHasLoopTime(loopTime),
@@ -36,11 +20,16 @@ BaseParticleSpawnProperty::BaseParticleSpawnProperty(float& emitterCurrentTime, 
 	m_colorInterpolationMethod(EInterpolationMethod::Linear)
 {
 	AutoZeroMemory(m_baseParticleSpawnPropertyCPU);
-	CreateLifeInterpolater();
-	CreateColorInterpolater();
 
 	m_origin = XMFLOAT3(0.f, 0.f, 0.f);
 	m_upVector = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+
+	m_speedPositionSelector = make_unique<ShapedVectorSelector>(
+		"생성 속도 벡터",
+		m_origin,
+		m_upVector,
+		m_baseParticleSpawnPropertyCPU.shapedSpeedVectorSelector
+	);
 
 	m_lifeControlPointGridView = make_unique<ControlPointGridView<2>>(
 		"시간",
@@ -52,6 +41,15 @@ BaseParticleSpawnProperty::BaseParticleSpawnProperty(float& emitterCurrentTime, 
 		m_lifeControlPoints, true
 	);
 
+	m_lifeInterpolationSelectPlotter = make_unique<InterpolationSelectPlotter<2>>(
+		"생성 파티클 생명 보간 방법",
+		"Life Control Points",
+		array<string, 2>{ "최소 생명", "최대 생명" },
+		m_lifeInitControlPoint,
+		m_lifeFinalControlPoint,
+		m_lifeControlPoints
+	);
+
 	m_colorControlPointGridView = make_unique<ControlPointGridView<3>>(
 		"시간",
 		array<string, 3>{ "R", "G", "B" },
@@ -61,6 +59,21 @@ BaseParticleSpawnProperty::BaseParticleSpawnProperty(float& emitterCurrentTime, 
 		m_colorFinalControlPoint,
 		m_colorControlPoints
 	);
+
+	m_colorInterpolationSelectPlotter = make_unique<InterpolationSelectPlotter<3>>(
+		"파티클 색상 보간 방법",
+		"Color Control Points",
+		array<string, 3>{ "R", "G", "B" },
+		m_colorInitControlPoint,
+		m_colorFinalControlPoint,
+		m_colorControlPoints
+	);
+
+	m_lifeInterpolationSelectPlotter->SetInterpolater(m_lifeInterpolationMethod, m_lifeInterpolater);
+	m_lifeInterpolationSelectPlotter->UpdateControlPoints(m_lifeInterpolater.get());
+
+	m_colorInterpolationSelectPlotter->SetInterpolater(m_colorInterpolationMethod, m_colorInterpolater);
+	m_colorInterpolationSelectPlotter->UpdateControlPoints(m_colorInterpolater.get());
 }
 
 void BaseParticleSpawnProperty::AdjustControlPointsFromLoopTime()
@@ -87,6 +100,9 @@ void BaseParticleSpawnProperty::AdjustControlPointsFromLoopTime()
 	);
 
 	m_lastLoopTime = m_loopTime;
+
+	m_lifeInterpolationSelectPlotter->UpdateControlPoints(m_lifeInterpolater.get());
+	m_colorInterpolationSelectPlotter->UpdateControlPoints(m_colorInterpolater.get());
 }
 
 void BaseParticleSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
@@ -129,64 +145,38 @@ void BaseParticleSpawnProperty::DrawPropertyUI()
 	if (!ImGui::CollapsingHeader("파티클 생성 프로퍼티"))
 		return;
 
-	ShapedVectorSelector::SelectEnums("생성 속도 벡터", ShapedVectorSelector::GShapedVectorStringMaps, shapedVector);
-	ShapedVectorSelector::SetShapedVectorProperty(m_origin, m_upVector, shapedVector, m_baseParticleSpawnPropertyCPU.shapedSpeedVectorSelector);
+	m_speedPositionSelector->SelectEnums(shapedVector);
+	m_speedPositionSelector->SetShapedVectorProperty(shapedVector);
 
 	EInterpolationMethod currnetLifeInterpolateKind = m_lifeInterpolationMethod;
-	InterpolationSelector::SelectEnums("생성 파티클 생명 보간 방법", InterpolationSelector::GInterpolationMethodStringMap, currnetLifeInterpolateKind);
+	m_lifeInterpolationSelectPlotter->SelectEnums(currnetLifeInterpolateKind);
 	if (m_lifeInterpolationMethod != currnetLifeInterpolateKind)
 	{
 		m_lifeInterpolationMethod = currnetLifeInterpolateKind;
-		isLifeInterpolaterChanged = true;
+		m_lifeInterpolationSelectPlotter->SetInterpolater(m_lifeInterpolationMethod, m_lifeInterpolater);
 	}
 
 	if (m_lifeControlPointGridView->DrawControlPointGridView())
 	{
-		isLifeInterpolaterChanged = true;
+		m_lifeInterpolationSelectPlotter->UpdateControlPoints(m_lifeInterpolater.get());
 	}
-
-	InterpolationSelector::ViewInterpolatedPoints<2>(
-		m_lifeInterpolater.get(),
-		"Life Control Points",
-		{ "최소 생명", "최대 생명" },
-		m_lifeInitControlPoint,
-		m_lifeFinalControlPoint,
-		m_lifeControlPoints
-	);
-
-	if (isLifeInterpolaterChanged)
-	{
-		CreateLifeInterpolater();
-		isLifeInterpolaterChanged = false;
-	}
+	m_lifeInterpolationSelectPlotter->ViewInterpolatedPlots();
 
 	EInterpolationMethod currnetColorInterpolateKind = m_colorInterpolationMethod;
-	InterpolationSelector::SelectEnums("파티클 색상 보간 방법", InterpolationSelector::GInterpolationMethodStringMap, currnetColorInterpolateKind);
+	m_colorInterpolationSelectPlotter->SelectEnums(currnetColorInterpolateKind);
 	if (m_colorInterpolationMethod != currnetColorInterpolateKind)
 	{
 		m_colorInterpolationMethod = currnetColorInterpolateKind;
-		isColorInterpolaterChanged = true;
+		m_colorInterpolationSelectPlotter->SetInterpolater(m_colorInterpolationMethod, m_colorInterpolater);
 	}
 
 	if (m_colorControlPointGridView->DrawControlPointGridView())
 	{
-		isColorInterpolaterChanged = true;
+		m_colorInterpolationSelectPlotter->UpdateControlPoints(m_colorInterpolater.get());
 	}
+	m_colorInterpolationSelectPlotter->ViewInterpolatedPlots();
 
-	InterpolationSelector::ViewInterpolatedPoints<3>(
-		m_colorInterpolater.get(),
-		"Color Control Points",
-		{ "R", "G", "B" },
-		m_colorInitControlPoint,
-		m_colorFinalControlPoint,
-		m_colorControlPoints
-	);
 
-	if (isColorInterpolaterChanged)
-	{
-		CreateColorInterpolater();
-		isColorInterpolaterChanged = false;
-	}
 }
 
 

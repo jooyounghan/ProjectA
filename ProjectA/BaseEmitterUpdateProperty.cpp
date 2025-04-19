@@ -5,13 +5,6 @@ using namespace std;
 using namespace DirectX;
 using namespace ImGui;
 
-#define CreateSpawnRateInterpolater()									\
-m_spawnRateInterpolater = InterpolationSelector::CreateInterpolater<1>(	\
-	m_spawnRateInterpolationMethod,										\
-	m_spawnInitControlPoint, m_spawnFinalControlPoint,					\
-	m_spawnControlPoints												\
-)																		\
-
 BaseEmitterUpdateProperty::BaseEmitterUpdateProperty(float& emitterCurrentTime, float& loopTime)
 	: APropertyHasLoopTime(loopTime),
 	m_emitterCurrentTime(emitterCurrentTime),
@@ -21,8 +14,6 @@ BaseEmitterUpdateProperty::BaseEmitterUpdateProperty(float& emitterCurrentTime, 
 	m_spawnRateInterpolationMethod(EInterpolationMethod::Linear),
 	m_isNotDisposed(true)
 {
-	CreateSpawnRateInterpolater();
-
 	m_spawnRateControlPointGridView = make_unique<ControlPointGridView<1>>(
 		"시간",
 		array<string, 1>{ "Spawn Rate" },
@@ -32,6 +23,18 @@ BaseEmitterUpdateProperty::BaseEmitterUpdateProperty(float& emitterCurrentTime, 
 		m_spawnFinalControlPoint,
 		m_spawnControlPoints, false
 	);
+
+	m_spawnRateInterpolaterSelectPlotter = make_unique<InterpolationSelectPlotter<1>>(
+		"생성 프로파일 보간 방법",
+		"Spawn Control Points",
+		std::array<std::string, 1>{ "Spawn Rate" },
+		m_spawnInitControlPoint,
+		m_spawnFinalControlPoint,
+		m_spawnControlPoints
+	);
+
+	m_spawnRateInterpolaterSelectPlotter->SetInterpolater(m_spawnRateInterpolationMethod, m_spawnRateInterpolater);
+	m_spawnRateInterpolaterSelectPlotter->UpdateControlPoints(m_spawnRateInterpolater.get());
 }
 
 
@@ -46,6 +49,7 @@ void BaseEmitterUpdateProperty::AdjustControlPointsFromLoopTime()
 			}),
 		m_spawnControlPoints.end()
 	);
+	m_spawnRateInterpolaterSelectPlotter->UpdateControlPoints(m_spawnRateInterpolater.get());
 }
 
 float BaseEmitterUpdateProperty::GetSpawnRate() const
@@ -90,7 +94,6 @@ void BaseEmitterUpdateProperty::Update(ID3D11DeviceContext* deviceContext, float
 void BaseEmitterUpdateProperty::DrawPropertyUI()
 {
 	static bool isLoopInfinity = true;
-	static bool isSpawnRateInterpolaterChanged = false;
 
 	if (!ImGui::CollapsingHeader("이미터 업데이트 프로퍼티"))
 		return;
@@ -109,35 +112,20 @@ void BaseEmitterUpdateProperty::DrawPropertyUI()
 	if (DragFloat("루프 당 시간", &m_loopTime, 0.1f, 0.f, 100.f, "%.1f"))
 	{
 		AdjustControlPointsFromLoopTime();
-		isSpawnRateInterpolaterChanged = true;
 	}
 
 	EInterpolationMethod currentSpawnRateInterpolateKind = m_spawnRateInterpolationMethod;
-	InterpolationSelector::SelectEnums("생성 프로파일 보간 방법", InterpolationSelector::GInterpolationMethodStringMap, currentSpawnRateInterpolateKind);
+	m_spawnRateInterpolaterSelectPlotter->SelectEnums(currentSpawnRateInterpolateKind);
 	if (m_spawnRateInterpolationMethod != currentSpawnRateInterpolateKind)
 	{
 		m_spawnRateInterpolationMethod = currentSpawnRateInterpolateKind;
-		isSpawnRateInterpolaterChanged = true;
+		m_spawnRateInterpolaterSelectPlotter->SetInterpolater(m_spawnRateInterpolationMethod, m_spawnRateInterpolater);
 	}
 
 	if (m_spawnRateControlPointGridView->DrawControlPointGridView())
 	{
-		isSpawnRateInterpolaterChanged = true;
+		m_spawnRateInterpolaterSelectPlotter->UpdateControlPoints(m_spawnRateInterpolater.get());
 	}
 
-	InterpolationSelector::ViewInterpolatedPoints<1>(
-		m_spawnRateInterpolater.get(),
-		"Spawn Control Points",
-		{ "Spawn Rate" },
-		m_spawnInitControlPoint,
-		m_spawnFinalControlPoint,
-		m_spawnControlPoints
-	);
-
-	if (isSpawnRateInterpolaterChanged)
-	{
-		CreateSpawnRateInterpolater();
-		isSpawnRateInterpolaterChanged = false;
-	}
-
+	m_spawnRateInterpolaterSelectPlotter->ViewInterpolatedPlots();
 }

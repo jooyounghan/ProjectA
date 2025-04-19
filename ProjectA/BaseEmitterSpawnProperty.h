@@ -26,6 +26,9 @@ protected:
 	DirectX::XMFLOAT3 m_origin;
 	DirectX::XMVECTOR m_upVector;
 
+protected:
+	std::unique_ptr<ShapedVectorSelector> m_shapedPositionSelector;
+
 public:
 	inline ID3D11Buffer* GetEmitterSpawnPropertyBuffer() const noexcept { return m_emitterSpawnPropertyGPU->GetBuffer(); }
 	inline UINT GetInitialParticleCount() const noexcept { return m_emitterSpawnPropertyCPU.initialParticleCount; }

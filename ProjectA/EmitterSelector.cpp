@@ -10,13 +10,18 @@ using namespace std;
 using namespace ImGui;
 using namespace DirectX;
 
-unordered_map<EEmitterType, string> EmitterSelector::GEmitterStringMaps
+static unordered_map<EEmitterType, string> GEmitterStringMaps
 {
 	{ EEmitterType::ParticleEmitter, "파티클 이미터" },
 	{ EEmitterType::RibbonEmitter, "리본 이미터" },
 	{ EEmitterType::SpriteEmitter, "스프라이트 이미터" },
 	{ EEmitterType::MeshEmitter, "매시 이미터" }
 };
+
+EmitterSelector::EmitterSelector(const string& selectorName)
+	: BaseSelector(selectorName, GEmitterStringMaps)
+{
+}
 
 bool EmitterSelector::CreateEmitter(EEmitterType emitterType, unique_ptr<AEmitter>& emitter)
 {

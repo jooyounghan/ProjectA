@@ -1,13 +1,20 @@
 #pragma once
 #include "IProperty.h"
-#include "InterpolationSelector.h"
-
 #include <functional>
+#include "InterpolationSelector.h"
 
 #define LoopInfinity static_cast<UINT8>(~0)
 
 template<uint32_t Dim>
+class IInterpolater;
+
+template<uint32_t Dim>
 class ControlPointGridView;
+
+template<uint32_t Dim>
+class InterpolationSelectPlotter;
+
+enum class EInterpolationMethod;
 
 typedef std::function<void(class BaseEmitterUpdateProperty*)> OnEmitterDispose;
 
@@ -30,6 +37,7 @@ protected:
 
 protected:
 	std::unique_ptr<ControlPointGridView<1>> m_spawnRateControlPointGridView;
+	std::unique_ptr<InterpolationSelectPlotter<1>> m_spawnRateInterpolaterSelectPlotter;
 
 protected:
 	virtual void AdjustControlPointsFromLoopTime() override;

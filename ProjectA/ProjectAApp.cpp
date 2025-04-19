@@ -112,6 +112,10 @@ void CProjectAApp::Init()
 	EndFrame();
 #pragma endregion
 
+#pragma region UI 관련 클래스 초기화
+	m_emitterSelector = make_unique<EmitterSelector>("생성할 이미터 종류를 선택하세요");
+#pragma endregion
+
 #pragma region 글로벌 변수 초기화
 	AEmitter::InitializeGlobalEmitterProperty(100, m_device);
 	AEmitter::InitializeEmitterDrawPSO(m_device);
@@ -252,9 +256,8 @@ void CProjectAApp::DrawEmitterHandler()
 	{
 		static EEmitterType emttierType = EEmitterType::ParticleEmitter;
 		static std::unique_ptr<AEmitter> createdEmitter = nullptr;
-		EmitterSelector::SelectEnums("생성할 이미터 종류를 선택하세요", EmitterSelector::GEmitterStringMaps, emttierType);
-
-		if (EmitterSelector::CreateEmitter(emttierType, createdEmitter))
+		m_emitterSelector->SelectEnums(emttierType);
+		if (m_emitterSelector->CreateEmitter(emttierType, createdEmitter))
 		{
 			m_particleManager->AddParticleEmitter(createdEmitter, m_device, m_deviceContext);
 			ImGui::CloseCurrentPopup();

@@ -1,11 +1,19 @@
 #pragma once
 #include "IProperty.h"
 #include "DynamicBuffer.h"
-#include "InterpolationSelector.h"
 #include "ShapedVectorSelector.h"
+#include "InterpolationSelector.h"
+
+template<uint32_t Dim>
+class IInterpolater;
 
 template<uint32_t Dim>
 class ControlPointGridView;
+
+template<uint32_t Dim>
+class InterpolationSelectPlotter;
+
+enum class EInterpolationMethod;
 
 class BaseParticleSpawnProperty : public APropertyHasLoopTime
 {
@@ -32,6 +40,9 @@ protected:
 	DirectX::XMVECTOR m_upVector;
 
 protected:
+	std::unique_ptr<ShapedVectorSelector> m_speedPositionSelector;
+
+protected:
 	SControlPoint<2> m_lifeInitControlPoint;
 	SControlPoint<2> m_lifeFinalControlPoint;
 	std::vector<SControlPoint<2>> m_lifeControlPoints;
@@ -40,6 +51,7 @@ protected:
 
 protected:
 	std::unique_ptr<ControlPointGridView<2>> m_lifeControlPointGridView;
+	std::unique_ptr<InterpolationSelectPlotter<2>> m_lifeInterpolationSelectPlotter;
 
 protected:
 	SControlPoint<3> m_colorInitControlPoint;
@@ -50,6 +62,7 @@ protected:
 
 protected:
 	std::unique_ptr<ControlPointGridView<3>> m_colorControlPointGridView;
+	std::unique_ptr<InterpolationSelectPlotter<3>> m_colorInterpolationSelectPlotter;
 
 protected:
 	virtual void AdjustControlPointsFromLoopTime() override;

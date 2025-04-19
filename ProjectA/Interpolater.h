@@ -39,6 +39,7 @@ template<uint32_t Dim>
 class IInterpolater
 {
 public:
+	virtual void UpdateCoefficient() = 0;
 	virtual std::array<float, Dim> GetInterpolated(float x) noexcept = 0;
 };
 
@@ -54,16 +55,18 @@ public:
 	virtual ~AInterpolater() = default;
 
 protected:
-	std::vector<float> xProfiles;
-	using CoeffType = std::array<float, Multiplier * Dim>;
-	std::vector<CoeffType> coefficients;
+	const SControlPoint<Dim>& m_startPoint;
+	const SControlPoint<Dim>& m_endPoint;
+	const std::vector<SControlPoint<Dim>>& m_controlPoints;
 
 protected:
-	virtual std::vector<SControlPoint<Dim>> GetControlPoints(
-		const SControlPoint<Dim>& startPoint,
-		const SControlPoint<Dim>& endPoint,
-		const std::vector<SControlPoint<Dim>>& controlPoints
-	);
+	std::vector<float> m_xProfiles;
+	using CoeffType = std::array<float, Multiplier * Dim>;
+	std::vector<CoeffType> m_coefficients;
+
+protected:
+	virtual void UpdateCoefficient() override;
+	virtual std::vector<SControlPoint<Dim>> GetControlPoints();
 
 protected:
 	size_t GetCoefficientIndex(float x) noexcept;
@@ -75,38 +78,46 @@ inline AInterpolater<Dim, Multiplier>::AInterpolater(
 	const SControlPoint<Dim>& endPoint, 
 	const std::vector<SControlPoint<Dim>>& controlPoints
 )
+	:
+	m_startPoint(startPoint),
+	m_endPoint(endPoint),
+	m_controlPoints(controlPoints)
 {
-	xProfiles.emplace_back(startPoint.x);
-	for (const SControlPoint<Dim>& controlPoint : controlPoints)
-	{
-		xProfiles.emplace_back(controlPoint.x);
-	}
-	xProfiles.emplace_back(endPoint.x);
+
 }
 
 template<uint32_t Dim, size_t Multiplier>
-inline std::vector<SControlPoint<Dim>> AInterpolater<Dim, Multiplier>::GetControlPoints(
-	const SControlPoint<Dim>& startPoint, 
-	const SControlPoint<Dim>& endPoint, 
-	const std::vector<SControlPoint<Dim>>& controlPoints
-)
+inline void AInterpolater<Dim, Multiplier>::UpdateCoefficient()
+{
+	m_xProfiles.clear();
+
+	m_xProfiles.emplace_back(m_startPoint.x);
+	for (const SControlPoint<Dim>& controlPoint : m_controlPoints)
+	{
+		m_xProfiles.emplace_back(controlPoint.x);
+	}
+	m_xProfiles.emplace_back(m_endPoint.x);
+}
+
+template<uint32_t Dim, size_t Multiplier>
+inline std::vector<SControlPoint<Dim>> AInterpolater<Dim, Multiplier>::GetControlPoints()
 {
 	std::vector<SControlPoint<Dim>> result;
-	result.reserve(2 + controlPoints.size());
-	result.emplace_back(startPoint);
-	result.insert(result.end(), controlPoints.begin(), controlPoints.end());
-	result.emplace_back(endPoint);
+	result.reserve(2 + m_controlPoints.size());
+	result.emplace_back(m_startPoint);
+	result.insert(result.end(), m_controlPoints.begin(), m_controlPoints.end());
+	result.emplace_back(m_endPoint);
 	return result;
 }
 
 template<uint32_t Dim, size_t Multiplier>
 inline size_t AInterpolater<Dim, Multiplier>::GetCoefficientIndex(float x) noexcept
 {
-	const size_t xProfileStepCounts = xProfiles.size() - 1;
+	const size_t xProfileStepCounts = m_xProfiles.size() - 1;
 		
 	for (size_t idx = 0; idx < xProfileStepCounts; ++idx)
 	{
-		if (xProfiles[idx] <= x && x < xProfiles[idx + 1])
+		if (m_xProfiles[idx] <= x && x < m_xProfiles[idx + 1])
 		{
 			return idx;
 		}

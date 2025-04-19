@@ -13,6 +13,8 @@ namespace D3D11
 	class CGraphicsPSOObject;
 }
 
+class EmitterSelector;
+
 class CProjectAApp : public App::CBaseApp
 {
 protected:
@@ -64,6 +66,7 @@ private:
 
 #pragma region 테스트 변수
 	std::unique_ptr<CCamera> m_camera;
+	std::unique_ptr<EmitterSelector> m_emitterSelector;
 	std::unique_ptr<CEmitterManager> m_particleManager;
 
 public:

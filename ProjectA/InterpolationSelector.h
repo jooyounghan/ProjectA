@@ -15,120 +15,193 @@ enum class EInterpolationMethod
 	CubicSpline
 };
 
-class InterpolationSelector : public BaseSelector<EInterpolationMethod>
+template<uint32_t dim>
+class InterpolationSelectPlotter;
+
+class InterpolationSelectorHelper
 {
-public:
+template<uint32_t dim>
+friend class InterpolationSelectPlotter;
+
+protected:
 	static std::unordered_map<EInterpolationMethod, std::string> GInterpolationMethodStringMap;
+};
 
-	template<uint32_t Dim>
-	static std::unique_ptr<IInterpolater<Dim>> CreateInterpolater(
-		EInterpolationMethod interpolationMethod,
-		const SControlPoint<Dim>& startPoint,
-		const SControlPoint<Dim>& endPoint,
-		const std::vector<SControlPoint<Dim>>& controlPoints
-	);
+template<uint32_t Dim>
+class InterpolationSelectPlotter : public BaseSelector<EInterpolationMethod>
+{
+	friend InterpolationSelectorHelper;
 
 public:
-	template<uint32_t Dim>
-	static void ViewInterpolatedPoints(
-		IInterpolater<Dim>* interpolater,
+	InterpolationSelectPlotter(
+		const std::string& selectorName,
 		const std::string& graphTitle,
 		const std::array<std::string, Dim>& scatterLabels,
 		const SControlPoint<Dim>& startPoint,
 		const SControlPoint<Dim>& endPoint,
 		const std::vector<SControlPoint<Dim>>& controlPoints
 	);
+	~InterpolationSelectPlotter() override = default;
 
-private:
-	static std::vector<float> MakeUniformStepsFromX(const std::vector<float>& xs, size_t numSteps);
+protected:
+	std::string m_graphTitle;
+	std::array<std::string, Dim> m_scatterLabels;
+	const SControlPoint<Dim>& m_startPoint;
+	const SControlPoint<Dim>& m_endPoint;
+	const std::vector<SControlPoint<Dim>>& m_controlPoints;
+
+protected:
+	std::vector<float> m_pointIns;
+	std::array<std::vector<float>, Dim> m_pointOuts;
+	std::vector<float> m_timeSteps;
+	std::array<std::vector<float>, Dim> m_interpolatedResults;
+
+public:
+	void SetInterpolater(
+		EInterpolationMethod interpolationMethod, 
+		std::unique_ptr<IInterpolater<Dim>>& interpolater
+	);
+
+public:
+	void UpdateControlPoints(IInterpolater<Dim>* interpolater);
+	void UpdateInterpolatedResult(IInterpolater<Dim>* interpolater);
+	void ViewInterpolatedPlots();
+
+protected:
+	void UpdateTimeSteps(size_t numSteps);
 };
 
 template<uint32_t Dim>
-inline std::unique_ptr<IInterpolater<Dim>> InterpolationSelector::CreateInterpolater(
-	EInterpolationMethod interpolationMethod, 
-	const SControlPoint<Dim>& startPoint, 
-	const SControlPoint<Dim>& endPoint, 
-	const std::vector<SControlPoint<Dim>>& controlPoints
-)
-{
-	switch (interpolationMethod)
-	{
-	case EInterpolationMethod::Linear:
-		return std::make_unique<LinearInterpolater<Dim>>(startPoint, endPoint, controlPoints);
-		break;
-	case EInterpolationMethod::CubicSpline:
-		return std::make_unique<CubicSplineInterpolater<Dim>>(startPoint, endPoint, controlPoints);
-		break;
-	}
-	return nullptr;
-}
-
-template<uint32_t Dim>
-inline void InterpolationSelector::ViewInterpolatedPoints(
-	IInterpolater<Dim>* interpolater, 
+InterpolationSelectPlotter<Dim>::InterpolationSelectPlotter(
+	const std::string& selectorName, 
 	const std::string& graphTitle, 
 	const std::array<std::string, Dim>& scatterLabels,
 	const SControlPoint<Dim>& startPoint, 
 	const SControlPoint<Dim>& endPoint, 
 	const std::vector<SControlPoint<Dim>>& controlPoints
 )
+	: BaseSelector<EInterpolationMethod>(selectorName, InterpolationSelectorHelper::GInterpolationMethodStringMap),
+	m_graphTitle(graphTitle),
+	m_scatterLabels(scatterLabels),
+	m_startPoint(startPoint),
+	m_endPoint(endPoint),
+	m_controlPoints(controlPoints)
 {
-	std::vector<float> pointIns;
-	std::array<std::vector<float>, Dim> pointOuts;
+}
 
-#pragma region PointIns/PointOuts Á¤¸®
-	pointIns.reserve(controlPoints.size() + 2);
+template<uint32_t Dim>
+inline void InterpolationSelectPlotter<Dim>::SetInterpolater(
+	EInterpolationMethod interpolationMethod,
+	std::unique_ptr<IInterpolater<Dim>>& interpolater
+)
+{
+	interpolater = nullptr;
+	switch (interpolationMethod)
+	{
+	case EInterpolationMethod::Linear:
+		interpolater = std::make_unique<LinearInterpolater<Dim>>(m_startPoint, m_endPoint, m_controlPoints);
+		break;
+	case EInterpolationMethod::CubicSpline:
+		interpolater = std::make_unique<CubicSplineInterpolater<Dim>>(m_startPoint, m_endPoint, m_controlPoints);
+		break;
+	}
+	if (interpolater != nullptr)
+	{
+		UpdateInterpolatedResult(interpolater.get());
+	}
+}
+
+template<uint32_t Dim>
+inline void InterpolationSelectPlotter<Dim>::UpdateControlPoints(IInterpolater<Dim>* interpolater)
+{
+	m_pointIns.clear();
 	for (uint32_t dimension = 0; dimension < Dim; ++dimension)
 	{
-		pointOuts[dimension].reserve(controlPoints.size() + 2);
+		m_pointOuts[dimension].clear();
 
 	}
-	pointIns.emplace_back(startPoint.x);
+
+	m_pointIns.reserve(m_controlPoints.size() + 2);
 	for (uint32_t dimension = 0; dimension < Dim; ++dimension)
 	{
-		pointOuts[dimension].emplace_back(startPoint.y[dimension]);
+		m_pointOuts[dimension].reserve(m_controlPoints.size() + 2);
+
 	}
-	for (const auto& cp : controlPoints) 
+	m_pointIns.emplace_back(m_startPoint.x);
+	for (uint32_t dimension = 0; dimension < Dim; ++dimension)
 	{
-		pointIns.emplace_back(cp.x);
+		m_pointOuts[dimension].emplace_back(m_startPoint.y[dimension]);
+	}
+	for (const auto& cp : m_controlPoints)
+	{
+		m_pointIns.emplace_back(cp.x);
 		for (uint32_t dimension = 0; dimension < Dim; ++dimension)
 		{
-			pointOuts[dimension].emplace_back(cp.y[dimension]);
+			m_pointOuts[dimension].emplace_back(cp.y[dimension]);
 		}
 	}
-	pointIns.emplace_back(endPoint.x);
+	m_pointIns.emplace_back(m_endPoint.x);
 	for (uint32_t dimension = 0; dimension < Dim; ++dimension)
 	{
-		pointOuts[dimension].emplace_back(endPoint.y[dimension]);
+		m_pointOuts[dimension].emplace_back(m_endPoint.y[dimension]);
 	}
-#pragma endregion
 
-	if (ImPlot::BeginPlot(graphTitle.c_str(), ImVec2(-1, 0), ImPlotFlags_NoInputs))
+	UpdateTimeSteps(100);
+	interpolater->UpdateCoefficient();
+	UpdateInterpolatedResult(interpolater);
+}
+
+template<uint32_t Dim>
+inline void InterpolationSelectPlotter<Dim>::UpdateInterpolatedResult(IInterpolater<Dim>* interpolater)
+{
+	if (interpolater)
+	{
+		for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+		{
+			m_interpolatedResults[dimension].clear();
+		}
+
+		for (auto& timeStep : m_timeSteps)
+		{
+			std::array<float, Dim> interpolatedResult = interpolater->GetInterpolated(timeStep);
+			for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+			{
+				m_interpolatedResults[dimension].emplace_back(interpolatedResult[dimension]);
+			}
+		}
+	}
+}
+
+template<uint32_t Dim>
+void InterpolationSelectPlotter<Dim>::ViewInterpolatedPlots()
+{
+	if (ImPlot::BeginPlot(m_graphTitle.c_str(), ImVec2(-1, 0), ImPlotFlags_NoInputs))
 	{
 		ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
 		for (uint32_t dimension = 0; dimension < Dim; ++dimension)
 		{
-			ImPlot::PlotScatter(scatterLabels[dimension].c_str(), pointIns.data(), pointOuts[dimension].data(), static_cast<int>(pointIns.size()));
+			ImPlot::PlotScatter(m_scatterLabels[dimension].c_str(), m_pointIns.data(), m_pointOuts[dimension].data(), static_cast<int>(m_pointIns.size()));
 		}
 
-		if (interpolater)
+		for (uint32_t dimension = 0; dimension < Dim; ++dimension)
 		{
-			std::vector<float> timeSteps = MakeUniformStepsFromX(pointIns, 100);
-			std::array<std::vector<float>, Dim> interpolatedResults;
-			for (auto& timeStep : timeSteps)
-			{
-				std::array<float, Dim> interpolatedResult = interpolater->GetInterpolated(timeStep);
-				for (uint32_t dimension = 0; dimension < Dim; ++dimension)
-				{
-					interpolatedResults[dimension].emplace_back(interpolatedResult[dimension]);
-				}
-			}
-			for (uint32_t dimension = 0; dimension < Dim; ++dimension)
-			{
-				ImPlot::PlotLine(scatterLabels[dimension].c_str(), timeSteps.data(), interpolatedResults[dimension].data(), 100);
-			}
+			ImPlot::PlotLine(m_scatterLabels[dimension].c_str(), m_timeSteps.data(), m_interpolatedResults[dimension].data(), static_cast<int>(m_timeSteps.size()));
 		}
 		ImPlot::EndPlot();
 	}
+}
 
+template<uint32_t Dim>
+inline void InterpolationSelectPlotter<Dim>::UpdateTimeSteps(size_t numSteps)
+{
+	m_timeSteps.clear();
+	float start = m_startPoint.x;
+	float end = m_endPoint.x;
+
+	float step = (end - start) / static_cast<float>(numSteps);
+	m_timeSteps.reserve(numSteps + 1);
+	for (size_t i = 0; i <= numSteps; ++i)
+	{
+		m_timeSteps.emplace_back(start + step * i);
+	}
 }
