@@ -113,14 +113,17 @@ protected:
 protected:
 	bool& m_isEmitterForceChanged;
 	SEmitterForceProperty& m_emitterForce;
-
-protected:
-	float m_currnetEmitter = 0.f;
-
 public:
 	bool& GetIsEmitterForceChanged() { return m_isEmitterForceChanged; }
 	SEmitterForceProperty& GetEmitterForce() { return m_emitterForce; }
-	float& GetCurrnetEmitter() { return m_currnetEmitter; }
+
+protected:
+	float m_currnetEmitter;
+	float m_loopTime;
+
+public:
+	inline float& GetCurrnetEmitter() noexcept { return m_currnetEmitter; }
+	inline float& GetLoopTime() noexcept { return m_loopTime; }
 
 protected:
 	std::unique_ptr<BaseEmitterSpawnProperty> m_emitterSpawnProperty;

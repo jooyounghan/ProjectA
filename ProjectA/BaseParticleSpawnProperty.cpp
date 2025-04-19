@@ -24,13 +24,15 @@ m_colorInterpolater = InterpolationSelector::CreateInterpolater<3>(	\
 	m_colorControlPoints											\
 )					
 
-BaseParticleSpawnProperty::BaseParticleSpawnProperty(float& emitterCurrentTime)
-	: m_emitterCurrentTime(emitterCurrentTime),
+BaseParticleSpawnProperty::BaseParticleSpawnProperty(float& emitterCurrentTime, float& loopTime)
+	: APropertyHasLoopTime(loopTime),
+	m_emitterCurrentTime(emitterCurrentTime),
+	m_lastLoopTime(loopTime),
 	m_lifeInitControlPoint{ 0.f, MakeArray(8.f, 12.f)},
-	m_lifeFinalControlPoint{ 10.f, MakeArray(0.f, 2.f)},
+	m_lifeFinalControlPoint{ loopTime, MakeArray(0.f, 2.f)},
 	m_lifeInterpolationMethod(EInterpolationMethod::Linear),
 	m_colorInitControlPoint{ 0.f, MakeArray(0.f, 0.f, 0.f)},
-	m_colorFinalControlPoint{ 10.f, MakeArray(1.f, 1.f ,1.f)},
+	m_colorFinalControlPoint{ loopTime, MakeArray(1.f, 1.f ,1.f)},
 	m_colorInterpolationMethod(EInterpolationMethod::Linear)
 {
 	AutoZeroMemory(m_baseParticleSpawnPropertyCPU);
@@ -39,6 +41,52 @@ BaseParticleSpawnProperty::BaseParticleSpawnProperty(float& emitterCurrentTime)
 
 	m_origin = XMFLOAT3(0.f, 0.f, 0.f);
 	m_upVector = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+
+	m_lifeControlPointGridView = make_unique<ControlPointGridView<2>>(
+		"시간",
+		array<string, 2>{ "최소 생명", "최대 생명" },
+		"생명 주기",
+		0.1f, 0.f, 20.f,
+		m_lifeInitControlPoint,
+		m_lifeFinalControlPoint,
+		m_lifeControlPoints, true
+	);
+
+	m_colorControlPointGridView = make_unique<ControlPointGridView<3>>(
+		"시간",
+		array<string, 3>{ "R", "G", "B" },
+		"색상값",
+		0.01f, 0.f, 1.f,
+		m_colorInitControlPoint,
+		m_colorFinalControlPoint,
+		m_colorControlPoints
+	);
+}
+
+void BaseParticleSpawnProperty::AdjustControlPointsFromLoopTime()
+{
+	m_lifeFinalControlPoint.x = m_loopTime;
+	m_colorFinalControlPoint.x = m_loopTime;
+
+	m_lifeControlPoints.erase(
+		std::remove_if(m_lifeControlPoints.begin(), m_lifeControlPoints.end(),
+			[&](const SControlPoint<2>& p)
+			{
+				return p.x > m_loopTime;
+			}),
+		m_lifeControlPoints.end()
+	);
+
+	m_colorControlPoints.erase(
+		std::remove_if(m_colorControlPoints.begin(), m_colorControlPoints.end(),
+			[&](const SControlPoint<3>& p)
+			{
+				return p.x > m_loopTime;
+			}),
+		m_colorControlPoints.end()
+	);
+
+	m_lastLoopTime = m_loopTime;
 }
 
 void BaseParticleSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
@@ -71,6 +119,13 @@ void BaseParticleSpawnProperty::DrawPropertyUI()
 	static bool isLifeInterpolaterChanged = false;
 	static bool isColorInterpolaterChanged = false;
 
+	if (m_lastLoopTime != m_loopTime)
+	{
+		AdjustControlPointsFromLoopTime();
+		isLifeInterpolaterChanged = true;
+		isColorInterpolaterChanged = true;
+	}
+
 	if (!ImGui::CollapsingHeader("파티클 생성 프로퍼티"))
 		return;
 
@@ -85,15 +140,7 @@ void BaseParticleSpawnProperty::DrawPropertyUI()
 		isLifeInterpolaterChanged = true;
 	}
 
-	if (ControlPointGridView::HandleControlPointsGridView<2>(
-		"시간",
-		{ "최소 생명", "최대 생명" },
-		"생명 주기",
-		0.1f, 0.f, 10.f,
-		m_lifeInitControlPoint,
-		m_lifeFinalControlPoint,
-		m_lifeControlPoints	
-	))
+	if (m_lifeControlPointGridView->DrawControlPointGridView())
 	{
 		isLifeInterpolaterChanged = true;
 	}
@@ -121,15 +168,7 @@ void BaseParticleSpawnProperty::DrawPropertyUI()
 		isColorInterpolaterChanged = true;
 	}
 
-	if (ControlPointGridView::HandleControlPointsGridView<3>(
-		"시간",
-		{ "R", "G", "B"},
-		"색상값",
-		0.01f, 0.f, 1.f,
-		m_colorInitControlPoint,
-		m_colorFinalControlPoint,
-		m_colorControlPoints
-	))
+	if (m_colorControlPointGridView->DrawControlPointGridView())
 	{
 		isColorInterpolaterChanged = true;
 	}

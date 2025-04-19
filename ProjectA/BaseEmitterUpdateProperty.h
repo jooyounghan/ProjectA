@@ -6,13 +6,15 @@
 
 #define LoopInfinity static_cast<UINT8>(~0)
 
+template<uint32_t Dim>
+class ControlPointGridView;
 
 typedef std::function<void(class BaseEmitterUpdateProperty*)> OnEmitterDispose;
 
-class BaseEmitterUpdateProperty : public IProperty
+class BaseEmitterUpdateProperty : public APropertyHasLoopTime
 {
 public:
-	BaseEmitterUpdateProperty(float& emitterCurrentTime);
+	BaseEmitterUpdateProperty(float& emitterCurrentTime, float& loopTime);
 	virtual ~BaseEmitterUpdateProperty() = default;
 
 protected:
@@ -20,12 +22,17 @@ protected:
 
 protected:
 	UINT8 m_loopCount;
-	float m_loopTime;
 	SControlPoint<1> m_spawnInitControlPoint;
 	SControlPoint<1> m_spawnFinalControlPoint;
 	std::vector<SControlPoint<1>> m_spawnControlPoints;
 	EInterpolationMethod m_spawnRateInterpolationMethod;
 	std::unique_ptr<IInterpolater<1>> m_spawnRateInterpolater;
+
+protected:
+	std::unique_ptr<ControlPointGridView<1>> m_spawnRateControlPointGridView;
+
+protected:
+	virtual void AdjustControlPointsFromLoopTime() override;
 
 protected:
 	bool m_isNotDisposed;

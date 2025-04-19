@@ -4,18 +4,18 @@
 #include "InterpolationSelector.h"
 #include "ShapedVectorSelector.h"
 
+template<uint32_t Dim>
+class ControlPointGridView;
 
-class BaseParticleSpawnProperty : public IProperty
+class BaseParticleSpawnProperty : public APropertyHasLoopTime
 {
 public:
-	BaseParticleSpawnProperty(float& emitterCurrentTime);
+	BaseParticleSpawnProperty(float& emitterCurrentTime, float& loopTime);
 	virtual ~BaseParticleSpawnProperty() = default;
 
 protected:
 	float& m_emitterCurrentTime;
-
-public:
-	inline void SetEmitterCurrentTime(float emitterCurrentTime) { m_emitterCurrentTime = emitterCurrentTime; }
+	float m_lastLoopTime;
 
 protected:
 	struct  
@@ -39,11 +39,20 @@ protected:
 	std::unique_ptr<IInterpolater<2>> m_lifeInterpolater;
 
 protected:
+	std::unique_ptr<ControlPointGridView<2>> m_lifeControlPointGridView;
+
+protected:
 	SControlPoint<3> m_colorInitControlPoint;
 	SControlPoint<3> m_colorFinalControlPoint;
 	std::vector<SControlPoint<3>> m_colorControlPoints;
 	EInterpolationMethod m_colorInterpolationMethod;
 	std::unique_ptr<IInterpolater<3>> m_colorInterpolater;
+
+protected:
+	std::unique_ptr<ControlPointGridView<3>> m_colorControlPointGridView;
+
+protected:
+	virtual void AdjustControlPointsFromLoopTime() override;
 
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;

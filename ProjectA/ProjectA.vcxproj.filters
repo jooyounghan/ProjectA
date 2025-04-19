@@ -149,6 +149,9 @@
     <ClCompile Include="ControlPointGridView.cpp">
       <Filter>소스 파일\UI</Filter>
     </ClCompile>
+    <ClCompile Include="IProperty.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ProjectAApp.h">

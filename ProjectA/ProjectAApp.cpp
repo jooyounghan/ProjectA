@@ -12,6 +12,7 @@
 
 #pragma region Test
 #include "MacroUtilities.h"
+#include "BufferMacroUtilities.h"
 
 #include "GraphicsPSOObject.h"
 #include "RasterizerState.h"
@@ -39,7 +40,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
 );
 
 CProjectAApp::CProjectAApp() noexcept
-	: CBaseApp(), m_appParamsGPU(sizeof(m_appParamsCPU), 1, &m_appParamsCPU)
+	: m_appParamsGPU(PASS_SINGLE(m_appParamsCPU))
 {
 }
 
@@ -50,13 +51,13 @@ CProjectAApp* CProjectAApp::GetInstance() noexcept
 }
 
 void CProjectAApp::Create(
-	UINT width,
-	UINT height,
-	const wchar_t* className,
+	UINT width, UINT height, 
+	const wchar_t* className, 
 	const wchar_t* applicaitonName
 ) noexcept
 {
 	CBaseApp::Create(width, height, className, applicaitonName);
+
 }
 
 void CProjectAApp::Init()
@@ -128,7 +129,7 @@ void CProjectAApp::Init()
 		XMVectorSet(0.f, 0.f, -10.f, 1.f),
 		XMVectorSet(0.f, 0.f, 0.f, 1.f),
 		m_width, m_height, 90.f, 0.01f, 100000.000f
-		);
+	);
 
 	m_particleManager = make_unique<CEmitterManager>(10, TotalParticleCount);
 

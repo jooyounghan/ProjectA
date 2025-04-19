@@ -5,6 +5,7 @@
 #include "AppManagerDllHelper.h"
 
 #include <Windows.h>
+#include <optional>
 #include <functional>
 
 template class APPMANAGER_API std::function<void(const UINT& width, const UINT& height)>;
@@ -32,14 +33,14 @@ namespace App
 
 	public:
 		inline HWND GetWindowHandle() const noexcept { return m_mainWindow; }
-
+		
 	protected:
-		UINT m_width = 0;
-		UINT m_height = 0;
+		UINT m_width;
+		UINT m_height;
 
 	public:
-		inline const UINT& GetWidth() const noexcept { return m_width; }
-		inline const UINT& GetHeight() const noexcept { return m_height; }
+		UINT& GetWidth() { return m_width; }
+		UINT& GetHeight() { return m_height; }
 
 	protected:
 		LARGE_INTEGER m_frequency;
@@ -58,12 +59,7 @@ namespace App
 		LRESULT WINAPI AppProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 	public:
-		virtual void Create(
-			UINT width,
-			UINT height,
-			const wchar_t* className,
-			const wchar_t* applicaitonName
-		) noexcept;
+		virtual void Create(UINT width, UINT height, const wchar_t* className, const wchar_t* applicaitonName) noexcept;
 
 	public:
 		virtual void Init() = 0;

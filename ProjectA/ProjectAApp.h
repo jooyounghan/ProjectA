@@ -28,9 +28,8 @@ public:
 
 public:
 	virtual void Create(
-		UINT width,
-		UINT height,
-		const wchar_t* className,
+		UINT width, UINT height, 
+		const wchar_t* className, 
 		const wchar_t* applicaitonName
 	) noexcept override;
 

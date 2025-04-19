@@ -12,18 +12,41 @@ m_spawnRateInterpolater = InterpolationSelector::CreateInterpolater<1>(	\
 	m_spawnControlPoints												\
 )																		\
 
-BaseEmitterUpdateProperty::BaseEmitterUpdateProperty(float& emitterCurrentTime)
-	: m_emitterCurrentTime(emitterCurrentTime),
+BaseEmitterUpdateProperty::BaseEmitterUpdateProperty(float& emitterCurrentTime, float& loopTime)
+	: APropertyHasLoopTime(loopTime),
+	m_emitterCurrentTime(emitterCurrentTime),
 	m_loopCount(LoopInfinity),
-	m_loopTime(10.f),
 	m_spawnInitControlPoint{ 0.f, 0.f },
 	m_spawnFinalControlPoint{ 10.f, 0.f },
 	m_spawnRateInterpolationMethod(EInterpolationMethod::Linear),
 	m_isNotDisposed(true)
 {
 	CreateSpawnRateInterpolater();
+
+	m_spawnRateControlPointGridView = make_unique<ControlPointGridView<1>>(
+		"시간",
+		array<string, 1>{ "Spawn Rate" },
+		"생성 프로파일",
+		1.f, 0.f, 10000.f,
+		m_spawnInitControlPoint,
+		m_spawnFinalControlPoint,
+		m_spawnControlPoints, false
+	);
 }
 
+
+void BaseEmitterUpdateProperty::AdjustControlPointsFromLoopTime()
+{
+	m_spawnFinalControlPoint.x = m_loopTime;
+	m_spawnControlPoints.erase(
+		std::remove_if(m_spawnControlPoints.begin(), m_spawnControlPoints.end(),
+			[&](const SControlPoint<1>& p)
+			{
+				return p.x > m_loopTime;
+			}),
+		m_spawnControlPoints.end()
+	);
+}
 
 float BaseEmitterUpdateProperty::GetSpawnRate() const
 {
@@ -85,7 +108,7 @@ void BaseEmitterUpdateProperty::DrawPropertyUI()
 
 	if (DragFloat("루프 당 시간", &m_loopTime, 0.1f, 0.f, 100.f, "%.1f"))
 	{
-		m_spawnFinalControlPoint.x = m_loopTime;
+		AdjustControlPointsFromLoopTime();
 		isSpawnRateInterpolaterChanged = true;
 	}
 
@@ -97,18 +120,11 @@ void BaseEmitterUpdateProperty::DrawPropertyUI()
 		isSpawnRateInterpolaterChanged = true;
 	}
 
-	if (ControlPointGridView::HandleControlPointsGridView<1>(
-		"시간", 
-		{ "Spawn Rate" },
-		"생성 프로파일",
-		1.f, 0.f, 10000.f,
-		m_spawnInitControlPoint,
-		m_spawnFinalControlPoint,
-		m_spawnControlPoints
-	))
+	if (m_spawnRateControlPointGridView->DrawControlPointGridView())
 	{
 		isSpawnRateInterpolaterChanged = true;
 	}
+
 	InterpolationSelector::ViewInterpolatedPoints<1>(
 		m_spawnRateInterpolater.get(),
 		"Spawn Control Points",

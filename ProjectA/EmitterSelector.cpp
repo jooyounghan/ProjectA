@@ -54,8 +54,8 @@ bool EmitterSelector::CreateParticleEmitter(unique_ptr<AEmitter>& emitter)
 		angle
 	);
 	static std::unique_ptr<BaseEmitterSpawnProperty> baseEmitterSpawnProperty = make_unique<BaseEmitterSpawnProperty>();
-	static std::unique_ptr<BaseEmitterUpdateProperty> baseEmitterUpdateProperty = make_unique<BaseEmitterUpdateProperty>(particleEmitter->GetCurrnetEmitter());
-	static std::unique_ptr<BaseParticleSpawnProperty> baseParticleSpawnProperty = make_unique<BaseParticleSpawnProperty>(particleEmitter->GetCurrnetEmitter());
+	static std::unique_ptr<BaseEmitterUpdateProperty> baseEmitterUpdateProperty = make_unique<BaseEmitterUpdateProperty>(particleEmitter->GetCurrnetEmitter(), particleEmitter->GetLoopTime());
+	static std::unique_ptr<BaseParticleSpawnProperty> baseParticleSpawnProperty = make_unique<BaseParticleSpawnProperty>(particleEmitter->GetCurrnetEmitter(), particleEmitter->GetLoopTime());
 	static std::unique_ptr<BaseParticleUpdateProperty> baseParticleUpdateProperty = make_unique<BaseParticleUpdateProperty>(particleEmitter->GetIsEmitterForceChanged(), particleEmitter->GetEmitterForce());
 
 	baseEmitterSpawnProperty->DrawPropertyUI();
@@ -101,7 +101,7 @@ void EmitterSelector::InitializeParticleEmitterArgs(
 		angle
 	);
 	baseEmitterSpawnProperty = make_unique<BaseEmitterSpawnProperty>();
-	baseEmitterUpdateProperty = make_unique<BaseEmitterUpdateProperty>(particleEmitter->GetCurrnetEmitter());
-	baseParticleSpawnProperty = make_unique<BaseParticleSpawnProperty>(particleEmitter->GetCurrnetEmitter());
+	baseEmitterUpdateProperty = make_unique<BaseEmitterUpdateProperty>(particleEmitter->GetCurrnetEmitter(), particleEmitter->GetLoopTime());
+	baseParticleSpawnProperty = make_unique<BaseParticleSpawnProperty>(particleEmitter->GetCurrnetEmitter(), particleEmitter->GetLoopTime());
 	baseParticleUpdateProperty = make_unique<BaseParticleUpdateProperty>(particleEmitter->GetIsEmitterForceChanged(), particleEmitter->GetEmitterForce());
 }

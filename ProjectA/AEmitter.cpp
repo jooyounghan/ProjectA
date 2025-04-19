@@ -189,7 +189,9 @@ AEmitter::AEmitter(
 	m_emitterWorldTransform(emitterWorldTransform),
 	m_isEmitterForceChanged(isEmitterForceChanged),
 	m_emitterForce(emitterForce),
-	m_isEmitterPropertyChanged(false)
+	m_isEmitterPropertyChanged(false),
+	m_currnetEmitter(0.f),
+	m_loopTime(10.f)
 {
 	AutoZeroMemory(m_emitterPropertyCPU);
 	m_emitterPropertyCPU.emitterType = emitterType;
