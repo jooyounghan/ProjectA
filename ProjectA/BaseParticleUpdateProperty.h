@@ -12,12 +12,18 @@ enum class EForceFlag
 	PointInteraction,
 };
 
-constexpr UINT ceil_log2(UINT n)
+constexpr UINT GetRadixCount(UINT n) noexcept
 {
-	return (n <= 1) ? 0 : 1 + ceil_log2((n + 1) >> 1);
+	UINT bits = 0;
+	while (n > 0) 
+	{
+		++bits;
+		n >>= 1;
+	}
+	return bits;
 }
 
-constexpr UINT MaxNForceCount = 4;
+constexpr UINT MaxNForceCount = 5;
 
 enum class ENForceKind
 {
@@ -27,13 +33,13 @@ enum class ENForceKind
 	ENForceKindCount
 };
 
-static_assert(ceil_log2(MaxNForceCount) * static_cast<UINT>(ENForceKind::ENForceKindCount) <= 32);
+static_assert(GetRadixCount(MaxNForceCount) * static_cast<UINT>(ENForceKind::ENForceKindCount) <= 32);
 
 constexpr UINT GetForceFlagOffset(EForceFlag forceFlag);
 constexpr UINT GetNForceCount(UINT nForceCount, ENForceKind forceKind);
-constexpr UINT SetNForceCount(UINT nForceCount, ENForceKind forceKind, UINT newValue);
-constexpr UINT IncrementNForceCount(UINT nForceCount, ENForceKind forceKind);
-constexpr UINT DecrementNForceCount(UINT nForceCount, ENForceKind forceKind);
+void SetNForceCount(UINT& nForceCount, ENForceKind forceKind, UINT newValue);
+void IncrementNForceCount(UINT& nForceCount, ENForceKind forceKind);
+void DecrementNForceCount(UINT& nForceCount, ENForceKind forceKind);
 
 struct SVortexForce
 {
@@ -85,26 +91,6 @@ protected:
 	bool& m_isEmitterForceChanged;
 	SEmitterForceProperty& m_emitterForceProperty;
 
-public:
-	void ApplyGravityForce(const DirectX::XMFLOAT3& gravityForce) noexcept;
-	void RemoveGravityForce() noexcept;
-
-public:
-	void ApplyDragForce(float dragCoefficient) noexcept;
-	void RemoveDragForce() noexcept;
-
-public:
-	void ApplyCurlNoiseForce(float curlNoiseOctave, float curlNoiseCoefficient) noexcept;
-	void RemoveCurlNoiseForce() noexcept;
-
-public:
-	void AddVortexForce(
-		const DirectX::XMFLOAT3 vortexOrigin, 
-		const DirectX::XMFLOAT3 vortexAxis, 
-		float vortexRadius, 
-		float vortexTightness
-	);
-	void RemoveVortexForce(UINT vortexForceIndex);
 
 public:
 	void AddLineInteractionForce(

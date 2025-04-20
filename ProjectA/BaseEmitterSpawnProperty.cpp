@@ -53,7 +53,7 @@ void BaseEmitterSpawnProperty::DrawPropertyUI()
 	{
 		m_isEmitterSpawnPropertyChanged = true;
 	}
-	
+
 	BeginDisabled(isImmortal);
 	{
 		m_emitterSpawnPropertyCPU.initialParticleLife = isImmortal ? numeric_limits<float>::max() : m_emitterSpawnPropertyCPU.initialParticleLife;

@@ -175,8 +175,6 @@ void BaseParticleSpawnProperty::DrawPropertyUI()
 		m_colorInterpolationSelectPlotter->UpdateControlPoints(m_colorInterpolater.get());
 	}
 	m_colorInterpolationSelectPlotter->ViewInterpolatedPlots();
-
-
 }
 
 
