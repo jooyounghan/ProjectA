@@ -1,6 +1,8 @@
 #pragma once
 #include "IProperty.h"
+#include "DefineLinkedWithShader.h"
 #include <DirectXMath.h>
+#include <functional>
 
 enum class EForceFlag
 {
@@ -22,8 +24,6 @@ constexpr UINT GetRadixCount(UINT n) noexcept
 	}
 	return bits;
 }
-
-constexpr UINT MaxNForceCount = 5;
 
 enum class ENForceKind
 {
@@ -91,23 +91,9 @@ protected:
 	bool& m_isEmitterForceChanged;
 	SEmitterForceProperty& m_emitterForceProperty;
 
-
-public:
-	void AddLineInteractionForce(
-		const DirectX::XMFLOAT3 lineInteractionOrigin,
-		const DirectX::XMFLOAT3 lineInteractionAxis,
-		float interactionDistance,
-		float interactionCoefficient
-	);
-	void RemoveLineInteractionForce(UINT lineInteractionForceIndex);
-
-public:
-	void AddPointInteractionForce(
-		DirectX::XMFLOAT3 pointInteractionCenter,
-		float interactionRadius,
-		float interactionCoefficient
-	);
-	void RemovePointInteractionForce(UINT pointInteractionForceIndex);
+private:
+	inline bool IsForceOn(EForceFlag forceFlag) const noexcept { return (m_emitterForceProperty.forceFlag >> static_cast<UINT>(forceFlag)) & 0b1; }
+	void SetFlag(EForceFlag forceFlag, bool isOn);
 
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
@@ -115,5 +101,20 @@ public:
 
 public:
 	virtual void DrawPropertyUI() override;
+
+private:
+	void HandleSingleForce(
+		const std::string& forceName, 
+		EForceFlag force, 
+		const std::function<void()>& handler
+	);
+	void HandleNForce(
+		const std::string& forceName,
+		EForceFlag force, 
+		ENForceKind nForceKind, 
+		const std::function<void(UINT)>& addButtonHandler,
+		const std::function<void(UINT)>& deleteButtonHandler,
+		const std::function<void(UINT)>& handler
+	);
 };
 

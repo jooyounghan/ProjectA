@@ -28,6 +28,9 @@ protected:
 	float& m_emitterCurrentTime;
 
 protected:
+	bool m_isLoopInfinity;
+
+protected:
 	UINT8 m_loopCount;
 	SControlPoint<1> m_spawnInitControlPoint;
 	SControlPoint<1> m_spawnFinalControlPoint;
@@ -49,8 +52,12 @@ protected:
 public:
 	inline void SetEmitterDisposeHandler(OnEmitterDispose emitterDisposeHandler) noexcept { m_emitterDisposeHandler = emitterDisposeHandler; }
 
+protected:
+	float m_spawnCount;
+	UINT m_saturatedSpawnCount;
+
 public:
-	float GetSpawnRate() const;
+	inline UINT GetSpawnCount() const noexcept { return m_saturatedSpawnCount; };
 
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;

@@ -12,15 +12,26 @@ public:
 	virtual ~BaseEmitterSpawnProperty() = default;
 
 protected:
-	struct alignas(16)
+	struct
 	{
-		SShapedVectorProperty shapedPositionVectorProperty;
-		UINT initialParticleCount;
-		float initialParticleLife;
-		DirectX::XMFLOAT2 dummy;
+		union
+		{
+			SShapedVectorProperty shapedPositionVectorProperty;
+			struct
+			{
+				char padding[88];
+				UINT initialParticleCount;
+				float initialParticleLife;
+			};
+		};
+		DirectX::XMVECTOR color;
 	} m_emitterSpawnPropertyCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterSpawnPropertyGPU;
 	bool m_isEmitterSpawnPropertyChanged = false;
+
+protected:
+	EShapedVector m_shapedVector = EShapedVector::None;
+	bool m_isImmortal = false;
 
 protected:
 	DirectX::XMFLOAT3 m_origin;

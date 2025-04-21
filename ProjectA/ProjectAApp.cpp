@@ -21,6 +21,8 @@
 #include "SamplerState.h"
 
 #include "EmitterSelector.h"
+
+#include <format>
 #pragma  endregion
 
 #define TotalParticleCount 1024 * 1024
@@ -257,53 +259,61 @@ void CProjectAApp::DrawEmitterHandler()
 		static EEmitterType emttierType = EEmitterType::ParticleEmitter;
 		static std::unique_ptr<AEmitter> createdEmitter = nullptr;
 		m_emitterSelector->SelectEnums(emttierType);
-		if (m_emitterSelector->CreateEmitter(emttierType, createdEmitter))
+
+		static ImGuiChildFlags childFlag = ImGuiChildFlags_::ImGuiChildFlags_Border | ImGuiChildFlags_::ImGuiChildFlags_AlwaysAutoResize | ImGuiChildFlags_::ImGuiChildFlags_AutoResizeY;
+		if (BeginChild("##CreateEmitterChild", ImVec2(0.f, 0.f), childFlag))
 		{
-			m_particleManager->AddParticleEmitter(createdEmitter, m_device, m_deviceContext);
-			ImGui::CloseCurrentPopup();
+			if (m_emitterSelector->CreateEmitter(emttierType, createdEmitter))
+			{
+				m_particleManager->AddParticleEmitter(createdEmitter, m_device, m_deviceContext);
+				ImGui::CloseCurrentPopup();
+			}
+
+			EndChild();
 		}
 
 		if (ImGui::Button("이미터 생성 종료"))
 		{
 			ImGui::CloseCurrentPopup();
 		}
+
 		ImGui::EndPopup();
 	}
 
-	//constexpr int NotSelected = -1;
-	//static int emitterIndex = -1;
-	//const vector<unique_ptr<CParticleEmitter>>& particleEmitters = m_particleManager->GetParticleEmitters();
+	constexpr int NotSelected = -1;
+	static int emitterIndex = -1;
+	vector<unique_ptr<AEmitter>>& emitters = m_particleManager->GetEmitters();
 
-	//if (particleEmitters.size() > 0)
-	//{
-	//	PushID("Emitter Handler");
+	if (emitters.size() > 0)
+	{
+		PushID("Emitter Handler");
 
-	//	ostringstream emitterName;
-	//	emitterName << "Emitter " << emitterIndex;
-	//	if (BeginCombo("Select Emitter", emitterIndex == NotSelected ? "Choose Emitter" : emitterName.str().c_str(), NULL))
-	//	{
-	//		for (int idx = 0; idx < particleEmitters.size(); idx++)
-	//		{
-	//			ostringstream emitterNamei;
-	//			emitterNamei << "Emitter " << idx;
-	//			const bool isSelected = (idx == emitterIndex);
-	//			if (Selectable(emitterNamei.str().c_str(), isSelected))
-	//			{
-	//				emitterIndex = idx;
-	//			}
+		if (BeginCombo("Select Emitter", emitterIndex == NotSelected ? "Choose Emitter" : format("Emitter {}", emitterIndex + 1).c_str(), NULL))
+		{
+			for (int idx = 0; idx < emitters.size(); idx++)
+			{
+				const bool isSelected = (idx == emitterIndex);
+				if (Selectable(format("Select Emitter {}", emitterIndex + 1).c_str(), isSelected))
+				{
+					emitterIndex = idx;
+				}
 
-	//			if (isSelected)
-	//				SetItemDefaultFocus();
-	//		}
-	//		EndCombo();
-	//	}
-	//	PopID();
-	//}
+				if (isSelected)
+					SetItemDefaultFocus();
+			}
+			EndCombo();
+		}
+		PopID();
+	}
 
-	//if (emitterIndex >= 0)
-	//{
-
-	//}
+	AEmitter* emitter = (emitterIndex == NotSelected) ? nullptr : emitters[emitterIndex].get();
+	if (emitter)
+	{
+		emitter->GetAEmitterSpawnProperty()->DrawPropertyUI();
+		emitter->GetAEmitterUpdateProperty()->DrawPropertyUI();
+		emitter->GetAParticleSpawnProperty()->DrawPropertyUI();
+		emitter->GetAParticleUpdateProperty()->DrawPropertyUI();
+	}
 }
 
 void CProjectAApp::AppProcImpl(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)

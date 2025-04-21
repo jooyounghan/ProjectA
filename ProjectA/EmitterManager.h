@@ -28,6 +28,7 @@ protected:
 
 public:
 	void AddParticleEmitter(std::unique_ptr<AEmitter>& emitter, ID3D11Device* device, ID3D11DeviceContext* deviceContext);
+	inline std::vector<std::unique_ptr<AEmitter>>& GetEmitters() noexcept { return m_emitters; };
 	AEmitter* GetEmitter(UINT emitterID);
 	 void RemoveParticleEmitter(UINT emitterID);
 

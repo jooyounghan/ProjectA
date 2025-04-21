@@ -8,6 +8,8 @@ struct Particle
     uint emitterType;
     uint emitterID;
     float life;
+    float3 color;
+    float particleDummy;
 };
 
 struct PrefixDesciptor

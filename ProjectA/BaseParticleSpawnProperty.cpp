@@ -12,6 +12,7 @@ BaseParticleSpawnProperty::BaseParticleSpawnProperty(float& emitterCurrentTime, 
 	: APropertyHasLoopTime(loopTime),
 	m_emitterCurrentTime(emitterCurrentTime),
 	m_lastLoopTime(loopTime),
+	m_speedShapedVector(EShapedVector::None),
 	m_lifeInitControlPoint{ 0.f, MakeArray(8.f, 12.f)},
 	m_lifeFinalControlPoint{ loopTime, MakeArray(0.f, 2.f)},
 	m_lifeInterpolationMethod(EInterpolationMethod::Linear),
@@ -20,12 +21,12 @@ BaseParticleSpawnProperty::BaseParticleSpawnProperty(float& emitterCurrentTime, 
 	m_colorInterpolationMethod(EInterpolationMethod::Linear)
 {
 	AutoZeroMemory(m_baseParticleSpawnPropertyCPU);
-
+	m_baseParticleSpawnPropertyCPU.color = XMVectorSet(1.f, 1.f, 1.f, 1.f);
 	m_origin = XMFLOAT3(0.f, 0.f, 0.f);
 	m_upVector = XMVectorSet(0.f, 1.f, 0.f, 0.f);
 
 	m_speedPositionSelector = make_unique<ShapedVectorSelector>(
-		"생성 속도 벡터",
+		"생성 속도 벡터", "속도",
 		m_origin,
 		m_upVector,
 		m_baseParticleSpawnPropertyCPU.shapedSpeedVectorSelector
@@ -122,7 +123,7 @@ void BaseParticleSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float
 	if (m_colorInterpolater)
 	{
 		array<float, 3> colorInterpolated = m_colorInterpolater->GetInterpolated(m_emitterCurrentTime);
-		m_baseParticleSpawnPropertyCPU.color = XMFLOAT3(colorInterpolated[0], colorInterpolated[1], colorInterpolated[2]);
+		m_baseParticleSpawnPropertyCPU.color = XMVectorSet(colorInterpolated[0], colorInterpolated[1], colorInterpolated[2], 1.f);
 	}
 
 	m_baseParticleSpawnPropertyGPU->Stage(deviceContext);
@@ -131,22 +132,16 @@ void BaseParticleSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float
 
 void BaseParticleSpawnProperty::DrawPropertyUI()
 {
-	static EShapedVector shapedVector = EShapedVector::None;
-	static bool isLifeInterpolaterChanged = false;
-	static bool isColorInterpolaterChanged = false;
-
 	if (m_lastLoopTime != m_loopTime)
 	{
 		AdjustControlPointsFromLoopTime();
-		isLifeInterpolaterChanged = true;
-		isColorInterpolaterChanged = true;
 	}
 
 	if (!ImGui::CollapsingHeader("파티클 생성 프로퍼티"))
 		return;
 
-	m_speedPositionSelector->SelectEnums(shapedVector);
-	m_speedPositionSelector->SetShapedVectorProperty(shapedVector);
+	m_speedPositionSelector->SelectEnums(m_speedShapedVector);
+	m_speedPositionSelector->SetShapedVectorProperty("속도 벡터", m_speedShapedVector);
 
 	EInterpolationMethod currnetLifeInterpolateKind = m_lifeInterpolationMethod;
 	m_lifeInterpolationSelectPlotter->SelectEnums(currnetLifeInterpolateKind);

@@ -5,6 +5,7 @@
 #include <exception>
 #include <format>
 #include <string>
+#include <vector>
 
 using namespace std;
 using namespace DirectX;
@@ -56,119 +57,10 @@ BaseParticleUpdateProperty::BaseParticleUpdateProperty(
 {
 }
 
-#define GetFlag(flag)												\
-(m_emitterForceProperty.forceFlag >> static_cast<UINT>(flag)) & 0b1	\
-
-#define SetOnFlag(flag)												\
-m_emitterForceProperty.forceFlag |= GetForceFlagOffset(flag);		\
-m_isEmitterForceChanged = true;										\
-
-#define SetOffFlag(flag)												\
-m_emitterForceProperty.forceFlag &= !GetForceFlagOffset(flag);		\
-m_isEmitterForceChanged = true;										\
-
-void BaseParticleUpdateProperty::AddLineInteractionForce(
-	const XMFLOAT3 lineInteractionOrigin, 
-	const XMFLOAT3 lineInteractionAxis,
-	float interactionDistance,
-	float interactionCoefficient
-)
+void BaseParticleUpdateProperty::SetFlag(EForceFlag forceFlag, bool isOn)
 {
-	UINT lineInteractionCount = GetNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::LineInteraction);
-	if (lineInteractionCount == MaxNForceCount)
-	{
-		throw exception("Line Interaction Count Exceed Maximum Value");
-	}
-	else
-	{
-		SetOnFlag(EForceFlag::LineInteraction);
-		IncrementNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::LineInteraction);
-		SLineInteractionForce& lineInteractionForce = m_emitterForceProperty.nLineInteractionForce[lineInteractionCount];
-		lineInteractionForce.lineInteractionOrigin = lineInteractionOrigin;
-		lineInteractionForce.lineInteractionAxis = lineInteractionAxis;
-		lineInteractionForce.interactionDistance = interactionDistance;
-		lineInteractionForce.interactionCoefficient = interactionCoefficient;
-	}
-}
-
-void BaseParticleUpdateProperty::RemoveLineInteractionForce(UINT lineInteractionForceIndex)
-{
-	UINT lineInteractionCount = GetNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::LineInteraction);
-	if (lineInteractionCount == 0)
-	{
-		throw exception("No Line Interaction To Remove");
-	}
-	else
-	{
-		DecrementNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::LineInteraction);
-		if (lineInteractionCount == 1)
-		{
-			SetOffFlag(EForceFlag::LineInteraction);
-		}
-		else if (lineInteractionCount == MaxNForceCount)
-		{
-			m_isEmitterForceChanged = true;
-		}
-		else
-		{
-			std::memmove(&m_emitterForceProperty.nLineInteractionForce[lineInteractionForceIndex],
-				&m_emitterForceProperty.nLineInteractionForce[lineInteractionForceIndex + 1],
-				sizeof(SLineInteractionForce) * (MaxNForceCount - (lineInteractionForceIndex + 1))
-			);
-			m_isEmitterForceChanged = true;
-		}
-	}
-}
-
-void BaseParticleUpdateProperty::AddPointInteractionForce(
-	XMFLOAT3 pointInteractionCenter,
-	float interactionRadius,
-	float interactionCoefficient
-)
-{
-	UINT pointInteractionCount = GetNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::PointInteraction);
-	if (pointInteractionCount == MaxNForceCount)
-	{
-		throw exception("Point Interaction Count Exceed Maximum Value");
-	}
-	else
-	{
-		SetOnFlag(EForceFlag::PointInteraction);
-		IncrementNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::PointInteraction);
-		SPointInteractionForce& pointInteractionForce = m_emitterForceProperty.nPointInteractionForce[pointInteractionCount];
-		pointInteractionForce.pointInteractionCenter = pointInteractionCenter;
-		pointInteractionForce.interactionRadius = interactionRadius;
-		pointInteractionForce.interactionCoefficient = interactionCoefficient;
-	}
-}
-
-void BaseParticleUpdateProperty::RemovePointInteractionForce(UINT pointInteractionForceIndex)
-{
-	UINT pointInteractionCount = GetNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::PointInteraction);
-	if (pointInteractionCount == 0)
-	{
-		throw exception("No Point Interaction To Remove");
-	}
-	else
-	{
-		DecrementNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::PointInteraction);
-		if (pointInteractionCount == 1)
-		{
-			SetOffFlag(EForceFlag::PointInteraction);
-		}
-		else if (pointInteractionCount == MaxNForceCount)
-		{
-			m_isEmitterForceChanged = true;
-		}
-		else
-		{
-			std::memmove(&m_emitterForceProperty.nPointInteractionForce[pointInteractionForceIndex],
-				&m_emitterForceProperty.nPointInteractionForce[pointInteractionForceIndex + 1],
-				sizeof(SPointInteractionForce) * (MaxNForceCount - (pointInteractionForceIndex + 1))
-			);
-			m_isEmitterForceChanged = true;
-		}
-	}
+	isOn ? m_emitterForceProperty.forceFlag |= GetForceFlagOffset(forceFlag) : m_emitterForceProperty.forceFlag &= ~GetForceFlagOffset(forceFlag);
+	m_isEmitterForceChanged = true;
 }
 
 void BaseParticleUpdateProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
@@ -183,181 +75,169 @@ void BaseParticleUpdateProperty::Update(ID3D11DeviceContext* deviceContext, floa
 
 void BaseParticleUpdateProperty::DrawPropertyUI()
 {
-	bool isGravitySet = GetFlag(EForceFlag::Gravity);
-	bool isDragSet = GetFlag(EForceFlag::Drag);
-	bool isCurNoiseSet = GetFlag(EForceFlag::CurNoise);
-
 	if (!CollapsingHeader("파티클 업데이트 프로퍼티"))
 		return;
 	
-	SeparatorText("중력");
-	BeginDisabled(!isGravitySet);
+	HandleSingleForce("중력", EForceFlag::Gravity, [&]()
+		{
+			DragFloat3("중력 벡터", &m_emitterForceProperty.gravityForce.x, 0.1f, -1000.f, 1000.f, "%.1f");
+		}
+	);
+
+	HandleSingleForce("항력", EForceFlag::Drag, [&]()
+		{
+			DragFloat("항력계수", &m_emitterForceProperty.dragCoefficient, 0.01f, 0.f, 1.f, "%.2f");
+		}
+	);
+
+	HandleSingleForce("Curl-Noise", EForceFlag::CurNoise, [&]()
+		{
+			DragFloat("Curl-Noise Octave", &m_emitterForceProperty.curlNoiseOctave, 0.01f, 0.f, 10.f, "%.2f");
+			DragFloat("Curl-Noise Coefficient", &m_emitterForceProperty.curlNoiseCoefficient, 0.01f, 0.f, 10.f, "%.2f");
+		}
+	);
+
+	HandleNForce("Vortex", EForceFlag::Vortex, ENForceKind::Vortex,
+		[&](UINT addIndex) { 	
+			SVortexForce& vortexForce = m_emitterForceProperty.nVortexForce[addIndex];
+			AutoZeroMemory(vortexForce);
+		},
+		[&](UINT deleteIndex) {
+			memmove(&m_emitterForceProperty.nVortexForce[deleteIndex],
+			&m_emitterForceProperty.nVortexForce[deleteIndex + 1],
+			sizeof(SVortexForce) * (MaxNForceCount - (deleteIndex + 1)));
+		},
+		[&](UINT currentIndex) {
+			SVortexForce& vortexForce = m_emitterForceProperty.nVortexForce[currentIndex];
+			DragFloat3("Vortex 원점", &vortexForce.vortexOrigin.x, 0.1f, -1000.f, 1000.f, "%.1f");
+			DragFloat3("Vortex 축", &vortexForce.vortexAxis.x, 0.01f, -1.f, 1.f, "%.2f");
+			DragFloat("작용 반지름", &vortexForce.vortexRadius, 0.1f, 0.f, 1000.f, "%.1f");
+			DragFloat("Vortex 계수", &vortexForce.vortextCoefficient, 0.01f, 0.f, 10.f, "%.2f");
+			DragFloat("중심 끌림 강도", &vortexForce.vortexTightness, 0.01f, 0.f, 10.f, "%.2f");
+		}
+	);
+
+	HandleNForce("선 인력", EForceFlag::LineInteraction, ENForceKind::LineInteraction,
+		[&](UINT addIndex) {
+			SLineInteractionForce& lineInteractionForce = m_emitterForceProperty.nLineInteractionForce[addIndex];
+			AutoZeroMemory(lineInteractionForce);
+		},
+		[&](UINT deleteIndex) {
+			memmove(&m_emitterForceProperty.nLineInteractionForce[deleteIndex],
+				&m_emitterForceProperty.nLineInteractionForce[deleteIndex + 1],
+				sizeof(SLineInteractionForce) * (MaxNForceCount - (deleteIndex + 1)));
+		},
+		[&](UINT currentIndex) {
+			SLineInteractionForce& lineInteractionForce = m_emitterForceProperty.nLineInteractionForce[currentIndex];
+			DragFloat3("선 정점", &lineInteractionForce.lineInteractionOrigin.x, 0.1f, -1000.f, 1000.f, "%.1f");
+			DragFloat3("선 방향", &lineInteractionForce.lineInteractionAxis.x, 0.01f, -1.f, 1.f, "%.2f");
+			DragFloat("영향 길이", &lineInteractionForce.interactionDistance, 0.1f, 0.f, 1000.f, "%.1f");
+			DragFloat("인력 계수", &lineInteractionForce.interactionCoefficient, 0.01f, 0.f, 10.f, "%.2f");
+		}
+	);
+
+
+	HandleNForce("점 인력", EForceFlag::PointInteraction, ENForceKind::PointInteraction,
+		[&](UINT addIndex) {
+			SPointInteractionForce& pointInteractionForce = m_emitterForceProperty.nPointInteractionForce[addIndex];
+			AutoZeroMemory(pointInteractionForce);
+		},
+		[&](UINT deleteIndex) {
+			memmove(&m_emitterForceProperty.nPointInteractionForce[deleteIndex],
+				&m_emitterForceProperty.nPointInteractionForce[deleteIndex + 1],
+				sizeof(SPointInteractionForce) * (MaxNForceCount - (deleteIndex + 1)));
+		},
+		[&](UINT currentIndex) {
+			SPointInteractionForce& pointInteractionForce = m_emitterForceProperty.nPointInteractionForce[currentIndex];
+			DragFloat3("정점", &pointInteractionForce.pointInteractionCenter.x, 0.1f, -1000.f, 1000.f, "%.1f");
+			DragFloat("영향 반지름", &pointInteractionForce.interactionRadius, 0.1f, 0.f, 1000.f, "%.1f");
+			DragFloat("인력 계수", &pointInteractionForce.interactionCoefficient, 0.01f, 0.f, 10.f, "%.2f");
+		}
+	);
+}
+
+void BaseParticleUpdateProperty::HandleSingleForce(
+	const string& forceName,
+	EForceFlag force,
+	const function<void()>& handler
+)
+{
+	bool isForceOn = IsForceOn(force);
+	SeparatorText(forceName.c_str());
+	BeginDisabled(!isForceOn);
 	{
-		DragFloat3("중력 벡터", &m_emitterForceProperty.gravityForce.x, 0.1f, -1000.f, 1000.f, "%.1f");
+		handler();
 	}
 	EndDisabled();
 	SameLine();
-	if (Checkbox("##GravityForceCheckBox", &isGravitySet))
+	if (Checkbox(format("##{}CheckBox", forceName).c_str(), &isForceOn))
 	{
-		if (isGravitySet)
-		{
-			SetOnFlag(EForceFlag::Gravity);
-		}
-		else
-		{
-			SetOffFlag(EForceFlag::Gravity);
-		}
+		isForceOn ? SetFlag(force, true) : SetFlag(force, false);
 	}
 
-	SeparatorText("항력");
-	BeginDisabled(!isDragSet);
+}
+
+void BaseParticleUpdateProperty::HandleNForce(
+	const string& forceName,
+	EForceFlag forceFlag, 
+	ENForceKind nForceKind,
+	const function<void(UINT)>& addButtonHandler,
+	const function<void(UINT)>& deleteButtonHandler,
+	const function<void(UINT)>& handler
+)
+{
+	UINT nForceCount = GetNForceCount(m_emitterForceProperty.nForceCount, nForceKind);
+	bool isnForceSet = IsForceOn(forceFlag);
+
+	SeparatorText(forceName.c_str());
+	BeginDisabled(nForceCount >= MaxNForceCount);
 	{
-		DragFloat("항력계수", &m_emitterForceProperty.dragCoefficient, 0.1f, 0.f, 1000.f, "%.1f");
+		if (Button(format("{} 추가", forceName).c_str()))
+		{
+			IncrementNForceCount(m_emitterForceProperty.nForceCount, nForceKind);
+			addButtonHandler(nForceCount);
+			SetFlag(forceFlag, true);
+		}
 	}
 	EndDisabled();
-	SameLine();
-	if (Checkbox("##DragCoefficientCheckBox", &isDragSet))
-	{
-		if (isDragSet)
-		{
-			SetOnFlag(EForceFlag::Drag);
-		}
-		else
-		{
-			SetOffFlag(EForceFlag::Drag);
-		}
-	}
 
-	SeparatorText("Curl-Noise");
-	BeginDisabled(!isCurNoiseSet);
+	BeginDisabled(!isnForceSet);
 	{
-		DragFloat("Curl-Noise Octave", &m_emitterForceProperty.curlNoiseOctave, 0.1f, 0.f, 1000.f, "%.1f");
-		DragFloat("Curl-Noise Coefficient", &m_emitterForceProperty.curlNoiseCoefficient, 0.1f, 0.f, 1000.f, "%.1f");
+		vector<UINT> removedForcesIdx;
+		for (UINT forceIdx = 0; forceIdx < nForceCount; ++forceIdx)
+		{
+			PushID(format("{}Property{}", forceName, forceIdx).c_str());
+			if (Button("삭제"))
+			{
+				removedForcesIdx.emplace_back(forceIdx);
+			}
+			SameLine();
+			if (CollapsingHeader(format("{}{} 프로퍼티", forceName, (forceIdx + 1)).c_str()))
+			{
+				handler(forceIdx);
+			}
+			PopID();
+		}
+
+		for (auto& removedVortexIdx : removedForcesIdx)
+		{
+			DecrementNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::Vortex);
+			if (nForceCount == 1)
+			{
+				SetFlag(EForceFlag::Vortex, false);
+				break;
+			}
+			else if (nForceCount == MaxNForceCount)
+			{
+				m_isEmitterForceChanged = true;
+			}
+			else
+			{
+				deleteButtonHandler(removedVortexIdx);
+				m_isEmitterForceChanged = true;
+			}
+		}
+
 	}
 	EndDisabled();
-	SameLine();
-	if (Checkbox("##CurlNoiseCheckBox", &isCurNoiseSet))
-	{
-		if (isCurNoiseSet)
-		{
-			SetOnFlag(EForceFlag::CurNoise);
-		}
-		else
-		{
-			SetOffFlag(EForceFlag::CurNoise);
-		}
-	}
-
-	bool isVortexSet = GetFlag(EForceFlag::Vortex);
-	bool isLineInteractionSet = GetFlag(EForceFlag::LineInteraction);
-	bool isPointInteractionSet = GetFlag(EForceFlag::PointInteraction);
-	UINT vortexCount = GetNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::Vortex);
-	UINT lineInteractionCount = GetNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::LineInteraction);
-	UINT pointInteractionCount = GetNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::PointInteraction);
-
-	SeparatorText("Vortex");
-
-	if (Button("Add Vortex"))
-	{
-		IncrementNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::Vortex);
-	}
-	if (Button("Line Interaction Vortex"))
-	{
-		IncrementNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::LineInteraction);
-	}
-	if (Button("Point Interaction Vortex"))
-	{
-		IncrementNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::PointInteraction);
-	}
-	Text(to_string(GetNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::Vortex)).c_str());
-	Text(to_string(GetNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::LineInteraction)).c_str());
-	Text(to_string(GetNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::PointInteraction)).c_str());
-
-//	BeginDisabled(!isVortexSet);
-//	{
-//		for (UINT vortexIdx = 0; vortexIdx < vortexCount; ++vortexIdx)
-//		{
-//			PushID(format("VortextForceProperty{}", vortexIdx).c_str());
-//			Button("-");
-//			SameLine();
-//			if (!CollapsingHeader(format("Vortext Force Property{}", (vortexIdx + 1)).c_str()))
-//				continue;
-//
-//			SVortexForce& vortexForce = m_emitterForceProperty.nVortexForce[vortexIdx];
-//			DragFloat3("Vortex 원점", &vortexForce.vortexOrigin.x, 0.1f, -1000.f, 1000.f, ".%1f");
-//			DragFloat3("Vortex 축", &vortexForce.vortexAxis.x, 0.01f, -1.f, 1.f, ".%2f");
-//			DragFloat("Radius", &vortexForce.vortexRadius, 0.1f, 0.f, 1000.f, ".%1f");
-//			DragFloat("Vortex Coefficient", &vortexForce.vortextCoefficient, 0.01f, 0.f, 100.f, ".%2f");
-//			DragFloat("Vortex Tightness", &vortexForce.vortexTightness, 0.01f, 0.f, 100.f, ".%2f");
-//			
-//			PopID();
-//		}
-//	}
-//	EndDisabled();
-//	SameLine();
-//	BeginDisabled(vortexCount >= MaxNForceCount);
-//	{
-//		if (Button("Add Vortex"))
-//		{
-//			IncrementNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::Vortex);
-//			SVortexForce& vortexForce = m_emitterForceProperty.nVortexForce[vortexCount];
-//			AutoZeroMemory(vortexForce);
-//		}
-//	}
-//	EndDisabled();
-//}
-
-//
-//
-//void BaseParticleUpdateProperty::AddVortexForce(
-//	const XMFLOAT3 vortexOrigin,
-//	const XMFLOAT3 vortexAxis,
-//	float vortexRadius,
-//	float vortexTightness
-//)
-//{
-//	UINT vortexCount = GetNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::Vortex);
-//	if (vortexCount == MaxNForceCount)
-//	{
-//		throw exception("Vortex Count Exceed Maximum Value");
-//	}
-//	else
-//	{
-//		SetOnFlag(EForceFlag::Vortex);
-
-//		SVortexForce& vortexForce = m_emitterForceProperty.nVortexForce[vortexCount];
-//		vortexForce.vortexOrigin = vortexOrigin;
-//		vortexForce.vortexAxis = vortexAxis;
-//		vortexForce.vortexRadius = vortexRadius;
-//		vortexForce.vortexTightness = vortexTightness;
-//	}
-//}
-//
-//void BaseParticleUpdateProperty::RemoveVortexForce(UINT vortexForceIndex)
-//{
-//	UINT vortexCount = GetNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::Vortex);
-//	if (vortexCount == 0)
-//	{
-//		throw exception("No Vortex To Remove");
-//	}
-//	else
-//	{
-//		DecrementNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::Vortex);
-//		if (vortexCount == 1)
-//		{
-//			SetOffFlag(EForceFlag::Vortex);
-//		}
-//		else if (vortexCount == MaxNForceCount)
-//		{
-//			m_isEmitterForceChanged = true;
-//		}
-//		else
-//		{
-//			std::memmove(&m_emitterForceProperty.nVortexForce[vortexForceIndex],
-//				&m_emitterForceProperty.nVortexForce[vortexForceIndex + 1],
-//				sizeof(SVortexForce) * (MaxNForceCount - (vortexForceIndex + 1))
-//			);
-//			m_isEmitterForceChanged = true;
-//		}
-//	}
 }

@@ -10,19 +10,25 @@ using namespace DirectX;
 using namespace ImGui;
 
 BaseEmitterSpawnProperty::BaseEmitterSpawnProperty()
+	: m_isEmitterSpawnPropertyChanged(false),
+	m_shapedVector(EShapedVector::None),
+	m_isImmortal(false)
 {
 	AutoZeroMemory(m_emitterSpawnPropertyCPU);
 	m_emitterSpawnPropertyCPU.initialParticleCount = 0;
 	m_emitterSpawnPropertyCPU.initialParticleLife = 1.f;
+	m_emitterSpawnPropertyCPU.color = XMVectorSet(1.f, 1.f, 1.f, 1.f);
 	m_origin = XMFLOAT3(0.f, 0.f, 0.f);
 	m_upVector = XMVectorSet(0.f, 1.f, 0.f, 0.f);
 
 	m_shapedPositionSelector = make_unique<ShapedVectorSelector>(
-		"초기 위치 벡터",
+		"초기 위치 벡터", "반지름",
 		m_origin,
 		m_upVector,
 		m_emitterSpawnPropertyCPU.shapedPositionVectorProperty
 	);
+
+	sizeof(m_emitterSpawnPropertyCPU);
 }
 
 void BaseEmitterSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
@@ -43,9 +49,6 @@ void BaseEmitterSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float 
 
 void BaseEmitterSpawnProperty::DrawPropertyUI()
 {
-	static bool isImmortal = false;
-	static EShapedVector shapedVector = EShapedVector::None;
-
 	if (!ImGui::CollapsingHeader("이미터 생성 프로퍼티"))
 		return;
 
@@ -54,20 +57,27 @@ void BaseEmitterSpawnProperty::DrawPropertyUI()
 		m_isEmitterSpawnPropertyChanged = true;
 	}
 
-	BeginDisabled(isImmortal);
+	BeginDisabled(m_isImmortal);
 	{
-		m_emitterSpawnPropertyCPU.initialParticleLife = isImmortal ? numeric_limits<float>::max() : m_emitterSpawnPropertyCPU.initialParticleLife;
-		if (DragFloat("초기 파티클 생명", &m_emitterSpawnPropertyCPU.initialParticleLife, 0.1f, 0.f, 1000.f, isImmortal ? "무한" : "%.1f"))
+		if (DragFloat("초기 파티클 생명", &m_emitterSpawnPropertyCPU.initialParticleLife, 0.1f, 0.f, 1000.f, m_isImmortal ? "무한" : "%.1f"))
 		{
 			m_isEmitterSpawnPropertyChanged = true;
 		}
 	}
 	EndDisabled();
 	SameLine();
-	Checkbox("Immortal 설정", &isImmortal);
+	if (Checkbox("Immortal 설정", &m_isImmortal))
+	{
+		m_emitterSpawnPropertyCPU.initialParticleLife = m_isImmortal ? numeric_limits<float>::max() : 1.f;
+	}
 
-	m_shapedPositionSelector->SelectEnums(shapedVector);
-	if (m_shapedPositionSelector->SetShapedVectorProperty(shapedVector))
+	if (ColorPicker3("초기 파티클 색상", m_emitterSpawnPropertyCPU.color.m128_f32))
+	{
+		m_isEmitterSpawnPropertyChanged = true;
+	}
+
+	m_shapedPositionSelector->SelectEnums(m_shapedVector);
+	if (m_shapedPositionSelector->SetShapedVectorProperty("위치 벡터", m_shapedVector))
 	{
 		m_isEmitterSpawnPropertyChanged = true;
 	}

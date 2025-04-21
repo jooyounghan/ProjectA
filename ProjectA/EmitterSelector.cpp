@@ -68,6 +68,7 @@ bool EmitterSelector::CreateParticleEmitter(unique_ptr<AEmitter>& emitter)
 	baseParticleSpawnProperty->DrawPropertyUI();
 	baseParticleUpdateProperty->DrawPropertyUI();
 
+	Separator();
 	if (Button("¼³Á¤"))
 	{
 		particleEmitter->InjectAEmitterSpawnProperty(baseEmitterSpawnProperty);

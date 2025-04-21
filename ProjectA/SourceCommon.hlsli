@@ -3,8 +3,8 @@
 cbuffer EmitterProperties : register(b2)
 {
 	matrix emitterWorldTransformation;
-    uint emitterID;
 	uint emitterType;
+    uint emitterID;
     uint2 emitterPropertyDummy;
 };
 

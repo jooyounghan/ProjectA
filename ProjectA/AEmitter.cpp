@@ -61,7 +61,7 @@ void AEmitter::InitializeGlobalEmitterProperty(UINT emitterMaxCount, ID3D11Devic
 		D3D11_BIND_VERTEX_BUFFER
 	);
 	GEmitterForcePropertyGPU = make_unique<CStructuredBuffer>(
-		static_cast<UINT>(sizeof(CStructuredBuffer)),
+		static_cast<UINT>(sizeof(SEmitterForceProperty)),
 		static_cast<UINT>(GEmitterForcePropertyCPU.size()),
 		GEmitterForcePropertyCPU.data()
 	);

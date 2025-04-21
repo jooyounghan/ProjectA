@@ -1,13 +1,60 @@
 #include "ParticleCommon.hlsli"
 
-#define Pcurrent particleDrawIndirectArgs[0]
+struct VortexForce
+{
+    float3 vortexOrigin;
+    float3 vortexAxis;
+    float vortexRadius;
+    float vortexCoefficient;
+    float vortexTightness;
+};
 
-StructuredBuffer<uint> particleDrawIndirectArgs: register(t0);
-StructuredBuffer<uint> currentIndices : register(t1);
-StructuredBuffer<float4> emitterWorldPos : register(t2);
+struct LineInteractionForce
+{
+    float3 lineInteractionOrigin;
+    float3 lineInteractionAxis;
+    float interactionDistance;
+    float interactionCoefficient;
+};
 
-RWStructuredBuffer<Particle> particles : register(u0);
+struct PointInteractionForce
+{
+    float3 pointInteractionCenter;
+    float interactionRadius;
+    float interactionCoefficient;
+};
 
+struct ForceProperty
+{
+    uint forceFlag;
+    float3 gravityForce;
+    float dragCoefficient;
+    float curlNoiseOctave;
+    float curlNoiseCoefficient;
+    uint nForceCount;
+    VortexForce nVortexForce[MaxNForceCount];
+    LineInteractionForce nLineInteractionForce[MaxNForceCount];
+    PointInteractionForce nPointInteractionForce[MaxNForceCount];
+};
+
+uint GetRadixCount(uint n)
+{
+    if (n == 0)
+        return 0;
+    return firstbithigh(n) + 1;
+}
+
+uint GetNForceCount(uint nForceCount, uint forceKind)
+{
+    const uint radixCount = GetRadixCount(MaxNForceCount);
+    const uint shift = radixCount * forceKind;
+    const uint shiftedForceCount = nForceCount >> shift;
+    const uint filledMask = (1 << radixCount) - 1;
+
+    return (shiftedForceCount & filledMask);
+}
+
+// 수정 필요 ==============================================================
 float hash(float3 p)
 {
     p = frac(p * 0.3183099 + float3(0.1, 0.2, 0.3));
@@ -67,3 +114,4 @@ float3 CurlNoise(float3 pos, float eps)
 
     return normalize(curl);
 }
+// 수정 필요 ==============================================================

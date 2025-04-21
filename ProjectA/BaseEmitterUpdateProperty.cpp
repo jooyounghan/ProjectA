@@ -1,5 +1,6 @@
 #include "BaseEmitterUpdateProperty.h"
 #include "ControlPointGridView.h"
+#include <math.h>
 
 using namespace std;
 using namespace DirectX;
@@ -8,6 +9,9 @@ using namespace ImGui;
 BaseEmitterUpdateProperty::BaseEmitterUpdateProperty(float& emitterCurrentTime, float& loopTime)
 	: APropertyHasLoopTime(loopTime),
 	m_emitterCurrentTime(emitterCurrentTime),
+	m_spawnCount(0.f),
+	m_saturatedSpawnCount(0),
+	m_isLoopInfinity(true),
 	m_loopCount(LoopInfinity),
 	m_spawnInitControlPoint{ 0.f, 0.f },
 	m_spawnFinalControlPoint{ 10.f, 0.f },
@@ -52,11 +56,6 @@ void BaseEmitterUpdateProperty::AdjustControlPointsFromLoopTime()
 	m_spawnRateInterpolaterSelectPlotter->UpdateControlPoints(m_spawnRateInterpolater.get());
 }
 
-float BaseEmitterUpdateProperty::GetSpawnRate() const
-{
-	return m_spawnRateInterpolater->GetInterpolated(m_emitterCurrentTime)[0];
-}
-
 void BaseEmitterUpdateProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 
@@ -67,16 +66,19 @@ void BaseEmitterUpdateProperty::Update(ID3D11DeviceContext* deviceContext, float
 	if (m_loopCount > 0)
 	{
 		m_emitterCurrentTime += dt;
+		m_spawnCount += max(0.f, m_spawnRateInterpolater->GetInterpolated(m_emitterCurrentTime)[0]) * dt;
+		m_saturatedSpawnCount = static_cast<UINT>(std::trunc(m_spawnCount));
+		m_spawnCount = m_spawnCount - m_saturatedSpawnCount;
 
 		if (m_loopTime < m_emitterCurrentTime)
 		{
+			m_emitterCurrentTime = max(m_emitterCurrentTime - m_loopTime, 0.f);
 			if (m_loopCount == LoopInfinity)
 			{
 
 			}
 			else
 			{
-				m_emitterCurrentTime = max(m_emitterCurrentTime - m_loopTime, 0.f);
 				m_loopCount -= 1;
 			}
 		}
@@ -93,20 +95,18 @@ void BaseEmitterUpdateProperty::Update(ID3D11DeviceContext* deviceContext, float
 
 void BaseEmitterUpdateProperty::DrawPropertyUI()
 {
-	static bool isLoopInfinity = true;
-
 	if (!ImGui::CollapsingHeader("이미터 업데이트 프로퍼티"))
 		return;
 
-	BeginDisabled(isLoopInfinity);
+	BeginDisabled(m_isLoopInfinity);
 	{
-		DragInt("루프 횟수", (int*)&m_loopCount, 1.f, 0, LoopInfinity - 1, isLoopInfinity ? "무한" : "%d");
+		DragInt("루프 횟수", (int*)&m_loopCount, 1.f, 0, LoopInfinity - 1, m_isLoopInfinity ? "무한" : "%d");
 		EndDisabled();
 	}
 	SameLine();
-	if (Checkbox("무한 루프 설정", &isLoopInfinity))
+	if (Checkbox("무한 루프 설정", &m_isLoopInfinity))
 	{
-		m_loopCount = isLoopInfinity ? LoopInfinity : 1;
+		m_loopCount = m_isLoopInfinity ? LoopInfinity : 1;
 	}
 
 	if (DragFloat("루프 당 시간", &m_loopTime, 0.1f, 0.f, 100.f, "%.1f"))

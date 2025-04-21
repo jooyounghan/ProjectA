@@ -2,6 +2,8 @@
 #include "MacroUtilities.h"
 #include "imgui.h"
 
+#include <format>
+
 using namespace std;
 using namespace DirectX;
 using namespace ImGui;
@@ -15,22 +17,31 @@ unordered_map<EShapedVector, string> ShapedVectorSelector::GShapedVectorStringMa
 };
 
 ShapedVectorSelector::ShapedVectorSelector(
-	const string& selectorName, 
+	const std::string& selectorName,
+	const std::string& radiusName,
 	XMFLOAT3& origin, 
 	XMVECTOR& upVector, 
 	SShapedVectorProperty& shapedVectorProperty
 )
 	: BaseSelector<EShapedVector>(selectorName, GShapedVectorStringMaps),
 	m_selectorName(selectorName),
+	m_radiusName(radiusName),
 	m_origin(origin),
 	m_upVector(upVector),
-	m_shapedVectorProperty(shapedVectorProperty)
+	m_shapedVectorProperty(shapedVectorProperty),
+	m_centerAngle(15.f)
 {
+
 }
 
-bool ShapedVectorSelector::SetShapedVectorProperty(EShapedVector selectedShapedVector)
+bool ShapedVectorSelector::SetShapedVectorProperty(
+	const string& shapedVectorName, 
+	EShapedVector selectedShapedVector
+)
 {
 	bool isChanged = false;
+
+	PushID(format("{}SetVectorProperty", shapedVectorName).c_str());
 	switch (selectedShapedVector)
 	{
 	case EShapedVector::None:
@@ -46,6 +57,8 @@ bool ShapedVectorSelector::SetShapedVectorProperty(EShapedVector selectedShapedV
 		isChanged |= ShapedVectorSelector::SetConeShapedVector();
 		break;
 	}
+	PopID();
+
 	return isChanged;
 }
 
@@ -53,38 +66,36 @@ void ShapedVectorSelector::ResetShapedVector()
 {
 	AutoZeroMemory(m_origin);
 	m_upVector = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-	AutoZeroMemory(m_shapedVectorProperty);
+	m_shapedVectorProperty.transformation = XMMatrixIdentity();
+	m_shapedVectorProperty.minInitRadian = XMFLOAT2(0.f, 0.f);
+	m_shapedVectorProperty.maxInitRadian = XMFLOAT2(0.f, 0.f);
+	m_shapedVectorProperty.minMaxRadius = XMFLOAT2(0.f, 0.f);
 }
 
 bool ShapedVectorSelector::SetSphereShapedVector()
 {
-	static XMFLOAT2 minMaxRadius = XMFLOAT2(0.f, 10.f);
-
 	bool isChanged = false;
 
-	isChanged |= DragFloat3("구 중심", &m_origin.x, 0.1f, -1000.f, 1000.f, "%.1f");
-	isChanged |= DragFloat("구 반지름(최소)", &minMaxRadius.x, 0.1f, 0.f, 1000.f, "%.1f");
-	isChanged |= DragFloat("구 반지름(최대)", &minMaxRadius.y, 0.1f, minMaxRadius.x, 1000.f, "%.1f");
+	isChanged |= DragFloat3(format("{} 중심", m_selectorName).c_str(), &m_origin.x, 0.1f, -1000.f, 1000.f, "%.1f");
+	isChanged |= DragFloat(format("최소 {}", m_radiusName).c_str(), &m_shapedVectorProperty.minMaxRadius.x, 0.1f, 0.f, 1000.f, "%.1f");
+	isChanged |= DragFloat(format("최대 {}", m_radiusName).c_str(), &m_shapedVectorProperty.minMaxRadius.y, 0.1f, m_shapedVectorProperty.minMaxRadius.x, 1000.f, "%.1f");
 
 	m_upVector = XMVectorSet(0.f, 1.f, 0.f, 0.f);
 	m_shapedVectorProperty.transformation = XMMatrixTranspose(XMMatrixTranslation(m_origin.x, m_origin.y, m_origin.z));
 	m_shapedVectorProperty.minInitRadian = XMFLOAT2(0.f, 0.f);
 	m_shapedVectorProperty.maxInitRadian = XMFLOAT2(XM_2PI, XM_2PI);
-	m_shapedVectorProperty.minMaxRadius = minMaxRadius;
 	
 	return isChanged;
 }
 
 bool ShapedVectorSelector::SetHemiSphereShapedVector()
 {
-	static XMFLOAT2 minMaxRadius = XMFLOAT2(0.f, 10.f);
-
 	bool isChanged = false;
 
-	isChanged |= DragFloat3("구 중심", &m_origin.x, 0.1f, -1000.f, 1000.f, "%.1f");
+	isChanged |= DragFloat3(format("{} 중심", m_selectorName).c_str(), &m_origin.x, 0.1f, -1000.f, 1000.f, "%.1f");
 	isChanged |= DragFloat3("Up 벡터", m_upVector.m128_f32, 0.01f, -1.f, 1.f, "%.2f");
-	isChanged |= DragFloat("구 반지름(최소)", &minMaxRadius.x, 0.1f, 0.f, 1000.f, "%.1f");
-	isChanged |= DragFloat("구 반지름(최대)", &minMaxRadius.y, 0.1f, minMaxRadius.x, 1000.f, "%.1f");
+	isChanged |= DragFloat(format("최소 {}", m_radiusName).c_str(), &m_shapedVectorProperty.minMaxRadius.x, 0.1f, 0.f, 1000.f, "%.1f");
+	isChanged |= DragFloat(format("최대 {}", m_radiusName).c_str(), &m_shapedVectorProperty.minMaxRadius.y, 0.1f, m_shapedVectorProperty.minMaxRadius.x, 1000.f, "%.1f");
 
 	XMVector3Normalize(m_upVector);
 	XMVECTOR defaultUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
@@ -100,23 +111,19 @@ bool ShapedVectorSelector::SetHemiSphereShapedVector()
 	);
 	m_shapedVectorProperty.minInitRadian = XMFLOAT2(0.f, 0.f);
 	m_shapedVectorProperty.maxInitRadian = XMFLOAT2(XM_2PI, XM_PI);
-	m_shapedVectorProperty.minMaxRadius = minMaxRadius;
 
 	return isChanged;
 }
 
 bool ShapedVectorSelector::SetConeShapedVector()
 {
-	static float centerAngle = 15.f;
-	static XMFLOAT2 minMaxRadius = XMFLOAT2(0.f, 10.f);
-
 	bool isChanged = false;
 
 	isChanged |= DragFloat3("구 중심", &m_origin.x, 0.1f, -1000.f, 1000.f, "%.1f");
 	isChanged |= DragFloat3("Up 벡터", m_upVector.m128_f32, 0.01f, -1.f, 1.f, "%.2f");
-	isChanged |= DragFloat("각도(Up 벡터)", &centerAngle, 0.1f, 0.f, 360.f, "%.1f");
-	isChanged |= DragFloat("구 반지름(최소)", &minMaxRadius.x, 0.1f, 0.f, 1000.f, "%.1f");
-	isChanged |= DragFloat("구 반지름(최대)", &minMaxRadius.y, 0.1f, minMaxRadius.x, 1000.f, "%.1f");
+	isChanged |= DragFloat("각도(Up 벡터)", &m_centerAngle, 0.1f, 0.f, 360.f, "%.1f");
+	isChanged |= DragFloat(format("최소 {}", m_radiusName).c_str(), &m_shapedVectorProperty.minMaxRadius.x, 0.1f, 0.f, 1000.f, "%.1f");
+	isChanged |= DragFloat(format("최대 {}", m_radiusName).c_str(), &m_shapedVectorProperty.minMaxRadius.y, 0.1f, m_shapedVectorProperty.minMaxRadius.x, 1000.f, "%.1f");
 
 	XMVector3Normalize(m_upVector);
 	XMVECTOR defaultUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
@@ -131,9 +138,8 @@ bool ShapedVectorSelector::SetConeShapedVector()
 		)
 	);
 
-	m_shapedVectorProperty.minInitRadian = XMFLOAT2(0.f, XM_PIDIV2 - (centerAngle * XM_PI / 180.f));
-	m_shapedVectorProperty.maxInitRadian = XMFLOAT2(XM_2PI, XM_PIDIV2 + (centerAngle * XM_PI / 180.f));
-	m_shapedVectorProperty.minMaxRadius = minMaxRadius;
+	m_shapedVectorProperty.minInitRadian = XMFLOAT2(0.f, XM_PIDIV2 - (m_centerAngle * XM_PI / 180.f));
+	m_shapedVectorProperty.maxInitRadian = XMFLOAT2(XM_2PI, XM_PIDIV2 + (m_centerAngle * XM_PI / 180.f));
 
 	return isChanged;
 }

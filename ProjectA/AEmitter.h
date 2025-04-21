@@ -31,6 +31,8 @@ struct SParticle
 	UINT emitterType;
 	UINT emitterID;
 	float life;
+	DirectX::XMFLOAT3 color;
+	float particleDummy;
 };
 
 class AEmitter : public IUpdatable
@@ -84,6 +86,7 @@ protected:
 		DirectX::XMMATRIX emitterWorldTransform;
 		UINT emitterType;
 		UINT emitterID;
+		
 	} m_emitterPropertyCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterPropertyGPU;
 	bool m_isEmitterPropertyChanged;
