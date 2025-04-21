@@ -1,8 +1,10 @@
 #pragma once
 #include "IProperty.h"
 #include "DefineLinkedWithShader.h"
+
 #include <DirectXMath.h>
 #include <functional>
+#include <string>
 
 enum class EForceFlag
 {

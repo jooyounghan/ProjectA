@@ -70,11 +70,14 @@ void main( uint3 DTid : SV_DispatchThreadID )
 			[unroll]
 			for (uint vortexIdx = 0; vortexIdx < vortexCount; ++vortexIdx)
 			{
-				VortexForce vortexForce = forceProperty.nVortexForce[vortexIdx];
-				float3 origin = vortexForce.vortexOrigin;
+                VortexForceProperty vortexForceProperty = forceProperty.nVortexForce[vortexIdx];
+                float3 origin = vortexForceProperty.vortexOrigin;
+                float3 vortexAxis = vortexForceProperty.vortexAxis;
+                float vortexRadius = vortexForceProperty.vortexRadius;
+                float vortexCoefficient = vortexForceProperty.vortexCoefficient;
+                float vortexTightness = vortexForceProperty.vortexTightness;
+				
 				float3 originToPos = position - origin;
-				float3 vortexAxis = vortexForce.vortexAxis;
-				float vortexRadius = vortexForce.vortexRadius;
 
 				float3 vortexDir = cross(vortexAxis, originToPos);
 				float vortexDirLength = length(vortexDir);
@@ -86,17 +89,17 @@ void main( uint3 DTid : SV_DispatchThreadID )
 				{
 					vortexDir = normalize(vortexDir);
 					centripetalDir = normalize(centripetalDir);
-
-			        float tangentialVelocity = vortexForce.vortexCoefficient * dt;
-					float centripetalForceMagnitude = tangentialVelocity * tangentialVelocity / vortexDistance;
-					force += vortexForce.vortexCoefficient * vortexDir;
-					force += (centripetalForceMagnitude + vortexForce.vortexTightness) * centripetalDir;
-				}
-
+					
+                    float scale = lerp(1.f, 0.f, saturate(vortexDistance / vortexRadius));
+                    force += scale * vortexCoefficient * vortexDir;
+                    					
+                    float currentTangentialSpeed = dot(velocity + scale * vortexCoefficient * dt, vortexDir);
+                    float centripetalForceMagnitude = currentTangentialSpeed * currentTangentialSpeed / vortexDistance;
+                    force += (centripetalForceMagnitude + scale * vortexTightness) * centripetalDir;
+                }
 			}
 		}
-
-
+		
 		if (lineInteractionFlag & 1)
 		{
 			force += forceProperty.curlNoiseCoefficient * CurlNoise(position, max(forceProperty.curlNoiseOctave, 0.1f));

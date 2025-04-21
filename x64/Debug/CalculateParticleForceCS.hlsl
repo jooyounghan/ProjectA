@@ -66,17 +66,35 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		if (vortextFlag & 1)
 		{
 			const uint vortexCount = GetNForceCount(forceProperty.nForceCount, NForceVortexKind);
+
 			[unroll]
 			for (uint vortexIdx = 0; vortexIdx < vortexCount; ++vortexIdx)
 			{
 				VortexForce vortexForce = forceProperty.nVortexForce[vortexIdx];
 				float3 origin = vortexForce.vortexOrigin;
 				float3 originToPos = position - origin;
-				float3 vortexDir = normalize(cross(vortexForce.vortexAxis, originToPos));
-				force += vortexForce.vortexCoefficient * vortexDir;
-				
 				float3 vortexAxis = vortexForce.vortexAxis;
-				force += vortexForce.vortexTightness * dot(originToPos, vortexAxis) * vortexAxis - originToPos;
+				float vortexRadius = vortexForce.vortexRadius;
+
+				float3 vortexDir = cross(vortexAxis, originToPos);
+				float vortexDirLength = length(vortexDir);
+
+				float3 centripetalDir = dot(originToPos, vortexAxis) * vortexAxis - originToPos;
+				float vortexDistance = length(centripetalDir);
+				
+				if (vortexDirLength > 1E-3f && vortexDistance > 1E-3f)
+				{
+					vortexDir = normalize(vortexDir);
+					centripetalDir = normalize(centripetalDir);
+
+                    float test = dot(vortexDir, centripetalDir);
+					
+			        float tangentialVelocity = vortexForce.vortexCoefficient * dt;
+					float centripetalForceMagnitude = tangentialVelocity * tangentialVelocity / vortexDistance;
+					force += vortexForce.vortexCoefficient * vortexDir;
+                    force += (centripetalForceMagnitude + vortexForce.vortexTightness) * test * centripetalDir;
+                }
+
 			}
 		}
 
