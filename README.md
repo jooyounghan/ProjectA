@@ -170,3 +170,75 @@ gantt
 - 방출 속도, Life 등에 대한 Interpolation을 위한 Linear / Cubic Spline 기법 추가
 	- IInterpolater를 상속받는 LineInterpolater, CubicSplineInterpolater 클래스 작성
 - Particle Emitter 생성 관련 UI 작성 
+
+### 25.04.18 ~ 25.04.20
+- Template을 활용하여 Dim 차원에 대한 컨트롤 포인트를 Interpolation을 수행할 수 있는 클래스 설계
+	- 컨트롤 포인트 설계
+	```cpp
+	template<uint32_t Dim>
+	struct SControlPoint
+	{
+		float x = 0.f;
+		std::array<float, Dim> y;
+	};
+
+	template<uint32_t Dim>
+	class IInterpolater
+	{
+	public:
+		virtual void UpdateCoefficient() = 0;
+		virtual std::array<float, Dim> GetInterpolated(float x) noexcept = 0;
+	};
+	```
+	- Interpolation에 필요한 계수가 N개 필요한 추상 클래스 설계
+	```cpp
+	template<uint32_t Dim, size_t Multiplier = 2>
+	class AInterpolater : public IInterpolater<Dim>
+	{
+	public:
+		AInterpolater(
+			const SControlPoint<Dim>& startPoint,
+			const SControlPoint<Dim>& endPoint,
+			const std::vector<SControlPoint<Dim>>& controlPoints
+		);
+		virtual ~AInterpolater() = default;
+
+	protected:
+		const SControlPoint<Dim>& m_startPoint;
+		const SControlPoint<Dim>& m_endPoint;
+		const std::vector<SControlPoint<Dim>>& m_controlPoints;
+
+	protected:
+		std::vector<float> m_xProfiles;
+		using CoeffType = std::array<float, Multiplier * Dim>;
+		std::vector<CoeffType> m_coefficients;
+
+	protected:
+		virtual void UpdateCoefficient() override;
+		virtual std::vector<SControlPoint<Dim>> GetControlPoints();
+
+	protected:
+		size_t GetCoefficientIndex(float x) noexcept;
+	};
+	```
+	- Linear Interpolater / Cubic Spline Interpolater 설계
+	``` cpp
+	template<uint32_t Dim>
+	class LinearInterpolater : public AInterpolater<Dim, 2>
+	// Linear Interpolater는 ax + b 형태로 보간하므로 N = 2
+	
+	template<uint32_t Dim>
+	class CubicSplineInterpolater : public AInterpolater<Dim, 4>
+	// 캣멀-롬 스플라인을 활용하여 at^3 + bt^2 + ct + d 형태로 보간하므로 N = 4
+	```
+	- 실제 활용 사례
+	```cpp
+		std::unique_ptr<IInterpolater<1>> m_spawnRateInterpolater
+		// LineInterpolater<1>, CubicInterpolater<1>가 될 수 있음
+		std::unique_ptr<IInterpolater<2>> m_lifeInterpolater
+		// LineInterpolater<2>, CubicInterpolater<2>가 될 수 있음
+		std::unique_ptr<IInterpolater<3>> m_colorInterpolater
+		// LineInterpolater<3>, CubicInterpolater<3>가 될 수 있음
+	```
+- ImGui를 활용한 UI와 관련된 클래스 작성(InterpolaterSelector, ControlPointGridView 등)
+
