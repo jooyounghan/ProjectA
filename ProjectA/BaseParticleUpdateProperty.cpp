@@ -77,6 +77,7 @@ void BaseParticleUpdateProperty::DrawPropertyUI()
 	if (!CollapsingHeader("파티클 업데이트 프로퍼티"))
 		return;
 	
+
 	HandleSingleForce("중력", EForceFlag::Gravity, [&]()
 		{
 			DragFloat3("중력 벡터", &m_emitterForceProperty.gravityForce.x, 0.1f, -1000.f, 1000.f, "%.1f");

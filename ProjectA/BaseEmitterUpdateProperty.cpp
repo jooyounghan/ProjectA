@@ -98,6 +98,7 @@ void BaseEmitterUpdateProperty::DrawPropertyUI()
 	if (!ImGui::CollapsingHeader("이미터 업데이트 프로퍼티"))
 		return;
 
+	SeparatorText("이미터 루프 설정");
 	BeginDisabled(m_isLoopInfinity);
 	{
 		DragInt("루프 횟수", (int*)&m_loopCount, 1.f, 0, LoopInfinity - 1, m_isLoopInfinity ? "무한" : "%d");
@@ -114,6 +115,7 @@ void BaseEmitterUpdateProperty::DrawPropertyUI()
 		AdjustControlPointsFromLoopTime();
 	}
 
+	SeparatorText("파티클 Spawn Rate 설정");
 	EInterpolationMethod currentSpawnRateInterpolateKind = m_spawnRateInterpolationMethod;
 	m_spawnRateInterpolaterSelectPlotter->SelectEnums(currentSpawnRateInterpolateKind);
 	if (m_spawnRateInterpolationMethod != currentSpawnRateInterpolateKind)

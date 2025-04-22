@@ -11,7 +11,8 @@ using namespace ImGui;
 
 BaseEmitterSpawnProperty::BaseEmitterSpawnProperty()
 	: m_isEmitterSpawnPropertyChanged(false),
-	m_shapedVector(EShapedVector::Manual),
+	m_positionShapedVector(EShapedVector::Manual),
+	m_speedShapedVector(EShapedVector::Manual),
 	m_isImmortal(false)
 {
 	AutoZeroMemory(m_emitterSpawnPropertyCPU);
@@ -19,12 +20,15 @@ BaseEmitterSpawnProperty::BaseEmitterSpawnProperty()
 	m_emitterSpawnPropertyCPU.initialParticleLife = 1.f;
 	m_emitterSpawnPropertyCPU.color = XMVectorSet(1.f, 1.f, 1.f, 1.f);
 
-	m_shapedPositionSelector = make_unique<ShapedVectorSelector>(
-		"초기 위치 벡터", "반지름",
+	m_positionShapedVectorSelector = make_unique<ShapedVectorSelector>(
+		"초기 위치 벡터", "초기 반지름",
 		m_emitterSpawnPropertyCPU.shapedPositionVectorProperty
 	);
 
-	sizeof(m_emitterSpawnPropertyCPU);
+	m_speedShapedVectorSelector = make_unique<ShapedVectorSelector>(
+		"초기 속도 벡터", "초기 속도",
+		m_emitterSpawnPropertyCPU.shapedSpeedVectorProperty
+		);
 }
 
 void BaseEmitterSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
@@ -48,6 +52,7 @@ void BaseEmitterSpawnProperty::DrawPropertyUI()
 	if (!ImGui::CollapsingHeader("이미터 생성 프로퍼티"))
 		return;
 
+	SeparatorText("파티클 정보 설정");
 	if (DragInt("초기 파티클 개수", (int*)&m_emitterSpawnPropertyCPU.initialParticleCount, 1.f, 0, 100000))
 	{
 		m_isEmitterSpawnPropertyChanged = true;
@@ -72,8 +77,16 @@ void BaseEmitterSpawnProperty::DrawPropertyUI()
 		m_isEmitterSpawnPropertyChanged = true;
 	}
 
-	m_shapedPositionSelector->SelectEnums(m_shapedVector);
-	if (m_shapedPositionSelector->SetShapedVectorProperty(m_shapedVector))
+	SeparatorText("파티클 초기 위치 설정");
+	m_positionShapedVectorSelector->SelectEnums(m_positionShapedVector);
+	if (m_positionShapedVectorSelector->SetShapedVectorProperty(m_positionShapedVector))
+	{
+		m_isEmitterSpawnPropertyChanged = true;
+	}
+
+	SeparatorText("파티클 초기 속도 설정");
+	m_speedShapedVectorSelector->SelectEnums(m_speedShapedVector);
+	if (m_speedShapedVectorSelector->SetShapedVectorProperty(m_speedShapedVector))
 	{
 		m_isEmitterSpawnPropertyChanged = true;
 	}

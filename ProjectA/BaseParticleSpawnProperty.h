@@ -37,15 +37,7 @@ protected:
 				DirectX::XMFLOAT2 minMaxLifeTime;
 			};
 		};
-		union
-		{
-			SShapedVectorProperty shapedSpeedVectorProperty;
-			struct
-			{
-				char padding2[88];
-				DirectX::XMFLOAT2 padding3;
-			};
-		};
+		SShapedVectorProperty shapedSpeedVectorProperty;
 		DirectX::XMVECTOR color;
 	} m_baseParticleSpawnPropertyCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_baseParticleSpawnPropertyGPU;

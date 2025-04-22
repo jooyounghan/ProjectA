@@ -25,7 +25,7 @@ BaseParticleSpawnProperty::BaseParticleSpawnProperty(float& emitterCurrentTime, 
 	m_baseParticleSpawnPropertyCPU.color = XMVectorSet(1.f, 1.f, 1.f, 1.f);
 
 	m_positionShapedVectorSelector = make_unique<ShapedVectorSelector>(
-		"생성 위치 벡터", "반지름",
+		"생성 위치 벡터", "생성 반지름",
 		m_baseParticleSpawnPropertyCPU.shapedPositionVectorProperty
 	);
 
@@ -143,12 +143,15 @@ void BaseParticleSpawnProperty::DrawPropertyUI()
 	if (!ImGui::CollapsingHeader("파티클 생성 프로퍼티"))
 		return;
 
+	SeparatorText("파티클 생성 위치 설정");
 	m_positionShapedVectorSelector->SelectEnums(m_positionShapedVector);
 	m_positionShapedVectorSelector->SetShapedVectorProperty(m_positionShapedVector);
 
+	SeparatorText("파티클 생성 속도 설정");
 	m_speedShapedVectorSelector->SelectEnums(m_speedShapedVector);
 	m_speedShapedVectorSelector->SetShapedVectorProperty(m_speedShapedVector);
 
+	SeparatorText("파티클 생명주기 설정");
 	EInterpolationMethod currnetLifeInterpolateKind = m_lifeInterpolationMethod;
 	m_lifeInterpolationSelectPlotter->SelectEnums(currnetLifeInterpolateKind);
 	if (m_lifeInterpolationMethod != currnetLifeInterpolateKind)
@@ -163,6 +166,7 @@ void BaseParticleSpawnProperty::DrawPropertyUI()
 	}
 	m_lifeInterpolationSelectPlotter->ViewInterpolatedPlots();
 
+	SeparatorText("파티클 색상 설정");
 	EInterpolationMethod currnetColorInterpolateKind = m_colorInterpolationMethod;
 	m_colorInterpolationSelectPlotter->SelectEnums(currnetColorInterpolateKind);
 	if (m_colorInterpolationMethod != currnetColorInterpolateKind)

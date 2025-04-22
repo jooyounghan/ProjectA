@@ -19,22 +19,27 @@ protected:
 			SShapedVectorProperty shapedPositionVectorProperty;
 			struct
 			{
-				char padding[88];
+				char padding1[88];
 				UINT initialParticleCount;
 				float initialParticleLife;
 			};
 		};
+		SShapedVectorProperty shapedSpeedVectorProperty;
 		DirectX::XMVECTOR color;
 	} m_emitterSpawnPropertyCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterSpawnPropertyGPU;
 	bool m_isEmitterSpawnPropertyChanged = false;
 
 protected:
-	EShapedVector m_shapedVector = EShapedVector::Manual;
 	bool m_isImmortal = false;
 
 protected:
-	std::unique_ptr<ShapedVectorSelector> m_shapedPositionSelector;
+	EShapedVector m_positionShapedVector = EShapedVector::Manual;
+	std::unique_ptr<ShapedVectorSelector> m_positionShapedVectorSelector;
+
+protected:
+	EShapedVector m_speedShapedVector = EShapedVector::Manual;
+	std::unique_ptr<ShapedVectorSelector> m_speedShapedVectorSelector;
 
 public:
 	inline ID3D11Buffer* GetEmitterSpawnPropertyBuffer() const noexcept { return m_emitterSpawnPropertyGPU->GetBuffer(); }
