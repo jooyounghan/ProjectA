@@ -15,9 +15,18 @@ public:
 
 protected:
 	using Parent = AInterpolater<Dim, 4>;
+
 public:
 	virtual void UpdateCoefficient() override;
 	virtual std::array<float, Dim> GetInterpolated(float x) noexcept override;
+
+protected:
+	std::vector<std::array<float, Dim>> GetSecondDerivative(
+		const std::vector<std::array<float, Dim>>& L,
+		const std::vector<std::array<float, Dim>>& D,
+		const std::vector<std::array<float, Dim>>& U,
+		const std::vector<std::array<float, Dim>>& Derivative
+	);
 };
 
 template<uint32_t Dim>
@@ -37,7 +46,6 @@ inline void CubicSplineInterpolater<Dim>::UpdateCoefficient()
 	Parent::UpdateCoefficient();
 	Parent::m_coefficients.clear();
 
-
 	std::vector<SControlPoint<Dim>> cubicSplineContorlPoints = Parent::GetControlPoints();
 	const size_t cubicSplineContorlPointsStepCount = cubicSplineContorlPoints.size() - 1;
 
@@ -52,16 +60,20 @@ inline void CubicSplineInterpolater<Dim>::UpdateCoefficient()
 	}
 
 	std::vector<float> stepSizes(cubicSplineContorlPointsStepCount);
-	std::vector<std::array<float, Dim>> L(cubicSplineContorlPointsStepCount - 1);
-	std::vector<std::array<float, Dim>> D(cubicSplineContorlPointsStepCount - 1);
-	std::vector<std::array<float, Dim>> U(cubicSplineContorlPointsStepCount - 1);
-	std::vector<std::array<float, Dim>> derivative(cubicSplineContorlPointsStepCount - 1);
-	std::vector<std::array<float, Dim>> secondDerivative(cubicSplineContorlPointsStepCount + 1);
-
 	for (size_t idx = 0; idx < cubicSplineContorlPointsStepCount; ++idx)
 	{
 		stepSizes[idx] = cubicSplineContorlPoints[idx + 1].x - cubicSplineContorlPoints[idx].x;
 	}
+
+	std::vector<std::array<float, Dim>> secondDerivative(cubicSplineContorlPointsStepCount + 1);
+	secondDerivative[0] = MakeZeroArray<Dim>();
+	secondDerivative[cubicSplineContorlPointsStepCount] = MakeZeroArray<Dim>();
+
+	std::vector<std::array<float, Dim>> L(cubicSplineContorlPointsStepCount - 1);
+	std::vector<std::array<float, Dim>> D(cubicSplineContorlPointsStepCount - 1);
+	std::vector<std::array<float, Dim>> U(cubicSplineContorlPointsStepCount - 1);
+	std::vector<std::array<float, Dim>> derivative(cubicSplineContorlPointsStepCount - 1);
+
 
 	for (size_t idx = 1; idx < cubicSplineContorlPointsStepCount; ++idx)
 	{
@@ -75,63 +87,28 @@ inline void CubicSplineInterpolater<Dim>::UpdateCoefficient()
 		for (uint32_t dimension = 0; dimension < Dim; ++dimension)
 		{
 			L[idx - 1][dimension] = step0;
-			D[idx - 1][dimension] = 2.f * (step0 - step1);
+			D[idx - 1][dimension] = 2.f * (step0 + step1);
 			U[idx - 1][dimension] = step1;
-			derivative[idx - 1][dimension] = ((y2[dimension] - y1[dimension]) / step1 - (y1[dimension] - y0[dimension]) / step0);;
+			derivative[idx - 1][dimension] = 6.f * ((y2[dimension] - y1[dimension]) / step1 - (y1[dimension] - y0[dimension]) / step0);
 		}
 	}
 
-	secondDerivative[0] = MakeZeroArray<Dim>();
-	secondDerivative[cubicSplineContorlPointsStepCount] = MakeZeroArray<Dim>();
-
-	if (cubicSplineContorlPointsStepCount > 1)
+	if (cubicSplineContorlPointsStepCount > 2)
 	{
-		int n = static_cast<int>(cubicSplineContorlPointsStepCount - 1);
-
-		if (n == 1)
+		std::vector<std::array<float, Dim>> innerSecondDerivative = GetSecondDerivative(L, D, U, derivative);
+		for (size_t idx = 1; idx < cubicSplineContorlPointsStepCount; ++idx)
 		{
-			for (uint32_t dimension = 0; dimension < Dim; ++dimension)
-			{
-				secondDerivative[1][dimension] = derivative[0][dimension] / D[0][dimension];
-			}
-		}
-		else
-		{
-			std::vector<std::array<float, Dim>> decomposedU(n);
-			std::vector<std::array<float, Dim>> decomposedDerivative(n);
-
-			for (uint32_t dimension = 0; dimension < Dim; ++dimension)
-			{
-				decomposedU[0][dimension] = U[0][dimension] / D[0][dimension];
-				decomposedDerivative[0][dimension] = derivative[0][dimension] / D[0][dimension];
-			}
-
-			for (int idx = 1; idx < n - 1; ++idx)
-			{
-				for (uint32_t dimension = 0; dimension < Dim; ++dimension)
-				{
-					float m = D[idx][dimension] - L[idx][dimension] * decomposedU[idx - 1][dimension];
-					decomposedU[idx][dimension] = U[idx][dimension] / m;
-					decomposedDerivative[idx][dimension] = (derivative[idx][dimension] - L[idx][dimension] * decomposedDerivative[idx - 1][dimension]) / m;
-				}
-			}
-
-			for (uint32_t dimension = 0; dimension < Dim; ++dimension)
-			{
-				decomposedDerivative[n - 1][dimension] = (derivative[n - 1][dimension] - L[n - 1][dimension] * decomposedDerivative[n - 2][dimension]) /
-					(D[n - 1][dimension] - L[n - 1][dimension] * decomposedU[n - 2][dimension]);
-				secondDerivative[n - 1][dimension] = decomposedDerivative[n - 1][dimension];
-			}
-
-			for (int idx = static_cast<int>(n - 2); idx >= 0; --idx)
-			{
-				for (uint32_t dimension = 0; dimension < Dim; ++dimension)
-				{
-					secondDerivative[idx][dimension] = decomposedDerivative[idx][dimension] - decomposedU[idx][dimension] * secondDerivative[idx + 1][dimension];
-				}
-			}
+			secondDerivative[idx] = innerSecondDerivative[idx - 1];
 		}
 	}
+	else if (cubicSplineContorlPointsStepCount == 2)
+	{
+		for (size_t dimension = 0; dimension < Dim; ++dimension)
+		{
+			secondDerivative[1][dimension] = derivative[0][dimension] / D[0][dimension];
+		}
+	}
+	else;
 
 	for (size_t idx = 0; idx < cubicSplineContorlPointsStepCount; ++idx)
 	{
@@ -165,4 +142,49 @@ inline std::array<float, Dim> CubicSplineInterpolater<Dim>::GetInterpolated(floa
 		result[dimension] = ((a * t + b) * t + c) * t + d;
 	}
 	return result;
+}
+
+template<uint32_t Dim>
+inline std::vector<std::array<float, Dim>> CubicSplineInterpolater<Dim>::GetSecondDerivative(
+	const std::vector<std::array<float, Dim>>& L, 
+	const std::vector<std::array<float, Dim>>& D, 
+	const std::vector<std::array<float, Dim>>& U, 
+	const std::vector<std::array<float, Dim>>& derivative
+)
+{
+	int n = static_cast<int>(D.size());
+	std::vector<std::array<float, Dim>> decomposedU(n);
+	std::vector<std::array<float, Dim>> decomposedDerivative(n);
+
+	for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+	{
+		decomposedU[0][dimension] = U[0][dimension] / D[0][dimension];
+		decomposedDerivative[0][dimension] = derivative[0][dimension] / D[0][dimension];
+	}
+
+	for (int idx = 1; idx < n - 1; ++idx)
+	{
+		for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+		{
+			float m = D[idx][dimension] - L[idx][dimension] * decomposedU[idx - 1][dimension];
+			decomposedU[idx][dimension] = U[idx][dimension] / m;
+			decomposedDerivative[idx][dimension] = (derivative[idx][dimension] - L[idx][dimension] * decomposedDerivative[idx - 1][dimension]) / m;
+		}
+	}
+
+	std::vector<std::array<float, Dim>> secondDerivative(n);
+	for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+	{
+		secondDerivative[n - 1][dimension] = (derivative[n - 1][dimension] - L[n - 1][dimension] * decomposedDerivative[n - 2][dimension]) /
+			(D[n - 1][dimension] - L[n - 1][dimension] * decomposedU[n - 2][dimension]);
+	}
+
+	for (int idx = static_cast<int>(n - 2); idx >= 0; --idx)
+	{
+		for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+		{
+			secondDerivative[idx][dimension] = decomposedDerivative[idx][dimension] - decomposedU[idx][dimension] * secondDerivative[idx + 1][dimension];
+		}
+	}
+	return secondDerivative;
 }
