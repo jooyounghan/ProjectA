@@ -3,6 +3,7 @@
 
 enum class EShapedVector
 {
+	None,
 	Manual,
 	Sphere,
 	HemiSphere,
@@ -46,6 +47,7 @@ public:
 	bool SetShapedVectorProperty(EShapedVector selectedShapedVector);
 
 protected:
+	void ResetShapedVector();
 	bool SetManualShapedVector();
 	bool SetSphereShapedVector();
 	bool SetHemiSphereShapedVector();

@@ -10,14 +10,6 @@ struct VortexForceProperty
     float vortexTightness;
 };
 
-struct LineInteractionForceProperty
-{
-    float3 lineInteractionOrigin;
-    float3 lineInteractionAxis;
-    float interactionDistance;
-    float interactionCoefficient;
-};
-
 struct PointInteractionForceProperty
 {
     float3 pointInteractionCenter;
@@ -34,7 +26,6 @@ struct ForceProperty
     float curlNoiseCoefficient;
     uint nForceCount;
     VortexForceProperty nVortexForce[MaxNForceCount];
-    LineInteractionForceProperty nLineInteractionForce[MaxNForceCount];
     PointInteractionForceProperty nPointInteractionForce[MaxNForceCount];
 };
 

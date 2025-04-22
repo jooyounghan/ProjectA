@@ -12,7 +12,6 @@ enum class EForceFlag
 	Drag,
 	CurNoise,
 	Vortex,
-	LineInteraction,
 	PointInteraction,
 };
 
@@ -30,12 +29,12 @@ constexpr UINT GetRadixCount(UINT n) noexcept
 enum class ENForceKind
 {
 	Vortex,
-	LineInteraction,
 	PointInteraction,
 	ENForceKindCount
 };
 
 static_assert(GetRadixCount(MaxNForceCount) * static_cast<UINT>(ENForceKind::ENForceKindCount) <= 32);
+static_assert(MaxNForceCount % 4 == 0, "MaxNForceCount must be a multiple of 4.");
 
 constexpr UINT GetForceFlagOffset(EForceFlag forceFlag);
 constexpr UINT GetNForceCount(UINT nForceCount, ENForceKind forceKind);
@@ -51,14 +50,6 @@ struct SVortexForce
 	float vortexDeathHorizonRadius;
 	float vortextCoefficient;
 	float vortexTightness;
-};
-
-struct SLineInteractionForce
-{
-	DirectX::XMFLOAT3 lineInteractionOrigin;
-	DirectX::XMFLOAT3 lineInteractionAxis;
-	float interactionDistance;
-	float interactionCoefficient;
 };
 
 struct SPointInteractionForce
@@ -77,7 +68,6 @@ struct SEmitterForceProperty
 	float curlNoiseCoefficient;
 	UINT nForceCount;
 	SVortexForce nVortexForce[MaxNForceCount];
-	SLineInteractionForce nLineInteractionForce[MaxNForceCount];
 	SPointInteractionForce nPointInteractionForce[MaxNForceCount];
 };
 

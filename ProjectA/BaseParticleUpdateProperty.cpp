@@ -54,6 +54,7 @@ BaseParticleUpdateProperty::BaseParticleUpdateProperty(
 	: m_isEmitterForceChanged(isEmitterForceChanged),
 	m_emitterForceProperty(emitterForceProperty)
 {
+
 }
 
 void BaseParticleUpdateProperty::SetFlag(EForceFlag forceFlag, bool isOn)
@@ -117,26 +118,6 @@ void BaseParticleUpdateProperty::DrawPropertyUI()
 			DragFloat("중심 끌림 강도", &vortexForce.vortexTightness, 0.01f, 0.f, 10.f, "%.2f");
 		}
 	);
-
-	HandleNForce("선 인력", EForceFlag::LineInteraction, ENForceKind::LineInteraction,
-		[&](UINT addIndex) {
-			SLineInteractionForce& lineInteractionForce = m_emitterForceProperty.nLineInteractionForce[addIndex];
-			AutoZeroMemory(lineInteractionForce);
-		},
-		[&](UINT deleteIndex) {
-			memmove(&m_emitterForceProperty.nLineInteractionForce[deleteIndex],
-				&m_emitterForceProperty.nLineInteractionForce[deleteIndex + 1],
-				sizeof(SLineInteractionForce) * (MaxNForceCount - (deleteIndex + 1)));
-		},
-		[&](UINT currentIndex) {
-			SLineInteractionForce& lineInteractionForce = m_emitterForceProperty.nLineInteractionForce[currentIndex];
-			DragFloat3("선 정점", &lineInteractionForce.lineInteractionOrigin.x, 0.1f, -1000.f, 1000.f, "%.1f");
-			DragFloat3("선 방향", &lineInteractionForce.lineInteractionAxis.x, 0.01f, -1.f, 1.f, "%.2f");
-			DragFloat("영향 길이", &lineInteractionForce.interactionDistance, 0.1f, 0.f, 1000.f, "%.1f");
-			DragFloat("인력 계수", &lineInteractionForce.interactionCoefficient, 0.01f, 0.f, 10.f, "%.2f");
-		}
-	);
-
 
 	HandleNForce("점 인력", EForceFlag::PointInteraction, ENForceKind::PointInteraction,
 		[&](UINT addIndex) {

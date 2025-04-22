@@ -2,6 +2,7 @@
 #include "BaseSelector.h"
 #include "LinearInterpolater.h"
 #include "CubicSplineInterpolater.h"
+#include "CatmullRomInterpolater.h"
 
 #include "imgui.h"
 #include "implot.h"
@@ -12,7 +13,8 @@
 enum class EInterpolationMethod
 {
 	Linear,
-	CubicSpline
+	CubicSpline,
+	CatmullRom
 };
 
 template<uint32_t dim>
@@ -103,6 +105,9 @@ inline void InterpolationSelectPlotter<Dim>::SetInterpolater(
 		break;
 	case EInterpolationMethod::CubicSpline:
 		interpolater = std::make_unique<CubicSplineInterpolater<Dim>>(m_startPoint, m_endPoint, m_controlPoints);
+		break;
+	case EInterpolationMethod::CatmullRom:
+		interpolater = std::make_unique<CatmullRomInterpolater<Dim>>(m_startPoint, m_endPoint, m_controlPoints);
 		break;
 	}
 	if (interpolater != nullptr)

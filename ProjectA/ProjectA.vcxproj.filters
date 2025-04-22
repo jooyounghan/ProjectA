@@ -223,11 +223,14 @@
     <ClInclude Include="LinearInterpolater.h">
       <Filter>헤더 파일\Math</Filter>
     </ClInclude>
-    <ClInclude Include="CubicSplineInterpolater.h">
+    <ClInclude Include="CatmullRomInterpolater.h">
       <Filter>헤더 파일\Math</Filter>
     </ClInclude>
     <ClInclude Include="ControlPointGridView.h">
       <Filter>헤더 파일\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="CubicSplineInterpolater.h">
+      <Filter>헤더 파일\Math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

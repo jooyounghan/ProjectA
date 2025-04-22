@@ -1,23 +1,16 @@
 #include "ParticleCommon.hlsli"
 
-struct VortexForce
+struct VortexForceProperty
 {
     float3 vortexOrigin;
     float3 vortexAxis;
     float vortexRadius;
+    float vortexDeathHorizonRadius;
     float vortexCoefficient;
     float vortexTightness;
 };
 
-struct LineInteractionForce
-{
-    float3 lineInteractionOrigin;
-    float3 lineInteractionAxis;
-    float interactionDistance;
-    float interactionCoefficient;
-};
-
-struct PointInteractionForce
+struct PointInteractionForceProperty
 {
     float3 pointInteractionCenter;
     float interactionRadius;
@@ -32,9 +25,8 @@ struct ForceProperty
     float curlNoiseOctave;
     float curlNoiseCoefficient;
     uint nForceCount;
-    VortexForce nVortexForce[MaxNForceCount];
-    LineInteractionForce nLineInteractionForce[MaxNForceCount];
-    PointInteractionForce nPointInteractionForce[MaxNForceCount];
+    VortexForceProperty nVortexForce[MaxNForceCount];
+    PointInteractionForceProperty nPointInteractionForce[MaxNForceCount];
 };
 
 uint GetRadixCount(uint n)

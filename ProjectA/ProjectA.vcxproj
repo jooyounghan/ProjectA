@@ -179,6 +179,7 @@
     <ClInclude Include="BaseSelector.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ControlPointGridView.h" />
+    <ClInclude Include="CatmullRomInterpolater.h" />
     <ClInclude Include="CubicSplineInterpolater.h" />
     <ClInclude Include="DefineLinkedWithShader.h" />
     <ClInclude Include="EmitterSelector.h" />

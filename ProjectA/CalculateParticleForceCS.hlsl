@@ -18,12 +18,10 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		const uint DragFlag = 1;
 		const uint CurlNoiseFlag = 2;
 		const uint VortexFlag = 3;
-		const uint LineInteractionFlag = 4;
-		const uint PointInteractionFlag = 5;
+		const uint PointInteractionFlag = 4;
 
 		const uint NForceVortexKind = 0;
-		const uint NForceLineInteractionKind = 1;
-		const uint NForcePointInteraction = 2;
+		const uint NForcePointInteraction = 1;
 
 		const uint particleIndex = currentIndices[index];
 
@@ -44,9 +42,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		uint dragFlag = (forceFlag >> DragFlag);
 		uint curlNoiseFlag = (forceFlag >> CurlNoiseFlag);
 		uint vortextFlag = (forceFlag >> VortexFlag);
-		uint lineInteractionFlag = (forceFlag >> LineInteractionFlag);
 		uint pointInteractionFlag = (forceFlag >> PointInteractionFlag);
-
 
 		if (gravityFlag & 1)
 		{
@@ -91,7 +87,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 					vortexDir = normalize(vortexDir);
 					centripetalDir = normalize(centripetalDir);
 					
-                    float scale = lerp(1.f, 0.f, saturate(vortexDistance / vortexRadius));
+                    float scale = lerp(1.f, 0.f, saturate(vortexDistance / max(vortexRadius, 1E-3)));
                     force += scale * vortexCoefficient * vortexDir;
                     					
                     float currentTangentialSpeed = dot(velocity + scale * vortexCoefficient * dt, vortexDir);
@@ -105,17 +101,29 @@ void main( uint3 DTid : SV_DispatchThreadID )
 				}
 			}
 		}
-		
-		if (lineInteractionFlag & 1)
-		{
-			force += forceProperty.curlNoiseCoefficient * CurlNoise(position, max(forceProperty.curlNoiseOctave, 0.1f));
-		}
 
 		if (pointInteractionFlag & 1)
 		{
-			force += forceProperty.curlNoiseCoefficient * CurlNoise(position, max(forceProperty.curlNoiseOctave, 0.1f));
-		}
+			const uint pointInteractionCount = GetNForceCount(forceProperty.nForceCount, NForcePointInteraction);
 
+			[unroll]
+			for (uint pointInteractionIdx = 0; pointInteractionIdx < pointInteractionCount; ++pointInteractionIdx)
+			{
+                PointInteractionForceProperty pointInteractionForceProperty = forceProperty.nPointInteractionForce[pointInteractionIdx];
+                float3 origin = pointInteractionForceProperty.pointInteractionCenter;
+                float interactionRadius = pointInteractionForceProperty.interactionRadius;
+                float interactionCoefficient = pointInteractionForceProperty.interactionCoefficient;
+				
+				float3 posToOrigin = origin - position;
+				float distance = length(posToOrigin);
+				
+				if (distance > 1E-3)
+				{
+					float scale = lerp(1.f, 0.f, saturate(distance / max(interactionRadius, 1E-3)));
+					force += scale * interactionCoefficient * normalize(posToOrigin);
+				}
+			}
+		}
 
         currentParticle.accelerate = force;
 		

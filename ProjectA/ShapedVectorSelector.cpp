@@ -10,6 +10,7 @@ using namespace ImGui;
 
 unordered_map<EShapedVector, string> ShapedVectorSelector::GShapedVectorStringMaps
 {
+	{ EShapedVector::None, "설정 안함" },
 	{ EShapedVector::Manual, "Manual" },
 	{ EShapedVector::Sphere, "Sphere" },
 	{ EShapedVector::HemiSphere, "HemiSphere" },
@@ -39,6 +40,9 @@ bool ShapedVectorSelector::SetShapedVectorProperty(EShapedVector selectedShapedV
 	PushID(format("{}SetVectorProperty", m_selectorName).c_str());
 	switch (selectedShapedVector)
 	{
+	case EShapedVector::None:
+		ResetShapedVector();
+		break;
 	case EShapedVector::Manual:
 		isChanged |= ShapedVectorSelector::SetManualShapedVector();
 		break;
@@ -55,6 +59,11 @@ bool ShapedVectorSelector::SetShapedVectorProperty(EShapedVector selectedShapedV
 	PopID();
 
 	return isChanged;
+}
+
+void ShapedVectorSelector::ResetShapedVector()
+{
+	AutoZeroMemory(m_shapedVectorProperty);
 }
 
 bool ShapedVectorSelector::SetManualShapedVector()
