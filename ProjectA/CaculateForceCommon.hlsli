@@ -5,6 +5,7 @@ struct VortexForceProperty
     float3 vortexOrigin;
     float3 vortexAxis;
     float vortexRadius;
+    float vortexDeathHorizonRadius;
     float vortexCoefficient;
     float vortexTightness;
 };

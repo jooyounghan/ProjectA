@@ -28,13 +28,22 @@ protected:
 protected:
 	struct  
 	{
-		union
+		union 
 		{
-			SShapedVectorProperty shapedSpeedVectorSelector;
+			SShapedVectorProperty shapedPositionVectorProperty;
 			struct
 			{
-				char padding[88];
+				char padding1[88];
 				DirectX::XMFLOAT2 minMaxLifeTime;
+			};
+		};
+		union
+		{
+			SShapedVectorProperty shapedSpeedVectorProperty;
+			struct
+			{
+				char padding2[88];
+				DirectX::XMFLOAT2 padding3;
 			};
 		};
 		DirectX::XMVECTOR color;
@@ -45,12 +54,14 @@ public:
 	inline ID3D11Buffer* GetParticleSpawnPropertyBuffer() const noexcept { return m_baseParticleSpawnPropertyGPU->GetBuffer(); }
 
 protected:
-	DirectX::XMFLOAT3 m_origin;
-	DirectX::XMVECTOR m_upVector;
+
+protected:
+	EShapedVector m_positionShapedVector;
+	std::unique_ptr<ShapedVectorSelector> m_positionShapedVectorSelector;
 
 protected:
 	EShapedVector m_speedShapedVector;
-	std::unique_ptr<ShapedVectorSelector> m_speedPositionSelector;
+	std::unique_ptr<ShapedVectorSelector> m_speedShapedVectorSelector;
 
 protected:
 	SControlPoint<2> m_lifeInitControlPoint;

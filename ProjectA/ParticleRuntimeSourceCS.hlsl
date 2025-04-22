@@ -2,13 +2,19 @@
 
 cbuffer ParticleSpawnProperty : register(b3)
 {
-	matrix transformation;
+	matrix positionTransformation;
+	float2 minPositionRadian;
+	float2 maxPositionRadian;
+	float2 minMaxRadius;
+	float2 minMaxLifeTime;
+
+	matrix speedTransformation;
 	float2 minSpeedRadian;
 	float2 maxSpeedRadian;
 	float2 minMaxSpeed;
-	float2 minMaxLifeTime;
-	float3 color;
-	uint particleSpawnPropertyDummy;
+	float2 particleSpawnPropertyDummy;
+
+	float4 color;
 }
 
 [numthreads(1, 1, 1)]
@@ -19,27 +25,30 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 
 	uint revivedIndex = deathParticleSet.Consume();
 
-	float4 worldPos = mul(float4(0.f, 0.f, 0.f, 1.f), emitterWorldTransformation);
-	worldPos.xyz /= worldPos.w;
-
 	Particle sourcedParticle;
-	sourcedParticle.worldPos = worldPos.xyz;
 
 	float dt2 = dt * dt;
-	float2 randRads = lerp(minSpeedRadian, maxSpeedRadian, hash22(float2(revivedIndex * dt, revivedIndex * dt2)));
+
+    float2 randPositionRads = lerp(minPositionRadian, maxPositionRadian, hash22(float2(revivedIndex * dt2, revivedIndex * dt)));
+	float randPositionRadius = lerp(minMaxRadius.x, minMaxRadius.y, rand(float2(revivedIndex * dt, revivedIndex * dt2)));
+	float3 randPos = randPositionRadius * float3(cos(randPositionRads.x) * cos(randPositionRads.y), sin(randPositionRads.y), sin(randPositionRads.x) * cos(randPositionRads.y));
+	float4 worldPos = mul(mul(float4(randPos, 1.f), positionTransformation), emitterWorldTransformation);
+	worldPos.xyz /= worldPos.w;
+
+	float2 randSpeedRads = lerp(minSpeedRadian, maxSpeedRadian, hash22(float2(revivedIndex * dt, revivedIndex * dt2)));
 	float speedHash = rand(float2(revivedIndex * dt2, revivedIndex * dt));
 	float randSpeed = lerp(minMaxSpeed.x, minMaxSpeed.y, speedHash);
-	float3 velocity = randSpeed * float3(cos(randRads.x) * cos(randRads.y), sin(randRads.y), sin(randRads.x) * cos(randRads.y));
-	float4 worldVelocity = mul(mul(float4(velocity, 0.f), transformation), emitterWorldTransformation);
+	float3 velocity = randSpeed * float3(cos(randSpeedRads.x) * cos(randSpeedRads.y), sin(randSpeedRads.y), sin(randSpeedRads.x) * cos(randSpeedRads.y));
+	float4 worldVelocity = mul(mul(float4(velocity, 0.f), speedTransformation), emitterWorldTransformation);
 	
-
+	sourcedParticle.worldPos = worldPos.xyz;
 	sourcedParticle.velocity = worldVelocity.xyz;
 	sourcedParticle.accelerate = float3(0.f, 0.f, 0.f);
 	sourcedParticle.emitterID = emitterID;
 	sourcedParticle.emitterType = emitterType;
 	sourcedParticle.life = lerp(minMaxLifeTime.x, minMaxLifeTime.y, rand(float2(dt2, dt2)));
-	sourcedParticle.color = color;
-	sourcedParticle.particleDummy = particleSpawnPropertyDummy;
+	sourcedParticle.color = color.xyz;
+	sourcedParticle.particleDummy = 0.f;
 
 	totalParticles[revivedIndex] = sourcedParticle;
     aliveFlags[revivedIndex] = 1;

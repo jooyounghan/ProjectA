@@ -30,12 +30,8 @@ protected:
 	bool m_isEmitterSpawnPropertyChanged = false;
 
 protected:
-	EShapedVector m_shapedVector = EShapedVector::None;
+	EShapedVector m_shapedVector = EShapedVector::Manual;
 	bool m_isImmortal = false;
-
-protected:
-	DirectX::XMFLOAT3 m_origin;
-	DirectX::XMVECTOR m_upVector;
 
 protected:
 	std::unique_ptr<ShapedVectorSelector> m_shapedPositionSelector;

@@ -3,30 +3,30 @@
  
 ##  List Up
 
-### 참고영상
-- https://www.youtube.com/shorts/AYhJBuNHC9k
-- https://www.youtube.com/watch?v=f2TYIinAf2E
 
 ### 기능 구현
-1. Particle Manager 구현
-	- 여러 파티클 Emitter을 하나의 Manager가 관리하고, 각 Emitter가 생성 / 삭제되는 과정에서 발생할 수 있는 GPU 오버헤드(메모리 할당 등)를 줄이기 위하여 Particle을 Pooling하는 방식으로 구현 
+1. Emitter Manager 구현
+	- 여러 Emitter을 하나의 Manager가 관리하고, 각 Emitter가 파티클을 생성 / 삭제되는 과정에서 발생할 수 있는 GPU 오버헤드(메모리 할당 등)를 줄이기 위하여 Particle을 Pooling하는 방식으로 구현 
 	- Append Buffer의 카운터를 활용하여 Indirect Draw Call을 지원하여 렌더링 파이프라인에서 발생할 수 있는 오버헤드 최소화 
 
-2. Particle Emitter 구현
-	- AParticleEmitter를 구현하고, 이를 상속받아 Particle을 Rendering 하는 방법에 대해 구체화한 Emitter 구현
+2.  Emitter 구현
+			- Emitter는 기능에 따라 4가지로 설계
+				- Particle Emttier
+				- Ribbon Emitter
+				- Sprite Emitter
+				- Mesh Emitter
 	```mermaid
 	classDiagram
-		class AParticleEmitter
+		class AEmitter
 		class ParticleEmitter
 		class RibbonEmitter
 		class SpriteEmitter
 		class MeshEmitter
-		AParticleEmitter <|-- ParticleEmitter
-		AParticleEmitter <|-- RibbonEmitter
-		AParticleEmitter <|-- SpriteEmitter
-		AParticleEmitter <|-- MeshEmitter
+		AEmitter <|-- ParticleEmitter
+		AEmitter <|-- RibbonEmitter
+		AEmitter<|-- SpriteEmitter
+		AEmitter <|-- MeshEmitter
 	```
-	- 구체화한 Emitter 별로 설정할 수 있는 변수를 제공하여 유연하게 Emitter를 수정할 수 있도록 설계
 
 ## 프로젝트 계획
 
@@ -36,8 +36,12 @@ gantt
 	title 프로젝트 계획
 	dateFormat MM-DD
 	axisFormat %m-%d
-    Particle Manager :a, 04-01, 05-07
-    Particle Emitter :b, 04-16, 05-23
+    Emitter Manager :a, 04-01, 05-21
+    Particle  :b, 04-16, 04-30
+    Sprite :c, 04-23, 05-07
+    Mesh :d, 04-30, 05-14
+    Ribbon :e, 05-07, 05-21
+    최종 :f, 05-16, 05-23
 ```
 
 ## 프로젝트 일지
@@ -242,3 +246,8 @@ gantt
 	```
 - ImGui를 활용한 UI와 관련된 클래스 작성(InterpolaterSelector, ControlPointGridView 등)
 
+### 25.04.21
+- 전체 UI 구성 및 기존 코드 및 세이더 연동 완료
+- Vortex 힘 추가
+    -   구심력에 영향을 주는 인자를 조절하여 끌림 / 밀림 등 구현
+    -   구심력과 원심력이 균형을 이루어도 밖으로 점점 발산하는 경향이 있어 확인 필요

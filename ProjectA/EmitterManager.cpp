@@ -77,7 +77,7 @@ void CEmitterManager::InitializeParticleDrawPSO(ID3D11Device* device)
 		GParticleDrawGS.get(),
 		GParticleDrawPS.get(),
 		CRasterizerState::GetRSSolidCWSS(),
-		CBlendState::GetBSAlphaBlend(),
+		CBlendState::GetBSAccumulateWithAlpha(),
 		CDepthStencilState::GetDSDraw(),
 		nullptr,
 		0

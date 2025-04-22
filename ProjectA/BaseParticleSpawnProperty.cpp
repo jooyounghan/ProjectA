@@ -12,7 +12,8 @@ BaseParticleSpawnProperty::BaseParticleSpawnProperty(float& emitterCurrentTime, 
 	: APropertyHasLoopTime(loopTime),
 	m_emitterCurrentTime(emitterCurrentTime),
 	m_lastLoopTime(loopTime),
-	m_speedShapedVector(EShapedVector::None),
+	m_positionShapedVector(EShapedVector::Manual),
+	m_speedShapedVector(EShapedVector::Manual),
 	m_lifeInitControlPoint{ 0.f, MakeArray(8.f, 12.f)},
 	m_lifeFinalControlPoint{ loopTime, MakeArray(0.f, 2.f)},
 	m_lifeInterpolationMethod(EInterpolationMethod::Linear),
@@ -22,14 +23,16 @@ BaseParticleSpawnProperty::BaseParticleSpawnProperty(float& emitterCurrentTime, 
 {
 	AutoZeroMemory(m_baseParticleSpawnPropertyCPU);
 	m_baseParticleSpawnPropertyCPU.color = XMVectorSet(1.f, 1.f, 1.f, 1.f);
-	m_origin = XMFLOAT3(0.f, 0.f, 0.f);
-	m_upVector = XMVectorSet(0.f, 1.f, 0.f, 0.f);
 
-	m_speedPositionSelector = make_unique<ShapedVectorSelector>(
-		"생성 속도 벡터", "속도",
-		m_origin,
-		m_upVector,
-		m_baseParticleSpawnPropertyCPU.shapedSpeedVectorSelector
+	m_positionShapedVectorSelector = make_unique<ShapedVectorSelector>(
+		"생성 위치 벡터", "반지름",
+		m_baseParticleSpawnPropertyCPU.shapedPositionVectorProperty
+	);
+
+
+	m_speedShapedVectorSelector = make_unique<ShapedVectorSelector>(
+		"생성 속도 벡터", "생성 속도",
+		m_baseParticleSpawnPropertyCPU.shapedSpeedVectorProperty
 	);
 
 	m_lifeControlPointGridView = make_unique<ControlPointGridView<2>>(
@@ -140,8 +143,11 @@ void BaseParticleSpawnProperty::DrawPropertyUI()
 	if (!ImGui::CollapsingHeader("파티클 생성 프로퍼티"))
 		return;
 
-	m_speedPositionSelector->SelectEnums(m_speedShapedVector);
-	m_speedPositionSelector->SetShapedVectorProperty("속도 벡터", m_speedShapedVector);
+	m_positionShapedVectorSelector->SelectEnums(m_positionShapedVector);
+	m_positionShapedVectorSelector->SetShapedVectorProperty(m_positionShapedVector);
+
+	m_speedShapedVectorSelector->SelectEnums(m_speedShapedVector);
+	m_speedShapedVectorSelector->SetShapedVectorProperty(m_speedShapedVector);
 
 	EInterpolationMethod currnetLifeInterpolateKind = m_lifeInterpolationMethod;
 	m_lifeInterpolationSelectPlotter->SelectEnums(currnetLifeInterpolateKind);

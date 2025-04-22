@@ -48,6 +48,7 @@ struct SVortexForce
 	DirectX::XMFLOAT3 vortexOrigin;
 	DirectX::XMFLOAT3 vortexAxis;
 	float vortexRadius;
+	float vortexDeathHorizonRadius;
 	float vortextCoefficient;
 	float vortexTightness;
 };

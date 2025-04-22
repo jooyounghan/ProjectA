@@ -111,6 +111,7 @@ void BaseParticleUpdateProperty::DrawPropertyUI()
 			DragFloat3("Vortex 원점", &vortexForce.vortexOrigin.x, 0.1f, -1000.f, 1000.f, "%.1f");
 			DragFloat3("Vortex 축", &vortexForce.vortexAxis.x, 0.01f, -1.f, 1.f, "%.2f");
 			DragFloat("작용 반지름", &vortexForce.vortexRadius, 0.1f, 0.f, 1000.f, "%.1f");
+			DragFloat("지평선 반지름", &vortexForce.vortexDeathHorizonRadius, 0.1f, 0.f, vortexForce.vortexRadius, "%.1f");
 			DragFloat("Vortex 계수", &vortexForce.vortextCoefficient, 0.01f, 0.f, 10.f, "%.2f");
 			DragFloat("중심 끌림 강도", &vortexForce.vortexTightness, 0.01f, 0.f, 10.f, "%.2f");
 		}

@@ -74,6 +74,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
                 float3 origin = vortexForceProperty.vortexOrigin;
                 float3 vortexAxis = vortexForceProperty.vortexAxis;
                 float vortexRadius = vortexForceProperty.vortexRadius;
+                float vortexDeathHorizonRadius = vortexForceProperty.vortexDeathHorizonRadius;
                 float vortexCoefficient = vortexForceProperty.vortexCoefficient;
                 float vortexTightness = vortexForceProperty.vortexTightness;
 				
@@ -97,6 +98,11 @@ void main( uint3 DTid : SV_DispatchThreadID )
                     float centripetalForceMagnitude = currentTangentialSpeed * currentTangentialSpeed / vortexDistance;
                     force += (centripetalForceMagnitude + scale * vortexTightness) * centripetalDir;
                 }
+
+				if (vortexDistance < vortexDeathHorizonRadius)
+				{
+					currentParticle.life = 0.f;
+				}
 			}
 		}
 		

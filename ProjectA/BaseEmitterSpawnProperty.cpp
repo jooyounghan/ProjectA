@@ -11,20 +11,16 @@ using namespace ImGui;
 
 BaseEmitterSpawnProperty::BaseEmitterSpawnProperty()
 	: m_isEmitterSpawnPropertyChanged(false),
-	m_shapedVector(EShapedVector::None),
+	m_shapedVector(EShapedVector::Manual),
 	m_isImmortal(false)
 {
 	AutoZeroMemory(m_emitterSpawnPropertyCPU);
 	m_emitterSpawnPropertyCPU.initialParticleCount = 0;
 	m_emitterSpawnPropertyCPU.initialParticleLife = 1.f;
 	m_emitterSpawnPropertyCPU.color = XMVectorSet(1.f, 1.f, 1.f, 1.f);
-	m_origin = XMFLOAT3(0.f, 0.f, 0.f);
-	m_upVector = XMVectorSet(0.f, 1.f, 0.f, 0.f);
 
 	m_shapedPositionSelector = make_unique<ShapedVectorSelector>(
 		"초기 위치 벡터", "반지름",
-		m_origin,
-		m_upVector,
 		m_emitterSpawnPropertyCPU.shapedPositionVectorProperty
 	);
 
@@ -77,7 +73,7 @@ void BaseEmitterSpawnProperty::DrawPropertyUI()
 	}
 
 	m_shapedPositionSelector->SelectEnums(m_shapedVector);
-	if (m_shapedPositionSelector->SetShapedVectorProperty("위치 벡터", m_shapedVector))
+	if (m_shapedPositionSelector->SetShapedVectorProperty(m_shapedVector))
 	{
 		m_isEmitterSpawnPropertyChanged = true;
 	}
