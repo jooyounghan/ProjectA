@@ -11,8 +11,8 @@ using namespace ImGui;
 
 BaseEmitterSpawnProperty::BaseEmitterSpawnProperty()
 	: m_isEmitterSpawnPropertyChanged(false),
-	m_positionShapedVector(EShapedVector::Manual),
-	m_speedShapedVector(EShapedVector::Manual),
+	m_positionShapedVector(EShapedVector::Sphere),
+	m_speedShapedVector(EShapedVector::Sphere),
 	m_isImmortal(false)
 {
 	AutoZeroMemory(m_emitterSpawnPropertyCPU);

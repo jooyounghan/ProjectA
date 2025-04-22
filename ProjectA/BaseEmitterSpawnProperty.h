@@ -34,11 +34,11 @@ protected:
 	bool m_isImmortal = false;
 
 protected:
-	EShapedVector m_positionShapedVector = EShapedVector::Manual;
+	EShapedVector m_positionShapedVector;
 	std::unique_ptr<ShapedVectorSelector> m_positionShapedVectorSelector;
 
 protected:
-	EShapedVector m_speedShapedVector = EShapedVector::Manual;
+	EShapedVector m_speedShapedVector;
 	std::unique_ptr<ShapedVectorSelector> m_speedShapedVectorSelector;
 
 public:
