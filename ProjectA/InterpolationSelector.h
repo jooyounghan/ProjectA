@@ -10,13 +10,6 @@
 #include <format>
 #include <memory>
 
-enum class EInterpolationMethod
-{
-	Linear,
-	CubicSpline,
-	CatmullRom
-};
-
 template<uint32_t dim>
 class InterpolationSelectPlotter;
 

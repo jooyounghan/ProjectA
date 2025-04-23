@@ -1,8 +1,15 @@
 #pragma once
 #include "IProperty.h"
-#include "DynamicBuffer.h"
-#include "ShapedVectorSelector.h"
-#include "InterpolationSelector.h"
+#include "ShapedVectorProperty.h"
+#include "InterpolaterStructure.h"
+
+#include <vector>
+#include <memory>
+
+namespace D3D11
+{
+	class CDynamicBuffer;
+}
 
 template<uint32_t Dim>
 class IInterpolater;
@@ -13,13 +20,13 @@ class ControlPointGridView;
 template<uint32_t Dim>
 class InterpolationSelectPlotter;
 
-enum class EInterpolationMethod;
+class ShapedVectorSelector;
 
 class BaseParticleSpawnProperty : public APropertyHasLoopTime
 {
 public:
 	BaseParticleSpawnProperty(float& emitterCurrentTime, float& loopTime);
-	virtual ~BaseParticleSpawnProperty() = default;
+	~BaseParticleSpawnProperty() override = default;
 
 protected:
 	float& m_emitterCurrentTime;
@@ -43,9 +50,7 @@ protected:
 	std::unique_ptr<D3D11::CDynamicBuffer> m_baseParticleSpawnPropertyGPU;
 
 public:
-	inline ID3D11Buffer* GetParticleSpawnPropertyBuffer() const noexcept { return m_baseParticleSpawnPropertyGPU->GetBuffer(); }
-
-protected:
+	ID3D11Buffer* GetParticleSpawnPropertyBuffer() const noexcept;
 
 protected:
 	EShapedVector m_positionShapedVector;

@@ -14,13 +14,23 @@
 #include "MacroUtilities.h"
 #include "BufferMacroUtilities.h"
 
+#include "DynamicBuffer.h"
+
 #include "GraphicsPSOObject.h"
 #include "RasterizerState.h"
 #include "BlendState.h"
 #include "DepthStencilState.h"
 #include "SamplerState.h"
 
+#include "Camera.h"
 #include "EmitterSelector.h"
+
+#include "EmitterManager.h"
+#include "AEmitter.h"
+#include "BaseEmitterSpawnProperty.h"
+#include "BaseEmitterUpdateProperty.h"
+#include "BaseParticleSpawnProperty.h"
+#include "BaseParticleUpdateProperty.h"
 
 #include <format>
 #pragma  endregion
@@ -42,7 +52,6 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
 );
 
 CProjectAApp::CProjectAApp() noexcept
-	: m_appParamsGPU(PASS_SINGLE(m_appParamsCPU))
 {
 }
 
@@ -84,7 +93,8 @@ void CProjectAApp::Init()
 			engine->GetSwapChainFlag());
 	};
 
-	m_appParamsGPU.InitializeBuffer(m_device);
+	m_appParamsGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_appParamsCPU));
+	m_appParamsGPU->InitializeBuffer(m_device);
 
 	CRasterizerState::InitializeDefaultRasterizerStates(m_device);
 	CBlendState::InitializeDefaultBlendStates(m_device);
@@ -161,8 +171,8 @@ void CProjectAApp::Update(float deltaTime)
 	m_appParamsCPU.appHeight = static_cast<float>(m_height);
 	m_appParamsCPU.particleTotalCount = TotalParticleCount;
 
-	m_appParamsGPU.Stage(m_deviceContext);
-	m_appParamsGPU.Upload(m_deviceContext);
+	m_appParamsGPU->Stage(m_deviceContext);
+	m_appParamsGPU->Upload(m_deviceContext);
 #pragma endregion
 
 #pragma region 글로벌 변수 업데이트
@@ -194,7 +204,7 @@ void CProjectAApp::Update(float deltaTime)
 		AEmitter::DrawEmittersDebugCube(m_deviceContext);
 	m_deviceContext->VSSetConstantBuffers(0, 1, &singleNullCb);
 
-	ID3D11Buffer* commonCbs[] = { m_appParamsGPU.GetBuffer(), m_camera->GetPropertiesBuffer() };
+	ID3D11Buffer* commonCbs[] = { m_appParamsGPU->GetBuffer(), m_camera->GetPropertiesBuffer() };
 	ID3D11Buffer* commonNullCbs[] = { nullptr, nullptr };
 	m_deviceContext->CSSetConstantBuffers(0, 2, commonCbs);
 	m_deviceContext->VSSetConstantBuffers(0, 2, commonCbs);
@@ -293,7 +303,7 @@ void CProjectAApp::DrawEmitterHandler()
 			for (int idx = 0; idx < emitters.size(); idx++)
 			{
 				const bool isSelected = (idx == emitterIndex);
-				if (Selectable(format("Select Emitter {}", emitterIndex + 1).c_str(), isSelected))
+				if (Selectable(format("Select Emitter {}", idx + 1).c_str(), isSelected))
 				{
 					emitterIndex = idx;
 				}
@@ -309,6 +319,20 @@ void CProjectAApp::DrawEmitterHandler()
 	AEmitter* emitter = (emitterIndex == NotSelected) ? nullptr : emitters[emitterIndex].get();
 	if (emitter)
 	{
+		XMVECTOR emitterPos = emitter->GetPosition();
+		if (DragFloat3("이미터 위치", emitterPos.m128_f32, 0.1f, -1000.f, 1000.f, "%.1f"))
+		{
+			emitter->SetPosition(emitterPos);
+		}
+
+		XMVECTOR emitterAngle = emitter->GetAngle();
+		emitterAngle = XMVectorScale(emitterAngle, 180.f / XM_PI);
+		if (DragFloat3("이미터 각도", emitterAngle.m128_f32, 0.1f, -360, 360.f, "%.1f"))
+		{
+			emitterAngle = XMVectorScale(emitterAngle, XM_PI / 180.f);
+			emitter->SetAngle(emitterAngle);
+		}
+
 		emitter->GetAEmitterSpawnProperty()->DrawPropertyUI();
 		emitter->GetAEmitterUpdateProperty()->DrawPropertyUI();
 		emitter->GetAParticleSpawnProperty()->DrawPropertyUI();

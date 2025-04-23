@@ -1,6 +1,7 @@
 #include "BaseEmitterUpdateProperty.h"
+
 #include "ControlPointGridView.h"
-#include <math.h>
+#include "InterpolationSelector.h"
 
 using namespace std;
 using namespace DirectX;

@@ -32,6 +32,18 @@ namespace D3D11
 	public:
 		void Stage(ID3D11DeviceContext* const deviceContext);
 		void Upload(ID3D11DeviceContext* const deviceContext) noexcept;
+
+	public:
+		void StageNthElement(
+			ID3D11DeviceContext* const deviceContext,
+			UINT* elementIndices,
+			UINT elementIndicesCount
+		);
+		void UploadNthElement(
+			ID3D11DeviceContext* const deviceContext,
+			UINT* elementIndices,
+			UINT elementIndicesCount
+		);
 	};
 }
 

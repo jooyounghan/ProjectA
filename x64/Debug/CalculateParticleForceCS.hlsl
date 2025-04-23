@@ -87,7 +87,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 					vortexDir = normalize(vortexDir);
 					centripetalDir = normalize(centripetalDir);
 					
-                    float scale = lerp(1.f, 0.f, saturate(vortexDistance / min(vortexRadius, 1E-3)));
+                    float scale = lerp(1.f, 0.f, saturate(vortexDistance / max(vortexRadius, 1E-3)));
                     force += scale * vortexCoefficient * vortexDir;
                     					
                     float currentTangentialSpeed = dot(velocity + scale * vortexCoefficient * dt, vortexDir);
@@ -119,7 +119,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 				
 				if (distance > 1E-3)
 				{
-					float scale = lerp(1.f, 0.f, saturate(distance / min(interactionRadius, 1E-3)));
+					float scale = lerp(1.f, 0.f, saturate(distance / max(interactionRadius, 1E-3)));
 					force += scale * interactionCoefficient * normalize(posToOrigin);
 				}
 			}

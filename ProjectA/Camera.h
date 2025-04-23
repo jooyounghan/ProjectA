@@ -1,9 +1,14 @@
 #pragma once
 #include "Updatable.h"
-#include "DynamicBuffer.h"
-
+#include <d3d11.h>
+#include <wrl/client.h>
 #include <DirectXMath.h>
 #include <memory>
+
+namespace D3D11
+{
+	class CDynamicBuffer;
+}
 
 enum class EKey
 {
@@ -52,7 +57,7 @@ protected:
 
 public:
 	inline bool GetPropertiesChanged() const noexcept { return m_isPropertiesChanged; }
-	inline ID3D11Buffer* GetPropertiesBuffer() const noexcept { return m_propertiesGPU->GetBuffer(); }
+	ID3D11Buffer* GetPropertiesBuffer() const noexcept;
 
 protected:
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_renderTarget;

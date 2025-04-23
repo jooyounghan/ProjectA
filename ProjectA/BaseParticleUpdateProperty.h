@@ -1,8 +1,7 @@
 #pragma once
 #include "IProperty.h"
-#include "DefineLinkedWithShader.h"
+#include "EmitterForceProperty.h"
 
-#include <DirectXMath.h>
 #include <functional>
 #include <string>
 
@@ -42,48 +41,21 @@ void SetNForceCount(UINT& nForceCount, ENForceKind forceKind, UINT newValue);
 void IncrementNForceCount(UINT& nForceCount, ENForceKind forceKind);
 void DecrementNForceCount(UINT& nForceCount, ENForceKind forceKind);
 
-struct SVortexForce
-{
-	DirectX::XMFLOAT3 vortexOrigin;
-	DirectX::XMFLOAT3 vortexAxis;
-	float vortexRadius;
-	float vortexDeathHorizonRadius;
-	float vortextCoefficient;
-	float vortexTightness;
-};
-
-struct SPointInteractionForce
-{
-	DirectX::XMFLOAT3 pointInteractionCenter;
-	float interactionRadius;
-	float interactionCoefficient;
-};
-
-struct SEmitterForceProperty
-{
-	UINT forceFlag;
-	DirectX::XMFLOAT3 gravityForce;
-	float dragCoefficient;
-	float curlNoiseOctave;
-	float curlNoiseCoefficient;
-	UINT nForceCount;
-	SVortexForce nVortexForce[MaxNForceCount];
-	SPointInteractionForce nPointInteractionForce[MaxNForceCount];
-};
-
 class BaseParticleUpdateProperty : public IProperty
 {
 public:
 	BaseParticleUpdateProperty(
-		bool& isEmitterForceChanged,
-		SEmitterForceProperty& emitterForceProperty
+		UINT forcePropertyIndex,
+		SEmitterForceProperty& emitterForceProperty,
+		const std::function<void(UINT)>& emitterForceUpdatedHandler
 	);
-	virtual ~BaseParticleUpdateProperty() = default;
+	~BaseParticleUpdateProperty() override = default;
 
 protected:
-	bool& m_isEmitterForceChanged;
+	UINT m_forcePropertyIndex;
 	SEmitterForceProperty& m_emitterForceProperty;
-
+	bool m_isEmitterForcePropertyChanged;
+	std::function<void(UINT)> m_onEmitterForceUpdated;
 private:
 	inline bool IsForceOn(EForceFlag forceFlag) const noexcept { return (m_emitterForceProperty.forceFlag >> static_cast<UINT>(forceFlag)) & 0b1; }
 	void SetFlag(EForceFlag forceFlag, bool isOn);

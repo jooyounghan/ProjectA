@@ -1,7 +1,8 @@
 #pragma once
 #include "IProperty.h"
+#include "InterpolaterStructure.h"
+
 #include <functional>
-#include "InterpolationSelector.h"
 
 #define LoopInfinity static_cast<UINT8>(~0)
 
@@ -14,15 +15,13 @@ class ControlPointGridView;
 template<uint32_t Dim>
 class InterpolationSelectPlotter;
 
-enum class EInterpolationMethod;
-
 typedef std::function<void(class BaseEmitterUpdateProperty*)> OnEmitterDispose;
 
 class BaseEmitterUpdateProperty : public APropertyHasLoopTime
 {
 public:
 	BaseEmitterUpdateProperty(float& emitterCurrentTime, float& loopTime);
-	virtual ~BaseEmitterUpdateProperty() = default;
+	~BaseEmitterUpdateProperty() override = default;
 
 protected:
 	float& m_emitterCurrentTime;

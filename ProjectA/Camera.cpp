@@ -5,8 +5,8 @@
 #include "MacroUtilities.h"
 #include "GlobalVariable.h"
 
-#include <Windows.h>
-#include <xmmintrin.h>
+#include "DynamicBuffer.h"
+
 #include <algorithm>
 #include <unordered_map>
 
@@ -49,6 +49,8 @@ CCamera::CCamera(
 	m_viewport.MinDepth = 0.f;
 	m_viewport.MaxDepth = 1.f;
 }
+
+ID3D11Buffer* CCamera::GetPropertiesBuffer() const noexcept { return m_propertiesGPU->GetBuffer(); }
 
 void CCamera::HandleInput(UINT msg, WPARAM wParam, LPARAM lParam)
 {

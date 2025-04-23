@@ -10,9 +10,17 @@
 #include "PixelShader.h"
 #include "GraphicsPSOObject.h"
 
+#include "StructuredBuffer.h"
+
 #include "RasterizerState.h"
 #include "BlendState.h"
 #include "DepthStencilState.h"
+
+#include "AEmitter.h"
+#include "BaseEmitterSpawnProperty.h"
+#include "BaseEmitterUpdateProperty.h"
+#include "BaseParticleSpawnProperty.h"
+#include "BaseParticleUpdateProperty.h"
 
 using namespace std;
 using namespace DirectX;
@@ -121,7 +129,7 @@ void CEmitterManager::RemoveParticleEmitter(UINT emitterID)
 	{
 		AEmitter::ReclaimEmitterID(emitterID);
 		AEmitter::GEmitterWorldTransformCPU[emitterID] = ZERO_MATRIX;
-		AEmitter::GIsEmitterWorldPositionChanged = true;
+		AEmitter::GEmitterWorldPositionChangedIDs.emplace_back(emitterID);
 		m_emitters.erase(iter);
 	}
 	else 

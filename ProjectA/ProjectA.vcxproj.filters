@@ -48,9 +48,6 @@
     <Filter Include="헤더 파일\Updatable\Emitter\Property">
       <UniqueIdentifier>{d190294b-5c93-42b0-bf3d-ffe4a0d5230f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\Updatable\Emitter\Extended">
-      <UniqueIdentifier>{552f5f9c-8b37-4a13-a863-0aa49d4bba8f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\Math">
       <UniqueIdentifier>{b3872207-4b99-44f6-a836-8c989ec909c6}</UniqueIdentifier>
     </Filter>
@@ -89,6 +86,12 @@
     </Filter>
     <Filter Include="Shader\Particle\ExecuteEmitter\CaculateForce">
       <UniqueIdentifier>{ea9671aa-67ce-43da-9b1f-8cbc51677135}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Updatable\Emitter\Property\Structure">
+      <UniqueIdentifier>{36de72b9-d18a-4a32-9913-a9b1d7e7be1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Math\Structure">
+      <UniqueIdentifier>{1b32ddbf-9a1a-4084-b982-42efa12a26bb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -140,16 +143,13 @@
     <ClCompile Include="InterpolationSelector.cpp">
       <Filter>소스 파일\UI</Filter>
     </ClCompile>
-    <ClCompile Include="BaseSelector.cpp">
-      <Filter>소스 파일\UI</Filter>
-    </ClCompile>
     <ClCompile Include="EmitterSelector.cpp">
       <Filter>소스 파일\UI</Filter>
     </ClCompile>
-    <ClCompile Include="ControlPointGridView.cpp">
-      <Filter>소스 파일\UI</Filter>
-    </ClCompile>
     <ClCompile Include="IProperty.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="GPUInterpolater.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -231,6 +231,18 @@
     </ClInclude>
     <ClInclude Include="CubicSplineInterpolater.h">
       <Filter>헤더 파일\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="GPUInterpolater.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ShapedVectorProperty.h">
+      <Filter>헤더 파일\Updatable\Emitter\Property\Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="EmitterForceProperty.h">
+      <Filter>헤더 파일\Updatable\Emitter\Property\Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="InterpolaterStructure.h">
+      <Filter>헤더 파일\Math\Structure</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,15 +1,20 @@
 #pragma once
 #include "IProperty.h"
-#include "DynamicBuffer.h"
-#include "ShapedVectorSelector.h"
+#include "ShapedVectorProperty.h"
 
 #include <memory>
+
+namespace D3D11
+{
+	class CDynamicBuffer;
+}
+class ShapedVectorSelector;
 
 class BaseEmitterSpawnProperty : public IProperty
 {
 public:
 	BaseEmitterSpawnProperty();
-	virtual ~BaseEmitterSpawnProperty() = default;
+	~BaseEmitterSpawnProperty() override = default;
 
 protected:
 	struct
@@ -42,7 +47,7 @@ protected:
 	std::unique_ptr<ShapedVectorSelector> m_speedShapedVectorSelector;
 
 public:
-	inline ID3D11Buffer* GetEmitterSpawnPropertyBuffer() const noexcept { return m_emitterSpawnPropertyGPU->GetBuffer(); }
+	ID3D11Buffer* GetEmitterSpawnPropertyBuffer() const noexcept;
 	inline UINT GetInitialParticleCount() const noexcept { return m_emitterSpawnPropertyCPU.initialParticleCount; }
 
 public:

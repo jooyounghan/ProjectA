@@ -2,6 +2,9 @@
 #include "MacroUtilities.h"
 #include "BufferMacroUtilities.h"
 
+#include "DynamicBuffer.h"
+#include "ShapedVectorSelector.h"
+
 #include <limits>
 
 using namespace std;
@@ -46,6 +49,8 @@ void BaseEmitterSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float 
 		m_isEmitterSpawnPropertyChanged = false;
 	}
 }
+
+ID3D11Buffer* BaseEmitterSpawnProperty::GetEmitterSpawnPropertyBuffer() const noexcept { return m_emitterSpawnPropertyGPU->GetBuffer(); }
 
 void BaseEmitterSpawnProperty::DrawPropertyUI()
 {

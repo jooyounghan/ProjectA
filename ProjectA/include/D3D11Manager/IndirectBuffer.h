@@ -1,14 +1,6 @@
 #pragma once
-#include "ABuffer.h" 
+#include "ABuffer.h"
 #include <exception>
-
-struct D3D11MANAGER_API D3D11_DISPATCH_INDIRECT_ARGS
-{
-	UINT threadGroupCountX = 1;
-	UINT threadGroupCountY = 1;
-	UINT threadGroupCountZ = 1;
-	const UINT dummy = 0;
-};
 
 namespace D3D11
 {

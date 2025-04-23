@@ -1,5 +1,6 @@
 #pragma once
-#include <array>
+#include "InterpolaterStructure.h"
+
 #include <vector>
 #include <DirectXMath.h>
 #include <concepts>
@@ -29,13 +30,6 @@ concept IsControlPoint = requires(T t)
 };
 
 template<uint32_t Dim>
-struct SControlPoint
-{
-	float x = 0.f;
-	std::array<float, Dim> y;
-};
-
-template<uint32_t Dim>
 class IInterpolater
 {
 public:
@@ -43,7 +37,7 @@ public:
 	virtual std::array<float, Dim> GetInterpolated(float x) noexcept = 0;
 };
 
-template<uint32_t Dim, size_t Multiplier = 2>
+template<uint32_t Dim, uint32_t CoefficientCount>
 class AInterpolater : public IInterpolater<Dim>
 {
 public:
@@ -61,7 +55,7 @@ protected:
 
 protected:
 	std::vector<float> m_xProfiles;
-	using CoeffType = std::array<float, Multiplier * Dim>;
+	using CoeffType = std::array<float, CoefficientCount * Dim>;
 	std::vector<CoeffType> m_coefficients;
 
 protected:
@@ -72,8 +66,8 @@ protected:
 	size_t GetCoefficientIndex(float x) noexcept;
 };
 
-template<uint32_t Dim, size_t Multiplier>
-inline AInterpolater<Dim, Multiplier>::AInterpolater(
+template<uint32_t Dim, uint32_t CoefficientCount>
+inline AInterpolater<Dim, CoefficientCount>::AInterpolater(
 	const SControlPoint<Dim>& startPoint, 
 	const SControlPoint<Dim>& endPoint, 
 	const std::vector<SControlPoint<Dim>>& controlPoints
@@ -86,8 +80,8 @@ inline AInterpolater<Dim, Multiplier>::AInterpolater(
 
 }
 
-template<uint32_t Dim, size_t Multiplier>
-inline void AInterpolater<Dim, Multiplier>::UpdateCoefficient()
+template<uint32_t Dim, uint32_t CoefficientCount>
+inline void AInterpolater<Dim, CoefficientCount>::UpdateCoefficient()
 {
 	m_xProfiles.clear();
 
@@ -99,8 +93,8 @@ inline void AInterpolater<Dim, Multiplier>::UpdateCoefficient()
 	m_xProfiles.emplace_back(m_endPoint.x);
 }
 
-template<uint32_t Dim, size_t Multiplier>
-inline std::vector<SControlPoint<Dim>> AInterpolater<Dim, Multiplier>::GetControlPoints()
+template<uint32_t Dim, uint32_t CoefficientCount>
+inline std::vector<SControlPoint<Dim>> AInterpolater<Dim, CoefficientCount>::GetControlPoints()
 {
 	std::vector<SControlPoint<Dim>> result;
 	result.reserve(2 + m_controlPoints.size());
@@ -110,8 +104,8 @@ inline std::vector<SControlPoint<Dim>> AInterpolater<Dim, Multiplier>::GetContro
 	return result;
 }
 
-template<uint32_t Dim, size_t Multiplier>
-inline size_t AInterpolater<Dim, Multiplier>::GetCoefficientIndex(float x) noexcept
+template<uint32_t Dim, uint32_t CoefficientCount>
+inline size_t AInterpolater<Dim, CoefficientCount>::GetCoefficientIndex(float x) noexcept
 {
 	const size_t xProfileStepCounts = m_xProfiles.size() - 1;
 		

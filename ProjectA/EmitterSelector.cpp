@@ -1,5 +1,7 @@
 #include "EmitterSelector.h"
+
 #include "AEmitter.h"
+#include "DynamicBuffer.h"
 #include "BaseEmitterSpawnProperty.h"
 #include "BaseEmitterUpdateProperty.h"
 #include "BaseParticleSpawnProperty.h"
@@ -51,9 +53,7 @@ bool EmitterSelector::CreateParticleEmitter(unique_ptr<AEmitter>& emitter)
 	static UINT particleEmitterID = AEmitter::IssueAvailableEmitterID();
 	static std::unique_ptr<AEmitter/*ParticleEmitter*/> particleEmitter = make_unique<AEmitter>(
 		static_cast<UINT>(EEmitterType::ParticleEmitter), particleEmitterID,
-		AEmitter::GIsEmitterWorldPositionChanged,
 		AEmitter::GEmitterWorldTransformCPU[particleEmitterID],
-		AEmitter::GIsEmitterForceChanged,
 		AEmitter::GEmitterForcePropertyCPU[particleEmitterID],
 		position,
 		angle
@@ -61,7 +61,11 @@ bool EmitterSelector::CreateParticleEmitter(unique_ptr<AEmitter>& emitter)
 	static std::unique_ptr<BaseEmitterSpawnProperty> baseEmitterSpawnProperty = make_unique<BaseEmitterSpawnProperty>();
 	static std::unique_ptr<BaseEmitterUpdateProperty> baseEmitterUpdateProperty = make_unique<BaseEmitterUpdateProperty>(particleEmitter->GetCurrnetEmitter(), particleEmitter->GetLoopTime());
 	static std::unique_ptr<BaseParticleSpawnProperty> baseParticleSpawnProperty = make_unique<BaseParticleSpawnProperty>(particleEmitter->GetCurrnetEmitter(), particleEmitter->GetLoopTime());
-	static std::unique_ptr<BaseParticleUpdateProperty> baseParticleUpdateProperty = make_unique<BaseParticleUpdateProperty>(particleEmitter->GetIsEmitterForceChanged(), particleEmitter->GetEmitterForce());
+	static std::unique_ptr<BaseParticleUpdateProperty> baseParticleUpdateProperty = make_unique<BaseParticleUpdateProperty>(
+		particleEmitterID,
+		particleEmitter->GetEmitterForce(), 
+		[](UINT forcePropertyIndex) { AEmitter::GEmitterForceChangedIDs.emplace_back(forcePropertyIndex); }
+	);
 
 	baseEmitterSpawnProperty->DrawPropertyUI();
 	baseEmitterUpdateProperty->DrawPropertyUI();
@@ -99,9 +103,7 @@ void EmitterSelector::InitializeParticleEmitterArgs(
 	particleEmitterID = AEmitter::IssueAvailableEmitterID();
 	particleEmitter = make_unique<AEmitter>(
 		static_cast<UINT>(EEmitterType::ParticleEmitter), particleEmitterID,
-		AEmitter::GIsEmitterWorldPositionChanged,
 		AEmitter::GEmitterWorldTransformCPU[particleEmitterID],
-		AEmitter::GIsEmitterForceChanged,
 		AEmitter::GEmitterForcePropertyCPU[particleEmitterID],
 		position,
 		angle
@@ -109,5 +111,9 @@ void EmitterSelector::InitializeParticleEmitterArgs(
 	baseEmitterSpawnProperty = make_unique<BaseEmitterSpawnProperty>();
 	baseEmitterUpdateProperty = make_unique<BaseEmitterUpdateProperty>(particleEmitter->GetCurrnetEmitter(), particleEmitter->GetLoopTime());
 	baseParticleSpawnProperty = make_unique<BaseParticleSpawnProperty>(particleEmitter->GetCurrnetEmitter(), particleEmitter->GetLoopTime());
-	baseParticleUpdateProperty = make_unique<BaseParticleUpdateProperty>(particleEmitter->GetIsEmitterForceChanged(), particleEmitter->GetEmitterForce());
+	baseParticleUpdateProperty = make_unique<BaseParticleUpdateProperty>(
+		particleEmitterID,
+		particleEmitter->GetEmitterForce(),
+		[](UINT forcePropertyIndex) { AEmitter::GEmitterForceChangedIDs.emplace_back(forcePropertyIndex); }
+	);
 }

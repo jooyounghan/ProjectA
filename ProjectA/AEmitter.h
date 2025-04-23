@@ -1,21 +1,24 @@
 #pragma once
 #include "Updatable.h"
-#include "BaseEmitterSpawnProperty.h"
-#include "BaseEmitterUpdateProperty.h"
-#include "BaseParticleSpawnProperty.h"
-#include "BaseParticleUpdateProperty.h"
-#include "ConstantBuffer.h"
-#include "StructuredBuffer.h"
+#include "EmitterForceProperty.h"
 
-#include <DirectXMath.h>
 #include <memory>
 #include <queue>
-
+#include <set>
 
 #define ZERO_MATRIX  DirectX::XMMATRIX(DirectX::XMVectorZero(), DirectX::XMVectorZero(), DirectX::XMVectorZero(), DirectX::XMVectorZero())
 
+class BaseEmitterSpawnProperty;
+class BaseEmitterUpdateProperty;
+class BaseParticleSpawnProperty;
+class BaseParticleUpdateProperty;
+
 namespace D3D11
 {
+	class CConstantBuffer;
+	class CDynamicBuffer;
+	class CStructuredBuffer;
+
 	class CComputeShader;
 	class CVertexShader;
 	class CGeometryShader;
@@ -46,14 +49,14 @@ public:
 	static std::unique_ptr<D3D11::CDynamicBuffer> GEmitterWorldTransformGPU;
 	static std::vector<SEmitterForceProperty> GEmitterForcePropertyCPU;
 	static std::unique_ptr<D3D11::CStructuredBuffer> GEmitterForcePropertyGPU;
-	static bool GIsEmitterWorldPositionChanged;
-	static bool GIsEmitterForceChanged;
+	static std::vector<UINT> GEmitterWorldPositionChangedIDs;
+	static std::vector<UINT> GEmitterForceChangedIDs;
 
 public:
 	static void InitializeGlobalEmitterProperty(UINT emitterMaxCount, ID3D11Device* device);
 	static void UpdateGlobalEmitterProperty(ID3D11DeviceContext* deviceContext);
 	static UINT IssueAvailableEmitterID();
-	static void ReclaimEmitterID(UINT emitterID);
+	static void ReclaimEmitterID(UINT emitterID) noexcept;
 
 #pragma region Emitter ±×¸®±â PSO
 public:
@@ -72,9 +75,7 @@ public:
 	AEmitter(
 		UINT emitterType,
 		UINT emitterID,
-		bool& isEmitterWorldTransformChanged,
 		DirectX::XMMATRIX& emitterWorldTransform,
-		bool& isEmitterForceChanged,
 		SEmitterForceProperty& emitterForce,
 		const DirectX::XMVECTOR& position,
 		const DirectX::XMVECTOR& angle
@@ -96,7 +97,7 @@ public:
 	UINT GetEmitterID() const noexcept { return m_emitterPropertyCPU.emitterID; }
 
 public:
-	inline ID3D11Buffer* GetEmitterPropertyBuffer() const noexcept { return m_emitterPropertyGPU->GetBuffer(); }
+	ID3D11Buffer* GetEmitterPropertyBuffer() const noexcept;
 
 protected:
 	bool m_isSpawned;
@@ -110,14 +111,10 @@ protected:
 	DirectX::XMVECTOR m_angle;
 
 protected:
-	bool& m_isEmitterWorldTransformChanged;
 	DirectX::XMMATRIX& m_emitterWorldTransform;
-
-protected:
-	bool& m_isEmitterForceChanged;
 	SEmitterForceProperty& m_emitterForce;
+
 public:
-	bool& GetIsEmitterForceChanged() { return m_isEmitterForceChanged; }
 	SEmitterForceProperty& GetEmitterForce() { return m_emitterForce; }
 
 protected:

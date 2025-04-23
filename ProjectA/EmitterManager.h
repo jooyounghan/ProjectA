@@ -1,11 +1,11 @@
 #pragma once
-#include "AEmitter.h"
-
-#include "ConstantBuffer.h"
+#include "Updatable.h"
+#include "DispatchIndirectStructure.h"
 #include "IndirectBuffer.h"
-#include "StructuredBuffer.h"
 #include "AppendBuffer.h"
+
 #include <vector>
+#include <memory>
 
 namespace D3D11
 {
@@ -14,7 +14,11 @@ namespace D3D11
 	class CGeometryShader;
 	class CPixelShader;
 	class CGraphicsPSOObject;
+	class CStructuredBuffer;
+	class CAppendBuffer;
 }
+
+class AEmitter;
 
 class CEmitterManager : public IUpdatable
 {

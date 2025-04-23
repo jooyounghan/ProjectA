@@ -1,19 +1,19 @@
 #pragma once
 #include "BaseApp.h"
-
 #include <d3d11.h>
 #include <memory>
 #include <vector>
 
-#include "Camera.h"
-#include "EmitterManager.h"
-
 namespace D3D11
 {
 	class CGraphicsPSOObject;
+	class CDynamicBuffer;
 }
 
+class IUpdatable;
+class CCamera;
 class EmitterSelector;
+class CEmitterManager;
 
 class CProjectAApp : public App::CBaseApp
 {
@@ -62,7 +62,7 @@ private:
 		float appHeight;
 		UINT particleTotalCount;
 	} m_appParamsCPU;
-	D3D11::CDynamicBuffer m_appParamsGPU;
+	std::unique_ptr<D3D11::CDynamicBuffer> m_appParamsGPU;
 
 #pragma region 테스트 변수
 	std::unique_ptr<CCamera> m_camera;

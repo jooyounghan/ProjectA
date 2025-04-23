@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -154,13 +154,12 @@
     <ClCompile Include="BaseEmitterUpdateProperty.cpp" />
     <ClCompile Include="BaseParticleSpawnProperty.cpp" />
     <ClCompile Include="BaseParticleUpdateProperty.cpp" />
-    <ClCompile Include="BaseSelector.cpp" />
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="ControlPointGridView.cpp" />
     <ClCompile Include="EmitterSelector.cpp" />
     <ClCompile Include="External\imgui_impl_dx11.cpp" />
     <ClCompile Include="External\imgui_impl_win32.cpp" />
     <ClCompile Include="GlobalVariable.cpp" />
+    <ClCompile Include="GPUInterpolater.cpp" />
     <ClCompile Include="InterpolationSelector.cpp" />
     <ClCompile Include="IProperty.cpp" />
     <ClCompile Include="main.cpp" />
@@ -182,8 +181,11 @@
     <ClInclude Include="CatmullRomInterpolater.h" />
     <ClInclude Include="CubicSplineInterpolater.h" />
     <ClInclude Include="DefineLinkedWithShader.h" />
+    <ClInclude Include="EmitterForceProperty.h" />
     <ClInclude Include="EmitterSelector.h" />
+    <ClInclude Include="GPUInterpolater.h" />
     <ClInclude Include="Interpolater.h" />
+    <ClInclude Include="InterpolaterStructure.h" />
     <ClInclude Include="InterpolationSelector.h" />
     <ClInclude Include="IProperty.h" />
     <ClInclude Include="External\imgui_impl_dx11.h" />
@@ -195,6 +197,7 @@
     <ClInclude Include="ModelFactory.h" />
     <ClInclude Include="EmitterManager.h" />
     <ClInclude Include="ProjectAApp.h" />
+    <ClInclude Include="ShapedVectorProperty.h" />
     <ClInclude Include="ShapedVectorSelector.h" />
     <ClInclude Include="Updatable.h" />
   </ItemGroup>

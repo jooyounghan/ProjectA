@@ -1,7 +1,13 @@
 #include "BaseParticleSpawnProperty.h"
 #include "MacroUtilities.h"
 #include "BufferMacroUtilities.h"
+
+#include "DynamicBuffer.h"
+
+#include "ShapedVectorSelector.h"
 #include "ControlPointGridView.h"
+#include "InterpolationSelector.h"
+
 
 using namespace std;
 using namespace D3D11;
@@ -79,6 +85,8 @@ BaseParticleSpawnProperty::BaseParticleSpawnProperty(float& emitterCurrentTime, 
 	m_colorInterpolationSelectPlotter->SetInterpolater(m_colorInterpolationMethod, m_colorInterpolater);
 	m_colorInterpolationSelectPlotter->UpdateControlPoints(m_colorInterpolater.get());
 }
+
+ID3D11Buffer* BaseParticleSpawnProperty::GetParticleSpawnPropertyBuffer() const noexcept { return m_baseParticleSpawnPropertyGPU->GetBuffer(); }
 
 void BaseParticleSpawnProperty::AdjustControlPointsFromLoopTime()
 {

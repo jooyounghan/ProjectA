@@ -48,19 +48,24 @@ void DecrementNForceCount(UINT& nForceCount, ENForceKind forceKind)
 
 
 BaseParticleUpdateProperty::BaseParticleUpdateProperty(
-	bool& isEmitterForceChanged,
-	SEmitterForceProperty& emitterForceProperty
+	UINT forcePropertyIndex,
+	SEmitterForceProperty& emitterForceProperty, 
+	const std::function<void(UINT)>& emitterForceUpdatedHandler
 )
-	: m_isEmitterForceChanged(isEmitterForceChanged),
-	m_emitterForceProperty(emitterForceProperty)
+	: 
+	m_forcePropertyIndex(forcePropertyIndex),
+	m_emitterForceProperty(emitterForceProperty),
+	m_isEmitterForcePropertyChanged(false),
+	m_onEmitterForceUpdated(emitterForceUpdatedHandler)
 {
 
 }
 
+
 void BaseParticleUpdateProperty::SetFlag(EForceFlag forceFlag, bool isOn)
 {
 	isOn ? m_emitterForceProperty.forceFlag |= GetForceFlagOffset(forceFlag) : m_emitterForceProperty.forceFlag &= ~GetForceFlagOffset(forceFlag);
-	m_isEmitterForceChanged = true;
+	m_isEmitterForcePropertyChanged = true;
 }
 
 void BaseParticleUpdateProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
@@ -70,7 +75,11 @@ void BaseParticleUpdateProperty::Initialize(ID3D11Device* device, ID3D11DeviceCo
 
 void BaseParticleUpdateProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 {
-
+	if (m_isEmitterForcePropertyChanged)
+	{
+		m_onEmitterForceUpdated(m_forcePropertyIndex);
+		m_isEmitterForcePropertyChanged = false;
+	}
 }
 
 void BaseParticleUpdateProperty::DrawPropertyUI()
@@ -211,12 +220,12 @@ void BaseParticleUpdateProperty::HandleNForce(
 			}
 			else if (nForceCount == MaxNForceCount)
 			{
-				m_isEmitterForceChanged = true;
+				m_isEmitterForcePropertyChanged = true;
 			}
 			else
 			{
 				deleteButtonHandler(removedVortexIdx);
-				m_isEmitterForceChanged = true;
+				m_isEmitterForcePropertyChanged = true;
 			}
 		}
 

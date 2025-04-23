@@ -8,11 +8,20 @@
 #include "PixelShader.h"
 #include "GraphicsPSOObject.h"
 
+#include "ConstantBuffer.h"
+#include "DynamicBuffer.h"
+#include "StructuredBuffer.h"
+
 #include "RasterizerState.h"
 #include "BlendState.h"
 #include "DepthStencilState.h"
 
 #include "ModelFactory.h"
+
+#include "BaseEmitterSpawnProperty.h"
+#include "BaseEmitterUpdateProperty.h"
+#include "BaseParticleSpawnProperty.h"
+#include "BaseParticleUpdateProperty.h"
 
 #include <exception>
 
@@ -27,8 +36,8 @@ vector<DirectX::XMMATRIX> AEmitter::GEmitterWorldTransformCPU;
 unique_ptr<D3D11::CDynamicBuffer> AEmitter::GEmitterWorldTransformGPU = nullptr;
 vector<SEmitterForceProperty> AEmitter::GEmitterForcePropertyCPU;
 unique_ptr<D3D11::CStructuredBuffer> AEmitter::GEmitterForcePropertyGPU = nullptr;
-bool AEmitter::GIsEmitterWorldPositionChanged = false;
-bool AEmitter::GIsEmitterForceChanged = false;
+vector<UINT> AEmitter::GEmitterWorldPositionChangedIDs;
+vector<UINT> AEmitter::GEmitterForceChangedIDs;
 
 const vector<XMFLOAT3> AEmitter::GEmitterBoxPositions = ModelFactory::CreateBoxPositions(XMVectorSet(1.f, 1.f, 1.f, 0.f));
 const vector<UINT> AEmitter::GEmitterBoxIndices = ModelFactory::CreateIndices();
@@ -45,9 +54,6 @@ void AEmitter::InitializeGlobalEmitterProperty(UINT emitterMaxCount, ID3D11Devic
 	{
 		GEmitterIDQueue.push(idx);
 	}
-
-	GIsEmitterWorldPositionChanged = false;
-	GIsEmitterForceChanged = false;
 
 	SEmitterForceProperty initialForceProperty;
 	AutoZeroMemory(initialForceProperty);
@@ -72,16 +78,20 @@ void AEmitter::InitializeGlobalEmitterProperty(UINT emitterMaxCount, ID3D11Devic
 
 void AEmitter::UpdateGlobalEmitterProperty(ID3D11DeviceContext* deviceContext)
 {
-	if (GIsEmitterWorldPositionChanged)
+	UINT emitterWorldPositionChangedIDsCount = static_cast<UINT>(GEmitterWorldPositionChangedIDs.size());
+	if (emitterWorldPositionChangedIDsCount > 0)
 	{
-		GEmitterWorldTransformGPU->Stage(deviceContext);
-		GEmitterWorldTransformGPU->Upload(deviceContext);
+		GEmitterWorldTransformGPU->StageNthElement(deviceContext, GEmitterWorldPositionChangedIDs.data(), emitterWorldPositionChangedIDsCount);
+		GEmitterWorldTransformGPU->UploadNthElement(deviceContext, GEmitterWorldPositionChangedIDs.data(), emitterWorldPositionChangedIDsCount);
+		GEmitterWorldPositionChangedIDs.clear();
 	}
 
-	if (GIsEmitterForceChanged)
+	UINT emitterForceChagnedIDsCount = static_cast<UINT>(GEmitterForceChangedIDs.size());
+	if (emitterForceChagnedIDsCount > 0)
 	{
-		GEmitterForcePropertyGPU->Stage(deviceContext);
-		GEmitterForcePropertyGPU->Upload(deviceContext);
+		GEmitterForcePropertyGPU->StageNthElement(deviceContext, GEmitterForceChangedIDs.data(), emitterForceChagnedIDsCount);
+		GEmitterForcePropertyGPU->UploadNthElement(deviceContext, GEmitterForceChangedIDs.data(), emitterForceChagnedIDsCount);
+		GEmitterForceChangedIDs.clear();
 	}
 }
 
@@ -95,7 +105,7 @@ UINT AEmitter::IssueAvailableEmitterID()
 	return emitterID;
 }
 
-void AEmitter::ReclaimEmitterID(UINT emitterID)
+void AEmitter::ReclaimEmitterID(UINT emitterID) noexcept
 {
 	GEmitterIDQueue.push(emitterID);
 }
@@ -175,9 +185,7 @@ void AEmitter::DrawEmittersDebugCube(ID3D11DeviceContext* deviceContext)
 AEmitter::AEmitter(
 	UINT emitterType,
 	UINT emitterID,
-	bool& isEmitterWorldTransformChanged,
 	XMMATRIX& emitterWorldTransform,
-	bool& isEmitterForceChanged,
 	SEmitterForceProperty& emitterForce,
 	const XMVECTOR& position,
 	const XMVECTOR& angle
@@ -185,9 +193,7 @@ AEmitter::AEmitter(
 	m_isSpawned(false),
 	m_position(position),
 	m_angle(angle),
-	m_isEmitterWorldTransformChanged(isEmitterWorldTransformChanged),
 	m_emitterWorldTransform(emitterWorldTransform),
-	m_isEmitterForceChanged(isEmitterForceChanged),
 	m_emitterForce(emitterForce),
 	m_isEmitterPropertyChanged(false),
 	m_currnetEmitter(0.f),
@@ -199,6 +205,8 @@ AEmitter::AEmitter(
 	m_emitterPropertyCPU.emitterWorldTransform = emitterWorldTransform;
 	m_isEmitterPropertyChanged = true;
 }
+
+ID3D11Buffer* AEmitter::GetEmitterPropertyBuffer() const noexcept { return m_emitterPropertyGPU->GetBuffer(); }
 
 void AEmitter::InjectAEmitterSpawnProperty(unique_ptr<BaseEmitterSpawnProperty>& emitterSpawnProperty) noexcept 
 { 
@@ -262,8 +270,9 @@ void AEmitter::Update(ID3D11DeviceContext* deviceContext, float dt)
 		m_emitterPropertyGPU->Stage(deviceContext);
 		m_emitterPropertyGPU->Upload(deviceContext);
 
+		GEmitterWorldPositionChangedIDs.emplace_back(m_emitterPropertyCPU.emitterID);
+
 		m_isEmitterPropertyChanged = false;
-		m_isEmitterWorldTransformChanged = true;
 	}
 	UPDATE_PROPRTY(m_emitterSpawnProperty, deviceContext, dt);
 	UPDATE_PROPRTY(m_emitterUpdateProperty, deviceContext, dt);
