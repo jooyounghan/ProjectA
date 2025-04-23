@@ -8,7 +8,7 @@ using namespace std;
 using namespace DirectX;
 using namespace ImGui;
 
-unordered_map<EShapedVector, string> ShapedVectorSelector::GShapedVectorStringMaps
+unordered_map<EShapedVector, string> CShapedVectorSelector::GShapedVectorStringMaps
 {
 	{ EShapedVector::None, "설정 안함" },
 	{ EShapedVector::Manual, "Manual" },
@@ -17,12 +17,12 @@ unordered_map<EShapedVector, string> ShapedVectorSelector::GShapedVectorStringMa
 	{ EShapedVector::Cone, "Cone" }
 };
 
-ShapedVectorSelector::ShapedVectorSelector(
+CShapedVectorSelector::CShapedVectorSelector(
 	const std::string& selectorName,
 	const std::string& radiusName,
 	SShapedVectorProperty& shapedVectorProperty
 )
-	: BaseSelector<EShapedVector>(selectorName, GShapedVectorStringMaps),
+	: CBaseSelector<EShapedVector>(selectorName, GShapedVectorStringMaps),
 	m_selectorName(selectorName),
 	m_radiusName(radiusName),
 	m_origin(XMFLOAT3(0.f, 0.f, 0.f)),
@@ -33,7 +33,7 @@ ShapedVectorSelector::ShapedVectorSelector(
 
 }
 
-bool ShapedVectorSelector::SetShapedVectorProperty(EShapedVector selectedShapedVector)
+bool CShapedVectorSelector::SetShapedVectorProperty(EShapedVector selectedShapedVector)
 {
 	bool isChanged = false;
 
@@ -44,16 +44,16 @@ bool ShapedVectorSelector::SetShapedVectorProperty(EShapedVector selectedShapedV
 		ResetShapedVector();
 		break;
 	case EShapedVector::Manual:
-		isChanged |= ShapedVectorSelector::SetManualShapedVector();
+		isChanged |= CShapedVectorSelector::SetManualShapedVector();
 		break;
 	case EShapedVector::Sphere:
-		isChanged |= ShapedVectorSelector::SetSphereShapedVector();
+		isChanged |= CShapedVectorSelector::SetSphereShapedVector();
 		break;
 	case EShapedVector::HemiSphere:
-		isChanged |= ShapedVectorSelector::SetHemiSphereShapedVector();
+		isChanged |= CShapedVectorSelector::SetHemiSphereShapedVector();
 		break;
 	case EShapedVector::Cone:
-		isChanged |= ShapedVectorSelector::SetConeShapedVector();
+		isChanged |= CShapedVectorSelector::SetConeShapedVector();
 		break;
 	}
 	PopID();
@@ -61,12 +61,12 @@ bool ShapedVectorSelector::SetShapedVectorProperty(EShapedVector selectedShapedV
 	return isChanged;
 }
 
-void ShapedVectorSelector::ResetShapedVector()
+void CShapedVectorSelector::ResetShapedVector()
 {
 	AutoZeroMemory(m_shapedVectorProperty);
 }
 
-bool ShapedVectorSelector::SetManualShapedVector()
+bool CShapedVectorSelector::SetManualShapedVector()
 {
 	bool isChanged = false;
 
@@ -105,7 +105,7 @@ bool ShapedVectorSelector::SetManualShapedVector()
 	return isChanged;
 }
 
-bool ShapedVectorSelector::SetSphereShapedVector()
+bool CShapedVectorSelector::SetSphereShapedVector()
 {
 	bool isChanged = false;
 
@@ -121,7 +121,7 @@ bool ShapedVectorSelector::SetSphereShapedVector()
 	return isChanged;
 }
 
-bool ShapedVectorSelector::SetHemiSphereShapedVector()
+bool CShapedVectorSelector::SetHemiSphereShapedVector()
 {
 	bool isChanged = false;
 
@@ -148,7 +148,7 @@ bool ShapedVectorSelector::SetHemiSphereShapedVector()
 	return isChanged;
 }
 
-bool ShapedVectorSelector::SetConeShapedVector()
+bool CShapedVectorSelector::SetConeShapedVector()
 {
 	bool isChanged = false;
 
@@ -177,7 +177,7 @@ bool ShapedVectorSelector::SetConeShapedVector()
 	return isChanged;
 }
 
-XMVECTOR ShapedVectorSelector::GetRotationQuaternion(const XMVECTOR& from, const XMVECTOR& to)
+XMVECTOR CShapedVectorSelector::GetRotationQuaternion(const XMVECTOR& from, const XMVECTOR& to)
 {
 	XMVECTOR v = XMVector3Normalize(from);
 	XMVECTOR d = XMVector3Normalize(to);

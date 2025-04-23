@@ -3,10 +3,10 @@
 #include <memory>
 
 class AEmitter;
-class BaseEmitterSpawnProperty;
-class BaseEmitterUpdateProperty;
-class BaseParticleSpawnProperty;
-class BaseParticleUpdateProperty;
+class CBaseEmitterSpawnProperty;
+class CBaseEmitterUpdateProperty;
+class CBaseParticleSpawnProperty;
+class CBaseParticleUpdateProperty;
 
 enum class EEmitterType
 {
@@ -16,11 +16,11 @@ enum class EEmitterType
 	MeshEmitter
 };
 
-class EmitterSelector : public BaseSelector<EEmitterType>
+class CEmitterSelector : public CBaseSelector<EEmitterType>
 {
 public:
-	EmitterSelector(const std::string& selectorName);
-	~EmitterSelector() override = default;
+	CEmitterSelector(const std::string& selectorName);
+	~CEmitterSelector() override = default;
 
 public:
 	bool CreateEmitter(EEmitterType emitterType, std::unique_ptr<AEmitter>& emitter);
@@ -30,10 +30,10 @@ protected:
 	void InitializeParticleEmitterArgs(
 		DirectX::XMVECTOR& position, DirectX::XMVECTOR& angle,
 		uint32_t& particleEmitterID, std::unique_ptr<AEmitter/*ParticleEmitter*/>& particleEmitter,
-		std::unique_ptr<BaseEmitterSpawnProperty>& baseEmitterSpawnProperty,
-		std::unique_ptr<BaseEmitterUpdateProperty>& baseEmitterUpdateProperty,
-		std::unique_ptr<BaseParticleSpawnProperty>& baseParticleSpawnProperty,
-		std::unique_ptr<BaseParticleUpdateProperty>& baseParticleUpdateProperty
+		std::unique_ptr<CBaseEmitterSpawnProperty>& baseEmitterSpawnProperty,
+		std::unique_ptr<CBaseEmitterUpdateProperty>& baseEmitterUpdateProperty,
+		std::unique_ptr<CBaseParticleSpawnProperty>& baseParticleSpawnProperty,
+		std::unique_ptr<CBaseParticleUpdateProperty>& baseParticleUpdateProperty
 	);
 };
 

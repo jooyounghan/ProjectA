@@ -17,6 +17,7 @@
 #include "DepthStencilState.h"
 
 #include "AEmitter.h"
+#include "EmitterStaticData.h"
 #include "BaseEmitterSpawnProperty.h"
 #include "BaseEmitterUpdateProperty.h"
 #include "BaseParticleSpawnProperty.h"
@@ -129,9 +130,9 @@ void CEmitterManager::RemoveParticleEmitter(UINT emitterID)
 	vector<unique_ptr<AEmitter>>::iterator iter;
 	if (FindEmitterFromID(emitterID, iter))
 	{
-		AEmitter::ReclaimEmitterID(emitterID);
-		AEmitter::GEmitterWorldTransformCPU[emitterID] = ZERO_MATRIX;
-		AEmitter::GChangedEmitterWorldPositionIDs.emplace_back(emitterID);
+		EmitterStaticData::ReclaimEmitterID(emitterID);
+		EmitterStaticData::GEmitterWorldTransformCPU[emitterID] = ZERO_MATRIX;
+		EmitterStaticData::AddChangedEmitterWorldPositionID(emitterID);
 		m_emitters.erase(iter);
 	}
 	else 
@@ -232,7 +233,7 @@ void CEmitterManager::InitializeParticleSet(ID3D11DeviceContext* deviceContext)
 {
 	const static UINT dispatchX = UINT(ceil(m_particleMaxCount / LocalThreadCount));
 
-	ID3D11ShaderResourceView* selectSetSRVs[] = { GPUInterpolater<4, 2>::GInterpolaterPropertyGPU->GetSRV(), GPUInterpolater<4, 4>::GInterpolaterPropertyGPU->GetSRV() };
+	ID3D11ShaderResourceView* selectSetSRVs[] = { CGPUInterpolater<4, 2>::GInterpolaterPropertyGPU->GetSRV(), CGPUInterpolater<4, 4>::GInterpolaterPropertyGPU->GetSRV() };
 	ID3D11ShaderResourceView* selectSetNullSRVs[] = { nullptr, nullptr };
 	ID3D11UnorderedAccessView* selectSetUavs[] = { 
 		m_particleDrawIndirectStagingGPU->GetUAV(),
@@ -266,7 +267,7 @@ void CEmitterManager::SourceEmitter(ID3D11DeviceContext* deviceContext)
 	{
 		if (!emitter->IsSpawned())
 		{
-			BaseEmitterSpawnProperty* emitterSpawnProperty = emitter->GetAEmitterSpawnProperty();
+			CBaseEmitterSpawnProperty* emitterSpawnProperty = emitter->GetAEmitterSpawnProperty();
 			ID3D11Buffer* emitterInitialSourceBuffers[] = { emitter->GetEmitterPropertyBuffer(), emitterSpawnProperty->GetEmitterSpawnPropertyBuffer() };
 			ID3D11Buffer* emitterInitialSourceNullBuffers[] = { nullptr, nullptr };
 			const UINT dispatchX = UINT(ceil(emitterSpawnProperty->GetInitialParticleCount() / LocalThreadCount));
@@ -283,8 +284,8 @@ void CEmitterManager::SourceEmitter(ID3D11DeviceContext* deviceContext)
 	GParticleRuntimeSourceCS->SetShader(deviceContext);
 	for (auto& emitter : m_emitters)
 	{
-		BaseEmitterUpdateProperty* emitterUpdateProperty = emitter->GetAEmitterUpdateProperty();
-		BaseParticleSpawnProperty* particleSpawnProperty = emitter->GetAParticleSpawnProperty();
+		CBaseEmitterUpdateProperty* emitterUpdateProperty = emitter->GetAEmitterUpdateProperty();
+		CBaseParticleSpawnProperty* particleSpawnProperty = emitter->GetAParticleSpawnProperty();
 
 		ID3D11Buffer* emitterRuntimeSourceBuffers[] = { emitter->GetEmitterPropertyBuffer(), particleSpawnProperty->GetParticleSpawnPropertyBuffer() };
 		ID3D11Buffer* emitterRuntimeSourceNullBuffers[] = { nullptr, nullptr };
@@ -395,7 +396,7 @@ void CEmitterManager::SortingParitcleIndices(ID3D11DeviceContext* deviceContext)
 
 void CEmitterManager::CaculateParticlesForce(ID3D11DeviceContext* deviceContext)
 {
-	ID3D11ShaderResourceView* simulateSrvs[] = { m_particleDrawIndirectStagingGPU->GetSRV(), m_indicesBuffers->GetSRV(), AEmitter::GEmitterForcePropertyGPU->GetSRV() };
+	ID3D11ShaderResourceView* simulateSrvs[] = { m_particleDrawIndirectStagingGPU->GetSRV(), m_indicesBuffers->GetSRV(), EmitterStaticData::GEmitterForcePropertyGPU->GetSRV() };
 	ID3D11ShaderResourceView* simulateNullSrvs[] = { nullptr, nullptr, nullptr };
 
 	ID3D11UnorderedAccessView* simulateUav = m_totalParticles->GetUAV();

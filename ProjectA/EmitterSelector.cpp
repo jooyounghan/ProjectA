@@ -1,6 +1,8 @@
 #include "EmitterSelector.h"
 
 #include "AEmitter.h"
+#include "EmitterStaticData.h"
+
 #include "DynamicBuffer.h"
 #include "BaseEmitterSpawnProperty.h"
 #include "BaseEmitterUpdateProperty.h"
@@ -20,12 +22,12 @@ static unordered_map<EEmitterType, string> GEmitterStringMaps
 	{ EEmitterType::MeshEmitter, "매시 이미터" }
 };
 
-EmitterSelector::EmitterSelector(const string& selectorName)
-	: BaseSelector(selectorName, GEmitterStringMaps)
+CEmitterSelector::CEmitterSelector(const string& selectorName)
+	: CBaseSelector(selectorName, GEmitterStringMaps)
 {
 }
 
-bool EmitterSelector::CreateEmitter(EEmitterType emitterType, unique_ptr<AEmitter>& emitter)
+bool CEmitterSelector::CreateEmitter(EEmitterType emitterType, unique_ptr<AEmitter>& emitter)
 {
 	bool result = false;
 	switch (emitterType)
@@ -46,30 +48,30 @@ bool EmitterSelector::CreateEmitter(EEmitterType emitterType, unique_ptr<AEmitte
 	return result;
 }
 
-bool EmitterSelector::CreateParticleEmitter(unique_ptr<AEmitter>& emitter)
+bool CEmitterSelector::CreateParticleEmitter(unique_ptr<AEmitter>& emitter)
 {
 	static XMVECTOR position = XMVectorZero();
 	static XMVECTOR angle = XMVectorZero();
-	static UINT particleEmitterID = AEmitter::IssueAvailableEmitterID();
+	static UINT particleEmitterID = EmitterStaticData::IssueAvailableEmitterID();
 	static std::unique_ptr<AEmitter/*ParticleEmitter*/> particleEmitter = make_unique<AEmitter>(
 		static_cast<UINT>(EEmitterType::ParticleEmitter), particleEmitterID,
-		AEmitter::GEmitterWorldTransformCPU[particleEmitterID],
-		AEmitter::GEmitterForcePropertyCPU[particleEmitterID],
+		EmitterStaticData::GEmitterWorldTransformCPU[particleEmitterID],
+		EmitterStaticData::GEmitterForcePropertyCPU[particleEmitterID],
 		position,
 		angle
 	);
 
 	AEmitter* currentEmitter = particleEmitter.get();
 
-	static std::unique_ptr<BaseEmitterSpawnProperty> baseEmitterSpawnProperty = make_unique<BaseEmitterSpawnProperty>();
-	static std::unique_ptr<BaseEmitterUpdateProperty> baseEmitterUpdateProperty = make_unique<BaseEmitterUpdateProperty>(particleEmitter->GetCurrnetEmitter(), particleEmitter->GetLoopTime());
-	static std::unique_ptr<BaseParticleSpawnProperty> baseParticleSpawnProperty = make_unique<BaseParticleSpawnProperty>(
+	static std::unique_ptr<CBaseEmitterSpawnProperty> baseEmitterSpawnProperty = make_unique<CBaseEmitterSpawnProperty>();
+	static std::unique_ptr<CBaseEmitterUpdateProperty> baseEmitterUpdateProperty = make_unique<CBaseEmitterUpdateProperty>(particleEmitter->GetCurrnetEmitter(), particleEmitter->GetLoopTime());
+	static std::unique_ptr<CBaseParticleSpawnProperty> baseParticleSpawnProperty = make_unique<CBaseParticleSpawnProperty>(
 		[currentEmitter](UINT interpolaterID, UINT interpolaterDegree) { currentEmitter->SetColorInterpolaterProperty(interpolaterID, interpolaterDegree); }
 	);
-	static std::unique_ptr<BaseParticleUpdateProperty> baseParticleUpdateProperty = make_unique<BaseParticleUpdateProperty>(
+	static std::unique_ptr<CBaseParticleUpdateProperty> baseParticleUpdateProperty = make_unique<CBaseParticleUpdateProperty>(
 		particleEmitterID,
 		particleEmitter->GetEmitterForce(), 
-		[](UINT forcePropertyIndex) { AEmitter::GChangedEmitterForceIDs.emplace_back(forcePropertyIndex); }
+		[](UINT forcePropertyIndex) { EmitterStaticData::AddChangedEmitterForceID(forcePropertyIndex); }
 	);
 
 	baseEmitterSpawnProperty->DrawPropertyUI();
@@ -94,36 +96,36 @@ bool EmitterSelector::CreateParticleEmitter(unique_ptr<AEmitter>& emitter)
 	return false;
 }
 
-void EmitterSelector::InitializeParticleEmitterArgs(
+void CEmitterSelector::InitializeParticleEmitterArgs(
 	XMVECTOR& position, XMVECTOR& angle, uint32_t& particleEmitterID,
 	unique_ptr<AEmitter>& particleEmitter,
-	unique_ptr<BaseEmitterSpawnProperty>& baseEmitterSpawnProperty, 
-	unique_ptr<BaseEmitterUpdateProperty>& baseEmitterUpdateProperty, 
-	unique_ptr<BaseParticleSpawnProperty>& baseParticleSpawnProperty, 
-	unique_ptr<BaseParticleUpdateProperty>& baseParticleUpdateProperty
+	unique_ptr<CBaseEmitterSpawnProperty>& baseEmitterSpawnProperty, 
+	unique_ptr<CBaseEmitterUpdateProperty>& baseEmitterUpdateProperty, 
+	unique_ptr<CBaseParticleSpawnProperty>& baseParticleSpawnProperty, 
+	unique_ptr<CBaseParticleUpdateProperty>& baseParticleUpdateProperty
 )
 {
 	position = XMVectorZero();
 	angle = XMVectorZero();
-	particleEmitterID = AEmitter::IssueAvailableEmitterID();
+	particleEmitterID = EmitterStaticData::IssueAvailableEmitterID();
 	particleEmitter = make_unique<AEmitter>(
 		static_cast<UINT>(EEmitterType::ParticleEmitter), particleEmitterID,
-		AEmitter::GEmitterWorldTransformCPU[particleEmitterID],
-		AEmitter::GEmitterForcePropertyCPU[particleEmitterID],
+		EmitterStaticData::GEmitterWorldTransformCPU[particleEmitterID],
+		EmitterStaticData::GEmitterForcePropertyCPU[particleEmitterID],
 		position,
 		angle
 	);
 
 	AEmitter* emitter = particleEmitter.get();
 
-	baseEmitterSpawnProperty = make_unique<BaseEmitterSpawnProperty>();
-	baseEmitterUpdateProperty = make_unique<BaseEmitterUpdateProperty>(particleEmitter->GetCurrnetEmitter(), particleEmitter->GetLoopTime());
-	baseParticleSpawnProperty = make_unique<BaseParticleSpawnProperty>(
+	baseEmitterSpawnProperty = make_unique<CBaseEmitterSpawnProperty>();
+	baseEmitterUpdateProperty = make_unique<CBaseEmitterUpdateProperty>(particleEmitter->GetCurrnetEmitter(), particleEmitter->GetLoopTime());
+	baseParticleSpawnProperty = make_unique<CBaseParticleSpawnProperty>(
 		[emitter](UINT interpolaterPropertyID, UINT interpolaterDegree) {emitter->SetColorInterpolaterProperty(interpolaterPropertyID, interpolaterDegree); }
 	);
-	baseParticleUpdateProperty = make_unique<BaseParticleUpdateProperty>(
+	baseParticleUpdateProperty = make_unique<CBaseParticleUpdateProperty>(
 		particleEmitterID,
 		particleEmitter->GetEmitterForce(),
-		[](UINT forcePropertyIndex) { AEmitter::GChangedEmitterForceIDs.emplace_back(forcePropertyIndex); }
+		[](UINT forcePropertyIndex) { EmitterStaticData::AddChangedEmitterForceID(forcePropertyIndex); }
 	);
 }

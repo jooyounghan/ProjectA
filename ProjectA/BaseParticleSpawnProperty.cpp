@@ -16,7 +16,7 @@ using namespace ImGui;
 
 #define InitLife 1.f
 
-BaseParticleSpawnProperty::BaseParticleSpawnProperty(
+CBaseParticleSpawnProperty::CBaseParticleSpawnProperty(
 	const function<void(uint32_t, uint32_t)>& colorInterpolationChangedHandler
 )
 	: IProperty(),
@@ -33,17 +33,17 @@ BaseParticleSpawnProperty::BaseParticleSpawnProperty(
 	m_baseParticleSpawnPropertyCPU.life = InitLife;
 	m_lastParticleLife = InitLife;
 
-	m_positionShapedVectorSelector = make_unique<ShapedVectorSelector>(
+	m_positionShapedVectorSelector = make_unique<CShapedVectorSelector>(
 		"생성 위치 벡터", "생성 반지름",
 		m_baseParticleSpawnPropertyCPU.shapedPositionVectorProperty
 	);
 
-	m_speedShapedVectorSelector = make_unique<ShapedVectorSelector>(
+	m_speedShapedVectorSelector = make_unique<CShapedVectorSelector>(
 		"생성 속도 벡터", "생성 속도",
 		m_baseParticleSpawnPropertyCPU.shapedSpeedVectorProperty
 	);
 
-	m_colorControlPointGridView = make_unique<ControlPointGridView<4>>(
+	m_colorControlPointGridView = make_unique<CControlPointGridView<4>>(
 		"시간",
 		array<string, 4>{ "R", "G", "B", "A"},
 		"색상값",
@@ -53,7 +53,7 @@ BaseParticleSpawnProperty::BaseParticleSpawnProperty(
 		m_colorControlPoints
 	);
 
-	m_colorInterpolationSelectPlotter = make_unique<InterpolaterSelectPlotter<4, true>>(
+	m_colorInterpolationSelectPlotter = make_unique<CInterpolaterSelectPlotter<4, true>>(
 		"파티클 색상 보간 방법",
 		"Color Control Points",
 		array<string, 4>{ "R", "G", "B", "A" },
@@ -67,9 +67,9 @@ BaseParticleSpawnProperty::BaseParticleSpawnProperty(
 	m_onColorInterpolationChanged(m_colorInterpolater->GetInterpolaterID(), m_colorInterpolater->GetCoefficientCount());
 }
 
-ID3D11Buffer* BaseParticleSpawnProperty::GetParticleSpawnPropertyBuffer() const noexcept { return m_baseParticleSpawnPropertyGPU->GetBuffer(); }
+ID3D11Buffer* CBaseParticleSpawnProperty::GetParticleSpawnPropertyBuffer() const noexcept { return m_baseParticleSpawnPropertyGPU->GetBuffer(); }
 
-void BaseParticleSpawnProperty::AdjustControlPointsFromLife()
+void CBaseParticleSpawnProperty::AdjustControlPointsFromLife()
 {
 	const float& life = m_baseParticleSpawnPropertyCPU.life;
 	m_colorFinalControlPoint.x = life;
@@ -88,13 +88,13 @@ void BaseParticleSpawnProperty::AdjustControlPointsFromLife()
 }
 
 
-void BaseParticleSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
+void CBaseParticleSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 	m_baseParticleSpawnPropertyGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_baseParticleSpawnPropertyCPU));
 	m_baseParticleSpawnPropertyGPU->InitializeBuffer(device);
 }
 
-void BaseParticleSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
+void CBaseParticleSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 {
 	if (m_isParticleSpawnPropertyChanged)
 	{
@@ -104,7 +104,7 @@ void BaseParticleSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float
 	}
 }
 
-void BaseParticleSpawnProperty::DrawPropertyUI()
+void CBaseParticleSpawnProperty::DrawPropertyUI()
 {
 	const float& life = m_baseParticleSpawnPropertyCPU.life;
 	if (m_lastParticleLife - 1E-3 < life && life < m_lastParticleLife + 1E+3)

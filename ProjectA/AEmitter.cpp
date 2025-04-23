@@ -2,22 +2,9 @@
 #include "MacroUtilities.h"
 #include "BufferMacroUtilities.h"
 
-#include "ComputeShader.h"
-#include "VertexShader.h"
-#include "GeometryShader.h"
-#include "PixelShader.h"
-#include "GraphicsPSOObject.h"
-
-#include "ConstantBuffer.h"
 #include "DynamicBuffer.h"
-#include "StructuredBuffer.h"
 
-#include "RasterizerState.h"
-#include "BlendState.h"
-#include "DepthStencilState.h"
-
-#include "ModelFactory.h"
-
+#include "EmitterStaticData.h"
 #include "BaseEmitterSpawnProperty.h"
 #include "BaseEmitterUpdateProperty.h"
 #include "BaseParticleSpawnProperty.h"
@@ -28,159 +15,6 @@
 using namespace std;
 using namespace DirectX;
 using namespace D3D11;
-
-
-UINT AEmitter::GEmitterMaxCount = 0;
-queue<UINT> AEmitter::GEmitterIDQueue;
-vector<DirectX::XMMATRIX> AEmitter::GEmitterWorldTransformCPU;
-unique_ptr<D3D11::CDynamicBuffer> AEmitter::GEmitterWorldTransformGPU = nullptr;
-vector<SEmitterForceProperty> AEmitter::GEmitterForcePropertyCPU;
-unique_ptr<D3D11::CStructuredBuffer> AEmitter::GEmitterForcePropertyGPU = nullptr;
-vector<UINT> AEmitter::GChangedEmitterWorldPositionIDs;
-vector<UINT> AEmitter::GChangedEmitterForceIDs;
-
-const vector<XMFLOAT3> AEmitter::GEmitterBoxPositions = ModelFactory::CreateBoxPositions(XMVectorSet(1.f, 1.f, 1.f, 0.f));
-const vector<UINT> AEmitter::GEmitterBoxIndices = ModelFactory::CreateIndices();
-unique_ptr<CVertexShader> AEmitter::GEmitterDrawVS = make_unique<CVertexShader>(5);
-unique_ptr<CPixelShader> AEmitter::GEmitterDrawPS = make_unique<CPixelShader>();
-unique_ptr<CGraphicsPSOObject> AEmitter::GDrawEmitterPSO = nullptr;
-unique_ptr<CConstantBuffer> AEmitter::GEmitterPositionBuffer = nullptr;
-unique_ptr<CConstantBuffer> AEmitter::GEmitterIndexBuffer = nullptr;
-
-void AEmitter::InitializeGlobalEmitterProperty(UINT emitterMaxCount, ID3D11Device* device)
-{
-	GEmitterMaxCount = emitterMaxCount;
-	for (UINT idx = 0; idx < GEmitterMaxCount; ++idx)
-	{
-		GEmitterIDQueue.push(idx);
-	}
-
-	SEmitterForceProperty initialForceProperty;
-	AutoZeroMemory(initialForceProperty);
-	GEmitterWorldTransformCPU.resize(GEmitterMaxCount, ZERO_MATRIX);
-	GEmitterForcePropertyCPU.resize(GEmitterMaxCount, initialForceProperty);
-
-	GEmitterWorldTransformGPU = make_unique<CDynamicBuffer>(
-		static_cast<UINT>(sizeof(XMMATRIX)),
-		static_cast<UINT>(GEmitterWorldTransformCPU.size()),
-		GEmitterWorldTransformCPU.data(),
-		D3D11_BIND_VERTEX_BUFFER
-	);
-	GEmitterForcePropertyGPU = make_unique<CStructuredBuffer>(
-		static_cast<UINT>(sizeof(SEmitterForceProperty)),
-		static_cast<UINT>(GEmitterForcePropertyCPU.size()),
-		GEmitterForcePropertyCPU.data()
-	);
-
-	GEmitterWorldTransformGPU->InitializeBuffer(device);
-	GEmitterForcePropertyGPU->InitializeBuffer(device);
-}
-
-UINT AEmitter::IssueAvailableEmitterID()
-{
-	if (GEmitterIDQueue.empty()) { throw exception("No Emitter ID To Issue"); }
-
-	UINT emitterID = GEmitterIDQueue.front();
-	GEmitterIDQueue.pop();
-
-	return emitterID;
-}
-
-void AEmitter::ReclaimEmitterID(UINT emitterID) noexcept
-{
-	GEmitterIDQueue.push(emitterID);
-}
-
-void AEmitter::UpdateGlobalEmitterProperty(ID3D11DeviceContext* deviceContext)
-{
-	UINT emitterWorldPositionChangedIDsCount = static_cast<UINT>(GChangedEmitterWorldPositionIDs.size());
-	if (emitterWorldPositionChangedIDsCount > 0)
-	{
-		GEmitterWorldTransformGPU->StageNthElement(deviceContext, GChangedEmitterWorldPositionIDs.data(), emitterWorldPositionChangedIDsCount);
-		GEmitterWorldTransformGPU->UploadNthElement(deviceContext, GChangedEmitterWorldPositionIDs.data(), emitterWorldPositionChangedIDsCount);
-		GChangedEmitterWorldPositionIDs.clear();
-	}
-
-	UINT emitterForceChagnedIDsCount = static_cast<UINT>(GChangedEmitterForceIDs.size());
-	if (emitterForceChagnedIDsCount > 0)
-	{
-		GEmitterForcePropertyGPU->StageNthElement(deviceContext, GChangedEmitterForceIDs.data(), emitterForceChagnedIDsCount);
-		GEmitterForcePropertyGPU->UploadNthElement(deviceContext, GChangedEmitterForceIDs.data(), emitterForceChagnedIDsCount);
-		GChangedEmitterForceIDs.clear();
-	}
-}
-
-void AEmitter::InitializeEmitterDrawPSO(ID3D11Device* device)
-{
-	GEmitterPositionBuffer = make_unique<CConstantBuffer>(
-		12, static_cast<UINT>(GEmitterBoxPositions.size()), GEmitterBoxPositions.data(), D3D11_BIND_VERTEX_BUFFER
-		);
-	GEmitterPositionBuffer->InitializeBuffer(device);
-
-	GEmitterIndexBuffer = make_unique<CConstantBuffer>(
-		4, static_cast<UINT>(GEmitterBoxIndices.size()), GEmitterBoxIndices.data(), D3D11_BIND_INDEX_BUFFER
-		);
-	GEmitterIndexBuffer->InitializeBuffer(device);
-
-	GEmitterDrawVS->AddInputLayoutElement(
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	);
-	GEmitterDrawVS->AddInputLayoutElement(
-		{ "INSTANCE_WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
-	);
-	GEmitterDrawVS->AddInputLayoutElement(
-		{ "INSTANCE_WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
-	);
-	GEmitterDrawVS->AddInputLayoutElement(
-		{ "INSTANCE_WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
-	);
-	GEmitterDrawVS->AddInputLayoutElement(
-		{ "INSTANCE_WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
-	);
-
-	GEmitterDrawVS->CreateShader(L"./EmitterDrawVS.hlsl", "main", "vs_5_0", device);
-	GEmitterDrawPS->CreateShader(L"./EmitterDrawPS.hlsl", "main", "ps_5_0", device);
-
-	GDrawEmitterPSO = make_unique<CGraphicsPSOObject>(
-		GEmitterDrawVS.get(),
-		nullptr,
-		nullptr,
-		nullptr,
-		GEmitterDrawPS.get(),
-		CRasterizerState::GetRSWireframeCWSS(),
-		nullptr,
-		CDepthStencilState::GetDSDraw(),
-		nullptr,
-		0
-	);
-}
-
-void AEmitter::DrawEmittersDebugCube(ID3D11DeviceContext* deviceContext)
-{
-	static vector<ID3D11Buffer*> vertexBuffer = { GEmitterPositionBuffer->GetBuffer(), GEmitterWorldTransformGPU->GetBuffer() };
-	static vector<ID3D11Buffer*> vertexNullBuffer = vector<ID3D11Buffer*>(vertexBuffer.size(), nullptr);
-	static ID3D11Buffer* indexBuffer = GEmitterIndexBuffer->GetBuffer();
-	static vector<UINT> strides = { static_cast<UINT>(sizeof(XMFLOAT3)), static_cast<UINT>(sizeof(XMMATRIX)) };
-	static vector<UINT> nullStrides = vector<UINT>(strides.size(), NULL);
-	static vector<UINT> offsets = { 0, 0 };
-	static vector<UINT> nullOffsets = vector<UINT>(nullStrides.size(), NULL);
-
-	GDrawEmitterPSO->ApplyPSO(deviceContext);
-
-	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	deviceContext->IASetVertexBuffers(0, static_cast<UINT>(vertexBuffer.size()), vertexBuffer.data(), strides.data(), offsets.data());
-	deviceContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, NULL);
-	deviceContext->DrawIndexedInstanced(
-		static_cast<UINT>(GEmitterBoxIndices.size()),
-		GEmitterMaxCount,
-		NULL, NULL, NULL
-	);
-	deviceContext->IASetVertexBuffers(0, static_cast<UINT>(vertexNullBuffer.size()), vertexNullBuffer.data(), nullStrides.data(), nullOffsets.data());
-	deviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, NULL);
-
-	GDrawEmitterPSO->RemovePSO(deviceContext);
-}
 
 AEmitter::AEmitter(
 	UINT emitterType,
@@ -216,22 +50,22 @@ void AEmitter::SetColorInterpolaterProperty(UINT colorInterpolaterID, UINT color
 
 ID3D11Buffer* AEmitter::GetEmitterPropertyBuffer() const noexcept { return m_emitterPropertyGPU->GetBuffer(); }
 
-void AEmitter::InjectAEmitterSpawnProperty(unique_ptr<BaseEmitterSpawnProperty>& emitterSpawnProperty) noexcept 
+void AEmitter::InjectAEmitterSpawnProperty(unique_ptr<CBaseEmitterSpawnProperty>& emitterSpawnProperty) noexcept 
 { 
 	m_emitterSpawnProperty = std::move(emitterSpawnProperty); 
 }
 
-void AEmitter::InjectAEmitterUpdateProperty(unique_ptr<BaseEmitterUpdateProperty>& emitterUpdateProperty) noexcept
+void AEmitter::InjectAEmitterUpdateProperty(unique_ptr<CBaseEmitterUpdateProperty>& emitterUpdateProperty) noexcept
 { 
 	m_emitterUpdateProperty = std::move(emitterUpdateProperty); 
 }
 
-void AEmitter::InjectAParticleSpawnProperty(unique_ptr<BaseParticleSpawnProperty>& particleSpawnProperty) noexcept
+void AEmitter::InjectAParticleSpawnProperty(unique_ptr<CBaseParticleSpawnProperty>& particleSpawnProperty) noexcept
 { 
 	m_particleSpawnProperty = std::move(particleSpawnProperty); 
 }
 
-void AEmitter::InjectAParticleUpdateProperty(unique_ptr<BaseParticleUpdateProperty>& particleSpawnProperty) noexcept
+void AEmitter::InjectAParticleUpdateProperty(unique_ptr<CBaseParticleUpdateProperty>& particleSpawnProperty) noexcept
 { 
 	m_particleUpdateProperty = std::move(particleSpawnProperty); 
 }
@@ -278,7 +112,7 @@ void AEmitter::Update(ID3D11DeviceContext* deviceContext, float dt)
 		m_emitterPropertyGPU->Stage(deviceContext);
 		m_emitterPropertyGPU->Upload(deviceContext);
 
-		GChangedEmitterWorldPositionIDs.emplace_back(m_emitterPropertyCPU.emitterID);
+		EmitterStaticData::AddChangedEmitterWorldPositionID(m_emitterPropertyCPU.emitterID);
 
 		m_isEmitterPropertyChanged = false;
 	}

@@ -11,11 +11,11 @@ concept IsEnumClass = std::is_enum_v<T> && !std::is_convertible_v<T, int>;
 
 
 template<IsEnumClass T>
-class BaseSelector
+class CBaseSelector
 {
 public:
-	BaseSelector(const std::string& selectorName, const std::unordered_map<T, std::string>& stringMaps);
-	virtual ~BaseSelector() = default;
+	CBaseSelector(const std::string& selectorName, const std::unordered_map<T, std::string>& stringMaps);
+	virtual ~CBaseSelector() = default;
 
 protected:
 	std::string m_selectorName;
@@ -26,7 +26,7 @@ public:
 };
 
 template<IsEnumClass T>
-inline BaseSelector<T>::BaseSelector(
+inline CBaseSelector<T>::CBaseSelector(
 	const std::string& selectorName, 
 	const std::unordered_map<T, std::string>& stringMaps
 )
@@ -35,7 +35,7 @@ inline BaseSelector<T>::BaseSelector(
 }
 
 template<IsEnumClass T>
-void BaseSelector<T>::SelectEnums(T& enumResult)
+void CBaseSelector<T>::SelectEnums(T& enumResult)
 {
 	if (ImGui::BeginCombo(m_selectorName.c_str(), m_stringMaps.at(enumResult).c_str()))
 	{

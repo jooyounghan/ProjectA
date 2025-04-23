@@ -16,18 +16,18 @@ template<uint32_t Dim, bool GPUInterpolateOn>
 class IInterpolater;
 
 template<uint32_t Dim>
-class ControlPointGridView;
+class CControlPointGridView;
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-class InterpolaterSelectPlotter;
+class CInterpolaterSelectPlotter;
 
-class ShapedVectorSelector;
+class CShapedVectorSelector;
 
-class BaseParticleSpawnProperty : public IProperty
+class CBaseParticleSpawnProperty : public IProperty
 {
 public:
-	BaseParticleSpawnProperty(const std::function<void(uint32_t, uint32_t)>& colorInterpolationChangedHandler);
-	~BaseParticleSpawnProperty() override = default;
+	CBaseParticleSpawnProperty(const std::function<void(uint32_t, uint32_t)>& colorInterpolationChangedHandler);
+	~CBaseParticleSpawnProperty() override = default;
 
 protected:
 	std::function<void(uint32_t, uint32_t)> m_onColorInterpolationChanged;
@@ -63,11 +63,11 @@ public:
 
 protected:
 	EShapedVector m_positionShapedVector;
-	std::unique_ptr<ShapedVectorSelector> m_positionShapedVectorSelector;
+	std::unique_ptr<CShapedVectorSelector> m_positionShapedVectorSelector;
 
 protected:
 	EShapedVector m_speedShapedVector;
-	std::unique_ptr<ShapedVectorSelector> m_speedShapedVectorSelector;
+	std::unique_ptr<CShapedVectorSelector> m_speedShapedVectorSelector;
 
 protected:
 	float m_lastParticleLife;
@@ -80,8 +80,8 @@ protected:
 	std::unique_ptr<IInterpolater<4, true>> m_colorInterpolater;
 
 protected:
-	std::unique_ptr<ControlPointGridView<4>> m_colorControlPointGridView;
-	std::unique_ptr<InterpolaterSelectPlotter<4, true>> m_colorInterpolationSelectPlotter;
+	std::unique_ptr<CControlPointGridView<4>> m_colorControlPointGridView;
+	std::unique_ptr<CInterpolaterSelectPlotter<4, true>> m_colorInterpolationSelectPlotter;
 
 protected:
 	void AdjustControlPointsFromLife();

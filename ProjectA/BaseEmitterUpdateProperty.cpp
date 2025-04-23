@@ -7,7 +7,7 @@ using namespace std;
 using namespace DirectX;
 using namespace ImGui;
 
-BaseEmitterUpdateProperty::BaseEmitterUpdateProperty(float& emitterCurrentTime, float& loopTime)
+CBaseEmitterUpdateProperty::CBaseEmitterUpdateProperty(float& emitterCurrentTime, float& loopTime)
 	: APropertyHasLoopTime(loopTime),
 	m_emitterCurrentTime(emitterCurrentTime),
 	m_spawnCount(0.f),
@@ -19,7 +19,7 @@ BaseEmitterUpdateProperty::BaseEmitterUpdateProperty(float& emitterCurrentTime, 
 	m_spawnRateInterpolationMethod(EInterpolationMethod::Linear),
 	m_isNotDisposed(true)
 {
-	m_spawnRateControlPointGridView = make_unique<ControlPointGridView<1>>(
+	m_spawnRateControlPointGridView = make_unique<CControlPointGridView<1>>(
 		"시간",
 		array<string, 1>{ "Spawn Rate" },
 		"생성 프로파일",
@@ -29,7 +29,7 @@ BaseEmitterUpdateProperty::BaseEmitterUpdateProperty(float& emitterCurrentTime, 
 		m_spawnControlPoints, false
 	);
 
-	m_spawnRateInterpolaterSelectPlotter = make_unique<InterpolaterSelectPlotter<1, false>>(
+	m_spawnRateInterpolaterSelectPlotter = make_unique<CInterpolaterSelectPlotter<1, false>>(
 		"생성 프로파일 보간 방법",
 		"Spawn Control Points",
 		std::array<std::string, 1>{ "Spawn Rate" },
@@ -43,7 +43,7 @@ BaseEmitterUpdateProperty::BaseEmitterUpdateProperty(float& emitterCurrentTime, 
 }
 
 
-void BaseEmitterUpdateProperty::AdjustControlPointsFromLoopTime()
+void CBaseEmitterUpdateProperty::AdjustControlPointsFromLoopTime()
 {
 	m_spawnFinalControlPoint.x = m_loopTime;
 	m_spawnControlPoints.erase(
@@ -58,12 +58,12 @@ void BaseEmitterUpdateProperty::AdjustControlPointsFromLoopTime()
 	m_spawnRateInterpolaterSelectPlotter->RedrawSelectPlotter();
 }
 
-void BaseEmitterUpdateProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
+void CBaseEmitterUpdateProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 
 }
 
-void BaseEmitterUpdateProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
+void CBaseEmitterUpdateProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 {
 	if (m_loopCount > 0)
 	{
@@ -95,7 +95,7 @@ void BaseEmitterUpdateProperty::Update(ID3D11DeviceContext* deviceContext, float
 	}
 }
 
-void BaseEmitterUpdateProperty::DrawPropertyUI()
+void CBaseEmitterUpdateProperty::DrawPropertyUI()
 {
 	if (!ImGui::CollapsingHeader("이미터 업데이트 프로퍼티"))
 		return;

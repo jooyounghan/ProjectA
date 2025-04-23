@@ -2,15 +2,15 @@
 #include "Interpolater.h"
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-class LinearInterpolater : public AInterpolater<Dim, 2, GPUInterpolateOn>
+class CLinearInterpolater : public AInterpolater<Dim, 2, GPUInterpolateOn>
 {
 public:
-	LinearInterpolater(
+	CLinearInterpolater(
 		const SControlPoint<Dim>& startPoint,
 		const SControlPoint<Dim>& endPoint,
 		const std::vector<SControlPoint<Dim>>& controlPoints
 	);
-	~LinearInterpolater() override = default;
+	~CLinearInterpolater() override = default;
 
 protected:
 	using Parent = AInterpolater<Dim, 2, GPUInterpolateOn>;
@@ -24,7 +24,7 @@ protected:
 };
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-inline LinearInterpolater<Dim, GPUInterpolateOn>::LinearInterpolater(
+inline CLinearInterpolater<Dim, GPUInterpolateOn>::CLinearInterpolater(
 	const SControlPoint<Dim>& startPoint, 
 	const SControlPoint<Dim>& endPoint, 
 	const std::vector<SControlPoint<Dim>>& controlPoints
@@ -35,13 +35,13 @@ inline LinearInterpolater<Dim, GPUInterpolateOn>::LinearInterpolater(
 }
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-UINT LinearInterpolater<Dim, GPUInterpolateOn>::GetInterpolaterFlag()
+UINT CLinearInterpolater<Dim, GPUInterpolateOn>::GetInterpolaterFlag()
 {
 	return 1;
 }
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-inline void LinearInterpolater<Dim, GPUInterpolateOn>::UpdateCoefficient()
+inline void CLinearInterpolater<Dim, GPUInterpolateOn>::UpdateCoefficient()
 {
 	Parent::UpdateCoefficient();
 
@@ -72,7 +72,7 @@ inline void LinearInterpolater<Dim, GPUInterpolateOn>::UpdateCoefficient()
 }
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-inline std::array<float, Dim> LinearInterpolater<Dim, GPUInterpolateOn>::GetInterpolated(float x) noexcept
+inline std::array<float, Dim> CLinearInterpolater<Dim, GPUInterpolateOn>::GetInterpolated(float x) noexcept
 {
 	std::array<float, Dim> result;
     size_t coefficientIndex = Parent::GetCoefficientIndex(x);

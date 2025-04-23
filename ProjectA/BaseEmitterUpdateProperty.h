@@ -11,18 +11,18 @@ template<uint32_t Dim, bool GPUInterpolateOn>
 class IInterpolater;
 
 template<uint32_t Dim>
-class ControlPointGridView;
+class CControlPointGridView;
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-class InterpolaterSelectPlotter;
+class CInterpolaterSelectPlotter;
 
-typedef std::function<void(class BaseEmitterUpdateProperty*)> OnEmitterDispose;
+typedef std::function<void(class CBaseEmitterUpdateProperty*)> OnEmitterDispose;
 
-class BaseEmitterUpdateProperty : public APropertyHasLoopTime
+class CBaseEmitterUpdateProperty : public APropertyHasLoopTime
 {
 public:
-	BaseEmitterUpdateProperty(float& emitterCurrentTime, float& loopTime);
-	~BaseEmitterUpdateProperty() override = default;
+	CBaseEmitterUpdateProperty(float& emitterCurrentTime, float& loopTime);
+	~CBaseEmitterUpdateProperty() override = default;
 
 protected:
 	float& m_emitterCurrentTime;
@@ -39,15 +39,15 @@ protected:
 	std::unique_ptr<IInterpolater<1, false>> m_spawnRateInterpolater;
 
 protected:
-	std::unique_ptr<ControlPointGridView<1>> m_spawnRateControlPointGridView;
-	std::unique_ptr<InterpolaterSelectPlotter<1, false>> m_spawnRateInterpolaterSelectPlotter;
+	std::unique_ptr<CControlPointGridView<1>> m_spawnRateControlPointGridView;
+	std::unique_ptr<CInterpolaterSelectPlotter<1, false>> m_spawnRateInterpolaterSelectPlotter;
 
 protected:
 	virtual void AdjustControlPointsFromLoopTime() override;
 
 protected:
 	bool m_isNotDisposed;
-	OnEmitterDispose m_emitterDisposeHandler = bind([&](BaseEmitterUpdateProperty*) {}, std::placeholders::_1);
+	OnEmitterDispose m_emitterDisposeHandler = bind([&](CBaseEmitterUpdateProperty*) {}, std::placeholders::_1);
 
 public:
 	inline void SetEmitterDisposeHandler(OnEmitterDispose emitterDisposeHandler) noexcept { m_emitterDisposeHandler = emitterDisposeHandler; }

@@ -48,15 +48,6 @@
     <Filter Include="헤더 파일\Updatable\Emitter\Property">
       <UniqueIdentifier>{d190294b-5c93-42b0-bf3d-ffe4a0d5230f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\Math">
-      <UniqueIdentifier>{b3872207-4b99-44f6-a836-8c989ec909c6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="헤더 파일\Math">
-      <UniqueIdentifier>{f075a1ab-bc9f-4799-8ba6-57d57e46fa7e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="헤더 파일\Macro">
-      <UniqueIdentifier>{8228aaf2-3b49-4106-a598-1a61a1a90860}</UniqueIdentifier>
-    </Filter>
     <Filter Include="헤더 파일\Updatable\EmitterManager">
       <UniqueIdentifier>{a0286594-b018-4141-b1af-b6fb85b6c42b}</UniqueIdentifier>
     </Filter>
@@ -90,11 +81,20 @@
     <Filter Include="헤더 파일\Updatable\Emitter\Property\Structure">
       <UniqueIdentifier>{36de72b9-d18a-4a32-9913-a9b1d7e7be1f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="헤더 파일\Math\Structure">
-      <UniqueIdentifier>{1b32ddbf-9a1a-4084-b982-42efa12a26bb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shader\Interpolater">
       <UniqueIdentifier>{575a8112-5dc0-44d3-8b09-80b5fce09974}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Interpolater">
+      <UniqueIdentifier>{f075a1ab-bc9f-4799-8ba6-57d57e46fa7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Interpolater\Structure">
+      <UniqueIdentifier>{1b32ddbf-9a1a-4084-b982-42efa12a26bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Utilities">
+      <UniqueIdentifier>{8228aaf2-3b49-4106-a598-1a61a1a90860}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Utilities">
+      <UniqueIdentifier>{177f6ab8-c98f-4053-8c07-27eafcf7afd3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -116,14 +116,8 @@
     <ClCompile Include="Model.cpp">
       <Filter>소스 파일\Updatable\Model</Filter>
     </ClCompile>
-    <ClCompile Include="ModelFactory.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>소스 파일\Updatable</Filter>
-    </ClCompile>
-    <ClCompile Include="GlobalVariable.cpp">
-      <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="AEmitter.cpp">
       <Filter>소스 파일\Updatable\Emitter</Filter>
@@ -149,8 +143,17 @@
     <ClCompile Include="EmitterSelector.cpp">
       <Filter>소스 파일\UI</Filter>
     </ClCompile>
+    <ClCompile Include="EmitterStaticData.cpp">
+      <Filter>소스 파일\Updatable\Emitter</Filter>
+    </ClCompile>
+    <ClCompile Include="GlobalVariable.cpp">
+      <Filter>소스 파일\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelFactory.cpp">
+      <Filter>소스 파일\Utilities</Filter>
+    </ClCompile>
     <ClCompile Include="IProperty.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\Updatable\Emitter\Property</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -169,17 +172,11 @@
     <ClInclude Include="Model.h">
       <Filter>헤더 파일\Updatable\Model</Filter>
     </ClInclude>
-    <ClInclude Include="ModelFactory.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>헤더 파일\Updatable</Filter>
     </ClInclude>
     <ClInclude Include="Updatable.h">
       <Filter>헤더 파일\Updatable</Filter>
-    </ClInclude>
-    <ClInclude Include="GlobalVariable.h">
-      <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="AEmitter.h">
       <Filter>헤더 파일\Updatable\Emitter</Filter>
@@ -212,28 +209,25 @@
       <Filter>헤더 파일\UI</Filter>
     </ClInclude>
     <ClInclude Include="MacroUtilities.h">
-      <Filter>헤더 파일\Macro</Filter>
+      <Filter>헤더 파일\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="DefineLinkedWithShader.h">
-      <Filter>헤더 파일\Macro</Filter>
+      <Filter>헤더 파일\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="Interpolater.h">
-      <Filter>헤더 파일\Math</Filter>
+      <Filter>헤더 파일\Interpolater</Filter>
     </ClInclude>
     <ClInclude Include="LinearInterpolater.h">
-      <Filter>헤더 파일\Math</Filter>
+      <Filter>헤더 파일\Interpolater</Filter>
     </ClInclude>
     <ClInclude Include="CatmullRomInterpolater.h">
-      <Filter>헤더 파일\Math</Filter>
+      <Filter>헤더 파일\Interpolater</Filter>
     </ClInclude>
     <ClInclude Include="ControlPointGridView.h">
       <Filter>헤더 파일\UI</Filter>
     </ClInclude>
     <ClInclude Include="CubicSplineInterpolater.h">
-      <Filter>헤더 파일\Math</Filter>
-    </ClInclude>
-    <ClInclude Include="GPUInterpolater.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>헤더 파일\Interpolater</Filter>
     </ClInclude>
     <ClInclude Include="ShapedVectorProperty.h">
       <Filter>헤더 파일\Updatable\Emitter\Property\Structure</Filter>
@@ -242,7 +236,19 @@
       <Filter>헤더 파일\Updatable\Emitter\Property\Structure</Filter>
     </ClInclude>
     <ClInclude Include="InterpolaterStructure.h">
-      <Filter>헤더 파일\Math\Structure</Filter>
+      <Filter>헤더 파일\Interpolater\Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="GPUInterpolater.h">
+      <Filter>헤더 파일\Interpolater</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalVariable.h">
+      <Filter>헤더 파일\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelFactory.h">
+      <Filter>헤더 파일\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="EmitterStaticData.h">
+      <Filter>헤더 파일\Updatable\Emitter</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

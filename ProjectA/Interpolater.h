@@ -96,7 +96,7 @@ void AInterpolater<Dim, CoefficientCount, GPUInterpolateOn>::UpdateInterpolaterP
 			m_xProfiles,
 			m_coefficients
 		);
-		GPUInterpolater<Dim, CoefficientCount>::GChangedInterpolaterIDs.emplace_back(m_interpolaterPropertyID);
+		CGPUInterpolater<Dim, CoefficientCount>::GChangedInterpolaterIDs.emplace_back(m_interpolaterPropertyID);
 	}
 }
 
@@ -113,8 +113,8 @@ inline AInterpolater<Dim, CoefficientCount, GPUInterpolateOn>::AInterpolater(
 {
 	if (GPUInterpolateOn)
 	{
-		m_interpolaterPropertyID = GPUInterpolater<Dim, CoefficientCount>::IssueAvailableInterpolaterID();
-		m_interpolaterPropertyCached = GPUInterpolater<Dim, CoefficientCount>::GetInterpolaterProperty(m_interpolaterPropertyID);
+		m_interpolaterPropertyID = CGPUInterpolater<Dim, CoefficientCount>::IssueAvailableInterpolaterID();
+		m_interpolaterPropertyCached = CGPUInterpolater<Dim, CoefficientCount>::GetInterpolaterProperty(m_interpolaterPropertyID);
 	}
 }
 
@@ -123,8 +123,8 @@ AInterpolater<Dim, CoefficientCount, GPUInterpolateOn>::~AInterpolater()
 {
 	if (GPUInterpolateOn)
 	{
-		GPUInterpolater<Dim, CoefficientCount>::ReclaimInterpolaterID(m_interpolaterPropertyID);
-		GPUInterpolater<Dim, CoefficientCount>::GChangedInterpolaterIDs.emplace_back(m_interpolaterPropertyID);
+		CGPUInterpolater<Dim, CoefficientCount>::ReclaimInterpolaterID(m_interpolaterPropertyID);
+		CGPUInterpolater<Dim, CoefficientCount>::GChangedInterpolaterIDs.emplace_back(m_interpolaterPropertyID);
 		ZeroMemory(m_interpolaterPropertyCached, sizeof(SInterpolaterProperty<Dim, CoefficientCount>));
 		m_interpolaterPropertyCached = nullptr;
 	}

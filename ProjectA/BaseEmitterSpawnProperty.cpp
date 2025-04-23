@@ -12,7 +12,7 @@ using namespace D3D11;
 using namespace DirectX;
 using namespace ImGui;
 
-BaseEmitterSpawnProperty::BaseEmitterSpawnProperty()
+CBaseEmitterSpawnProperty::CBaseEmitterSpawnProperty()
 	: m_isEmitterSpawnPropertyChanged(false),
 	m_positionShapedVector(EShapedVector::Sphere),
 	m_speedShapedVector(EShapedVector::None),
@@ -22,24 +22,24 @@ BaseEmitterSpawnProperty::BaseEmitterSpawnProperty()
 	m_emitterSpawnPropertyCPU.initialParticleCount = 0;
 	m_emitterSpawnPropertyCPU.initialParticleLife = 1.f;
 
-	m_positionShapedVectorSelector = make_unique<ShapedVectorSelector>(
+	m_positionShapedVectorSelector = make_unique<CShapedVectorSelector>(
 		"초기 위치 벡터", "초기 반지름",
 		m_emitterSpawnPropertyCPU.shapedPositionVectorProperty
 	);
 
-	m_speedShapedVectorSelector = make_unique<ShapedVectorSelector>(
+	m_speedShapedVectorSelector = make_unique<CShapedVectorSelector>(
 		"초기 속도 벡터", "초기 속도",
 		m_emitterSpawnPropertyCPU.shapedSpeedVectorProperty
 		);
 }
 
-void BaseEmitterSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
+void CBaseEmitterSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 	m_emitterSpawnPropertyGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_emitterSpawnPropertyCPU));
 	m_emitterSpawnPropertyGPU->InitializeBuffer(device);
 }
 
-void BaseEmitterSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
+void CBaseEmitterSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 {
 	if (m_isEmitterSpawnPropertyChanged)
 	{
@@ -49,9 +49,9 @@ void BaseEmitterSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float 
 	}
 }
 
-ID3D11Buffer* BaseEmitterSpawnProperty::GetEmitterSpawnPropertyBuffer() const noexcept { return m_emitterSpawnPropertyGPU->GetBuffer(); }
+ID3D11Buffer* CBaseEmitterSpawnProperty::GetEmitterSpawnPropertyBuffer() const noexcept { return m_emitterSpawnPropertyGPU->GetBuffer(); }
 
-void BaseEmitterSpawnProperty::DrawPropertyUI()
+void CBaseEmitterSpawnProperty::DrawPropertyUI()
 {
 	if (!ImGui::CollapsingHeader("이미터 생성 프로퍼티"))
 		return;

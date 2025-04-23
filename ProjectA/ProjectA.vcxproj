@@ -156,6 +156,7 @@
     <ClCompile Include="BaseParticleUpdateProperty.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="EmitterSelector.cpp" />
+    <ClCompile Include="EmitterStaticData.cpp" />
     <ClCompile Include="External\imgui_impl_dx11.cpp" />
     <ClCompile Include="External\imgui_impl_win32.cpp" />
     <ClCompile Include="GlobalVariable.cpp" />
@@ -182,6 +183,7 @@
     <ClInclude Include="DefineLinkedWithShader.h" />
     <ClInclude Include="EmitterForceProperty.h" />
     <ClInclude Include="EmitterSelector.h" />
+    <ClInclude Include="EmitterStaticData.h" />
     <ClInclude Include="GPUInterpolater.h" />
     <ClInclude Include="Interpolater.h" />
     <ClInclude Include="InterpolaterStructure.h" />

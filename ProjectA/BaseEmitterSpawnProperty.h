@@ -8,13 +8,13 @@ namespace D3D11
 {
 	class CDynamicBuffer;
 }
-class ShapedVectorSelector;
+class CShapedVectorSelector;
 
-class BaseEmitterSpawnProperty : public IProperty
+class CBaseEmitterSpawnProperty : public IProperty
 {
 public:
-	BaseEmitterSpawnProperty();
-	~BaseEmitterSpawnProperty() override = default;
+	CBaseEmitterSpawnProperty();
+	~CBaseEmitterSpawnProperty() override = default;
 
 protected:
 	struct
@@ -47,11 +47,11 @@ protected:
 
 protected:
 	EShapedVector m_positionShapedVector;
-	std::unique_ptr<ShapedVectorSelector> m_positionShapedVectorSelector;
+	std::unique_ptr<CShapedVectorSelector> m_positionShapedVectorSelector;
 
 protected:
 	EShapedVector m_speedShapedVector;
-	std::unique_ptr<ShapedVectorSelector> m_speedShapedVectorSelector;
+	std::unique_ptr<CShapedVectorSelector> m_speedShapedVectorSelector;
 
 public:
 	ID3D11Buffer* GetEmitterSpawnPropertyBuffer() const noexcept;

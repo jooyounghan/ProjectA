@@ -41,15 +41,15 @@ void SetNForceCount(UINT& nForceCount, ENForceKind forceKind, UINT newValue);
 void IncrementNForceCount(UINT& nForceCount, ENForceKind forceKind);
 void DecrementNForceCount(UINT& nForceCount, ENForceKind forceKind);
 
-class BaseParticleUpdateProperty : public IProperty
+class CBaseParticleUpdateProperty : public IProperty
 {
 public:
-	BaseParticleUpdateProperty(
+	CBaseParticleUpdateProperty(
 		UINT forcePropertyIndex,
 		SEmitterForceProperty& emitterForceProperty,
 		const std::function<void(UINT)>& emitterForceUpdatedHandler
 	);
-	~BaseParticleUpdateProperty() override = default;
+	~CBaseParticleUpdateProperty() override = default;
 
 protected:
 	UINT m_forcePropertyIndex;

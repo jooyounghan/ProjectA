@@ -3,15 +3,15 @@
 
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-class CubicSplineInterpolater : public AInterpolater<Dim, 4, GPUInterpolateOn>
+class CCubicSplineInterpolater : public AInterpolater<Dim, 4, GPUInterpolateOn>
 {
 public:
-	CubicSplineInterpolater(
+	CCubicSplineInterpolater(
 		const SControlPoint<Dim>& startPoint,
 		const SControlPoint<Dim>& endPoint,
 		const std::vector<SControlPoint<Dim>>& controlPoints
 	);
-	~CubicSplineInterpolater() override = default;
+	~CCubicSplineInterpolater() override = default;
 
 protected:
 	using Parent = AInterpolater<Dim, 4, GPUInterpolateOn>;
@@ -31,7 +31,7 @@ protected:
 };
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-inline CubicSplineInterpolater<Dim, GPUInterpolateOn>::CubicSplineInterpolater(
+inline CCubicSplineInterpolater<Dim, GPUInterpolateOn>::CCubicSplineInterpolater(
 	const SControlPoint<Dim>& startPoint,
 	const SControlPoint<Dim>& endPoint,
 	const std::vector<SControlPoint<Dim>>& controlPoints
@@ -42,13 +42,13 @@ inline CubicSplineInterpolater<Dim, GPUInterpolateOn>::CubicSplineInterpolater(
 }
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-UINT CubicSplineInterpolater<Dim, GPUInterpolateOn>::GetInterpolaterFlag()
+UINT CCubicSplineInterpolater<Dim, GPUInterpolateOn>::GetInterpolaterFlag()
 {
 	return 3;
 }
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-inline void CubicSplineInterpolater<Dim, GPUInterpolateOn>::UpdateCoefficient()
+inline void CCubicSplineInterpolater<Dim, GPUInterpolateOn>::UpdateCoefficient()
 {
 	Parent::UpdateCoefficient();
 	Parent::m_coefficients.clear();
@@ -135,7 +135,7 @@ inline void CubicSplineInterpolater<Dim, GPUInterpolateOn>::UpdateCoefficient()
 }
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-inline std::array<float, Dim> CubicSplineInterpolater<Dim, GPUInterpolateOn>::GetInterpolated(float x) noexcept
+inline std::array<float, Dim> CCubicSplineInterpolater<Dim, GPUInterpolateOn>::GetInterpolated(float x) noexcept
 {
 	size_t coefficientIndex = Parent::GetCoefficientIndex(x);
 
@@ -157,7 +157,7 @@ inline std::array<float, Dim> CubicSplineInterpolater<Dim, GPUInterpolateOn>::Ge
 }
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-inline std::vector<std::array<float, Dim>> CubicSplineInterpolater<Dim, GPUInterpolateOn>::GetSecondDerivative(
+inline std::vector<std::array<float, Dim>> CCubicSplineInterpolater<Dim, GPUInterpolateOn>::GetSecondDerivative(
 	const std::vector<std::array<float, Dim>>& L, 
 	const std::vector<std::array<float, Dim>>& D, 
 	const std::vector<std::array<float, Dim>>& U, 

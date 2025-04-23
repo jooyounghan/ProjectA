@@ -8,10 +8,10 @@
 #include <algorithm>
 
 template<uint32_t Dim>
-class ControlPointGridView
+class CControlPointGridView
 {
 public:
-	ControlPointGridView(
+	CControlPointGridView(
 		const std::string& xValueName,
 		const std::array<std::string, Dim>& yValueNames,
 		const std::string& controlPointsName,
@@ -56,7 +56,7 @@ private:
 };
 
 template<uint32_t Dim>
-inline ControlPointGridView<Dim>::ControlPointGridView(
+inline CControlPointGridView<Dim>::CControlPointGridView(
 	const std::string& xValueName,
 	const std::array<std::string, Dim>& yValueNames,
 	const std::string& controlPointsName,
@@ -87,7 +87,7 @@ inline ControlPointGridView<Dim>::ControlPointGridView(
 
 
 template<uint32_t Dim>
-inline bool ControlPointGridView<Dim>::DrawControlPointGridView()
+inline bool CControlPointGridView<Dim>::DrawControlPointGridView()
 {
 	bool isChanged = false;
 	
@@ -138,7 +138,7 @@ inline bool ControlPointGridView<Dim>::DrawControlPointGridView()
 
 
 template<uint32_t Dim>
-inline void ControlPointGridView<Dim>::HandleNewControlPoint(float& x, std::array<float, Dim>& y)
+inline void CControlPointGridView<Dim>::HandleNewControlPoint(float& x, std::array<float, Dim>& y)
 {
 	ImGui::SeparatorText("X °ª");
 	ImGui::DragFloat(m_xValueName.c_str(), &x, 0.1f, m_startPoint.x, m_endPoint.x, "%.1f");
@@ -165,7 +165,7 @@ inline void ControlPointGridView<Dim>::HandleNewControlPoint(float& x, std::arra
 }
 
 template<>
-inline void ControlPointGridView<4>::HandleNewControlPoint(float& x, std::array<float, 4>& y)
+inline void CControlPointGridView<4>::HandleNewControlPoint(float& x, std::array<float, 4>& y)
 {
 	ImGui::SeparatorText("X °ª");
 	ImGui::DragFloat(m_xValueName.c_str(), &x, 0.1f, m_startPoint.x, m_endPoint.x, "%.1f");
@@ -175,32 +175,32 @@ inline void ControlPointGridView<4>::HandleNewControlPoint(float& x, std::array<
 }
 
 template<uint32_t Dim>
-inline int ControlPointGridView<Dim>::GetTotalColumnCount()
+inline int CControlPointGridView<Dim>::GetTotalColumnCount()
 {
 	return 1 + Dim + 1;
 }
 
 template<uint32_t Dim>
-inline int ControlPointGridView<Dim>::GetDeleteButtonColumnIndex()
+inline int CControlPointGridView<Dim>::GetDeleteButtonColumnIndex()
 {
 	return Dim + 1;
 }
 
 
 template<>
-inline int ControlPointGridView<4>::GetTotalColumnCount()
+inline int CControlPointGridView<4>::GetTotalColumnCount()
 {
 	return 3;
 }
 
 template<>
-inline int ControlPointGridView<4>::GetDeleteButtonColumnIndex()
+inline int CControlPointGridView<4>::GetDeleteButtonColumnIndex()
 {
 	return 2;
 }
 
 template<uint32_t Dim>
-inline void ControlPointGridView<Dim>::SetColumns()
+inline void CControlPointGridView<Dim>::SetColumns()
 {
 	ImGui::TableSetupColumn(m_xValueName.c_str());
 	for (uint32_t dimension = 0; dimension < Dim; ++dimension)
@@ -211,7 +211,7 @@ inline void ControlPointGridView<Dim>::SetColumns()
 }
 
 template<>
-inline void ControlPointGridView<4>::SetColumns()
+inline void CControlPointGridView<4>::SetColumns()
 {
 	ImGui::TableSetupColumn(m_xValueName.c_str());
 	ImGui::TableSetupColumn(m_yValueName.c_str());
@@ -219,7 +219,7 @@ inline void ControlPointGridView<4>::SetColumns()
 }
 
 template<uint32_t Dim>
-inline void ControlPointGridView<Dim>::DrawControlPointTable(bool& isChanged)
+inline void CControlPointGridView<Dim>::DrawControlPointTable(bool& isChanged)
 {
 	if (ImGui::BeginTable(m_controlPointsName.c_str(), GetTotalColumnCount(), ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingStretchSame))
 	{
@@ -273,7 +273,7 @@ inline void ControlPointGridView<Dim>::DrawControlPointTable(bool& isChanged)
 }
 
 template<uint32_t Dim>
-inline void ControlPointGridView<Dim>::HandleRowControlPoint(
+inline void CControlPointGridView<Dim>::HandleRowControlPoint(
 	uint32_t columnOffset,
 	SControlPoint<Dim>& controlPoint,
 	bool& isChanged
@@ -304,7 +304,7 @@ inline void ControlPointGridView<Dim>::HandleRowControlPoint(
 
 
 template<>
-inline void ControlPointGridView<4>::HandleRowControlPoint(
+inline void CControlPointGridView<4>::HandleRowControlPoint(
 	uint32_t columnOffset,
 	SControlPoint<4>& controlPoint,
 	bool& isChanged

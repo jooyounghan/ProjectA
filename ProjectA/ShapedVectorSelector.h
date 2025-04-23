@@ -2,15 +2,15 @@
 #include "BaseSelector.h"
 #include "ShapedVectorProperty.h"
 
-class ShapedVectorSelector : public BaseSelector<EShapedVector>
+class CShapedVectorSelector : public CBaseSelector<EShapedVector>
 {
 public:
-	ShapedVectorSelector(
+	CShapedVectorSelector(
 		const std::string& selectorName,
 		const std::string& radiusName,
 		SShapedVectorProperty& shapedVectorProperty
 	);
-	~ShapedVectorSelector() override = default;
+	~CShapedVectorSelector() override = default;
 
 public:
 	static std::unordered_map<EShapedVector, std::string> GShapedVectorStringMaps;

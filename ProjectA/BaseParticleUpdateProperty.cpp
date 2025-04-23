@@ -47,7 +47,7 @@ void DecrementNForceCount(UINT& nForceCount, ENForceKind forceKind)
 }
 
 
-BaseParticleUpdateProperty::BaseParticleUpdateProperty(
+CBaseParticleUpdateProperty::CBaseParticleUpdateProperty(
 	UINT forcePropertyIndex,
 	SEmitterForceProperty& emitterForceProperty, 
 	const std::function<void(UINT)>& emitterForceUpdatedHandler
@@ -62,18 +62,18 @@ BaseParticleUpdateProperty::BaseParticleUpdateProperty(
 }
 
 
-void BaseParticleUpdateProperty::SetFlag(EForceFlag forceFlag, bool isOn)
+void CBaseParticleUpdateProperty::SetFlag(EForceFlag forceFlag, bool isOn)
 {
 	isOn ? m_emitterForceProperty.forceFlag |= GetForceFlagOffset(forceFlag) : m_emitterForceProperty.forceFlag &= ~GetForceFlagOffset(forceFlag);
 	m_isEmitterForcePropertyChanged = true;
 }
 
-void BaseParticleUpdateProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
+void CBaseParticleUpdateProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 
 }
 
-void BaseParticleUpdateProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
+void CBaseParticleUpdateProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 {
 	if (m_isEmitterForcePropertyChanged)
 	{
@@ -82,7 +82,7 @@ void BaseParticleUpdateProperty::Update(ID3D11DeviceContext* deviceContext, floa
 	}
 }
 
-void BaseParticleUpdateProperty::DrawPropertyUI()
+void CBaseParticleUpdateProperty::DrawPropertyUI()
 {
 	if (!CollapsingHeader("파티클 업데이트 프로퍼티"))
 		return;
@@ -153,7 +153,7 @@ void BaseParticleUpdateProperty::DrawPropertyUI()
 	);
 }
 
-void BaseParticleUpdateProperty::HandleSingleForce(
+void CBaseParticleUpdateProperty::HandleSingleForce(
 	const string& forceName,
 	EForceFlag force,
 	const function<bool()>& handler
@@ -174,7 +174,7 @@ void BaseParticleUpdateProperty::HandleSingleForce(
 
 }
 
-void BaseParticleUpdateProperty::HandleNForce(
+void CBaseParticleUpdateProperty::HandleNForce(
 	const string& forceName,
 	EForceFlag forceFlag, 
 	ENForceKind nForceKind,

@@ -3,26 +3,15 @@
 #include "EmitterForceProperty.h"
 
 #include <memory>
-#include <queue>
 
-#define ZERO_MATRIX  DirectX::XMMATRIX(DirectX::XMVectorZero(), DirectX::XMVectorZero(), DirectX::XMVectorZero(), DirectX::XMVectorZero())
-
-class BaseEmitterSpawnProperty;
-class BaseEmitterUpdateProperty;
-class BaseParticleSpawnProperty;
-class BaseParticleUpdateProperty;
+class CBaseEmitterSpawnProperty;
+class CBaseEmitterUpdateProperty;
+class CBaseParticleSpawnProperty;
+class CBaseParticleUpdateProperty;
 
 namespace D3D11
 {
-	class CConstantBuffer;
 	class CDynamicBuffer;
-	class CStructuredBuffer;
-
-	class CComputeShader;
-	class CVertexShader;
-	class CGeometryShader;
-	class CPixelShader;
-	class CGraphicsPSOObject;
 }
 
 struct SParticle
@@ -42,37 +31,6 @@ struct SParticle
 
 class AEmitter : public IUpdatable
 {
-protected:
-	static UINT GEmitterMaxCount;
-	static std::queue<UINT> GEmitterIDQueue;
-
-public:
-	static std::vector<DirectX::XMMATRIX> GEmitterWorldTransformCPU;
-	static std::unique_ptr<D3D11::CDynamicBuffer> GEmitterWorldTransformGPU;
-	static std::vector<SEmitterForceProperty> GEmitterForcePropertyCPU;
-	static std::unique_ptr<D3D11::CStructuredBuffer> GEmitterForcePropertyGPU;
-	static std::vector<UINT> GChangedEmitterWorldPositionIDs;
-	static std::vector<UINT> GChangedEmitterForceIDs;
-
-public:
-	static void InitializeGlobalEmitterProperty(UINT emitterMaxCount, ID3D11Device* device);
-	static UINT IssueAvailableEmitterID();
-	static void ReclaimEmitterID(UINT emitterID) noexcept;
-	static void UpdateGlobalEmitterProperty(ID3D11DeviceContext* deviceContext);
-
-#pragma region Emitter ±×¸®±â PSO
-public:
-	static const std::vector<DirectX::XMFLOAT3> GEmitterBoxPositions;
-	static const std::vector<UINT> GEmitterBoxIndices;
-	static std::unique_ptr<D3D11::CVertexShader> GEmitterDrawVS;
-	static std::unique_ptr<D3D11::CPixelShader> GEmitterDrawPS;
-	static std::unique_ptr<D3D11::CGraphicsPSOObject> GDrawEmitterPSO;
-	static std::unique_ptr<D3D11::CConstantBuffer> GEmitterPositionBuffer;
-	static std::unique_ptr<D3D11::CConstantBuffer> GEmitterIndexBuffer;
-	static void InitializeEmitterDrawPSO(ID3D11Device* device);
-	static void DrawEmittersDebugCube(ID3D11DeviceContext* deviceContext);
-#pragma endregion
-
 public:
 	AEmitter(
 		UINT emitterType,
@@ -132,22 +90,22 @@ public:
 	inline float& GetLoopTime() noexcept { return m_loopTime; }
 
 protected:
-	std::unique_ptr<BaseEmitterSpawnProperty> m_emitterSpawnProperty;
-	std::unique_ptr<BaseEmitterUpdateProperty> m_emitterUpdateProperty;
-	std::unique_ptr<BaseParticleSpawnProperty> m_particleSpawnProperty;
-	std::unique_ptr<BaseParticleUpdateProperty> m_particleUpdateProperty;
+	std::unique_ptr<CBaseEmitterSpawnProperty> m_emitterSpawnProperty;
+	std::unique_ptr<CBaseEmitterUpdateProperty> m_emitterUpdateProperty;
+	std::unique_ptr<CBaseParticleSpawnProperty> m_particleSpawnProperty;
+	std::unique_ptr<CBaseParticleUpdateProperty> m_particleUpdateProperty;
 
 public:
-	void InjectAEmitterSpawnProperty(std::unique_ptr<BaseEmitterSpawnProperty>& emitterSpawnProperty) noexcept;
-	void InjectAEmitterUpdateProperty(std::unique_ptr<BaseEmitterUpdateProperty>& emitterUpdateProperty) noexcept;
-	void InjectAParticleSpawnProperty(std::unique_ptr<BaseParticleSpawnProperty>& particleSpawnProperty) noexcept;
-	void InjectAParticleUpdateProperty(std::unique_ptr<BaseParticleUpdateProperty>& particleSpawnProperty) noexcept;
+	void InjectAEmitterSpawnProperty(std::unique_ptr<CBaseEmitterSpawnProperty>& emitterSpawnProperty) noexcept;
+	void InjectAEmitterUpdateProperty(std::unique_ptr<CBaseEmitterUpdateProperty>& emitterUpdateProperty) noexcept;
+	void InjectAParticleSpawnProperty(std::unique_ptr<CBaseParticleSpawnProperty>& particleSpawnProperty) noexcept;
+	void InjectAParticleUpdateProperty(std::unique_ptr<CBaseParticleUpdateProperty>& particleSpawnProperty) noexcept;
 
 public:
-	inline BaseEmitterSpawnProperty* GetAEmitterSpawnProperty() const noexcept { return m_emitterSpawnProperty.get(); }
-	inline BaseEmitterUpdateProperty* GetAEmitterUpdateProperty() const noexcept { return m_emitterUpdateProperty.get(); }
-	inline BaseParticleSpawnProperty* GetAParticleSpawnProperty() const noexcept { return m_particleSpawnProperty.get(); }
-	inline BaseParticleUpdateProperty* GetAParticleUpdateProperty() const noexcept { return m_particleUpdateProperty.get(); }
+	inline CBaseEmitterSpawnProperty* GetAEmitterSpawnProperty() const noexcept { return m_emitterSpawnProperty.get(); }
+	inline CBaseEmitterUpdateProperty* GetAEmitterUpdateProperty() const noexcept { return m_emitterUpdateProperty.get(); }
+	inline CBaseParticleSpawnProperty* GetAParticleSpawnProperty() const noexcept { return m_particleSpawnProperty.get(); }
+	inline CBaseParticleUpdateProperty* GetAParticleUpdateProperty() const noexcept { return m_particleUpdateProperty.get(); }
 
 public:
 	void SetPosition(const DirectX::XMVECTOR& position) noexcept;

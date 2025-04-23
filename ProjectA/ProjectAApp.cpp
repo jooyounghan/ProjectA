@@ -27,6 +27,8 @@
 
 #include "EmitterManager.h"
 #include "AEmitter.h"
+#include "EmitterStaticData.h"
+
 #include "BaseEmitterSpawnProperty.h"
 #include "BaseEmitterUpdateProperty.h"
 #include "BaseParticleSpawnProperty.h"
@@ -130,17 +132,17 @@ void CProjectAApp::Init()
 #pragma endregion
 
 #pragma region UI 관련 클래스 초기화
-	m_emitterSelector = make_unique<EmitterSelector>("생성할 이미터 종류를 선택하세요");
+	m_emitterSelector = make_unique<CEmitterSelector>("생성할 이미터 종류를 선택하세요");
 #pragma endregion
 
 #pragma region 글로벌 변수 초기화
 	constexpr UINT maxEmitterCount = 5;
 
-	AEmitter::InitializeGlobalEmitterProperty(maxEmitterCount, m_device);
-	AEmitter::InitializeEmitterDrawPSO(m_device);
+	EmitterStaticData::InitializeGlobalEmitterProperty(maxEmitterCount, m_device);
+	EmitterStaticData::InitializeEmitterDrawPSO(m_device);
 
-	GPUInterpolater<4, 2>::InitializeGPUInterpolater(m_device, maxEmitterCount);
-	GPUInterpolater<4, 4>::InitializeGPUInterpolater(m_device, maxEmitterCount);
+	CGPUInterpolater<4, 2>::InitializeGPUInterpolater(m_device, maxEmitterCount);
+	CGPUInterpolater<4, 4>::InitializeGPUInterpolater(m_device, maxEmitterCount);
 
 	CEmitterManager::InitializeSetInitializingPSO(m_device);
 	CEmitterManager::InitializePoolingCS(m_device);
@@ -193,9 +195,9 @@ void CProjectAApp::Update(float deltaTime)
 #pragma endregion
 
 #pragma region 글로벌 변수 업데이트
-	AEmitter::UpdateGlobalEmitterProperty(m_deviceContext);
-	GPUInterpolater<4, 2>::UpdateInterpolaterProperty(m_deviceContext);
-	GPUInterpolater<4, 4>::UpdateInterpolaterProperty(m_deviceContext);
+	EmitterStaticData::UpdateGlobalEmitterProperty(m_deviceContext);
+	CGPUInterpolater<4, 2>::UpdateInterpolaterProperty(m_deviceContext);
+	CGPUInterpolater<4, 4>::UpdateInterpolaterProperty(m_deviceContext);
 #pragma endregion
 
 #pragma region 카메라 초기화 및 설정
@@ -213,7 +215,7 @@ void CProjectAApp::Update(float deltaTime)
 	ID3D11Buffer* cameraCb = m_camera->GetPropertiesBuffer();
 	ID3D11Buffer* singleNullCb = nullptr;
 	m_deviceContext->VSSetConstantBuffers(0, 1, &cameraCb);
-		AEmitter::DrawEmittersDebugCube(m_deviceContext);
+		EmitterStaticData::DrawEmittersDebugCube(m_deviceContext);
 	m_deviceContext->VSSetConstantBuffers(0, 1, &singleNullCb);
 
 	ID3D11Buffer* commonCbs[] = { m_appParamsGPU->GetBuffer(), m_camera->GetPropertiesBuffer() };
