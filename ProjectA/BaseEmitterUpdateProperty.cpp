@@ -1,7 +1,7 @@
 #include "BaseEmitterUpdateProperty.h"
 
 #include "ControlPointGridView.h"
-#include "InterpolationSelector.h"
+#include "InterpolaterSelector.h"
 
 using namespace std;
 using namespace DirectX;
@@ -29,7 +29,7 @@ BaseEmitterUpdateProperty::BaseEmitterUpdateProperty(float& emitterCurrentTime, 
 		m_spawnControlPoints, false
 	);
 
-	m_spawnRateInterpolaterSelectPlotter = make_unique<InterpolationSelectPlotter<1, false>>(
+	m_spawnRateInterpolaterSelectPlotter = make_unique<InterpolaterSelectPlotter<1, false>>(
 		"积己 橇肺颇老 焊埃 规过",
 		"Spawn Control Points",
 		std::array<std::string, 1>{ "Spawn Rate" },
@@ -39,7 +39,7 @@ BaseEmitterUpdateProperty::BaseEmitterUpdateProperty(float& emitterCurrentTime, 
 	);
 
 	m_spawnRateInterpolaterSelectPlotter->SetInterpolater(m_spawnRateInterpolationMethod, m_spawnRateInterpolater);
-	m_spawnRateInterpolaterSelectPlotter->UpdateControlPoints(m_spawnRateInterpolater.get());
+	m_spawnRateInterpolaterSelectPlotter->RedrawSelectPlotter();
 }
 
 
@@ -54,7 +54,8 @@ void BaseEmitterUpdateProperty::AdjustControlPointsFromLoopTime()
 			}),
 		m_spawnControlPoints.end()
 	);
-	m_spawnRateInterpolaterSelectPlotter->UpdateControlPoints(m_spawnRateInterpolater.get());
+	m_spawnRateInterpolater->UpdateCoefficient();
+	m_spawnRateInterpolaterSelectPlotter->RedrawSelectPlotter();
 }
 
 void BaseEmitterUpdateProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
@@ -127,7 +128,8 @@ void BaseEmitterUpdateProperty::DrawPropertyUI()
 
 	if (m_spawnRateControlPointGridView->DrawControlPointGridView())
 	{
-		m_spawnRateInterpolaterSelectPlotter->UpdateControlPoints(m_spawnRateInterpolater.get());
+		m_spawnRateInterpolater->UpdateCoefficient();
+		m_spawnRateInterpolaterSelectPlotter->RedrawSelectPlotter();
 	}
 
 	m_spawnRateInterpolaterSelectPlotter->ViewInterpolatedPlots();

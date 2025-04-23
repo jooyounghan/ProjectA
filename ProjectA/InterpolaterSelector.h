@@ -11,24 +11,24 @@
 #include <memory>
 
 template<uint32_t dim, bool GPUInterpolateOn>
-class InterpolationSelectPlotter;
+class InterpolaterSelectPlotter;
 
-class InterpolationSelectorHelper
+class InterpolaterSelectorHelper
 {
 template<uint32_t dim, bool GPUInterpolateOn>
-friend class InterpolationSelectPlotter;
+friend class InterpolaterSelectPlotter;
 
 protected:
 	static std::unordered_map<EInterpolationMethod, std::string> GInterpolationMethodStringMap;
 };
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-class InterpolationSelectPlotter : public BaseSelector<EInterpolationMethod>
+class InterpolaterSelectPlotter : public BaseSelector<EInterpolationMethod>
 {
-	friend InterpolationSelectorHelper;
+	friend InterpolaterSelectorHelper;
 
 public:
-	InterpolationSelectPlotter(
+	InterpolaterSelectPlotter(
 		const std::string& selectorName,
 		const std::string& graphTitle,
 		const std::array<std::string, Dim>& scatterLabels,
@@ -36,7 +36,7 @@ public:
 		const SControlPoint<Dim>& endPoint,
 		const std::vector<SControlPoint<Dim>>& controlPoints
 	);
-	~InterpolationSelectPlotter() override = default;
+	~InterpolaterSelectPlotter() override = default;
 
 protected:
 	std::string m_graphTitle;
@@ -51,6 +51,10 @@ protected:
 	std::vector<float> m_timeSteps;
 	std::array<std::vector<float>, Dim> m_interpolatedResults;
 
+
+protected:
+	IInterpolater<Dim, GPUInterpolateOn>* m_interpolater;
+
 public:
 	void SetInterpolater(
 		EInterpolationMethod interpolationMethod, 
@@ -58,18 +62,18 @@ public:
 	);
 
 public:
-	void UpdateControlPoints(IInterpolater<Dim, GPUInterpolateOn>* interpolater);
-	void UpdateInterpolatedResult(IInterpolater<Dim, GPUInterpolateOn>* interpolater);
+	void RedrawSelectPlotter();
 	void ViewInterpolatedPlots();
 
 protected:
+	void UpdateInterpolatedResult();
 	void UpdateTimeSteps(size_t numSteps);
 };
 
 
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-InterpolationSelectPlotter<Dim, GPUInterpolateOn>::InterpolationSelectPlotter(
+InterpolaterSelectPlotter<Dim, GPUInterpolateOn>::InterpolaterSelectPlotter(
 	const std::string& selectorName, 
 	const std::string& graphTitle, 
 	const std::array<std::string, Dim>& scatterLabels,
@@ -77,7 +81,7 @@ InterpolationSelectPlotter<Dim, GPUInterpolateOn>::InterpolationSelectPlotter(
 	const SControlPoint<Dim>& endPoint, 
 	const std::vector<SControlPoint<Dim>>& controlPoints
 )
-	: BaseSelector<EInterpolationMethod>(selectorName, InterpolationSelectorHelper::GInterpolationMethodStringMap),
+	: BaseSelector<EInterpolationMethod>(selectorName, InterpolaterSelectorHelper::GInterpolationMethodStringMap),
 	m_graphTitle(graphTitle),
 	m_scatterLabels(scatterLabels),
 	m_startPoint(startPoint),
@@ -87,7 +91,7 @@ InterpolationSelectPlotter<Dim, GPUInterpolateOn>::InterpolationSelectPlotter(
 }
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-void InterpolationSelectPlotter<Dim, GPUInterpolateOn>::SetInterpolater(
+void InterpolaterSelectPlotter<Dim, GPUInterpolateOn>::SetInterpolater(
 	EInterpolationMethod interpolationMethod, 
 	std::unique_ptr<IInterpolater<Dim, GPUInterpolateOn>>& interpolater
 )
@@ -111,12 +115,13 @@ void InterpolationSelectPlotter<Dim, GPUInterpolateOn>::SetInterpolater(
 	}
 	if (interpolater != nullptr)
 	{
-		UpdateInterpolatedResult(interpolater.get());
+		m_interpolater = interpolater.get();
+		UpdateInterpolatedResult();
 	}
 }
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-inline void InterpolationSelectPlotter<Dim, GPUInterpolateOn>::UpdateControlPoints(IInterpolater<Dim, GPUInterpolateOn>* interpolater)
+inline void InterpolaterSelectPlotter<Dim, GPUInterpolateOn>::RedrawSelectPlotter()
 {
 	m_pointIns.clear();
 	for (uint32_t dimension = 0; dimension < Dim; ++dimension)
@@ -151,33 +156,12 @@ inline void InterpolationSelectPlotter<Dim, GPUInterpolateOn>::UpdateControlPoin
 	}
 
 	UpdateTimeSteps(100);
-	interpolater->UpdateCoefficient();
-	UpdateInterpolatedResult(interpolater);
+	UpdateInterpolatedResult();
 }
 
-template<uint32_t Dim, bool GPUInterpolateOn>
-inline void InterpolationSelectPlotter<Dim, GPUInterpolateOn>::UpdateInterpolatedResult(IInterpolater<Dim, GPUInterpolateOn>* interpolater)
-{
-	if (interpolater)
-	{
-		for (uint32_t dimension = 0; dimension < Dim; ++dimension)
-		{
-			m_interpolatedResults[dimension].clear();
-		}
-
-		for (auto& timeStep : m_timeSteps)
-		{
-			std::array<float, Dim> interpolatedResult = interpolater->GetInterpolated(timeStep);
-			for (uint32_t dimension = 0; dimension < Dim; ++dimension)
-			{
-				m_interpolatedResults[dimension].emplace_back(interpolatedResult[dimension]);
-			}
-		}
-	}
-}
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-void InterpolationSelectPlotter<Dim, GPUInterpolateOn>::ViewInterpolatedPlots()
+void InterpolaterSelectPlotter<Dim, GPUInterpolateOn>::ViewInterpolatedPlots()
 {
 	if (ImPlot::BeginPlot(m_graphTitle.c_str(), ImVec2(-1, 0), ImPlotFlags_NoInputs))
 	{
@@ -196,7 +180,28 @@ void InterpolationSelectPlotter<Dim, GPUInterpolateOn>::ViewInterpolatedPlots()
 }
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-inline void InterpolationSelectPlotter<Dim, GPUInterpolateOn>::UpdateTimeSteps(size_t numSteps)
+inline void InterpolaterSelectPlotter<Dim, GPUInterpolateOn>::UpdateInterpolatedResult()
+{
+	if (m_interpolater)
+	{
+		for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+		{
+			m_interpolatedResults[dimension].clear();
+		}
+
+		for (auto& timeStep : m_timeSteps)
+		{
+			std::array<float, Dim> interpolatedResult = m_interpolater->GetInterpolated(timeStep);
+			for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+			{
+				m_interpolatedResults[dimension].emplace_back(interpolatedResult[dimension]);
+			}
+		}
+	}
+}
+
+template<uint32_t Dim, bool GPUInterpolateOn>
+inline void InterpolaterSelectPlotter<Dim, GPUInterpolateOn>::UpdateTimeSteps(size_t numSteps)
 {
 	m_timeSteps.clear();
 	float start = m_startPoint.x;

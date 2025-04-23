@@ -64,7 +64,7 @@ bool EmitterSelector::CreateParticleEmitter(unique_ptr<AEmitter>& emitter)
 	static std::unique_ptr<BaseEmitterSpawnProperty> baseEmitterSpawnProperty = make_unique<BaseEmitterSpawnProperty>();
 	static std::unique_ptr<BaseEmitterUpdateProperty> baseEmitterUpdateProperty = make_unique<BaseEmitterUpdateProperty>(particleEmitter->GetCurrnetEmitter(), particleEmitter->GetLoopTime());
 	static std::unique_ptr<BaseParticleSpawnProperty> baseParticleSpawnProperty = make_unique<BaseParticleSpawnProperty>(
-		[currentEmitter](EInterpolationMethod interpolationMethod, UINT coefficientCount) { currentEmitter->SetColorInterpolaterProperty(static_cast<UINT>(interpolationMethod), coefficientCount); }
+		[currentEmitter](UINT interpolaterID, UINT interpolaterDegree) { currentEmitter->SetColorInterpolaterProperty(interpolaterID, interpolaterDegree); }
 	);
 	static std::unique_ptr<BaseParticleUpdateProperty> baseParticleUpdateProperty = make_unique<BaseParticleUpdateProperty>(
 		particleEmitterID,
@@ -119,7 +119,7 @@ void EmitterSelector::InitializeParticleEmitterArgs(
 	baseEmitterSpawnProperty = make_unique<BaseEmitterSpawnProperty>();
 	baseEmitterUpdateProperty = make_unique<BaseEmitterUpdateProperty>(particleEmitter->GetCurrnetEmitter(), particleEmitter->GetLoopTime());
 	baseParticleSpawnProperty = make_unique<BaseParticleSpawnProperty>(
-		[emitter](EInterpolationMethod interpolationMethod, UINT coefficientCount) {emitter->SetColorInterpolaterProperty(static_cast<UINT>(interpolationMethod), coefficientCount); }
+		[emitter](UINT interpolaterPropertyID, UINT interpolaterDegree) {emitter->SetColorInterpolaterProperty(interpolaterPropertyID, interpolaterDegree); }
 	);
 	baseParticleUpdateProperty = make_unique<BaseParticleUpdateProperty>(
 		particleEmitterID,

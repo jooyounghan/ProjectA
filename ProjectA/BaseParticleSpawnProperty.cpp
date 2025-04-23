@@ -6,7 +6,7 @@
 
 #include "ShapedVectorSelector.h"
 #include "ControlPointGridView.h"
-#include "InterpolationSelector.h"
+#include "InterpolaterSelector.h"
 
 
 using namespace std;
@@ -17,7 +17,7 @@ using namespace ImGui;
 #define InitLife 1.f
 
 BaseParticleSpawnProperty::BaseParticleSpawnProperty(
-	const function<void(EInterpolationMethod, uint32_t)>& colorInterpolationChangedHandler
+	const function<void(uint32_t, uint32_t)>& colorInterpolationChangedHandler
 )
 	: IProperty(),
 	m_onColorInterpolationChanged(colorInterpolationChangedHandler),
@@ -53,7 +53,7 @@ BaseParticleSpawnProperty::BaseParticleSpawnProperty(
 		m_colorControlPoints
 	);
 
-	m_colorInterpolationSelectPlotter = make_unique<InterpolationSelectPlotter<4, true>>(
+	m_colorInterpolationSelectPlotter = make_unique<InterpolaterSelectPlotter<4, true>>(
 		"파티클 색상 보간 방법",
 		"Color Control Points",
 		array<string, 4>{ "R", "G", "B", "A" },
@@ -63,8 +63,8 @@ BaseParticleSpawnProperty::BaseParticleSpawnProperty(
 	);
 
 	m_colorInterpolationSelectPlotter->SetInterpolater(m_colorInterpolationMethod, m_colorInterpolater);
-	m_colorInterpolationSelectPlotter->UpdateControlPoints(m_colorInterpolater.get());
-	m_onColorInterpolationChanged(m_colorInterpolationMethod, m_colorInterpolater->GetCoefficientCount());
+	m_colorInterpolationSelectPlotter->RedrawSelectPlotter();
+	m_onColorInterpolationChanged(m_colorInterpolater->GetInterpolaterID(), m_colorInterpolater->GetCoefficientCount());
 }
 
 ID3D11Buffer* BaseParticleSpawnProperty::GetParticleSpawnPropertyBuffer() const noexcept { return m_baseParticleSpawnPropertyGPU->GetBuffer(); }
@@ -83,7 +83,8 @@ void BaseParticleSpawnProperty::AdjustControlPointsFromLife()
 	);
 
 	m_lastParticleLife = life;
-	m_colorInterpolationSelectPlotter->UpdateControlPoints(m_colorInterpolater.get());
+	m_colorInterpolater->UpdateCoefficient();
+	m_colorInterpolationSelectPlotter->RedrawSelectPlotter();
 }
 
 
@@ -144,12 +145,13 @@ void BaseParticleSpawnProperty::DrawPropertyUI()
 	{
 		m_colorInterpolationMethod = currnetColorInterpolateKind;
 		m_colorInterpolationSelectPlotter->SetInterpolater(m_colorInterpolationMethod, m_colorInterpolater);
-		m_onColorInterpolationChanged(m_colorInterpolationMethod, m_colorInterpolater->GetCoefficientCount());
+		m_onColorInterpolationChanged(m_colorInterpolater->GetInterpolaterID(), m_colorInterpolater->GetCoefficientCount());
 	}
 
 	if (m_colorControlPointGridView->DrawControlPointGridView())
 	{
-		m_colorInterpolationSelectPlotter->UpdateControlPoints(m_colorInterpolater.get());
+		m_colorInterpolater->UpdateCoefficient();
+		m_colorInterpolationSelectPlotter->RedrawSelectPlotter();
 	}
 	m_colorInterpolationSelectPlotter->ViewInterpolatedPlots();
 }

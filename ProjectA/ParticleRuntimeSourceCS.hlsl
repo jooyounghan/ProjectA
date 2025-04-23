@@ -40,7 +40,7 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 	float3 velocity = randSpeed * float3(cos(randSpeedRads.x) * cos(randSpeedRads.y), sin(randSpeedRads.y), sin(randSpeedRads.x) * cos(randSpeedRads.y));
 	float4 worldVelocity = mul(mul(float4(velocity, 0.f), speedTransformation), emitterWorldTransformation);
 	
-	sourcedParticle.color = float4(1.f, 1.f, 1.f, 1.f);
+    sourcedParticle.color = float4(0.f, 0.f, 0.f, 0.f);
 	sourcedParticle.worldPos = worldPos.xyz;
 	sourcedParticle.velocity = worldVelocity.xyz;
 	sourcedParticle.accelerate = float3(0.f, 0.f, 0.f);

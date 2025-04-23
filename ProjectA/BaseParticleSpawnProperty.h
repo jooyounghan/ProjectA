@@ -19,18 +19,18 @@ template<uint32_t Dim>
 class ControlPointGridView;
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-class InterpolationSelectPlotter;
+class InterpolaterSelectPlotter;
 
 class ShapedVectorSelector;
 
 class BaseParticleSpawnProperty : public IProperty
 {
 public:
-	BaseParticleSpawnProperty(const std::function<void(EInterpolationMethod, uint32_t)>& colorInterpolationChangedHandler);
+	BaseParticleSpawnProperty(const std::function<void(uint32_t, uint32_t)>& colorInterpolationChangedHandler);
 	~BaseParticleSpawnProperty() override = default;
 
 protected:
-	std::function<void(EInterpolationMethod, uint32_t)> m_onColorInterpolationChanged;
+	std::function<void(uint32_t, uint32_t)> m_onColorInterpolationChanged;
 
 protected:
 	struct  
@@ -81,7 +81,7 @@ protected:
 
 protected:
 	std::unique_ptr<ControlPointGridView<4>> m_colorControlPointGridView;
-	std::unique_ptr<InterpolationSelectPlotter<4, true>> m_colorInterpolationSelectPlotter;
+	std::unique_ptr<InterpolaterSelectPlotter<4, true>> m_colorInterpolationSelectPlotter;
 
 protected:
 	void AdjustControlPointsFromLife();

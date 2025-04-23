@@ -3,6 +3,7 @@
 #include "InterpolaterStructure.h"
 
 #include <functional>
+#include <memory>
 
 #define LoopInfinity static_cast<UINT8>(~0)
 
@@ -13,7 +14,7 @@ template<uint32_t Dim>
 class ControlPointGridView;
 
 template<uint32_t Dim, bool GPUInterpolateOn>
-class InterpolationSelectPlotter;
+class InterpolaterSelectPlotter;
 
 typedef std::function<void(class BaseEmitterUpdateProperty*)> OnEmitterDispose;
 
@@ -39,7 +40,7 @@ protected:
 
 protected:
 	std::unique_ptr<ControlPointGridView<1>> m_spawnRateControlPointGridView;
-	std::unique_ptr<InterpolationSelectPlotter<1, false>> m_spawnRateInterpolaterSelectPlotter;
+	std::unique_ptr<InterpolaterSelectPlotter<1, false>> m_spawnRateInterpolaterSelectPlotter;
 
 protected:
 	virtual void AdjustControlPointsFromLoopTime() override;

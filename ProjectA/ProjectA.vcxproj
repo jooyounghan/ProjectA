@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -159,8 +159,7 @@
     <ClCompile Include="External\imgui_impl_dx11.cpp" />
     <ClCompile Include="External\imgui_impl_win32.cpp" />
     <ClCompile Include="GlobalVariable.cpp" />
-    <ClCompile Include="GPUInterpolater.cpp" />
-    <ClCompile Include="InterpolationSelector.cpp" />
+    <ClCompile Include="InterpolaterSelector.cpp" />
     <ClCompile Include="IProperty.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Model.cpp" />
@@ -186,7 +185,7 @@
     <ClInclude Include="GPUInterpolater.h" />
     <ClInclude Include="Interpolater.h" />
     <ClInclude Include="InterpolaterStructure.h" />
-    <ClInclude Include="InterpolationSelector.h" />
+    <ClInclude Include="InterpolaterSelector.h" />
     <ClInclude Include="IProperty.h" />
     <ClInclude Include="External\imgui_impl_dx11.h" />
     <ClInclude Include="External\imgui_impl_win32.h" />

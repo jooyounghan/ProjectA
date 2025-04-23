@@ -37,6 +37,7 @@ public:
 	virtual ~IInterpolater() = default;
 
 public:
+	virtual uint32_t GetInterpolaterID() = 0;
 	virtual uint32_t GetCoefficientCount() = 0;
 	virtual void UpdateCoefficient() = 0;
 	virtual std::array<float, Dim> GetInterpolated(float x) noexcept = 0;
@@ -74,6 +75,7 @@ public:
 	virtual UINT GetInterpolaterFlag() = 0;
 
 public:
+	virtual UINT GetInterpolaterID() override { return m_interpolaterPropertyID; }
 	virtual uint32_t GetCoefficientCount() override { return CoefficientCount; };
 	virtual void UpdateCoefficient() override;
 
