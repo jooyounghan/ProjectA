@@ -251,3 +251,10 @@ gantt
 - Vortex 힘 추가
     -   구심력에 영향을 주는 인자를 조절하여 끌림 / 밀림 등 구현
     -   구심력과 원심력이 균형을 이루어도 밖으로 점점 발산하는 경향이 있어 확인 필요
+
+### 25.04.22
+- 점 인력 구현
+	- 선분에 대한 인력의 경우 Vortex로 모사가 가능하므로 점에 대한 인력만 구현
+- Cubic Spline 구현
+	- 삼대각행렬 형태의 스플라인 식을 토마스 알고리즘을 활용하여 해결
+		- https://en.wikipedia.org/wiki/Tridiagonal_matrix_algorithm
