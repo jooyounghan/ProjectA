@@ -4,7 +4,6 @@
 
 #include <memory>
 #include <queue>
-#include <set>
 
 #define ZERO_MATRIX  DirectX::XMMATRIX(DirectX::XMVectorZero(), DirectX::XMVectorZero(), DirectX::XMVectorZero(), DirectX::XMVectorZero())
 
@@ -28,13 +27,16 @@ namespace D3D11
 
 struct SParticle
 {
+	DirectX::XMVECTOR color;
 	DirectX::XMFLOAT3 position;
 	DirectX::XMFLOAT3 velocity;
 	DirectX::XMFLOAT3 accelerate;
 	UINT emitterType;
 	UINT emitterID;
+	float maxLife;
 	float life;
-	DirectX::XMFLOAT3 color;
+	UINT colorInerpolaterID;
+	UINT colorInterpolaterDegree;
 	float particleDummy;
 };
 
@@ -49,14 +51,14 @@ public:
 	static std::unique_ptr<D3D11::CDynamicBuffer> GEmitterWorldTransformGPU;
 	static std::vector<SEmitterForceProperty> GEmitterForcePropertyCPU;
 	static std::unique_ptr<D3D11::CStructuredBuffer> GEmitterForcePropertyGPU;
-	static std::vector<UINT> GEmitterWorldPositionChangedIDs;
-	static std::vector<UINT> GEmitterForceChangedIDs;
+	static std::vector<UINT> GChangedEmitterWorldPositionIDs;
+	static std::vector<UINT> GChangedEmitterForceIDs;
 
 public:
 	static void InitializeGlobalEmitterProperty(UINT emitterMaxCount, ID3D11Device* device);
-	static void UpdateGlobalEmitterProperty(ID3D11DeviceContext* deviceContext);
 	static UINT IssueAvailableEmitterID();
 	static void ReclaimEmitterID(UINT emitterID) noexcept;
+	static void UpdateGlobalEmitterProperty(ID3D11DeviceContext* deviceContext);
 
 #pragma region Emitter ±×¸®±â PSO
 public:
@@ -87,7 +89,8 @@ protected:
 		DirectX::XMMATRIX emitterWorldTransform;
 		UINT emitterType;
 		UINT emitterID;
-		
+		UINT colorInterpolaterID;
+		UINT colorInterpolaterDegree;
 	} m_emitterPropertyCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterPropertyGPU;
 	bool m_isEmitterPropertyChanged;
@@ -95,6 +98,9 @@ protected:
 public:
 	UINT GetEmitterType() const noexcept { return m_emitterPropertyCPU.emitterType; }
 	UINT GetEmitterID() const noexcept { return m_emitterPropertyCPU.emitterID; }
+
+public:
+	void SetColorInterpolaterProperty(UINT colorInterpolaterID, UINT colorInterpolaterDegree);
 
 public:
 	ID3D11Buffer* GetEmitterPropertyBuffer() const noexcept;

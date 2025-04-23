@@ -165,13 +165,13 @@ inline void ControlPointGridView<Dim>::HandleNewControlPoint(float& x, std::arra
 }
 
 template<>
-inline void ControlPointGridView<3>::HandleNewControlPoint(float& x, std::array<float, 3>& y)
+inline void ControlPointGridView<4>::HandleNewControlPoint(float& x, std::array<float, 4>& y)
 {
 	ImGui::SeparatorText("X °ª");
 	ImGui::DragFloat(m_xValueName.c_str(), &x, 0.1f, m_startPoint.x, m_endPoint.x, "%.1f");
 
 	ImGui::SeparatorText("Y °ª");
-	ImGui::ColorPicker3(m_yValueName.c_str(), y.data());
+	ImGui::ColorPicker4(m_yValueName.c_str(), y.data());
 }
 
 template<uint32_t Dim>
@@ -188,13 +188,13 @@ inline int ControlPointGridView<Dim>::GetDeleteButtonColumnIndex()
 
 
 template<>
-inline int ControlPointGridView<3>::GetTotalColumnCount()
+inline int ControlPointGridView<4>::GetTotalColumnCount()
 {
 	return 3;
 }
 
 template<>
-inline int ControlPointGridView<3>::GetDeleteButtonColumnIndex()
+inline int ControlPointGridView<4>::GetDeleteButtonColumnIndex()
 {
 	return 2;
 }
@@ -211,7 +211,7 @@ inline void ControlPointGridView<Dim>::SetColumns()
 }
 
 template<>
-inline void ControlPointGridView<3>::SetColumns()
+inline void ControlPointGridView<4>::SetColumns()
 {
 	ImGui::TableSetupColumn(m_xValueName.c_str());
 	ImGui::TableSetupColumn(m_yValueName.c_str());
@@ -221,7 +221,7 @@ inline void ControlPointGridView<3>::SetColumns()
 template<uint32_t Dim>
 inline void ControlPointGridView<Dim>::DrawControlPointTable(bool& isChanged)
 {
-	if (ImGui::BeginTable(m_controlPointsName.c_str(), GetTotalColumnCount(), ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+	if (ImGui::BeginTable(m_controlPointsName.c_str(), GetTotalColumnCount(), ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingStretchSame))
 	{
 		SetColumns();
 		
@@ -304,12 +304,12 @@ inline void ControlPointGridView<Dim>::HandleRowControlPoint(
 
 
 template<>
-inline void ControlPointGridView<3>::HandleRowControlPoint(
+inline void ControlPointGridView<4>::HandleRowControlPoint(
 	uint32_t columnOffset,
-	SControlPoint<3>& controlPoint,
+	SControlPoint<4>& controlPoint,
 	bool& isChanged
 )
 {
 	ImGui::TableSetColumnIndex(columnOffset);
-	isChanged |= ImGui::ColorEdit3(std::format("##{}", size_t(&controlPoint)).c_str(), controlPoint.y.data());
+	isChanged |= ImGui::ColorEdit4(std::format("##{}", size_t(&controlPoint)).c_str(), controlPoint.y.data());
 }

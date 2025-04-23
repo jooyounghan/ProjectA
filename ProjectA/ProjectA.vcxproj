@@ -204,6 +204,7 @@
   <ItemGroup>
     <None Include="DefineLinkedWithCpp.hlsli" />
     <None Include="EmitterDrawCommon.hlsli" />
+    <None Include="InterpolaterHelper.hlsli" />
     <None Include="PoolingCommon.hlsli" />
     <None Include="CaculateForceCommon.hlsli" />
     <None Include="SortingCommon.hlsli" />

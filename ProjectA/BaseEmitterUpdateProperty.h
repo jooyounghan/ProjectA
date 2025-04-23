@@ -6,13 +6,13 @@
 
 #define LoopInfinity static_cast<UINT8>(~0)
 
-template<uint32_t Dim>
+template<uint32_t Dim, bool GPUInterpolateOn>
 class IInterpolater;
 
 template<uint32_t Dim>
 class ControlPointGridView;
 
-template<uint32_t Dim>
+template<uint32_t Dim, bool GPUInterpolateOn>
 class InterpolationSelectPlotter;
 
 typedef std::function<void(class BaseEmitterUpdateProperty*)> OnEmitterDispose;
@@ -35,11 +35,11 @@ protected:
 	SControlPoint<1> m_spawnFinalControlPoint;
 	std::vector<SControlPoint<1>> m_spawnControlPoints;
 	EInterpolationMethod m_spawnRateInterpolationMethod;
-	std::unique_ptr<IInterpolater<1>> m_spawnRateInterpolater;
+	std::unique_ptr<IInterpolater<1, false>> m_spawnRateInterpolater;
 
 protected:
 	std::unique_ptr<ControlPointGridView<1>> m_spawnRateControlPointGridView;
-	std::unique_ptr<InterpolationSelectPlotter<1>> m_spawnRateInterpolaterSelectPlotter;
+	std::unique_ptr<InterpolationSelectPlotter<1, false>> m_spawnRateInterpolaterSelectPlotter;
 
 protected:
 	virtual void AdjustControlPointsFromLoopTime() override;

@@ -32,10 +32,12 @@
 #include "BaseParticleSpawnProperty.h"
 #include "BaseParticleUpdateProperty.h"
 
+#include "GPUInterpolater.h"
+
 #include <format>
 #pragma  endregion
 
-#define TotalParticleCount 1024 * 1024
+#define TotalParticleCount 1024
 
 using namespace std;
 using namespace App;
@@ -96,6 +98,9 @@ void CProjectAApp::Init()
 	m_appParamsGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_appParamsCPU));
 	m_appParamsGPU->InitializeBuffer(m_device);
 
+	sizeof(SInterpolaterProperty<4, 2>);
+	sizeof(SInterpolaterProperty<4, 4>);
+
 	CRasterizerState::InitializeDefaultRasterizerStates(m_device);
 	CBlendState::InitializeDefaultBlendStates(m_device);
 	CDepthStencilState::InitializeDefaultDepthStencilState(m_device);
@@ -129,8 +134,13 @@ void CProjectAApp::Init()
 #pragma endregion
 
 #pragma region 글로벌 변수 초기화
-	AEmitter::InitializeGlobalEmitterProperty(100, m_device);
+	constexpr UINT maxEmitterCount = 5;
+
+	AEmitter::InitializeGlobalEmitterProperty(maxEmitterCount, m_device);
 	AEmitter::InitializeEmitterDrawPSO(m_device);
+
+	GPUInterpolater<4, 2>::InitializeGPUInterpolater(m_device, maxEmitterCount);
+	GPUInterpolater<4, 4>::InitializeGPUInterpolater(m_device, maxEmitterCount);
 
 	CEmitterManager::InitializeSetInitializingPSO(m_device);
 	CEmitterManager::InitializePoolingCS(m_device);
@@ -175,15 +185,17 @@ void CProjectAApp::Update(float deltaTime)
 	m_appParamsGPU->Upload(m_deviceContext);
 #pragma endregion
 
-#pragma region 글로벌 변수 업데이트
-	AEmitter::UpdateGlobalEmitterProperty(m_deviceContext);
-#pragma endregion
-
 #pragma region 인스턴스 업데이트
 	for (auto& updatable : m_updatables)
 	{
 		updatable->Update(m_deviceContext, deltaTime);
 	}
+#pragma endregion
+
+#pragma region 글로벌 변수 업데이트
+	AEmitter::UpdateGlobalEmitterProperty(m_deviceContext);
+	GPUInterpolater<4, 2>::UpdateInterpolaterProperty(m_deviceContext);
+	GPUInterpolater<4, 4>::UpdateInterpolaterProperty(m_deviceContext);
 #pragma endregion
 
 #pragma region 카메라 초기화 및 설정

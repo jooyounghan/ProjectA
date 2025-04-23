@@ -93,6 +93,9 @@
     <Filter Include="헤더 파일\Math\Structure">
       <UniqueIdentifier>{1b32ddbf-9a1a-4084-b982-42efa12a26bb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader\Interpolater">
+      <UniqueIdentifier>{575a8112-5dc0-44d3-8b09-80b5fce09974}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -270,6 +273,9 @@
     </None>
     <None Include="SortingCommon.hlsli">
       <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
+    </None>
+    <None Include="InterpolaterHelper.hlsli">
+      <Filter>Shader\Interpolater</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

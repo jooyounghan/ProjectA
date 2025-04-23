@@ -14,8 +14,6 @@ cbuffer EmitterSpawnProperty : register(b3)
 	float2 maxSpeedRadian;
 	float2 minMaxSpeed;
 	float2 particleSpawnPropertyDummy;
-
-	float4 color;
 }
 
 [numthreads(LocalThreadCount, 1, 1)]
@@ -43,13 +41,16 @@ void main( uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID )
 		float3 velocity = randSpeed * float3(cos(randSpeedRads.x) * cos(randSpeedRads.y), sin(randSpeedRads.y), sin(randSpeedRads.x) * cos(randSpeedRads.y));
 		float4 worldVelocity = mul(mul(float4(velocity, 0.f), speedTransformation), emitterWorldTransformation);
 	
+		sourcedParticle.color = float4(0.f, 0.f, 0.f, 0.f);
 		sourcedParticle.worldPos = worldPos.xyz;
 		sourcedParticle.velocity = worldVelocity.xyz;
 		sourcedParticle.accelerate = float3(0.f, 0.f, 0.f);
 		sourcedParticle.emitterID = emitterID;
 		sourcedParticle.emitterType = emitterType;
-		sourcedParticle.life = initialParticleLife;
-		sourcedParticle.color = color.xyz;
+		sourcedParticle.maxLife = initialParticleLife;
+		sourcedParticle.life = sourcedParticle.maxLife;
+		sourcedParticle.colorInterpolaterID = colorInterpolaterID;
+		sourcedParticle.colorInterpolaterDegree = colorInterpolaterDegree;
 		sourcedParticle.particleDummy = 0.f;
 		totalParticles[revivedIndex] = sourcedParticle;
 		aliveFlags[revivedIndex] = 1;

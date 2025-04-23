@@ -1,5 +1,6 @@
 #pragma once
 #include "InterpolaterStructure.h"
+#include "GPUInterpolater.h"
 
 #include <vector>
 #include <DirectXMath.h>
@@ -29,16 +30,20 @@ concept IsControlPoint = requires(T t)
 	{ t.y } -> std::same_as<std::array<float, Dim>>;
 };
 
-template<uint32_t Dim>
+template<uint32_t Dim, bool GPUInterpolateOn>
 class IInterpolater
 {
 public:
+	virtual ~IInterpolater() = default;
+
+public:
+	virtual uint32_t GetCoefficientCount() = 0;
 	virtual void UpdateCoefficient() = 0;
 	virtual std::array<float, Dim> GetInterpolated(float x) noexcept = 0;
 };
 
-template<uint32_t Dim, uint32_t CoefficientCount>
-class AInterpolater : public IInterpolater<Dim>
+template<uint32_t Dim, uint32_t CoefficientCount, bool GPUInterpolateOn>
+class AInterpolater : public IInterpolater<Dim, GPUInterpolateOn>
 {
 public:
 	AInterpolater(
@@ -46,7 +51,7 @@ public:
 		const SControlPoint<Dim>& endPoint,
 		const std::vector<SControlPoint<Dim>>& controlPoints
 	);
-	virtual ~AInterpolater() = default;
+	~AInterpolater() override;
 
 protected:
 	const SControlPoint<Dim>& m_startPoint;
@@ -59,15 +64,42 @@ protected:
 	std::vector<CoeffType> m_coefficients;
 
 protected:
+	UINT m_interpolaterPropertyID;
+	SInterpolaterProperty<Dim, CoefficientCount>* m_interpolaterPropertyCached;
+
+public:
+	void UpdateInterpolaterProperty();
+	
+public:
+	virtual UINT GetInterpolaterFlag() = 0;
+
+public:
+	virtual uint32_t GetCoefficientCount() override { return CoefficientCount; };
 	virtual void UpdateCoefficient() override;
+
+protected:
 	virtual std::vector<SControlPoint<Dim>> GetControlPoints();
 
 protected:
 	size_t GetCoefficientIndex(float x) noexcept;
 };
 
-template<uint32_t Dim, uint32_t CoefficientCount>
-inline AInterpolater<Dim, CoefficientCount>::AInterpolater(
+template<uint32_t Dim, uint32_t CoefficientCount, bool GPUInterpolateOn>
+void AInterpolater<Dim, CoefficientCount, GPUInterpolateOn>::UpdateInterpolaterProperty()
+{
+	if (GPUInterpolateOn)
+	{
+		m_interpolaterPropertyCached->UpdateInterpolaterProperty(
+			GetInterpolaterFlag(),
+			m_xProfiles,
+			m_coefficients
+		);
+		GPUInterpolater<Dim, CoefficientCount>::GChangedInterpolaterIDs.emplace_back(m_interpolaterPropertyID);
+	}
+}
+
+template<uint32_t Dim, uint32_t CoefficientCount, bool GPUInterpolateOn>
+inline AInterpolater<Dim, CoefficientCount, GPUInterpolateOn>::AInterpolater(
 	const SControlPoint<Dim>& startPoint, 
 	const SControlPoint<Dim>& endPoint, 
 	const std::vector<SControlPoint<Dim>>& controlPoints
@@ -77,11 +109,27 @@ inline AInterpolater<Dim, CoefficientCount>::AInterpolater(
 	m_endPoint(endPoint),
 	m_controlPoints(controlPoints)
 {
-
+	if (GPUInterpolateOn)
+	{
+		m_interpolaterPropertyID = GPUInterpolater<Dim, CoefficientCount>::IssueAvailableInterpolaterID();
+		m_interpolaterPropertyCached = GPUInterpolater<Dim, CoefficientCount>::GetInterpolaterProperty(m_interpolaterPropertyID);
+	}
 }
 
-template<uint32_t Dim, uint32_t CoefficientCount>
-inline void AInterpolater<Dim, CoefficientCount>::UpdateCoefficient()
+template<uint32_t Dim, uint32_t CoefficientCount, bool GPUInterpolateOn>
+AInterpolater<Dim, CoefficientCount, GPUInterpolateOn>::~AInterpolater()
+{
+	if (GPUInterpolateOn)
+	{
+		GPUInterpolater<Dim, CoefficientCount>::ReclaimInterpolaterID(m_interpolaterPropertyID);
+		GPUInterpolater<Dim, CoefficientCount>::GChangedInterpolaterIDs.emplace_back(m_interpolaterPropertyID);
+		ZeroMemory(m_interpolaterPropertyCached, sizeof(SInterpolaterProperty<Dim, CoefficientCount>));
+		m_interpolaterPropertyCached = nullptr;
+	}
+}
+
+template<uint32_t Dim, uint32_t CoefficientCount, bool GPUInterpolateOn>
+inline void AInterpolater<Dim, CoefficientCount, GPUInterpolateOn>::UpdateCoefficient()
 {
 	m_xProfiles.clear();
 
@@ -93,8 +141,8 @@ inline void AInterpolater<Dim, CoefficientCount>::UpdateCoefficient()
 	m_xProfiles.emplace_back(m_endPoint.x);
 }
 
-template<uint32_t Dim, uint32_t CoefficientCount>
-inline std::vector<SControlPoint<Dim>> AInterpolater<Dim, CoefficientCount>::GetControlPoints()
+template<uint32_t Dim, uint32_t CoefficientCount, bool GPUInterpolateOn>
+inline std::vector<SControlPoint<Dim>> AInterpolater<Dim, CoefficientCount, GPUInterpolateOn>::GetControlPoints()
 {
 	std::vector<SControlPoint<Dim>> result;
 	result.reserve(2 + m_controlPoints.size());
@@ -104,8 +152,8 @@ inline std::vector<SControlPoint<Dim>> AInterpolater<Dim, CoefficientCount>::Get
 	return result;
 }
 
-template<uint32_t Dim, uint32_t CoefficientCount>
-inline size_t AInterpolater<Dim, CoefficientCount>::GetCoefficientIndex(float x) noexcept
+template<uint32_t Dim, uint32_t CoefficientCount, bool GPUInterpolateOn>
+inline size_t AInterpolater<Dim, CoefficientCount, GPUInterpolateOn>::GetCoefficientIndex(float x) noexcept
 {
 	const size_t xProfileStepCounts = m_xProfiles.size() - 1;
 		

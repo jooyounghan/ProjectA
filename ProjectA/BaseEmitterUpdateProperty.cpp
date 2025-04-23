@@ -29,7 +29,7 @@ BaseEmitterUpdateProperty::BaseEmitterUpdateProperty(float& emitterCurrentTime, 
 		m_spawnControlPoints, false
 	);
 
-	m_spawnRateInterpolaterSelectPlotter = make_unique<InterpolationSelectPlotter<1>>(
+	m_spawnRateInterpolaterSelectPlotter = make_unique<InterpolationSelectPlotter<1, false>>(
 		"积己 橇肺颇老 焊埃 规过",
 		"Spawn Control Points",
 		std::array<std::string, 1>{ "Spawn Rate" },

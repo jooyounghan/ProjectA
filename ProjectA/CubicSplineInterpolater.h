@@ -2,8 +2,8 @@
 #include "Interpolater.h"
 
 
-template<uint32_t Dim>
-class CubicSplineInterpolater : public AInterpolater<Dim, 4>
+template<uint32_t Dim, bool GPUInterpolateOn>
+class CubicSplineInterpolater : public AInterpolater<Dim, 4, GPUInterpolateOn>
 {
 public:
 	CubicSplineInterpolater(
@@ -14,9 +14,10 @@ public:
 	~CubicSplineInterpolater() override = default;
 
 protected:
-	using Parent = AInterpolater<Dim, 4>;
+	using Parent = AInterpolater<Dim, 4, GPUInterpolateOn>;
 
 public:
+	virtual UINT GetInterpolaterFlag() override;
 	virtual void UpdateCoefficient() override;
 	virtual std::array<float, Dim> GetInterpolated(float x) noexcept override;
 
@@ -29,19 +30,25 @@ protected:
 	);
 };
 
-template<uint32_t Dim>
-inline CubicSplineInterpolater<Dim>::CubicSplineInterpolater(
+template<uint32_t Dim, bool GPUInterpolateOn>
+inline CubicSplineInterpolater<Dim, GPUInterpolateOn>::CubicSplineInterpolater(
 	const SControlPoint<Dim>& startPoint,
 	const SControlPoint<Dim>& endPoint,
 	const std::vector<SControlPoint<Dim>>& controlPoints
 )
-	: AInterpolater<Dim, 4>(startPoint, endPoint, controlPoints)
+	: AInterpolater<Dim, 4, GPUInterpolateOn>(startPoint, endPoint, controlPoints)
 {
 	UpdateCoefficient();
 }
 
-template<uint32_t Dim>
-inline void CubicSplineInterpolater<Dim>::UpdateCoefficient()
+template<uint32_t Dim, bool GPUInterpolateOn>
+UINT CubicSplineInterpolater<Dim, GPUInterpolateOn>::GetInterpolaterFlag()
+{
+	return 3;
+}
+
+template<uint32_t Dim, bool GPUInterpolateOn>
+inline void CubicSplineInterpolater<Dim, GPUInterpolateOn>::UpdateCoefficient()
 {
 	Parent::UpdateCoefficient();
 	Parent::m_coefficients.clear();
@@ -120,10 +127,15 @@ inline void CubicSplineInterpolater<Dim>::UpdateCoefficient()
 			coefficient[4 * dimension + 2] = (cubicSplineContorlPoints[idx + 1].y[dimension] - cubicSplineContorlPoints[idx].y[dimension]) / stepSizes[idx] - stepSizes[idx] * (secondDerivative[idx + 1][dimension] + 2.f * secondDerivative[idx][dimension]) / 6.f;
 		}
 	}
+
+	if (GPUInterpolateOn)
+	{
+		Parent::UpdateInterpolaterProperty();
+	}
 }
 
-template<uint32_t Dim>
-inline std::array<float, Dim> CubicSplineInterpolater<Dim>::GetInterpolated(float x) noexcept
+template<uint32_t Dim, bool GPUInterpolateOn>
+inline std::array<float, Dim> CubicSplineInterpolater<Dim, GPUInterpolateOn>::GetInterpolated(float x) noexcept
 {
 	size_t coefficientIndex = Parent::GetCoefficientIndex(x);
 
@@ -144,8 +156,8 @@ inline std::array<float, Dim> CubicSplineInterpolater<Dim>::GetInterpolated(floa
 	return result;
 }
 
-template<uint32_t Dim>
-inline std::vector<std::array<float, Dim>> CubicSplineInterpolater<Dim>::GetSecondDerivative(
+template<uint32_t Dim, bool GPUInterpolateOn>
+inline std::vector<std::array<float, Dim>> CubicSplineInterpolater<Dim, GPUInterpolateOn>::GetSecondDerivative(
 	const std::vector<std::array<float, Dim>>& L, 
 	const std::vector<std::array<float, Dim>>& D, 
 	const std::vector<std::array<float, Dim>>& U, 

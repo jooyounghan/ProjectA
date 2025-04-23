@@ -29,11 +29,18 @@ protected:
 				float initialParticleLife;
 			};
 		};
-		SShapedVectorProperty shapedSpeedVectorProperty;
-		DirectX::XMVECTOR color;
+		union
+		{
+			SShapedVectorProperty shapedSpeedVectorProperty;
+			struct
+			{
+				char padding2[88];
+				float padding3[2];
+			};
+		};
 	} m_emitterSpawnPropertyCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterSpawnPropertyGPU;
-	bool m_isEmitterSpawnPropertyChanged = false;
+	bool m_isEmitterSpawnPropertyChanged;
 
 protected:
 	bool m_isImmortal = false;

@@ -22,6 +22,8 @@
 #include "BaseParticleSpawnProperty.h"
 #include "BaseParticleUpdateProperty.h"
 
+#include "GPUInterpolater.h"
+
 using namespace std;
 using namespace DirectX;
 using namespace D3D11;
@@ -129,7 +131,7 @@ void CEmitterManager::RemoveParticleEmitter(UINT emitterID)
 	{
 		AEmitter::ReclaimEmitterID(emitterID);
 		AEmitter::GEmitterWorldTransformCPU[emitterID] = ZERO_MATRIX;
-		AEmitter::GEmitterWorldPositionChangedIDs.emplace_back(emitterID);
+		AEmitter::GChangedEmitterWorldPositionIDs.emplace_back(emitterID);
 		m_emitters.erase(iter);
 	}
 	else 
@@ -230,14 +232,24 @@ void CEmitterManager::InitializeParticleSet(ID3D11DeviceContext* deviceContext)
 {
 	const static UINT dispatchX = UINT(ceil(m_particleMaxCount / LocalThreadCount));
 
-	ID3D11UnorderedAccessView* selectSetUavs[] = { m_particleDrawIndirectStagingGPU->GetUAV(), m_totalParticles->GetUAV(), m_aliveFlags->GetUAV(), m_deathParticleSet->GetUAV(), m_alivePrefixDescriptors->GetUAV() };
+	ID3D11ShaderResourceView* selectSetSRVs[] = { GPUInterpolater<4, 2>::GInterpolaterPropertyGPU->GetSRV(), GPUInterpolater<4, 4>::GInterpolaterPropertyGPU->GetSRV() };
+	ID3D11ShaderResourceView* selectSetNullSRVs[] = { nullptr, nullptr };
+	ID3D11UnorderedAccessView* selectSetUavs[] = { 
+		m_particleDrawIndirectStagingGPU->GetUAV(),
+		m_totalParticles->GetUAV(), 
+		m_aliveFlags->GetUAV(),
+		m_deathParticleSet->GetUAV(),
+		m_alivePrefixDescriptors->GetUAV() 
+	};
 	ID3D11UnorderedAccessView* selectSetNullUavs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
 
 	UINT initDeathParticleCount[] = { NULL, NULL, NULL, 0, NULL};
 	GInitializeParticleSetCS->SetShader(deviceContext);
 
+	deviceContext->CSSetShaderResources(0, 2, selectSetSRVs);
 	deviceContext->CSSetUnorderedAccessViews(0, 5, selectSetUavs, initDeathParticleCount);
 	deviceContext->Dispatch(dispatchX, 1, 1);
+	deviceContext->CSSetShaderResources(0, 2, selectSetNullSRVs);
 	deviceContext->CSSetUnorderedAccessViews(0, 5, selectSetNullUavs, initDeathParticleCount);
 }
 

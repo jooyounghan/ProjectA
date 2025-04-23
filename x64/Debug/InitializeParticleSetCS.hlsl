@@ -1,6 +1,10 @@
 #include "ParticleCommon.hlsli"
+#include "InterpolaterHelper.hlsli"
 
 #define Pcurrent particleDrawIndirectArgs[0]
+
+StructuredBuffer<Degree1Dim4InterpolaterProperty> firstDegreeInterpolater : register(t0);
+StructuredBuffer<Degree3Dim4InterpolaterProperty> thirdDegreeInterpolater : register(t1);
 
 RWStructuredBuffer<uint> particleDrawIndirectArgs: register(u0);
 RWStructuredBuffer<Particle> totalParticles : register(u1);
@@ -45,6 +49,35 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
 		{
             aliveFlags[threadID] = 1;
             
+            // 색상에 대한 보간
+            uint colorInterpolaterDegree = currentParticle.colorInterpolaterDegree;
+            uint colorInterpolaterID = currentParticle.colorInterpolaterID;
+
+            float timeSpent = currentParticle.maxLife - currentParticle.life;
+
+            if (colorInterpolaterDegree == 2)
+            {
+                // Linear
+                Degree1Dim4InterpolaterProperty interpolaterProperty = firstDegreeInterpolater[colorInterpolaterID];
+                currentParticle.color = float4(timeSpent, 0.f, 0.f, 1.f);
+            }
+            else if (colorInterpolaterDegree == 4)
+            {
+                Degree3Dim4InterpolaterProperty interpolaterProperty = thirdDegreeInterpolater[colorInterpolaterID];
+
+                if (interpolaterProperty.header.interpolaterFlag == 2)
+                {
+                    // Catmull-Rom
+                    currentParticle.color = float4(0.f, timeSpent, 0.f, 1.f);
+                }
+                else if (interpolaterProperty.header.interpolaterFlag == 3)
+                {
+                    // Cubic
+                    currentParticle.color = float4(0.f, 0.f, timeSpent, 1.f);
+                }
+            }
+
+
             // 가속도를 통한 적분
             currentParticle.velocity += currentParticle.accelerate * dt;
             currentParticle.worldPos += currentParticle.velocity * dt;

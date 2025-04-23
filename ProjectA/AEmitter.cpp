@@ -36,8 +36,8 @@ vector<DirectX::XMMATRIX> AEmitter::GEmitterWorldTransformCPU;
 unique_ptr<D3D11::CDynamicBuffer> AEmitter::GEmitterWorldTransformGPU = nullptr;
 vector<SEmitterForceProperty> AEmitter::GEmitterForcePropertyCPU;
 unique_ptr<D3D11::CStructuredBuffer> AEmitter::GEmitterForcePropertyGPU = nullptr;
-vector<UINT> AEmitter::GEmitterWorldPositionChangedIDs;
-vector<UINT> AEmitter::GEmitterForceChangedIDs;
+vector<UINT> AEmitter::GChangedEmitterWorldPositionIDs;
+vector<UINT> AEmitter::GChangedEmitterForceIDs;
 
 const vector<XMFLOAT3> AEmitter::GEmitterBoxPositions = ModelFactory::CreateBoxPositions(XMVectorSet(1.f, 1.f, 1.f, 0.f));
 const vector<UINT> AEmitter::GEmitterBoxIndices = ModelFactory::CreateIndices();
@@ -76,25 +76,6 @@ void AEmitter::InitializeGlobalEmitterProperty(UINT emitterMaxCount, ID3D11Devic
 	GEmitterForcePropertyGPU->InitializeBuffer(device);
 }
 
-void AEmitter::UpdateGlobalEmitterProperty(ID3D11DeviceContext* deviceContext)
-{
-	UINT emitterWorldPositionChangedIDsCount = static_cast<UINT>(GEmitterWorldPositionChangedIDs.size());
-	if (emitterWorldPositionChangedIDsCount > 0)
-	{
-		GEmitterWorldTransformGPU->StageNthElement(deviceContext, GEmitterWorldPositionChangedIDs.data(), emitterWorldPositionChangedIDsCount);
-		GEmitterWorldTransformGPU->UploadNthElement(deviceContext, GEmitterWorldPositionChangedIDs.data(), emitterWorldPositionChangedIDsCount);
-		GEmitterWorldPositionChangedIDs.clear();
-	}
-
-	UINT emitterForceChagnedIDsCount = static_cast<UINT>(GEmitterForceChangedIDs.size());
-	if (emitterForceChagnedIDsCount > 0)
-	{
-		GEmitterForcePropertyGPU->StageNthElement(deviceContext, GEmitterForceChangedIDs.data(), emitterForceChagnedIDsCount);
-		GEmitterForcePropertyGPU->UploadNthElement(deviceContext, GEmitterForceChangedIDs.data(), emitterForceChagnedIDsCount);
-		GEmitterForceChangedIDs.clear();
-	}
-}
-
 UINT AEmitter::IssueAvailableEmitterID()
 {
 	if (GEmitterIDQueue.empty()) { throw exception("No Emitter ID To Issue"); }
@@ -108,6 +89,25 @@ UINT AEmitter::IssueAvailableEmitterID()
 void AEmitter::ReclaimEmitterID(UINT emitterID) noexcept
 {
 	GEmitterIDQueue.push(emitterID);
+}
+
+void AEmitter::UpdateGlobalEmitterProperty(ID3D11DeviceContext* deviceContext)
+{
+	UINT emitterWorldPositionChangedIDsCount = static_cast<UINT>(GChangedEmitterWorldPositionIDs.size());
+	if (emitterWorldPositionChangedIDsCount > 0)
+	{
+		GEmitterWorldTransformGPU->StageNthElement(deviceContext, GChangedEmitterWorldPositionIDs.data(), emitterWorldPositionChangedIDsCount);
+		GEmitterWorldTransformGPU->UploadNthElement(deviceContext, GChangedEmitterWorldPositionIDs.data(), emitterWorldPositionChangedIDsCount);
+		GChangedEmitterWorldPositionIDs.clear();
+	}
+
+	UINT emitterForceChagnedIDsCount = static_cast<UINT>(GChangedEmitterForceIDs.size());
+	if (emitterForceChagnedIDsCount > 0)
+	{
+		GEmitterForcePropertyGPU->StageNthElement(deviceContext, GChangedEmitterForceIDs.data(), emitterForceChagnedIDsCount);
+		GEmitterForcePropertyGPU->UploadNthElement(deviceContext, GChangedEmitterForceIDs.data(), emitterForceChagnedIDsCount);
+		GChangedEmitterForceIDs.clear();
+	}
 }
 
 void AEmitter::InitializeEmitterDrawPSO(ID3D11Device* device)
@@ -206,6 +206,14 @@ AEmitter::AEmitter(
 	m_isEmitterPropertyChanged = true;
 }
 
+void AEmitter::SetColorInterpolaterProperty(UINT colorInterpolaterID, UINT colorInterpolaterDegree)
+{
+	sizeof(SParticle);
+	m_emitterPropertyCPU.colorInterpolaterID = colorInterpolaterID;
+	m_emitterPropertyCPU.colorInterpolaterDegree = colorInterpolaterDegree;
+	m_isEmitterPropertyChanged = true;
+}
+
 ID3D11Buffer* AEmitter::GetEmitterPropertyBuffer() const noexcept { return m_emitterPropertyGPU->GetBuffer(); }
 
 void AEmitter::InjectAEmitterSpawnProperty(unique_ptr<BaseEmitterSpawnProperty>& emitterSpawnProperty) noexcept 
@@ -270,7 +278,7 @@ void AEmitter::Update(ID3D11DeviceContext* deviceContext, float dt)
 		m_emitterPropertyGPU->Stage(deviceContext);
 		m_emitterPropertyGPU->Upload(deviceContext);
 
-		GEmitterWorldPositionChangedIDs.emplace_back(m_emitterPropertyCPU.emitterID);
+		GChangedEmitterWorldPositionIDs.emplace_back(m_emitterPropertyCPU.emitterID);
 
 		m_isEmitterPropertyChanged = false;
 	}

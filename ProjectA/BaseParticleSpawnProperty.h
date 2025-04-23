@@ -5,32 +5,32 @@
 
 #include <vector>
 #include <memory>
+#include <functional>
 
 namespace D3D11
 {
 	class CDynamicBuffer;
 }
 
-template<uint32_t Dim>
+template<uint32_t Dim, bool GPUInterpolateOn>
 class IInterpolater;
 
 template<uint32_t Dim>
 class ControlPointGridView;
 
-template<uint32_t Dim>
+template<uint32_t Dim, bool GPUInterpolateOn>
 class InterpolationSelectPlotter;
 
 class ShapedVectorSelector;
 
-class BaseParticleSpawnProperty : public APropertyHasLoopTime
+class BaseParticleSpawnProperty : public IProperty
 {
 public:
-	BaseParticleSpawnProperty(float& emitterCurrentTime, float& loopTime);
+	BaseParticleSpawnProperty(const std::function<void(EInterpolationMethod, uint32_t)>& colorInterpolationChangedHandler);
 	~BaseParticleSpawnProperty() override = default;
 
 protected:
-	float& m_emitterCurrentTime;
-	float m_lastLoopTime;
+	std::function<void(EInterpolationMethod, uint32_t)> m_onColorInterpolationChanged;
 
 protected:
 	struct  
@@ -41,13 +41,22 @@ protected:
 			struct
 			{
 				char padding1[88];
-				DirectX::XMFLOAT2 minMaxLifeTime;
+				float life;
+				float padding2;
 			};
 		};
-		SShapedVectorProperty shapedSpeedVectorProperty;
-		DirectX::XMVECTOR color;
+		union
+		{
+			SShapedVectorProperty shapedSpeedVectorProperty;
+			struct
+			{
+				char padding3[88];
+				float padding4[2];
+			};
+		};
 	} m_baseParticleSpawnPropertyCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_baseParticleSpawnPropertyGPU;
+	bool m_isParticleSpawnPropertyChanged;
 
 public:
 	ID3D11Buffer* GetParticleSpawnPropertyBuffer() const noexcept;
@@ -61,29 +70,21 @@ protected:
 	std::unique_ptr<ShapedVectorSelector> m_speedShapedVectorSelector;
 
 protected:
-	SControlPoint<2> m_lifeInitControlPoint;
-	SControlPoint<2> m_lifeFinalControlPoint;
-	std::vector<SControlPoint<2>> m_lifeControlPoints;
-	EInterpolationMethod m_lifeInterpolationMethod;
-	std::unique_ptr<IInterpolater<2>> m_lifeInterpolater;
+	float m_lastParticleLife;
 
 protected:
-	std::unique_ptr<ControlPointGridView<2>> m_lifeControlPointGridView;
-	std::unique_ptr<InterpolationSelectPlotter<2>> m_lifeInterpolationSelectPlotter;
-
-protected:
-	SControlPoint<3> m_colorInitControlPoint;
-	SControlPoint<3> m_colorFinalControlPoint;
-	std::vector<SControlPoint<3>> m_colorControlPoints;
+	SControlPoint<4> m_colorInitControlPoint;
+	SControlPoint<4> m_colorFinalControlPoint;
+	std::vector<SControlPoint<4>> m_colorControlPoints;
 	EInterpolationMethod m_colorInterpolationMethod;
-	std::unique_ptr<IInterpolater<3>> m_colorInterpolater;
+	std::unique_ptr<IInterpolater<4, true>> m_colorInterpolater;
 
 protected:
-	std::unique_ptr<ControlPointGridView<3>> m_colorControlPointGridView;
-	std::unique_ptr<InterpolationSelectPlotter<3>> m_colorInterpolationSelectPlotter;
+	std::unique_ptr<ControlPointGridView<4>> m_colorControlPointGridView;
+	std::unique_ptr<InterpolationSelectPlotter<4, true>> m_colorInterpolationSelectPlotter;
 
 protected:
-	virtual void AdjustControlPointsFromLoopTime() override;
+	void AdjustControlPointsFromLife();
 
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;

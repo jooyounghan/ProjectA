@@ -2,13 +2,16 @@
 
 struct Particle
 {
+    float4 color;
     float3 worldPos;
     float3 velocity;
     float3 accelerate;
     uint emitterType;
     uint emitterID;
+    float maxLife;
     float life;
-    float3 color;
+    uint colorInterpolaterID;
+    uint colorInterpolaterDegree;
     float particleDummy;
 };
 

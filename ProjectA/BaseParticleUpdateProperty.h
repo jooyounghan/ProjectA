@@ -71,7 +71,7 @@ private:
 	void HandleSingleForce(
 		const std::string& forceName, 
 		EForceFlag force, 
-		const std::function<void()>& handler
+		const std::function<bool()>& handler
 	);
 	void HandleNForce(
 		const std::string& forceName,
@@ -79,7 +79,7 @@ private:
 		ENForceKind nForceKind, 
 		const std::function<void(UINT)>& addButtonHandler,
 		const std::function<void(UINT)>& deleteButtonHandler,
-		const std::function<void(UINT)>& handler
+		const std::function<bool(UINT)>& handler
 	);
 };
 

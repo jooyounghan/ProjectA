@@ -90,20 +90,22 @@ void BaseParticleUpdateProperty::DrawPropertyUI()
 
 	HandleSingleForce("중력", EForceFlag::Gravity, [&]()
 		{
-			DragFloat3("중력 벡터", &m_emitterForceProperty.gravityForce.x, 0.1f, -1000.f, 1000.f, "%.1f");
+			return DragFloat3("중력 벡터", &m_emitterForceProperty.gravityForce.x, 0.1f, -1000.f, 1000.f, "%.1f");
 		}
 	);
 
 	HandleSingleForce("항력", EForceFlag::Drag, [&]()
 		{
-			DragFloat("항력계수", &m_emitterForceProperty.dragCoefficient, 0.01f, 0.f, 1.f, "%.2f");
+			return DragFloat("항력계수", &m_emitterForceProperty.dragCoefficient, 0.01f, 0.f, 1.f, "%.2f");
 		}
 	);
 
 	HandleSingleForce("Curl-Noise", EForceFlag::CurNoise, [&]()
 		{
-			DragFloat("Curl-Noise Octave", &m_emitterForceProperty.curlNoiseOctave, 0.01f, 0.f, 10.f, "%.2f");
-			DragFloat("Curl-Noise Coefficient", &m_emitterForceProperty.curlNoiseCoefficient, 0.01f, 0.f, 10.f, "%.2f");
+			bool isChanged = false;
+			isChanged |= DragFloat("Curl-Noise Octave", &m_emitterForceProperty.curlNoiseOctave, 0.01f, 0.f, 10.f, "%.2f");
+			isChanged |= DragFloat("Curl-Noise Coefficient", &m_emitterForceProperty.curlNoiseCoefficient, 0.01f, 0.f, 10.f, "%.2f");
+			return isChanged;
 		}
 	);
 
@@ -118,13 +120,15 @@ void BaseParticleUpdateProperty::DrawPropertyUI()
 			sizeof(SVortexForce) * (MaxNForceCount - (deleteIndex + 1)));
 		},
 		[&](UINT currentIndex) {
+			bool isChanged = false;
 			SVortexForce& vortexForce = m_emitterForceProperty.nVortexForce[currentIndex];
-			DragFloat3("Vortex 원점", &vortexForce.vortexOrigin.x, 0.1f, -1000.f, 1000.f, "%.1f");
-			DragFloat3("Vortex 축", &vortexForce.vortexAxis.x, 0.01f, -1.f, 1.f, "%.2f");
-			DragFloat("작용 반지름", &vortexForce.vortexRadius, 0.1f, 0.f, 1000.f, "%.1f");
-			DragFloat("지평선 반지름", &vortexForce.vortexDeathHorizonRadius, 0.1f, 0.f, vortexForce.vortexRadius, "%.1f");
-			DragFloat("Vortex 계수", &vortexForce.vortextCoefficient, 0.01f, 0.f, 10.f, "%.2f");
-			DragFloat("중심 끌림 강도", &vortexForce.vortexTightness, 0.01f, 0.f, 10.f, "%.2f");
+			isChanged |= DragFloat3("Vortex 원점", &vortexForce.vortexOrigin.x, 0.1f, -1000.f, 1000.f, "%.1f");
+			isChanged |= DragFloat3("Vortex 축", &vortexForce.vortexAxis.x, 0.01f, -1.f, 1.f, "%.2f");
+			isChanged |= DragFloat("작용 반지름", &vortexForce.vortexRadius, 0.1f, 0.f, 1000.f, "%.1f");
+			isChanged |= DragFloat("지평선 반지름", &vortexForce.vortexDeathHorizonRadius, 0.1f, 0.f, vortexForce.vortexRadius, "%.1f");
+			isChanged |= DragFloat("Vortex 계수", &vortexForce.vortextCoefficient, 0.01f, 0.f, 10.f, "%.2f");
+			isChanged |= DragFloat("중심 끌림 강도", &vortexForce.vortexTightness, 0.01f, 0.f, 10.f, "%.2f");
+			return isChanged;
 		}
 	);
 
@@ -139,10 +143,12 @@ void BaseParticleUpdateProperty::DrawPropertyUI()
 				sizeof(SPointInteractionForce) * (MaxNForceCount - (deleteIndex + 1)));
 		},
 		[&](UINT currentIndex) {
+			bool isChanged = false;
 			SPointInteractionForce& pointInteractionForce = m_emitterForceProperty.nPointInteractionForce[currentIndex];
-			DragFloat3("정점", &pointInteractionForce.pointInteractionCenter.x, 0.1f, -1000.f, 1000.f, "%.1f");
-			DragFloat("영향 반지름", &pointInteractionForce.interactionRadius, 0.1f, 0.f, 1000.f, "%.1f");
-			DragFloat("인력 계수", &pointInteractionForce.interactionCoefficient, 0.01f, 0.f, 10.f, "%.2f");
+			isChanged |= DragFloat3("정점", &pointInteractionForce.pointInteractionCenter.x, 0.1f, -1000.f, 1000.f, "%.1f");
+			isChanged |= DragFloat("영향 반지름", &pointInteractionForce.interactionRadius, 0.1f, 0.f, 1000.f, "%.1f");
+			isChanged |= DragFloat("인력 계수", &pointInteractionForce.interactionCoefficient, 0.01f, 0.f, 10.f, "%.2f");
+			return isChanged;
 		}
 	);
 }
@@ -150,14 +156,14 @@ void BaseParticleUpdateProperty::DrawPropertyUI()
 void BaseParticleUpdateProperty::HandleSingleForce(
 	const string& forceName,
 	EForceFlag force,
-	const function<void()>& handler
+	const function<bool()>& handler
 )
 {
 	bool isForceOn = IsForceOn(force);
 	SeparatorText(forceName.c_str());
 	BeginDisabled(!isForceOn);
 	{
-		handler();
+		if (handler()) m_isEmitterForcePropertyChanged = true;
 	}
 	EndDisabled();
 	SameLine();
@@ -174,7 +180,7 @@ void BaseParticleUpdateProperty::HandleNForce(
 	ENForceKind nForceKind,
 	const function<void(UINT)>& addButtonHandler,
 	const function<void(UINT)>& deleteButtonHandler,
-	const function<void(UINT)>& handler
+	const function<bool(UINT)>& handler
 )
 {
 	UINT nForceCount = GetNForceCount(m_emitterForceProperty.nForceCount, nForceKind);
@@ -205,7 +211,7 @@ void BaseParticleUpdateProperty::HandleNForce(
 			SameLine();
 			if (CollapsingHeader(format("{}{} 프로퍼티", forceName, (forceIdx + 1)).c_str()))
 			{
-				handler(forceIdx);
+				if (handler(forceIdx)) m_isEmitterForcePropertyChanged = true;
 			}
 			PopID();
 		}

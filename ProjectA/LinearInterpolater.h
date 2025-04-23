@@ -1,8 +1,8 @@
 #pragma once
 #include "Interpolater.h"
 
-template<uint32_t Dim>
-class LinearInterpolater : public AInterpolater<Dim, 2>
+template<uint32_t Dim, bool GPUInterpolateOn>
+class LinearInterpolater : public AInterpolater<Dim, 2, GPUInterpolateOn>
 {
 public:
 	LinearInterpolater(
@@ -13,26 +13,35 @@ public:
 	~LinearInterpolater() override = default;
 
 protected:
-	using Parent = AInterpolater<Dim, 2>;
+	using Parent = AInterpolater<Dim, 2, GPUInterpolateOn>;
 
 public:
+	virtual UINT GetInterpolaterFlag() override;
 	virtual void UpdateCoefficient() override;
+
+protected:
 	virtual std::array<float, Dim> GetInterpolated(float x) noexcept override;
 };
 
-template<uint32_t Dim>
-inline LinearInterpolater<Dim>::LinearInterpolater(
+template<uint32_t Dim, bool GPUInterpolateOn>
+inline LinearInterpolater<Dim, GPUInterpolateOn>::LinearInterpolater(
 	const SControlPoint<Dim>& startPoint, 
 	const SControlPoint<Dim>& endPoint, 
 	const std::vector<SControlPoint<Dim>>& controlPoints
 )
-	: AInterpolater<Dim, 2>(startPoint, endPoint, controlPoints)
+	: AInterpolater<Dim, 2, GPUInterpolateOn>(startPoint, endPoint, controlPoints)
 {
 	UpdateCoefficient();
 }
 
-template<uint32_t Dim>
-inline void LinearInterpolater<Dim>::UpdateCoefficient()
+template<uint32_t Dim, bool GPUInterpolateOn>
+UINT LinearInterpolater<Dim, GPUInterpolateOn>::GetInterpolaterFlag()
+{
+	return 1;
+}
+
+template<uint32_t Dim, bool GPUInterpolateOn>
+inline void LinearInterpolater<Dim, GPUInterpolateOn>::UpdateCoefficient()
 {
 	Parent::UpdateCoefficient();
 
@@ -55,10 +64,15 @@ inline void LinearInterpolater<Dim>::UpdateCoefficient()
 		}
 		Parent::m_coefficients.emplace_back(coefficient);
 	}
+
+	if (GPUInterpolateOn)
+	{
+		Parent::UpdateInterpolaterProperty();
+	}
 }
 
-template<uint32_t Dim>
-inline std::array<float, Dim> LinearInterpolater<Dim>::GetInterpolated(float x) noexcept
+template<uint32_t Dim, bool GPUInterpolateOn>
+inline std::array<float, Dim> LinearInterpolater<Dim, GPUInterpolateOn>::GetInterpolated(float x) noexcept
 {
 	std::array<float, Dim> result;
     size_t coefficientIndex = Parent::GetCoefficientIndex(x);

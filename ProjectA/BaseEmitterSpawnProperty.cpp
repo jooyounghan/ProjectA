@@ -15,13 +15,12 @@ using namespace ImGui;
 BaseEmitterSpawnProperty::BaseEmitterSpawnProperty()
 	: m_isEmitterSpawnPropertyChanged(false),
 	m_positionShapedVector(EShapedVector::Sphere),
-	m_speedShapedVector(EShapedVector::Sphere),
+	m_speedShapedVector(EShapedVector::None),
 	m_isImmortal(false)
 {
 	AutoZeroMemory(m_emitterSpawnPropertyCPU);
 	m_emitterSpawnPropertyCPU.initialParticleCount = 0;
 	m_emitterSpawnPropertyCPU.initialParticleLife = 1.f;
-	m_emitterSpawnPropertyCPU.color = XMVectorSet(1.f, 1.f, 1.f, 1.f);
 
 	m_positionShapedVectorSelector = make_unique<ShapedVectorSelector>(
 		"초기 위치 벡터", "초기 반지름",
@@ -75,11 +74,6 @@ void BaseEmitterSpawnProperty::DrawPropertyUI()
 	if (Checkbox("Immortal 설정", &m_isImmortal))
 	{
 		m_emitterSpawnPropertyCPU.initialParticleLife = m_isImmortal ? numeric_limits<float>::max() : 1.f;
-	}
-
-	if (ColorPicker3("초기 파티클 색상", m_emitterSpawnPropertyCPU.color.m128_f32))
-	{
-		m_isEmitterSpawnPropertyChanged = true;
 	}
 
 	SeparatorText("파티클 초기 위치 설정");

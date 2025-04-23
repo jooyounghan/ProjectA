@@ -58,13 +58,18 @@ bool EmitterSelector::CreateParticleEmitter(unique_ptr<AEmitter>& emitter)
 		position,
 		angle
 	);
+
+	AEmitter* currentEmitter = particleEmitter.get();
+
 	static std::unique_ptr<BaseEmitterSpawnProperty> baseEmitterSpawnProperty = make_unique<BaseEmitterSpawnProperty>();
 	static std::unique_ptr<BaseEmitterUpdateProperty> baseEmitterUpdateProperty = make_unique<BaseEmitterUpdateProperty>(particleEmitter->GetCurrnetEmitter(), particleEmitter->GetLoopTime());
-	static std::unique_ptr<BaseParticleSpawnProperty> baseParticleSpawnProperty = make_unique<BaseParticleSpawnProperty>(particleEmitter->GetCurrnetEmitter(), particleEmitter->GetLoopTime());
+	static std::unique_ptr<BaseParticleSpawnProperty> baseParticleSpawnProperty = make_unique<BaseParticleSpawnProperty>(
+		[currentEmitter](EInterpolationMethod interpolationMethod, UINT coefficientCount) { currentEmitter->SetColorInterpolaterProperty(static_cast<UINT>(interpolationMethod), coefficientCount); }
+	);
 	static std::unique_ptr<BaseParticleUpdateProperty> baseParticleUpdateProperty = make_unique<BaseParticleUpdateProperty>(
 		particleEmitterID,
 		particleEmitter->GetEmitterForce(), 
-		[](UINT forcePropertyIndex) { AEmitter::GEmitterForceChangedIDs.emplace_back(forcePropertyIndex); }
+		[](UINT forcePropertyIndex) { AEmitter::GChangedEmitterForceIDs.emplace_back(forcePropertyIndex); }
 	);
 
 	baseEmitterSpawnProperty->DrawPropertyUI();
@@ -108,12 +113,17 @@ void EmitterSelector::InitializeParticleEmitterArgs(
 		position,
 		angle
 	);
+
+	AEmitter* emitter = particleEmitter.get();
+
 	baseEmitterSpawnProperty = make_unique<BaseEmitterSpawnProperty>();
 	baseEmitterUpdateProperty = make_unique<BaseEmitterUpdateProperty>(particleEmitter->GetCurrnetEmitter(), particleEmitter->GetLoopTime());
-	baseParticleSpawnProperty = make_unique<BaseParticleSpawnProperty>(particleEmitter->GetCurrnetEmitter(), particleEmitter->GetLoopTime());
+	baseParticleSpawnProperty = make_unique<BaseParticleSpawnProperty>(
+		[emitter](EInterpolationMethod interpolationMethod, UINT coefficientCount) {emitter->SetColorInterpolaterProperty(static_cast<UINT>(interpolationMethod), coefficientCount); }
+	);
 	baseParticleUpdateProperty = make_unique<BaseParticleUpdateProperty>(
 		particleEmitterID,
 		particleEmitter->GetEmitterForce(),
-		[](UINT forcePropertyIndex) { AEmitter::GEmitterForceChangedIDs.emplace_back(forcePropertyIndex); }
+		[](UINT forcePropertyIndex) { AEmitter::GChangedEmitterForceIDs.emplace_back(forcePropertyIndex); }
 	);
 }
