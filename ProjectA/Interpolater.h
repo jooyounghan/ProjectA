@@ -133,7 +133,6 @@ inline void AInterpolater<Dim, CoefficientCount>::SetGPUInterpolater(bool onoff)
 		if (onoff)
 		{
 			m_interpolaterPropertyID = CGPUInterpolater<Dim, CoefficientCount>::IssueAvailableInterpolaterID();
-			printf("New Interpolater(%d, %d) ID :  %d\n", Dim, CoefficientCount, m_interpolaterPropertyID);
 			m_interpolaterPropertyCached = CGPUInterpolater<Dim, CoefficientCount>::GetInterpolaterProperty(m_interpolaterPropertyID);
 		}
 		else

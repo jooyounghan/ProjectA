@@ -15,7 +15,11 @@ using namespace ImGui;
 CBaseEmitterSpawnProperty::CBaseEmitterSpawnProperty()
 	: m_isEmitterSpawnPropertyChanged(false),
 	m_positionShapedVector(EShapedVector::Sphere),
+	m_positionOrigin(XMFLOAT3(0.f, 0.f, 0.f)),
+	m_positionUpVector(XMVectorSet(0.f, 1.f, 0.f, 0.f)),
 	m_speedShapedVector(EShapedVector::None),
+	m_speedOrigin(XMFLOAT3(0.f, 0.f, 0.f)),
+	m_speedUpVector(XMVectorSet(0.f, 1.f, 0.f, 0.f)),
 	m_isImmortal(false)
 {
 	AutoZeroMemory(m_emitterSpawnPropertyCPU);
@@ -24,13 +28,15 @@ CBaseEmitterSpawnProperty::CBaseEmitterSpawnProperty()
 
 	m_positionShapedVectorSelector = make_unique<CShapedVectorSelector>(
 		"초기 위치 벡터", "초기 반지름",
+		m_positionOrigin, m_positionUpVector,
 		m_emitterSpawnPropertyCPU.shapedPositionVectorProperty
 	);
 
 	m_speedShapedVectorSelector = make_unique<CShapedVectorSelector>(
 		"초기 속도 벡터", "초기 속도",
+		m_speedOrigin, m_speedUpVector,
 		m_emitterSpawnPropertyCPU.shapedSpeedVectorProperty
-		);
+	);
 }
 
 void CBaseEmitterSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
@@ -100,16 +106,30 @@ void CBaseEmitterSpawnProperty::DrawPropertyUI()
 void CBaseEmitterSpawnProperty::Serialize(std::ofstream& ofs)
 {
 	SerializeHelper::SerializeElement<decltype(m_emitterSpawnPropertyCPU)>(ofs, m_emitterSpawnPropertyCPU);
+
 	SerializeHelper::SerializeElement<EShapedVector>(ofs, m_positionShapedVector);
+	SerializeHelper::SerializeElement<XMFLOAT3>(ofs, m_positionOrigin);
+	SerializeHelper::SerializeElement<XMVECTOR>(ofs, m_positionUpVector);
+
 	SerializeHelper::SerializeElement<EShapedVector>(ofs, m_speedShapedVector);
+	SerializeHelper::SerializeElement<XMFLOAT3>(ofs, m_speedOrigin);
+	SerializeHelper::SerializeElement<XMVECTOR>(ofs, m_speedUpVector);
+
 	SerializeHelper::SerializeElement <bool>(ofs, m_isImmortal);
 }
 
 void CBaseEmitterSpawnProperty::Deserialize(std::ifstream& ifs)
 {
 	m_emitterSpawnPropertyCPU = SerializeHelper::DeserializeElement<decltype(m_emitterSpawnPropertyCPU)>(ifs);
+
 	m_positionShapedVector = SerializeHelper::DeserializeElement<EShapedVector>(ifs);
+	m_positionOrigin = SerializeHelper::DeserializeElement<XMFLOAT3>(ifs);
+	m_positionUpVector = SerializeHelper::DeserializeElement<XMVECTOR>(ifs);
+
 	m_speedShapedVector = SerializeHelper::DeserializeElement<EShapedVector>(ifs);
+	m_speedOrigin = SerializeHelper::DeserializeElement<XMFLOAT3>(ifs);
+	m_speedUpVector = SerializeHelper::DeserializeElement<XMVECTOR>(ifs);
+
 	m_isImmortal = SerializeHelper::DeserializeElement <bool>(ifs);
 	m_isEmitterSpawnPropertyChanged = true;
 }

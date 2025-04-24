@@ -20,13 +20,15 @@ unordered_map<EShapedVector, string> CShapedVectorSelector::GShapedVectorStringM
 CShapedVectorSelector::CShapedVectorSelector(
 	const std::string& selectorName,
 	const std::string& radiusName,
+	DirectX::XMFLOAT3& origin,
+	DirectX::XMVECTOR& upVector,
 	SShapedVectorProperty& shapedVectorProperty
 )
 	: CBaseSelector<EShapedVector>(selectorName, GShapedVectorStringMaps),
 	m_selectorName(selectorName),
 	m_radiusName(radiusName),
-	m_origin(XMFLOAT3(0.f, 0.f, 0.f)),
-	m_upVector(XMVectorSet(0.f, 1.f, 0.f, 0.f)),
+	m_origin(origin),
+	m_upVector(upVector),
 	m_shapedVectorProperty(shapedVectorProperty),
 	m_centerAngle(15.f)
 {
@@ -63,7 +65,10 @@ bool CShapedVectorSelector::SetShapedVectorProperty(EShapedVector selectedShaped
 
 void CShapedVectorSelector::ResetShapedVector()
 {
-	AutoZeroMemory(m_shapedVectorProperty);
+	m_shapedVectorProperty.transformation = XMMatrixIdentity();
+	m_shapedVectorProperty.minInitRadian = XMFLOAT2(0.f, 0.f);
+	m_shapedVectorProperty.maxInitRadian = XMFLOAT2(0.f, 0.f);
+	m_shapedVectorProperty.minMaxRadius = XMFLOAT2(0.f, 0.f);
 }
 
 bool CShapedVectorSelector::SetManualShapedVector()

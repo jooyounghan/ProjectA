@@ -28,12 +28,16 @@ public:
 protected:
 	float m_currentTime;
 	float m_loopTime;
+	UINT8 m_currentLoopCount;
+	UINT8 m_loopCount;
+
+protected:
+	void SetLoopCount(UINT8 loopCount);
 
 protected:
 	bool m_isLoopInfinity;
 
 protected:
-	UINT8 m_loopCount;
 	SControlPoint<1> m_spawnInitControlPoint;
 	SControlPoint<1> m_spawnFinalControlPoint;
 	std::vector<SControlPoint<1>> m_spawnControlPoints;

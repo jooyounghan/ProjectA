@@ -49,7 +49,7 @@ void SerializeHelper::SerializeVector(std::ofstream& ofs, const std::vector<T>& 
 {
 	size_t length = v.size();
 	ofs.write(reinterpret_cast<const char*>(&length), sizeof(length));
-	ofs.write(v.data(), length * sizeof(T));
+	ofs.write(reinterpret_cast<const char*>(v.data()), length * sizeof(T));
 }
 
 template<typename T>
@@ -60,7 +60,7 @@ static std::vector<T> SerializeHelper::DeserializeVector(std::ifstream& ifs)
 
 	std::vector<T> v;
 	v.resize(length);
-	ifs.read(v.data(), length * sizeof(T));
+	ifs.read(reinterpret_cast<char*>(v.data()), length * sizeof(T));
 	return v;
 
 }

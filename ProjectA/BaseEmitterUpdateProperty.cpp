@@ -14,12 +14,13 @@ CBaseEmitterUpdateProperty::CBaseEmitterUpdateProperty()
 	m_spawnCount(0.f),
 	m_saturatedSpawnCount(0),
 	m_isLoopInfinity(true),
-	m_loopCount(LoopInfinity),
 	m_spawnInitControlPoint{ 0.f, 0.f },
 	m_spawnFinalControlPoint{ 10.f, 0.f },
 	m_spawnRateInterpolationMethod(EInterpolationMethod::Linear),
 	m_isNotDisposed(true)
 {
+	SetLoopCount(LoopInfinity);
+
 	m_spawnRateControlPointGridView = make_unique<CControlPointGridView<1>>(
 		"시간",
 		array<string, 1>{ "Spawn Rate" },
@@ -41,6 +42,12 @@ CBaseEmitterUpdateProperty::CBaseEmitterUpdateProperty()
 
 	m_spawnRateInterpolaterSelectPlotter->CreateInterpolater(false, m_spawnRateInterpolationMethod, m_spawnRateInterpolater);
 	m_spawnRateInterpolaterSelectPlotter->RedrawSelectPlotter();
+}
+
+void CBaseEmitterUpdateProperty::SetLoopCount(UINT8 loopCount)
+{
+	m_loopCount = loopCount;
+	m_currentLoopCount = loopCount;
 }
 
 
@@ -66,7 +73,7 @@ void CBaseEmitterUpdateProperty::Initialize(ID3D11Device* device, ID3D11DeviceCo
 
 void CBaseEmitterUpdateProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 {
-	if (m_loopCount > 0)
+	if (m_currentLoopCount > 0)
 	{
 		m_currentTime += dt;
 		m_spawnCount += max(0.f, m_spawnRateInterpolater->GetInterpolated(m_currentTime)[0]) * dt;
@@ -82,7 +89,7 @@ void CBaseEmitterUpdateProperty::Update(ID3D11DeviceContext* deviceContext, floa
 			}
 			else
 			{
-				m_loopCount -= 1;
+				m_currentLoopCount -= 1;
 			}
 		}
 	}
@@ -104,13 +111,16 @@ void CBaseEmitterUpdateProperty::DrawPropertyUI()
 	SeparatorText("이미터 루프 설정");
 	BeginDisabled(m_isLoopInfinity);
 	{
-		DragInt("루프 횟수", (int*)&m_loopCount, 1.f, 0, LoopInfinity - 1, m_isLoopInfinity ? "무한" : "%d");
+		if (DragInt("루프 횟수", (int*)&m_loopCount, 1.f, 0, LoopInfinity - 1, m_isLoopInfinity ? "무한" : "%d"))
+		{
+			SetLoopCount(m_loopCount);
+		}
 		EndDisabled();
 	}
 	SameLine();
 	if (Checkbox("무한 루프 설정", &m_isLoopInfinity))
 	{
-		m_loopCount = m_isLoopInfinity ? LoopInfinity : 1;
+		SetLoopCount(m_isLoopInfinity ? LoopInfinity : m_loopCount);
 	}
 
 	if (DragFloat("루프 당 시간", &m_loopTime, 0.1f, 0.f, 100.f, "%.1f"))
@@ -138,10 +148,29 @@ void CBaseEmitterUpdateProperty::DrawPropertyUI()
 
 void CBaseEmitterUpdateProperty::Serialize(std::ofstream& ofs)
 {
+	SerializeHelper::SerializeElement<float>(ofs, m_loopTime);
+	SerializeHelper::SerializeElement<bool>(ofs, m_isLoopInfinity);
+	SerializeHelper::SerializeElement<UINT8>(ofs, m_loopCount);
 
+	SerializeHelper::SerializeElement<SControlPoint<1>>(ofs, m_spawnInitControlPoint);
+	SerializeHelper::SerializeElement<SControlPoint<1>>(ofs, m_spawnFinalControlPoint);
+	SerializeHelper::SerializeVector<SControlPoint<1>>(ofs, m_spawnControlPoints);
+	SerializeHelper::SerializeElement<EInterpolationMethod>(ofs, m_spawnRateInterpolationMethod);
 }
 
 void CBaseEmitterUpdateProperty::Deserialize(std::ifstream& ifs)
 {
+	m_loopTime = SerializeHelper::DeserializeElement<float>(ifs);
+	m_isLoopInfinity = SerializeHelper::DeserializeElement<bool>(ifs);
+	UINT8 loopCount = SerializeHelper::DeserializeElement<UINT8>(ifs);
+	SetLoopCount(loopCount);
 
+	m_spawnInitControlPoint = SerializeHelper::DeserializeElement<SControlPoint<1>>(ifs);
+	m_spawnFinalControlPoint= SerializeHelper::DeserializeElement<SControlPoint<1>>(ifs);
+	m_spawnControlPoints = SerializeHelper::DeserializeVector<SControlPoint<1>>(ifs);
+	m_spawnRateInterpolationMethod = SerializeHelper::DeserializeElement<EInterpolationMethod>(ifs);
+
+	m_spawnRateInterpolaterSelectPlotter->CreateInterpolater(false, m_spawnRateInterpolationMethod, m_spawnRateInterpolater);
+	m_spawnRateInterpolater->UpdateCoefficient();
+	m_spawnRateInterpolaterSelectPlotter->RedrawSelectPlotter();
 }

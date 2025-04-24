@@ -8,6 +8,8 @@ public:
 	CShapedVectorSelector(
 		const std::string& selectorName,
 		const std::string& radiusName,
+		DirectX::XMFLOAT3& origin,
+		DirectX::XMVECTOR& upVector,
 		SShapedVectorProperty& shapedVectorProperty
 	);
 	~CShapedVectorSelector() override = default;
@@ -20,8 +22,8 @@ protected:
 	std::string m_radiusName;
 
 protected:
-	DirectX::XMFLOAT3 m_origin;
-	DirectX::XMVECTOR m_upVector;
+	DirectX::XMFLOAT3& m_origin;
+	DirectX::XMVECTOR& m_upVector;
 	SShapedVectorProperty& m_shapedVectorProperty;
 
 protected:

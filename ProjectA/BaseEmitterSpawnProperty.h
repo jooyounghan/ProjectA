@@ -50,10 +50,14 @@ protected:
 protected:
 	EShapedVector m_positionShapedVector;
 	std::unique_ptr<CShapedVectorSelector> m_positionShapedVectorSelector;
+	DirectX::XMFLOAT3 m_positionOrigin; 
+	DirectX::XMVECTOR m_positionUpVector; 
 
 protected:
 	EShapedVector m_speedShapedVector;
 	std::unique_ptr<CShapedVectorSelector> m_speedShapedVectorSelector;
+	DirectX::XMFLOAT3 m_speedOrigin;
+	DirectX::XMVECTOR m_speedUpVector;
 
 public:
 	ID3D11Buffer* GetEmitterSpawnPropertyBuffer() const noexcept;
