@@ -44,7 +44,7 @@ inline CCubicSplineInterpolater<Dim, GPUInterpolateOn>::CCubicSplineInterpolater
 template<uint32_t Dim, bool GPUInterpolateOn>
 UINT CCubicSplineInterpolater<Dim, GPUInterpolateOn>::GetInterpolaterFlag()
 {
-	return 3;
+	return 2;
 }
 
 template<uint32_t Dim, bool GPUInterpolateOn>

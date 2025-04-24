@@ -38,7 +38,7 @@ inline CCatmullRomInterpolater<Dim, GPUInterpolateOn>::CCatmullRomInterpolater(
 template<uint32_t Dim, bool GPUInterpolateOn>
 UINT CCatmullRomInterpolater<Dim, GPUInterpolateOn>::GetInterpolaterFlag()
 {
-	return 2;
+	return 3;
 }
 
 template<uint32_t Dim, bool GPUInterpolateOn>

@@ -3,8 +3,9 @@
 
 #define Pcurrent particleDrawIndirectArgs[0]
 
-StructuredBuffer<Degree1Dim4InterpolaterProperty> firstDegreeInterpolater : register(t0);
-StructuredBuffer<Degree3Dim4InterpolaterProperty> thirdDegreeInterpolater : register(t1);
+StructuredBuffer<EmitterInterpolaterInformation> emitterInterpolaterInformations : register(t0);
+StructuredBuffer<Degree1Dim4InterpolaterProperty> firstDegreeInterpolaters : register(t1);
+StructuredBuffer<Degree3Dim4InterpolaterProperty> thirdDegreeInterpolaters : register(t2);
 
 RWStructuredBuffer<uint> particleDrawIndirectArgs: register(u0);
 RWStructuredBuffer<Particle> totalParticles : register(u1);
@@ -50,20 +51,23 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
             aliveFlags[threadID] = 1;
             
             // 색상에 대한 보간
-            uint colorInterpolaterDegree = currentParticle.colorInterpolaterDegree;
-            uint colorInterpolaterID = currentParticle.colorInterpolaterID;
+            const uint emitterID = currentParticle.emitterID;
+            EmitterInterpolaterInformation interpolaterInformation = emitterInterpolaterInformations[emitterID];
 
-            float timeSpent = currentParticle.maxLife - currentParticle.life;
+            const float maxLife = interpolaterInformation.maxLife;
+            const uint colorInterpolaterID = interpolaterInformation.colorInterpolaterID;
+            const uint colorDegree = interpolaterInformation.colorInterpolaterDegree;
 
-            if (colorInterpolaterDegree == 2)
+            float timeSpent = maxLife - currentParticle.life;
+
+            if (colorDegree == 2)
             {
-                // Linear
-                Degree1Dim4InterpolaterProperty interpolaterProperty = firstDegreeInterpolater[colorInterpolaterID];
+                Degree1Dim4InterpolaterProperty interpolaterProperty = firstDegreeInterpolaters[colorInterpolaterID];
                 currentParticle.color = float4(timeSpent, 0.f, 0.f, 1.f);
             }
-            else if (colorInterpolaterDegree == 4)
+            else if (colorDegree == 4)
             {
-                Degree3Dim4InterpolaterProperty interpolaterProperty = thirdDegreeInterpolater[colorInterpolaterID];
+                Degree3Dim4InterpolaterProperty interpolaterProperty = thirdDegreeInterpolaters[colorInterpolaterID];
 
                 if (interpolaterProperty.header.interpolaterFlag == 2)
                 {

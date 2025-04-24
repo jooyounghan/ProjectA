@@ -170,8 +170,8 @@ void EmitterStaticData::InitializeEmitterDrawPSO(ID3D11Device* device)
 		{ "INSTANCE_WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
 	);
 
-	GEmitterDrawVS->CreateShader(L"./EmitterDrawVS.hlsl", "main", "vs_5_0", device);
-	GEmitterDrawPS->CreateShader(L"./EmitterDrawPS.hlsl", "main", "ps_5_0", device);
+	GEmitterDrawVS->CreateShader(L"./EmitterDrawVS.hlsl", nullptr, "main", "vs_5_0", device);
+	GEmitterDrawPS->CreateShader(L"./EmitterDrawPS.hlsl", nullptr, "main", "ps_5_0", device);
 
 	GDrawEmitterPSO = make_unique<CGraphicsPSOObject>(
 		GEmitterDrawVS.get(),

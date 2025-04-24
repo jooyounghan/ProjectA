@@ -26,6 +26,8 @@
 #include "EmitterSelector.h"
 
 #include "EmitterManager.h"
+#include "EmitterManagerStaticData.h"
+
 #include "AEmitter.h"
 #include "EmitterStaticData.h"
 
@@ -39,7 +41,8 @@
 #include <format>
 #pragma  endregion
 
-#define TotalParticleCount 1024
+#define TotalParticleCount 1024 * 1024
+#define MaxEmitterCount 1000
 
 using namespace std;
 using namespace App;
@@ -136,20 +139,18 @@ void CProjectAApp::Init()
 #pragma endregion
 
 #pragma region 글로벌 변수 초기화
-	constexpr UINT maxEmitterCount = 5;
-
-	EmitterStaticData::InitializeGlobalEmitterProperty(maxEmitterCount, m_device);
+	EmitterStaticData::InitializeGlobalEmitterProperty(MaxEmitterCount, m_device);
 	EmitterStaticData::InitializeEmitterDrawPSO(m_device);
 
-	CGPUInterpolater<4, 2>::InitializeGPUInterpolater(m_device, maxEmitterCount);
-	CGPUInterpolater<4, 4>::InitializeGPUInterpolater(m_device, maxEmitterCount);
+	CGPUInterpolater<4, 2>::InitializeGPUInterpolater(m_device, MaxEmitterCount);
+	CGPUInterpolater<4, 4>::InitializeGPUInterpolater(m_device, MaxEmitterCount);
 
-	CEmitterManager::InitializeSetInitializingPSO(m_device);
-	CEmitterManager::InitializePoolingCS(m_device);
-	CEmitterManager::InitializeEmitterSourcingCS(m_device);
-	CEmitterManager::InitializeParticleSimulateCS(m_device);
-	CEmitterManager::InitializeRadixSortCS(m_device);
-	CEmitterManager::InitializeParticleDrawPSO(m_device);
+	CEmitterManagerStaticData::InitializeSetInitializingPSO(m_device);
+	CEmitterManagerStaticData::InitializePoolingCS(m_device);
+	CEmitterManagerStaticData::InitializeEmitterSourcingCS(m_device);
+	CEmitterManagerStaticData::InitializeParticleSimulateCS(m_device);
+	CEmitterManagerStaticData::InitializeRadixSortCS(m_device);
+	CEmitterManagerStaticData::InitializeParticleDrawPSO(m_device);
 #pragma endregion
 
 #pragma region 인스턴스 초기화
@@ -173,7 +174,7 @@ void CProjectAApp::Init()
 #pragma endregion
 }
 
-constexpr FLOAT clearColor[4] = { 0.f, 0.f, 0.f, 1.f };
+constexpr FLOAT clearColor[4] = { 1.f, 1.f, 1.f, 1.f };
 
 void CProjectAApp::Update(float deltaTime)
 {

@@ -27,6 +27,7 @@ namespace D3D11
 	public:
 		void CreateShader(
 			const std::wstring& shaderPath,
+			const D3D_SHADER_MACRO* shaderMacro,
 			const std::string& entryPoint,
 			const std::string& targetVersion,
 			ID3D11Device* device

@@ -306,10 +306,7 @@
     <FxCompile Include="UpdateCurrentIndicesCS.hlsl">
       <Filter>Shader\Particle\ExecuteEmitter\Pooling</Filter>
     </FxCompile>
-    <FxCompile Include="ParticleRuntimeSourceCS.hlsl">
-      <Filter>Shader\Particle\ExecuteEmitter\Source</Filter>
-    </FxCompile>
-    <FxCompile Include="ParticleInitialSourceCS.hlsl">
+    <FxCompile Include="ParticleSourceCS.hlsl">
       <Filter>Shader\Particle\ExecuteEmitter\Source</Filter>
     </FxCompile>
     <FxCompile Include="CalculateParticleForceCS.hlsl">

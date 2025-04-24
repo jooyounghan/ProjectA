@@ -3,10 +3,6 @@
 
 #define Pcurrent particleDrawIndirectArgs[0]
 
-StructuredBuffer<EmitterInterpolaterInformation> emitterInterpolaterInformations : register(t0);
-StructuredBuffer<Degree1Dim4InterpolaterProperty> firstDegreeInterpolaters : register(t1);
-StructuredBuffer<Degree3Dim4InterpolaterProperty> thirdDegreeInterpolaters : register(t2);
-
 RWStructuredBuffer<uint> particleDrawIndirectArgs: register(u0);
 RWStructuredBuffer<Particle> totalParticles : register(u1);
 RWStructuredBuffer<uint> aliveFlags : register(u2);
@@ -52,36 +48,13 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
             
             // 색상에 대한 보간
             const uint emitterID = currentParticle.emitterID;
-            EmitterInterpolaterInformation interpolaterInformation = emitterInterpolaterInformations[emitterID];
-
+            const EmitterInterpolaterInformation interpolaterInformation = emitterInterpolaterInformations[emitterID];
             const float maxLife = interpolaterInformation.maxLife;
             const uint colorInterpolaterID = interpolaterInformation.colorInterpolaterID;
             const uint colorDegree = interpolaterInformation.colorInterpolaterDegree;
-
-            float timeSpent = maxLife - currentParticle.life;
-
-            if (colorDegree == 2)
-            {
-                Degree1Dim4InterpolaterProperty interpolaterProperty = firstDegreeInterpolaters[colorInterpolaterID];
-                currentParticle.color = float4(timeSpent, 0.f, 0.f, 1.f);
-            }
-            else if (colorDegree == 4)
-            {
-                Degree3Dim4InterpolaterProperty interpolaterProperty = thirdDegreeInterpolaters[colorInterpolaterID];
-
-                if (interpolaterProperty.header.interpolaterFlag == 2)
-                {
-                    // Catmull-Rom
-                    currentParticle.color = float4(0.f, timeSpent, 0.f, 1.f);
-                }
-                else if (interpolaterProperty.header.interpolaterFlag == 3)
-                {
-                    // Cubic
-                    currentParticle.color = float4(0.f, 0.f, timeSpent, 1.f);
-                }
-            }
-
-
+            const float timeSpent = maxLife - currentParticle.life;
+            currentParticle.color = GetInterpolated(colorDegree, colorInterpolaterID, float4(timeSpent, timeSpent, timeSpent, timeSpent), maxLife);
+   
             // 가속도를 통한 적분
             currentParticle.velocity += currentParticle.accelerate * dt;
             currentParticle.worldPos += currentParticle.velocity * dt;
