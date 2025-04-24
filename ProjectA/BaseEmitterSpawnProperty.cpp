@@ -89,5 +89,11 @@ void CBaseEmitterSpawnProperty::DrawPropertyUI()
 	{
 		m_isEmitterSpawnPropertyChanged = true;
 	}
+
+	SeparatorText("파티클 초기 색상 설정");
+	if (ColorEdit4("파티클 초기 색상", m_emitterSpawnPropertyCPU.color.m128_f32))
+	{
+		m_isEmitterSpawnPropertyChanged = true;
+	}
 }
 

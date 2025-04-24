@@ -38,6 +38,7 @@ protected:
 				float padding3[2];
 			};
 		};
+		DirectX::XMVECTOR color;
 	} m_emitterSpawnPropertyCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterSpawnPropertyGPU;
 	bool m_isEmitterSpawnPropertyChanged;

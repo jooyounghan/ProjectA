@@ -1,11 +1,12 @@
 #pragma once
 #include "Interpolater.h"
 
-template<uint32_t Dim, bool GPUInterpolateOn>
-class CLinearInterpolater : public AInterpolater<Dim, 2, GPUInterpolateOn>
+template<uint32_t Dim>
+class CLinearInterpolater : public AInterpolater<Dim, 2>
 {
 public:
 	CLinearInterpolater(
+		bool useGPUInterpolater,
 		const SControlPoint<Dim>& startPoint,
 		const SControlPoint<Dim>& endPoint,
 		const std::vector<SControlPoint<Dim>>& controlPoints
@@ -13,7 +14,7 @@ public:
 	~CLinearInterpolater() override = default;
 
 protected:
-	using Parent = AInterpolater<Dim, 2, GPUInterpolateOn>;
+	using Parent = AInterpolater<Dim, 2>;
 
 public:
 	virtual UINT GetInterpolaterFlag() override;
@@ -23,25 +24,26 @@ protected:
 	virtual std::array<float, Dim> GetInterpolated(float x) noexcept override;
 };
 
-template<uint32_t Dim, bool GPUInterpolateOn>
-inline CLinearInterpolater<Dim, GPUInterpolateOn>::CLinearInterpolater(
+template<uint32_t Dim>
+inline CLinearInterpolater<Dim>::CLinearInterpolater(
+	bool useGPUInterpolater,
 	const SControlPoint<Dim>& startPoint, 
 	const SControlPoint<Dim>& endPoint, 
 	const std::vector<SControlPoint<Dim>>& controlPoints
 )
-	: AInterpolater<Dim, 2, GPUInterpolateOn>(startPoint, endPoint, controlPoints)
+	: AInterpolater<Dim, 2>(useGPUInterpolater, startPoint, endPoint, controlPoints)
 {
 	UpdateCoefficient();
 }
 
-template<uint32_t Dim, bool GPUInterpolateOn>
-UINT CLinearInterpolater<Dim, GPUInterpolateOn>::GetInterpolaterFlag()
+template<uint32_t Dim>
+UINT CLinearInterpolater<Dim>::GetInterpolaterFlag()
 {
 	return 1;
 }
 
-template<uint32_t Dim, bool GPUInterpolateOn>
-inline void CLinearInterpolater<Dim, GPUInterpolateOn>::UpdateCoefficient()
+template<uint32_t Dim>
+inline void CLinearInterpolater<Dim>::UpdateCoefficient()
 {
 	Parent::UpdateCoefficient();
 
@@ -65,14 +67,14 @@ inline void CLinearInterpolater<Dim, GPUInterpolateOn>::UpdateCoefficient()
 		Parent::m_coefficients.emplace_back(coefficient);
 	}
 
-	if (GPUInterpolateOn)
+	if (Parent::m_interpolaterPropertyCached)
 	{
 		Parent::UpdateInterpolaterProperty();
 	}
 }
 
-template<uint32_t Dim, bool GPUInterpolateOn>
-inline std::array<float, Dim> CLinearInterpolater<Dim, GPUInterpolateOn>::GetInterpolated(float x) noexcept
+template<uint32_t Dim>
+inline std::array<float, Dim> CLinearInterpolater<Dim>::GetInterpolated(float x) noexcept
 {
 	std::array<float, Dim> result;
     size_t coefficientIndex = Parent::GetCoefficientIndex(x);

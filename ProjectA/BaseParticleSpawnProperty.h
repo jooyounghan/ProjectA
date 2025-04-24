@@ -12,21 +12,23 @@ namespace D3D11
 	class CDynamicBuffer;
 }
 
-template<uint32_t Dim, bool GPUInterpolateOn>
+template<uint32_t Dim>
 class IInterpolater;
 
 template<uint32_t Dim>
 class CControlPointGridView;
 
-template<uint32_t Dim, bool GPUInterpolateOn>
+template<uint32_t Dim>
 class CInterpolaterSelectPlotter;
 
 class CShapedVectorSelector;
 
-class CBaseParticleSpawnProperty : public IProperty
+class CBaseParticleSpawnProperty : public APropertyOnEmitterTimeline
 {
 public:
 	CBaseParticleSpawnProperty(
+		float& emitterCurrentTime,
+		float& emitterLoopTime,
 		const std::function<void(float)>& lifeChangedHandler,
 		const std::function<void(uint32_t, uint32_t)>& colorInterpolationChangedHandler
 	);
@@ -58,6 +60,7 @@ protected:
 				float padding4[2];
 			};
 		};
+		DirectX::XMVECTOR color;
 	} m_baseParticleSpawnPropertyCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_baseParticleSpawnPropertyGPU;
 	bool m_isParticleSpawnPropertyChanged;
@@ -81,15 +84,19 @@ protected:
 	SControlPoint<4> m_colorFinalControlPoint;
 	std::vector<SControlPoint<4>> m_colorControlPoints;
 	EInterpolationMethod m_colorInterpolationMethod;
-	std::unique_ptr<IInterpolater<4, true>> m_colorInterpolater;
+	std::unique_ptr<IInterpolater<4>> m_colorInterpolater;
+
+protected:
+	bool m_useGPUColorInterpolater;
 
 protected:
 	std::unique_ptr<CControlPointGridView<4>> m_colorControlPointGridView;
-	std::unique_ptr<CInterpolaterSelectPlotter<4, true>> m_colorInterpolationSelectPlotter;
+	std::unique_ptr<CInterpolaterSelectPlotter<4>> m_colorInterpolationSelectPlotter;
 
 protected:
+	virtual void AdjustControlPointsFromLoopTime() override;
 	void AdjustControlPointsFromLife();
-
+	
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
 	virtual void Update(ID3D11DeviceContext* deviceContext, float dt) override;

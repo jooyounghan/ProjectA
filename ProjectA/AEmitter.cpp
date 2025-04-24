@@ -21,10 +21,12 @@ AEmitter::AEmitter(
 	const XMVECTOR& position,
 	const XMVECTOR& angle
 ) :
+	m_isEmitterPropertyChanged(false),
 	m_isSpawned(false),
+	m_emitterCurrentTime(0.f),
+	m_emitterLoopTime(10.f),
 	m_position(position),
-	m_angle(angle),
-	m_isEmitterPropertyChanged(false)
+	m_angle(angle)
 {
 	AutoZeroMemory(m_emitterPropertyCPU);
 	m_emitterPropertyCPU.emitterType = emitterType;

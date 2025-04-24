@@ -1,11 +1,12 @@
 #pragma once
 #include "Interpolater.h"
 
-template<uint32_t Dim, bool GPUInterpolateOn>
-class CCatmullRomInterpolater : public AInterpolater<Dim, 4, GPUInterpolateOn>
+template<uint32_t Dim>
+class CCatmullRomInterpolater : public AInterpolater<Dim, 4>
 {
 public:
 	CCatmullRomInterpolater(
+		bool useGPUInterpolater,
 		const SControlPoint<Dim>& startPoint,
 		const SControlPoint<Dim>& endPoint,
 		const std::vector<SControlPoint<Dim>>& controlPoints
@@ -13,7 +14,7 @@ public:
 	~CCatmullRomInterpolater() override = default;
 
 protected:
-	using Parent = AInterpolater<Dim, 4, GPUInterpolateOn>;
+	using Parent = AInterpolater<Dim, 4>;
 
 public:
 	virtual UINT GetInterpolaterFlag() override;
@@ -24,25 +25,26 @@ protected:
 	virtual std::vector<SControlPoint<Dim>> GetControlPoints() override;
 };
 
-template<uint32_t Dim, bool GPUInterpolateOn>
-inline CCatmullRomInterpolater<Dim, GPUInterpolateOn>::CCatmullRomInterpolater(
+template<uint32_t Dim>
+inline CCatmullRomInterpolater<Dim>::CCatmullRomInterpolater(
+	bool useGPUInterpolater,
 	const SControlPoint<Dim>& startPoint, 
 	const SControlPoint<Dim>& endPoint, 
 	const std::vector<SControlPoint<Dim>>& controlPoints
 )
-	: AInterpolater<Dim, 4, GPUInterpolateOn>(startPoint, endPoint, controlPoints)
+	: AInterpolater<Dim, 4>(useGPUInterpolater, startPoint, endPoint, controlPoints)
 {
 	UpdateCoefficient();
 }
 
-template<uint32_t Dim, bool GPUInterpolateOn>
-UINT CCatmullRomInterpolater<Dim, GPUInterpolateOn>::GetInterpolaterFlag()
+template<uint32_t Dim>
+UINT CCatmullRomInterpolater<Dim>::GetInterpolaterFlag()
 {
 	return 3;
 }
 
-template<uint32_t Dim, bool GPUInterpolateOn>
-inline void CCatmullRomInterpolater<Dim, GPUInterpolateOn>::UpdateCoefficient()
+template<uint32_t Dim>
+inline void CCatmullRomInterpolater<Dim>::UpdateCoefficient()
 {
 	Parent::UpdateCoefficient();
 
@@ -70,14 +72,14 @@ inline void CCatmullRomInterpolater<Dim, GPUInterpolateOn>::UpdateCoefficient()
 		Parent::m_coefficients.emplace_back(coefficient);
 	}
 
-	if (GPUInterpolateOn)
+	if (Parent::m_interpolaterPropertyCached)
 	{
 		Parent::UpdateInterpolaterProperty();
 	}
 }
 
-template<uint32_t Dim, bool GPUInterpolateOn>
-inline std::array<float, Dim> CCatmullRomInterpolater<Dim, GPUInterpolateOn>::GetInterpolated(float x) noexcept
+template<uint32_t Dim>
+inline std::array<float, Dim> CCatmullRomInterpolater<Dim>::GetInterpolated(float x) noexcept
 {
 	size_t coefficientIndex = Parent::GetCoefficientIndex(x);
 	
@@ -99,8 +101,8 @@ inline std::array<float, Dim> CCatmullRomInterpolater<Dim, GPUInterpolateOn>::Ge
 	return result;
 }
 
-template<uint32_t Dim, bool GPUInterpolateOn>
-inline std::vector<SControlPoint<Dim>> CCatmullRomInterpolater<Dim, GPUInterpolateOn>::GetControlPoints()
+template<uint32_t Dim>
+inline std::vector<SControlPoint<Dim>> CCatmullRomInterpolater<Dim>::GetControlPoints()
 {
 	std::vector<SControlPoint<Dim>> catmullRomContorlPoints = Parent::GetControlPoints();
 	catmullRomContorlPoints.insert(catmullRomContorlPoints.begin(), SControlPoint<Dim>{ Parent::m_startPoint.x - 1.f, Parent::m_startPoint.y });

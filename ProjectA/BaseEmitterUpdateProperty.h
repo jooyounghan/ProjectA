@@ -7,26 +7,22 @@
 
 #define LoopInfinity static_cast<UINT8>(~0)
 
-template<uint32_t Dim, bool GPUInterpolateOn>
+template<uint32_t Dim>
 class IInterpolater;
 
 template<uint32_t Dim>
 class CControlPointGridView;
 
-template<uint32_t Dim, bool GPUInterpolateOn>
+template<uint32_t Dim>
 class CInterpolaterSelectPlotter;
 
 typedef std::function<void(class CBaseEmitterUpdateProperty*)> OnEmitterDispose;
 
-class CBaseEmitterUpdateProperty : public IProperty
+class CBaseEmitterUpdateProperty : public APropertyOnEmitterTimeline
 {
 public:
-	CBaseEmitterUpdateProperty();
+	CBaseEmitterUpdateProperty(float& emitterCurrentTime, float& emitterLoopTime);
 	~CBaseEmitterUpdateProperty() override = default;
-
-protected:
-	float m_currentTime;
-	float m_loopTime;
 
 protected:
 	bool m_isLoopInfinity;
@@ -37,14 +33,14 @@ protected:
 	SControlPoint<1> m_spawnFinalControlPoint;
 	std::vector<SControlPoint<1>> m_spawnControlPoints;
 	EInterpolationMethod m_spawnRateInterpolationMethod;
-	std::unique_ptr<IInterpolater<1, false>> m_spawnRateInterpolater;
+	std::unique_ptr<IInterpolater<1>> m_spawnRateInterpolater;
 
 protected:
 	std::unique_ptr<CControlPointGridView<1>> m_spawnRateControlPointGridView;
-	std::unique_ptr<CInterpolaterSelectPlotter<1, false>> m_spawnRateInterpolaterSelectPlotter;
+	std::unique_ptr<CInterpolaterSelectPlotter<1>> m_spawnRateInterpolaterSelectPlotter;
 
 protected:
-	void AdjustControlPointsFromLoopTime();
+	virtual void AdjustControlPointsFromLoopTime() override;
 
 protected:
 	bool m_isNotDisposed;

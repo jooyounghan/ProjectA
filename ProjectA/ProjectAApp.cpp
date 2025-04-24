@@ -174,7 +174,7 @@ void CProjectAApp::Init()
 #pragma endregion
 }
 
-constexpr FLOAT clearColor[4] = { 1.f, 1.f, 1.f, 1.f };
+constexpr FLOAT clearColor[4] = { 0.f, 0.f, 0.f, 1.f };
 
 void CProjectAApp::Update(float deltaTime)
 {

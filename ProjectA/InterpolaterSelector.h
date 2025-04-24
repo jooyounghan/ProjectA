@@ -10,19 +10,19 @@
 #include <format>
 #include <memory>
 
-template<uint32_t dim, bool GPUInterpolateOn>
+template<uint32_t Dim>
 class CInterpolaterSelectPlotter;
 
 class InterpolaterSelectorHelper
 {
-template<uint32_t dim, bool GPUInterpolateOn>
+template<uint32_t Dim>
 friend class CInterpolaterSelectPlotter;
 
 protected:
 	static std::unordered_map<EInterpolationMethod, std::string> GInterpolationMethodStringMap;
 };
 
-template<uint32_t Dim, bool GPUInterpolateOn>
+template<uint32_t Dim>
 class CInterpolaterSelectPlotter : public CBaseSelector<EInterpolationMethod>
 {
 	friend InterpolaterSelectorHelper;
@@ -53,12 +53,13 @@ protected:
 
 
 protected:
-	IInterpolater<Dim, GPUInterpolateOn>* m_interpolater;
+	IInterpolater<Dim>* m_interpolater;
 
 public:
-	void SetInterpolater(
+	void CreateInterpolater(
+		bool useGPUInterpolater,
 		EInterpolationMethod interpolationMethod, 
-		std::unique_ptr<IInterpolater<Dim, GPUInterpolateOn>>& interpolater
+		std::unique_ptr<IInterpolater<Dim>>& interpolater
 	);
 
 public:
@@ -72,8 +73,8 @@ protected:
 
 
 
-template<uint32_t Dim, bool GPUInterpolateOn>
-CInterpolaterSelectPlotter<Dim, GPUInterpolateOn>::CInterpolaterSelectPlotter(
+template<uint32_t Dim>
+CInterpolaterSelectPlotter<Dim>::CInterpolaterSelectPlotter(
 	const std::string& selectorName, 
 	const std::string& graphTitle, 
 	const std::array<std::string, Dim>& scatterLabels,
@@ -90,10 +91,11 @@ CInterpolaterSelectPlotter<Dim, GPUInterpolateOn>::CInterpolaterSelectPlotter(
 {
 }
 
-template<uint32_t Dim, bool GPUInterpolateOn>
-void CInterpolaterSelectPlotter<Dim, GPUInterpolateOn>::SetInterpolater(
+template<uint32_t Dim>
+void CInterpolaterSelectPlotter<Dim>::CreateInterpolater(
+	bool useGPUInterpolater,
 	EInterpolationMethod interpolationMethod, 
-	std::unique_ptr<IInterpolater<Dim, GPUInterpolateOn>>& interpolater
+	std::unique_ptr<IInterpolater<Dim>>& interpolater
 )
 {
 	if (interpolater)
@@ -104,13 +106,13 @@ void CInterpolaterSelectPlotter<Dim, GPUInterpolateOn>::SetInterpolater(
 	switch (interpolationMethod)
 	{
 	case EInterpolationMethod::Linear:
-		interpolater = std::make_unique<CLinearInterpolater<Dim, GPUInterpolateOn>>(m_startPoint, m_endPoint, m_controlPoints);
+		interpolater = std::make_unique<CLinearInterpolater<Dim>>(useGPUInterpolater, m_startPoint, m_endPoint, m_controlPoints);
 		break;
 	case EInterpolationMethod::CubicSpline:
-		interpolater = std::make_unique<CCubicSplineInterpolater<Dim, GPUInterpolateOn>>(m_startPoint, m_endPoint, m_controlPoints);
+		interpolater = std::make_unique<CCubicSplineInterpolater<Dim>>(useGPUInterpolater, m_startPoint, m_endPoint, m_controlPoints);
 		break;
 	case EInterpolationMethod::CatmullRom:
-		interpolater = std::make_unique<CCatmullRomInterpolater<Dim, GPUInterpolateOn>>(m_startPoint, m_endPoint, m_controlPoints);
+		interpolater = std::make_unique<CCatmullRomInterpolater<Dim>>(useGPUInterpolater, m_startPoint, m_endPoint, m_controlPoints);
 		break;
 	}
 	if (interpolater != nullptr)
@@ -120,8 +122,8 @@ void CInterpolaterSelectPlotter<Dim, GPUInterpolateOn>::SetInterpolater(
 	}
 }
 
-template<uint32_t Dim, bool GPUInterpolateOn>
-inline void CInterpolaterSelectPlotter<Dim, GPUInterpolateOn>::RedrawSelectPlotter()
+template<uint32_t Dim>
+inline void CInterpolaterSelectPlotter<Dim>::RedrawSelectPlotter()
 {
 	m_pointIns.clear();
 	for (uint32_t dimension = 0; dimension < Dim; ++dimension)
@@ -160,8 +162,8 @@ inline void CInterpolaterSelectPlotter<Dim, GPUInterpolateOn>::RedrawSelectPlott
 }
 
 
-template<uint32_t Dim, bool GPUInterpolateOn>
-void CInterpolaterSelectPlotter<Dim, GPUInterpolateOn>::ViewInterpolatedPlots()
+template<uint32_t Dim>
+void CInterpolaterSelectPlotter<Dim>::ViewInterpolatedPlots()
 {
 	if (ImPlot::BeginPlot(m_graphTitle.c_str(), ImVec2(-1, 0), ImPlotFlags_NoInputs))
 	{
@@ -179,8 +181,8 @@ void CInterpolaterSelectPlotter<Dim, GPUInterpolateOn>::ViewInterpolatedPlots()
 	}
 }
 
-template<uint32_t Dim, bool GPUInterpolateOn>
-inline void CInterpolaterSelectPlotter<Dim, GPUInterpolateOn>::UpdateInterpolatedResult()
+template<uint32_t Dim>
+inline void CInterpolaterSelectPlotter<Dim>::UpdateInterpolatedResult()
 {
 	if (m_interpolater)
 	{
@@ -200,8 +202,8 @@ inline void CInterpolaterSelectPlotter<Dim, GPUInterpolateOn>::UpdateInterpolate
 	}
 }
 
-template<uint32_t Dim, bool GPUInterpolateOn>
-inline void CInterpolaterSelectPlotter<Dim, GPUInterpolateOn>::UpdateTimeSteps(size_t numSteps)
+template<uint32_t Dim>
+inline void CInterpolaterSelectPlotter<Dim>::UpdateTimeSteps(size_t numSteps)
 {
 	m_timeSteps.clear();
 	float start = m_startPoint.x;

@@ -17,10 +17,12 @@ using namespace ImGui;
 #define InitLife 1.f
 
 CBaseParticleSpawnProperty::CBaseParticleSpawnProperty(
+	float& emitterCurrentTime,
+	float& emitterLoopTime,
 	const function<void(float)>& lifeChangedHandler,
 	const function<void(uint32_t, uint32_t)>& colorInterpolationChangedHandler
 )
-	: IProperty(),
+	: APropertyOnEmitterTimeline(emitterCurrentTime, emitterLoopTime),
 	m_onLifeChanged(lifeChangedHandler),
 	m_onColorInterpolationChanged(colorInterpolationChangedHandler),
 	m_isParticleSpawnPropertyChanged(false),
@@ -28,7 +30,8 @@ CBaseParticleSpawnProperty::CBaseParticleSpawnProperty(
 	m_speedShapedVector(EShapedVector::None),
 	m_colorInitControlPoint{ 0.f, MakeArray(1.f, 0.f, 0.f, 1.f)},
 	m_colorFinalControlPoint{ InitLife, MakeArray(0.f, 0.f ,1.f, 1.f)},
-	m_colorInterpolationMethod(EInterpolationMethod::Linear)
+	m_colorInterpolationMethod(EInterpolationMethod::Linear),
+	m_useGPUColorInterpolater(true)
 {
 	AutoZeroMemory(m_baseParticleSpawnPropertyCPU);
 
@@ -55,7 +58,7 @@ CBaseParticleSpawnProperty::CBaseParticleSpawnProperty(
 		m_colorControlPoints
 	);
 
-	m_colorInterpolationSelectPlotter = make_unique<CInterpolaterSelectPlotter<4, true>>(
+	m_colorInterpolationSelectPlotter = make_unique<CInterpolaterSelectPlotter<4>>(
 		"파티클 색상 보간 방법",
 		"Color Control Points",
 		array<string, 4>{ "R", "G", "B", "A" },
@@ -64,12 +67,32 @@ CBaseParticleSpawnProperty::CBaseParticleSpawnProperty(
 		m_colorControlPoints
 	);
 
-	m_colorInterpolationSelectPlotter->SetInterpolater(m_colorInterpolationMethod, m_colorInterpolater);
+	m_colorInterpolationSelectPlotter->CreateInterpolater(m_useGPUColorInterpolater, m_colorInterpolationMethod, m_colorInterpolater);
 	m_colorInterpolationSelectPlotter->RedrawSelectPlotter();
+
+	m_onLifeChanged(InitLife);
 	m_onColorInterpolationChanged(m_colorInterpolater->GetInterpolaterID(), m_colorInterpolater->GetCoefficientCount());
 }
 
 ID3D11Buffer* CBaseParticleSpawnProperty::GetParticleSpawnPropertyBuffer() const noexcept { return m_baseParticleSpawnPropertyGPU->GetBuffer(); }
+
+void CBaseParticleSpawnProperty::AdjustControlPointsFromLoopTime()
+{
+	const float& loopTime = m_emitterLoopTime;
+	m_colorFinalControlPoint.x = loopTime;
+	m_colorControlPoints.erase(
+		std::remove_if(m_colorControlPoints.begin(), m_colorControlPoints.end(),
+			[&](const SControlPoint<4>& p)
+			{
+				return p.x > loopTime;
+			}),
+		m_colorControlPoints.end()
+				);
+
+	m_lastParticleLife = loopTime;
+	m_colorInterpolater->UpdateCoefficient();
+	m_colorInterpolationSelectPlotter->RedrawSelectPlotter();
+}
 
 void CBaseParticleSpawnProperty::AdjustControlPointsFromLife()
 {
@@ -98,6 +121,14 @@ void CBaseParticleSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceCo
 
 void CBaseParticleSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 {
+	if (!m_useGPUColorInterpolater)
+	{
+		array<float, 4> interpolatedColor = m_colorInterpolater->GetInterpolated(dt);
+		m_baseParticleSpawnPropertyCPU.color = XMVectorSet(interpolatedColor[0], interpolatedColor[1], interpolatedColor[2], interpolatedColor[3]);
+		m_isParticleSpawnPropertyChanged = true;
+	}
+
+
 	if (m_isParticleSpawnPropertyChanged)
 	{
 		m_baseParticleSpawnPropertyGPU->Stage(deviceContext);
@@ -147,7 +178,22 @@ void CBaseParticleSpawnProperty::DrawPropertyUI()
 	if (m_colorInterpolationMethod != currnetColorInterpolateKind)
 	{
 		m_colorInterpolationMethod = currnetColorInterpolateKind;
-		m_colorInterpolationSelectPlotter->SetInterpolater(m_colorInterpolationMethod, m_colorInterpolater);
+		m_colorInterpolationSelectPlotter->CreateInterpolater(m_useGPUColorInterpolater, m_colorInterpolationMethod, m_colorInterpolater);
+		m_onColorInterpolationChanged(m_colorInterpolater->GetInterpolaterID(), m_colorInterpolater->GetCoefficientCount());
+	}
+	if (Checkbox("GPU 기반 색상 보간", &m_useGPUColorInterpolater))
+	{
+		if (m_useGPUColorInterpolater)
+		{
+			m_baseParticleSpawnPropertyCPU.color = XMVectorZero();
+			m_isParticleSpawnPropertyChanged = true;
+		}
+		else
+		{
+
+		}
+
+		m_colorInterpolationSelectPlotter->CreateInterpolater(m_useGPUColorInterpolater, m_colorInterpolationMethod, m_colorInterpolater);
 		m_onColorInterpolationChanged(m_colorInterpolater->GetInterpolaterID(), m_colorInterpolater->GetCoefficientCount());
 	}
 

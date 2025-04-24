@@ -60,6 +60,14 @@ public:
 	inline void SetSpawned(bool isSpawned) noexcept { m_isSpawned = isSpawned; }
 
 protected:
+	float m_emitterCurrentTime;
+	float m_emitterLoopTime;
+
+public:
+	inline float& GetEmitterCurrentTimeRef() noexcept { return m_emitterCurrentTime; }
+	inline float& GetEmitterLoopTimeRef() noexcept { return m_emitterLoopTime; }
+
+protected:
 	DirectX::XMVECTOR m_position;
 	DirectX::XMVECTOR m_angle;
 
