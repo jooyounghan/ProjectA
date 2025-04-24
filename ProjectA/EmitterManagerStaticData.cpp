@@ -1,0 +1,1 @@
+#include "EmitterManagerStaticData.h"

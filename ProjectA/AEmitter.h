@@ -1,8 +1,7 @@
 #pragma once
 #include "Updatable.h"
 #include "EmitterForceProperty.h"
-
-#include <memory>
+#include "EmitterStaticData.h"
 
 class CBaseEmitterSpawnProperty;
 class CBaseEmitterUpdateProperty;
@@ -22,11 +21,7 @@ struct SParticle
 	DirectX::XMFLOAT3 accelerate;
 	UINT emitterType;
 	UINT emitterID;
-	float maxLife;
 	float life;
-	UINT colorInerpolaterID;
-	UINT colorInterpolaterDegree;
-	float particleDummy;
 };
 
 class AEmitter : public IUpdatable
@@ -35,8 +30,6 @@ public:
 	AEmitter(
 		UINT emitterType,
 		UINT emitterID,
-		DirectX::XMMATRIX& emitterWorldTransform,
-		SEmitterForceProperty& emitterForce,
 		const DirectX::XMVECTOR& position,
 		const DirectX::XMVECTOR& angle
 	);
@@ -47,18 +40,14 @@ protected:
 		DirectX::XMMATRIX emitterWorldTransform;
 		UINT emitterType;
 		UINT emitterID;
-		UINT colorInterpolaterID;
-		UINT colorInterpolaterDegree;
+		DirectX::XMFLOAT2 padding;
 	} m_emitterPropertyCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterPropertyGPU;
 	bool m_isEmitterPropertyChanged;
 
 public:
-	UINT GetEmitterType() const noexcept { return m_emitterPropertyCPU.emitterType; }
-	UINT GetEmitterID() const noexcept { return m_emitterPropertyCPU.emitterID; }
-
-public:
-	void SetColorInterpolaterProperty(UINT colorInterpolaterID, UINT colorInterpolaterDegree);
+	inline UINT GetEmitterType() const noexcept { return m_emitterPropertyCPU.emitterType; }
+	inline UINT GetEmitterID() const noexcept { return m_emitterPropertyCPU.emitterID; }
 
 public:
 	ID3D11Buffer* GetEmitterPropertyBuffer() const noexcept;
@@ -74,20 +63,10 @@ protected:
 	DirectX::XMVECTOR m_position;
 	DirectX::XMVECTOR m_angle;
 
-protected:
-	DirectX::XMMATRIX& m_emitterWorldTransform;
-	SEmitterForceProperty& m_emitterForce;
-
 public:
-	SEmitterForceProperty& GetEmitterForce() { return m_emitterForce; }
-
-protected:
-	float m_currnetEmitter;
-	float m_loopTime;
-
-public:
-	inline float& GetCurrnetEmitter() noexcept { return m_currnetEmitter; }
-	inline float& GetLoopTime() noexcept { return m_loopTime; }
+	void SetEmitterForceProperty(const SEmitterForceProperty& emitterForce);
+	void SetInterpolaterLifeInformation(float life);
+	void SetColorInterpolaterInformation(UINT interpolaterID, UINT interpolaterDegree);
 
 protected:
 	std::unique_ptr<CBaseEmitterSpawnProperty> m_emitterSpawnProperty;

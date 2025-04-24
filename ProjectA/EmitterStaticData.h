@@ -23,13 +23,14 @@ namespace D3D11
 struct SEmitterInterpolaterInformation
 {
 	float maxLife;
-	uint32_t colorInerpolaterID;
+	uint32_t colorInterpolaterID;
 	uint32_t colorInterpolaterDegree;
 	float particleDummy;
 };
 
 class EmitterStaticData
 {
+	friend class AEmitter;
 	friend class CEmitterManager;
 	friend class CEmitterSelector;
 

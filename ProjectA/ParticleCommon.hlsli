@@ -8,11 +8,7 @@ struct Particle
     float3 accelerate;
     uint emitterType;
     uint emitterID;
-    float maxLife;
     float life;
-    uint colorInterpolaterID;
-    uint colorInterpolaterDegree;
-    float particleDummy;
 };
 
 struct PrefixDesciptor

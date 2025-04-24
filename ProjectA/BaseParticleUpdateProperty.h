@@ -45,17 +45,15 @@ class CBaseParticleUpdateProperty : public IProperty
 {
 public:
 	CBaseParticleUpdateProperty(
-		UINT forcePropertyIndex,
-		SEmitterForceProperty& emitterForceProperty,
-		const std::function<void(UINT)>& emitterForceUpdatedHandler
+		const std::function<void(const SEmitterForceProperty&)>& emitterForceUpdatedHandler
 	);
 	~CBaseParticleUpdateProperty() override = default;
 
 protected:
-	UINT m_forcePropertyIndex;
-	SEmitterForceProperty& m_emitterForceProperty;
+	SEmitterForceProperty m_emitterForceProperty;
 	bool m_isEmitterForcePropertyChanged;
-	std::function<void(UINT)> m_onEmitterForceUpdated;
+	std::function<void(const SEmitterForceProperty&)> m_onEmitterForceUpdated;
+
 private:
 	inline bool IsForceOn(EForceFlag forceFlag) const noexcept { return (m_emitterForceProperty.forceFlag >> static_cast<UINT>(forceFlag)) & 0b1; }
 	void SetFlag(EForceFlag forceFlag, bool isOn);

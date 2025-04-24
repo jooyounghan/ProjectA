@@ -152,8 +152,8 @@
     <ClCompile Include="ModelFactory.cpp">
       <Filter>소스 파일\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="IProperty.cpp">
-      <Filter>소스 파일\Updatable\Emitter\Property</Filter>
+    <ClCompile Include="EmitterManagerStaticData.cpp">
+      <Filter>소스 파일\Updatable\EmitterManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -249,6 +249,9 @@
     </ClInclude>
     <ClInclude Include="EmitterStaticData.h">
       <Filter>헤더 파일\Updatable\Emitter</Filter>
+    </ClInclude>
+    <ClInclude Include="EmitterManagerStaticData.h">
+      <Filter>헤더 파일\Updatable\EmitterManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

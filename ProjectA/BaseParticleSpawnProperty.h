@@ -26,10 +26,14 @@ class CShapedVectorSelector;
 class CBaseParticleSpawnProperty : public IProperty
 {
 public:
-	CBaseParticleSpawnProperty(const std::function<void(uint32_t, uint32_t)>& colorInterpolationChangedHandler);
+	CBaseParticleSpawnProperty(
+		const std::function<void(float)>& lifeChangedHandler,
+		const std::function<void(uint32_t, uint32_t)>& colorInterpolationChangedHandler
+	);
 	~CBaseParticleSpawnProperty() override = default;
 
 protected:
+	std::function<void(float)> m_onLifeChanged;
 	std::function<void(uint32_t, uint32_t)> m_onColorInterpolationChanged;
 
 protected:

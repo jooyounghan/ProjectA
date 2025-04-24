@@ -437,5 +437,4 @@ ProjectA/vcpkg_installed/x64-windows/x64-windows/lib/imgui.lib
 ProjectA/x64/Debug/ProjectA.exe.recipe
 ProjectA/x64/Debug/ProjectA.vcxproj.FileListAbsolute.txt
 ProjectA/x64/Debug/vc142.idb
-x64/Debug/DebugComponentPS.cso
-x64/Debug/DebugComponentVS.cso
+*.cso

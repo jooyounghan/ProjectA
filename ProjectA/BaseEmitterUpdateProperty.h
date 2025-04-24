@@ -18,14 +18,15 @@ class CInterpolaterSelectPlotter;
 
 typedef std::function<void(class CBaseEmitterUpdateProperty*)> OnEmitterDispose;
 
-class CBaseEmitterUpdateProperty : public APropertyHasLoopTime
+class CBaseEmitterUpdateProperty : public IProperty
 {
 public:
-	CBaseEmitterUpdateProperty(float& emitterCurrentTime, float& loopTime);
+	CBaseEmitterUpdateProperty();
 	~CBaseEmitterUpdateProperty() override = default;
 
 protected:
-	float& m_emitterCurrentTime;
+	float m_currentTime;
+	float m_loopTime;
 
 protected:
 	bool m_isLoopInfinity;
@@ -43,7 +44,7 @@ protected:
 	std::unique_ptr<CInterpolaterSelectPlotter<1, false>> m_spawnRateInterpolaterSelectPlotter;
 
 protected:
-	virtual void AdjustControlPointsFromLoopTime() override;
+	void AdjustControlPointsFromLoopTime();
 
 protected:
 	bool m_isNotDisposed;

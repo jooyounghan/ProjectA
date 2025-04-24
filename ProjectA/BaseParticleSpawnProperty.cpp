@@ -17,9 +17,11 @@ using namespace ImGui;
 #define InitLife 1.f
 
 CBaseParticleSpawnProperty::CBaseParticleSpawnProperty(
+	const function<void(float)>& lifeChangedHandler,
 	const function<void(uint32_t, uint32_t)>& colorInterpolationChangedHandler
 )
 	: IProperty(),
+	m_onLifeChanged(lifeChangedHandler),
 	m_onColorInterpolationChanged(colorInterpolationChangedHandler),
 	m_isParticleSpawnPropertyChanged(false),
 	m_positionShapedVector(EShapedVector::Sphere),
@@ -135,6 +137,7 @@ void CBaseParticleSpawnProperty::DrawPropertyUI()
 	SeparatorText("파티클 생명 주기 설정");
 	if (DragFloat("파티클 생명 주기", &m_baseParticleSpawnPropertyCPU.life, 0.1f, 0.f, 10.f, "%.1f"))
 	{
+		m_onLifeChanged(m_baseParticleSpawnPropertyCPU.life);
 		m_isParticleSpawnPropertyChanged = true;
 	}
 

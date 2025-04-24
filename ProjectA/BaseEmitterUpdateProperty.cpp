@@ -7,9 +7,10 @@ using namespace std;
 using namespace DirectX;
 using namespace ImGui;
 
-CBaseEmitterUpdateProperty::CBaseEmitterUpdateProperty(float& emitterCurrentTime, float& loopTime)
-	: APropertyHasLoopTime(loopTime),
-	m_emitterCurrentTime(emitterCurrentTime),
+CBaseEmitterUpdateProperty::CBaseEmitterUpdateProperty()
+	: IProperty(),
+	m_currentTime(0.f),
+	m_loopTime(10.f),
 	m_spawnCount(0.f),
 	m_saturatedSpawnCount(0),
 	m_isLoopInfinity(true),
@@ -67,14 +68,14 @@ void CBaseEmitterUpdateProperty::Update(ID3D11DeviceContext* deviceContext, floa
 {
 	if (m_loopCount > 0)
 	{
-		m_emitterCurrentTime += dt;
-		m_spawnCount += max(0.f, m_spawnRateInterpolater->GetInterpolated(m_emitterCurrentTime)[0]) * dt;
+		m_currentTime += dt;
+		m_spawnCount += max(0.f, m_spawnRateInterpolater->GetInterpolated(m_currentTime)[0]) * dt;
 		m_saturatedSpawnCount = static_cast<UINT>(std::trunc(m_spawnCount));
 		m_spawnCount = m_spawnCount - m_saturatedSpawnCount;
 
-		if (m_loopTime < m_emitterCurrentTime)
+		if (m_loopTime < m_currentTime)
 		{
-			m_emitterCurrentTime = max(m_emitterCurrentTime - m_loopTime, 0.f);
+			m_currentTime = max(m_currentTime - m_loopTime, 0.f);
 			if (m_loopCount == LoopInfinity)
 			{
 

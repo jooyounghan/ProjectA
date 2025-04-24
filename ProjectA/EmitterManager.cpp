@@ -233,8 +233,12 @@ void CEmitterManager::InitializeParticleSet(ID3D11DeviceContext* deviceContext)
 {
 	const static UINT dispatchX = UINT(ceil(m_particleMaxCount / LocalThreadCount));
 
-	ID3D11ShaderResourceView* selectSetSRVs[] = { CGPUInterpolater<4, 2>::GInterpolaterPropertyGPU->GetSRV(), CGPUInterpolater<4, 4>::GInterpolaterPropertyGPU->GetSRV() };
-	ID3D11ShaderResourceView* selectSetNullSRVs[] = { nullptr, nullptr };
+	ID3D11ShaderResourceView* selectSetSRVs[] = { 
+		EmitterStaticData::GEmitterInterpolaterInformationGPU->GetSRV(), 
+		CGPUInterpolater<4, 2>::GInterpolaterPropertyGPU->GetSRV(), 
+		CGPUInterpolater<4, 4>::GInterpolaterPropertyGPU->GetSRV() 
+	};
+	ID3D11ShaderResourceView* selectSetNullSRVs[] = { nullptr, nullptr, nullptr };
 	ID3D11UnorderedAccessView* selectSetUavs[] = { 
 		m_particleDrawIndirectStagingGPU->GetUAV(),
 		m_totalParticles->GetUAV(), 
@@ -247,10 +251,10 @@ void CEmitterManager::InitializeParticleSet(ID3D11DeviceContext* deviceContext)
 	UINT initDeathParticleCount[] = { NULL, NULL, NULL, 0, NULL};
 	GInitializeParticleSetCS->SetShader(deviceContext);
 
-	deviceContext->CSSetShaderResources(0, 2, selectSetSRVs);
+	deviceContext->CSSetShaderResources(0, 3, selectSetSRVs);
 	deviceContext->CSSetUnorderedAccessViews(0, 5, selectSetUavs, initDeathParticleCount);
 	deviceContext->Dispatch(dispatchX, 1, 1);
-	deviceContext->CSSetShaderResources(0, 2, selectSetNullSRVs);
+	deviceContext->CSSetShaderResources(0, 3, selectSetNullSRVs);
 	deviceContext->CSSetUnorderedAccessViews(0, 5, selectSetNullUavs, initDeathParticleCount);
 }
 

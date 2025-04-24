@@ -4,7 +4,6 @@
 
 #include "DynamicBuffer.h"
 
-#include "EmitterStaticData.h"
 #include "BaseEmitterSpawnProperty.h"
 #include "BaseEmitterUpdateProperty.h"
 #include "BaseParticleSpawnProperty.h"
@@ -19,38 +18,47 @@ using namespace D3D11;
 AEmitter::AEmitter(
 	UINT emitterType,
 	UINT emitterID,
-	XMMATRIX& emitterWorldTransform,
-	SEmitterForceProperty& emitterForce,
 	const XMVECTOR& position,
 	const XMVECTOR& angle
 ) :
 	m_isSpawned(false),
 	m_position(position),
 	m_angle(angle),
-	m_emitterWorldTransform(emitterWorldTransform),
-	m_emitterForce(emitterForce),
-	m_isEmitterPropertyChanged(false),
-	m_currnetEmitter(0.f),
-	m_loopTime(10.f)
+	m_isEmitterPropertyChanged(false)
 {
 	AutoZeroMemory(m_emitterPropertyCPU);
 	m_emitterPropertyCPU.emitterType = emitterType;
 	m_emitterPropertyCPU.emitterID = emitterID;
-	m_emitterPropertyCPU.emitterWorldTransform = emitterWorldTransform;
-	m_isEmitterPropertyChanged = true;
-}
-
-void AEmitter::SetColorInterpolaterProperty(UINT colorInterpolaterID, UINT colorInterpolaterDegree)
-{
-	sizeof(SParticle);
-	m_emitterPropertyCPU.colorInterpolaterID = colorInterpolaterID;
-	m_emitterPropertyCPU.colorInterpolaterDegree = colorInterpolaterDegree;
 	m_isEmitterPropertyChanged = true;
 }
 
 ID3D11Buffer* AEmitter::GetEmitterPropertyBuffer() const noexcept { return m_emitterPropertyGPU->GetBuffer(); }
 
-void AEmitter::InjectAEmitterSpawnProperty(unique_ptr<CBaseEmitterSpawnProperty>& emitterSpawnProperty) noexcept 
+void AEmitter::SetEmitterForceProperty(const SEmitterForceProperty& emitterForce)
+{
+	const UINT& emitterID = m_emitterPropertyCPU.emitterID;
+	EmitterStaticData::AddChangedEmitterForceID(emitterID);
+	EmitterStaticData::GEmitterForcePropertyCPU[emitterID] = emitterForce;
+}
+
+void AEmitter::SetInterpolaterLifeInformation(float life)
+{
+	const UINT& emitterID = m_emitterPropertyCPU.emitterID;
+	EmitterStaticData::AddChangedEmitterInterpolaterInformationID(emitterID);
+	SEmitterInterpolaterInformation& emitterInterpolaterInformation = EmitterStaticData::GEmitterInterpolaterInformationCPU[emitterID];
+	emitterInterpolaterInformation.maxLife = life;
+}
+
+void AEmitter::SetColorInterpolaterInformation(UINT interpolaterID, UINT interpolaterDegree)
+{
+	const UINT& emitterID = m_emitterPropertyCPU.emitterID;
+	EmitterStaticData::AddChangedEmitterInterpolaterInformationID(emitterID);
+	SEmitterInterpolaterInformation& emitterInterpolaterInformation = EmitterStaticData::GEmitterInterpolaterInformationCPU[emitterID];
+	emitterInterpolaterInformation.colorInterpolaterID = interpolaterID;
+	emitterInterpolaterInformation.colorInterpolaterDegree = interpolaterDegree;
+}
+
+void AEmitter::InjectAEmitterSpawnProperty(unique_ptr<CBaseEmitterSpawnProperty>& emitterSpawnProperty) noexcept
 { 
 	m_emitterSpawnProperty = std::move(emitterSpawnProperty); 
 }
@@ -101,18 +109,21 @@ void AEmitter::Update(ID3D11DeviceContext* deviceContext, float dt)
 {
 	if (m_isEmitterPropertyChanged)
 	{
-		m_emitterWorldTransform = XMMatrixAffineTransformation(
+		const UINT& emitterID = m_emitterPropertyCPU.emitterID;
+		EmitterStaticData::AddChangedEmitterWorldPositionID(emitterID);
+
+		XMMATRIX& emitterWorldTrans = EmitterStaticData::GEmitterWorldTransformCPU[emitterID];
+		emitterWorldTrans = XMMatrixAffineTransformation(
 			XMVectorSet(1.f, 1.f, 1.f, 0.f),
 			XMQuaternionIdentity(),
 			XMQuaternionRotationRollPitchYawFromVector(m_angle),
 			m_position
 		);
-		m_emitterPropertyCPU.emitterWorldTransform = XMMatrixTranspose(m_emitterWorldTransform);
+		m_emitterPropertyCPU.emitterWorldTransform = XMMatrixTranspose(emitterWorldTrans);
 
 		m_emitterPropertyGPU->Stage(deviceContext);
 		m_emitterPropertyGPU->Upload(deviceContext);
 
-		EmitterStaticData::AddChangedEmitterWorldPositionID(m_emitterPropertyCPU.emitterID);
 
 		m_isEmitterPropertyChanged = false;
 	}

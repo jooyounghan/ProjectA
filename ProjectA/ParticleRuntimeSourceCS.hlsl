@@ -46,12 +46,7 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 	sourcedParticle.accelerate = float3(0.f, 0.f, 0.f);
 	sourcedParticle.emitterID = emitterID;
 	sourcedParticle.emitterType = emitterType;
-	sourcedParticle.maxLife = life;
-	sourcedParticle.life = sourcedParticle.maxLife;
-	sourcedParticle.colorInterpolaterID = colorInterpolaterID;
-	sourcedParticle.colorInterpolaterDegree = colorInterpolaterDegree;
-	sourcedParticle.particleDummy = 0.f;
-
+	sourcedParticle.life = life;
 	totalParticles[revivedIndex] = sourcedParticle;
     aliveFlags[revivedIndex] = 1;
 }

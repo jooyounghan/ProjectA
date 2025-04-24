@@ -48,17 +48,12 @@ void DecrementNForceCount(UINT& nForceCount, ENForceKind forceKind)
 
 
 CBaseParticleUpdateProperty::CBaseParticleUpdateProperty(
-	UINT forcePropertyIndex,
-	SEmitterForceProperty& emitterForceProperty, 
-	const std::function<void(UINT)>& emitterForceUpdatedHandler
+	const std::function<void(const SEmitterForceProperty&)>& emitterForceUpdatedHandler
 )
-	: 
-	m_forcePropertyIndex(forcePropertyIndex),
-	m_emitterForceProperty(emitterForceProperty),
-	m_isEmitterForcePropertyChanged(false),
+	: m_isEmitterForcePropertyChanged(false),
 	m_onEmitterForceUpdated(emitterForceUpdatedHandler)
 {
-
+	AutoZeroMemory(m_emitterForceProperty);
 }
 
 
@@ -77,7 +72,7 @@ void CBaseParticleUpdateProperty::Update(ID3D11DeviceContext* deviceContext, flo
 {
 	if (m_isEmitterForcePropertyChanged)
 	{
-		m_onEmitterForceUpdated(m_forcePropertyIndex);
+		m_onEmitterForceUpdated(m_emitterForceProperty);
 		m_isEmitterForcePropertyChanged = false;
 	}
 }

@@ -2,6 +2,14 @@
 
 #define MaxStepCount MaxControlPointsCount - 1
 
+struct EmitterInterpolaterInformation
+{
+    float maxLife;
+    uint colorInterpolaterID;
+    uint colorInterpolaterDegree;
+    float emitterInterpolaterInformationDummy;
+};
+
 struct InterpolaterHeader
 {
     uint controlPointsCount;
