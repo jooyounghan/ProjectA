@@ -23,8 +23,6 @@ AEmitter::AEmitter(
 ) :
 	m_isEmitterPropertyChanged(false),
 	m_isSpawned(false),
-	m_emitterCurrentTime(0.f),
-	m_emitterLoopTime(10.f),
 	m_position(position),
 	m_angle(angle)
 {

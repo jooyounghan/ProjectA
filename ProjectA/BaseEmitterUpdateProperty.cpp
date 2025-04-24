@@ -7,11 +7,10 @@ using namespace std;
 using namespace DirectX;
 using namespace ImGui;
 
-CBaseEmitterUpdateProperty::CBaseEmitterUpdateProperty(
-	float& emitterCurrentTime, 
-	float& emitterLoopTime
-)
-	: APropertyOnEmitterTimeline(emitterCurrentTime, emitterLoopTime),
+CBaseEmitterUpdateProperty::CBaseEmitterUpdateProperty()
+	: IProperty(),
+	m_currentTime(0.f),
+	m_loopTime(10.f),
 	m_spawnCount(0.f),
 	m_saturatedSpawnCount(0),
 	m_isLoopInfinity(true),
@@ -47,12 +46,12 @@ CBaseEmitterUpdateProperty::CBaseEmitterUpdateProperty(
 
 void CBaseEmitterUpdateProperty::AdjustControlPointsFromLoopTime()
 {
-	m_spawnFinalControlPoint.x = m_emitterLoopTime;
+	m_spawnFinalControlPoint.x = m_loopTime;
 	m_spawnControlPoints.erase(
 		std::remove_if(m_spawnControlPoints.begin(), m_spawnControlPoints.end(),
 			[&](const SControlPoint<1>& p)
 			{
-				return p.x > m_emitterLoopTime;
+				return p.x > m_loopTime;
 			}),
 		m_spawnControlPoints.end()
 	);
@@ -69,14 +68,14 @@ void CBaseEmitterUpdateProperty::Update(ID3D11DeviceContext* deviceContext, floa
 {
 	if (m_loopCount > 0)
 	{
-		m_emitterCurrentTime += dt;
-		m_spawnCount += max(0.f, m_spawnRateInterpolater->GetInterpolated(m_emitterCurrentTime)[0]) * dt;
+		m_currentTime += dt;
+		m_spawnCount += max(0.f, m_spawnRateInterpolater->GetInterpolated(m_currentTime)[0]) * dt;
 		m_saturatedSpawnCount = static_cast<UINT>(std::trunc(m_spawnCount));
 		m_spawnCount = m_spawnCount - m_saturatedSpawnCount;
 
-		if (m_emitterLoopTime < m_emitterCurrentTime)
+		if (m_currentTime > m_loopTime)
 		{
-			m_emitterCurrentTime = max(m_emitterCurrentTime - m_emitterLoopTime, 0.f);
+			m_currentTime = max(m_currentTime - m_loopTime, 0.f);
 			if (m_loopCount == LoopInfinity)
 			{
 
@@ -114,7 +113,7 @@ void CBaseEmitterUpdateProperty::DrawPropertyUI()
 		m_loopCount = m_isLoopInfinity ? LoopInfinity : 1;
 	}
 
-	if (DragFloat("루프 당 시간", &m_emitterLoopTime, 0.1f, 0.f, 100.f, "%.1f"))
+	if (DragFloat("루프 당 시간", &m_loopTime, 0.1f, 0.f, 100.f, "%.1f"))
 	{
 		AdjustControlPointsFromLoopTime();
 	}

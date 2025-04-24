@@ -17,12 +17,11 @@ using namespace ImGui;
 #define InitLife 1.f
 
 CBaseParticleSpawnProperty::CBaseParticleSpawnProperty(
-	float& emitterCurrentTime,
-	float& emitterLoopTime,
 	const function<void(float)>& lifeChangedHandler,
 	const function<void(uint32_t, uint32_t)>& colorInterpolationChangedHandler
 )
-	: APropertyOnEmitterTimeline(emitterCurrentTime, emitterLoopTime),
+	: IProperty(),
+	m_currentTime(0.f),
 	m_onLifeChanged(lifeChangedHandler),
 	m_onColorInterpolationChanged(colorInterpolationChangedHandler),
 	m_isParticleSpawnPropertyChanged(false),
@@ -36,7 +35,6 @@ CBaseParticleSpawnProperty::CBaseParticleSpawnProperty(
 	AutoZeroMemory(m_baseParticleSpawnPropertyCPU);
 
 	m_baseParticleSpawnPropertyCPU.life = InitLife;
-	m_lastParticleLife = InitLife;
 
 	m_positionShapedVectorSelector = make_unique<CShapedVectorSelector>(
 		"생성 위치 벡터", "생성 반지름",
@@ -76,24 +74,6 @@ CBaseParticleSpawnProperty::CBaseParticleSpawnProperty(
 
 ID3D11Buffer* CBaseParticleSpawnProperty::GetParticleSpawnPropertyBuffer() const noexcept { return m_baseParticleSpawnPropertyGPU->GetBuffer(); }
 
-void CBaseParticleSpawnProperty::AdjustControlPointsFromLoopTime()
-{
-	const float& loopTime = m_emitterLoopTime;
-	m_colorFinalControlPoint.x = loopTime;
-	m_colorControlPoints.erase(
-		std::remove_if(m_colorControlPoints.begin(), m_colorControlPoints.end(),
-			[&](const SControlPoint<4>& p)
-			{
-				return p.x > loopTime;
-			}),
-		m_colorControlPoints.end()
-				);
-
-	m_lastParticleLife = loopTime;
-	m_colorInterpolater->UpdateCoefficient();
-	m_colorInterpolationSelectPlotter->RedrawSelectPlotter();
-}
-
 void CBaseParticleSpawnProperty::AdjustControlPointsFromLife()
 {
 	const float& life = m_baseParticleSpawnPropertyCPU.life;
@@ -107,9 +87,9 @@ void CBaseParticleSpawnProperty::AdjustControlPointsFromLife()
 		m_colorControlPoints.end()
 	);
 
-	m_lastParticleLife = life;
 	m_colorInterpolater->UpdateCoefficient();
 	m_colorInterpolationSelectPlotter->RedrawSelectPlotter();
+	m_onLifeChanged(life);
 }
 
 
@@ -121,13 +101,19 @@ void CBaseParticleSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceCo
 
 void CBaseParticleSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 {
+	m_currentTime += dt;
+	const float& life = m_baseParticleSpawnPropertyCPU.life;
+	if (m_currentTime > life)
+	{
+		m_currentTime = max(m_currentTime - life, 0.f);
+	}
+
 	if (!m_useGPUColorInterpolater)
 	{
-		array<float, 4> interpolatedColor = m_colorInterpolater->GetInterpolated(dt);
+		array<float, 4> interpolatedColor = m_colorInterpolater->GetInterpolated(m_currentTime);
 		m_baseParticleSpawnPropertyCPU.color = XMVectorSet(interpolatedColor[0], interpolatedColor[1], interpolatedColor[2], interpolatedColor[3]);
 		m_isParticleSpawnPropertyChanged = true;
 	}
-
 
 	if (m_isParticleSpawnPropertyChanged)
 	{
@@ -139,15 +125,6 @@ void CBaseParticleSpawnProperty::Update(ID3D11DeviceContext* deviceContext, floa
 
 void CBaseParticleSpawnProperty::DrawPropertyUI()
 {
-	const float& life = m_baseParticleSpawnPropertyCPU.life;
-	if (m_lastParticleLife - 1E-3 < life && life < m_lastParticleLife + 1E-3)
-	{
-	}
-	else
-	{
-		AdjustControlPointsFromLife();
-	}
-
 	if (!ImGui::CollapsingHeader("파티클 생성 프로퍼티"))
 		return;
 
@@ -168,7 +145,7 @@ void CBaseParticleSpawnProperty::DrawPropertyUI()
 	SeparatorText("파티클 생명 주기 설정");
 	if (DragFloat("파티클 생명 주기", &m_baseParticleSpawnPropertyCPU.life, 0.1f, 0.f, 10.f, "%.1f"))
 	{
-		m_onLifeChanged(m_baseParticleSpawnPropertyCPU.life);
+		AdjustControlPointsFromLife();
 		m_isParticleSpawnPropertyChanged = true;
 	}
 

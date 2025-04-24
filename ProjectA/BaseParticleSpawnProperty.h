@@ -23,12 +23,10 @@ class CInterpolaterSelectPlotter;
 
 class CShapedVectorSelector;
 
-class CBaseParticleSpawnProperty : public APropertyOnEmitterTimeline
+class CBaseParticleSpawnProperty : public IProperty
 {
 public:
 	CBaseParticleSpawnProperty(
-		float& emitterCurrentTime,
-		float& emitterLoopTime,
 		const std::function<void(float)>& lifeChangedHandler,
 		const std::function<void(uint32_t, uint32_t)>& colorInterpolationChangedHandler
 	);
@@ -37,6 +35,9 @@ public:
 protected:
 	std::function<void(float)> m_onLifeChanged;
 	std::function<void(uint32_t, uint32_t)> m_onColorInterpolationChanged;
+
+protected:
+	float m_currentTime;
 
 protected:
 	struct  
@@ -77,9 +78,6 @@ protected:
 	std::unique_ptr<CShapedVectorSelector> m_speedShapedVectorSelector;
 
 protected:
-	float m_lastParticleLife;
-
-protected:
 	SControlPoint<4> m_colorInitControlPoint;
 	SControlPoint<4> m_colorFinalControlPoint;
 	std::vector<SControlPoint<4>> m_colorControlPoints;
@@ -94,9 +92,8 @@ protected:
 	std::unique_ptr<CInterpolaterSelectPlotter<4>> m_colorInterpolationSelectPlotter;
 
 protected:
-	virtual void AdjustControlPointsFromLoopTime() override;
 	void AdjustControlPointsFromLife();
-	
+
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
 	virtual void Update(ID3D11DeviceContext* deviceContext, float dt) override;
