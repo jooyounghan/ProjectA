@@ -182,4 +182,13 @@ void CBaseParticleSpawnProperty::DrawPropertyUI()
 	m_colorInterpolationSelectPlotter->ViewInterpolatedPlots();
 }
 
+void CBaseParticleSpawnProperty::Serialize(std::ofstream& ofs)
+{
+
+}
+
+void CBaseParticleSpawnProperty::Deserialize(std::ifstream& ifs)
+{
+
+}
 

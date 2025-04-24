@@ -1,5 +1,6 @@
 #pragma once
 #include "IProperty.h"
+#include "ISerializable.h"
 #include "InterpolaterStructure.h"
 
 #include <functional>
@@ -18,7 +19,7 @@ class CInterpolaterSelectPlotter;
 
 typedef std::function<void(class CBaseEmitterUpdateProperty*)> OnEmitterDispose;
 
-class CBaseEmitterUpdateProperty : public IProperty
+class CBaseEmitterUpdateProperty : public IProperty, public ISerializable
 {
 public:
 	CBaseEmitterUpdateProperty();
@@ -66,5 +67,9 @@ public:
 
 public:
 	virtual void DrawPropertyUI() override;
+
+public:
+	virtual void Serialize(std::ofstream& ofs) override;
+	virtual void Deserialize(std::ifstream& ifs) override;
 };
 

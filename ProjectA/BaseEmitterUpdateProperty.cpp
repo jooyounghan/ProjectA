@@ -135,3 +135,13 @@ void CBaseEmitterUpdateProperty::DrawPropertyUI()
 
 	m_spawnRateInterpolaterSelectPlotter->ViewInterpolatedPlots();
 }
+
+void CBaseEmitterUpdateProperty::Serialize(std::ofstream& ofs)
+{
+
+}
+
+void CBaseEmitterUpdateProperty::Deserialize(std::ifstream& ifs)
+{
+
+}

@@ -1,5 +1,6 @@
 #pragma once
 #include "IProperty.h"
+#include "ISerializable.h"
 #include "ShapedVectorProperty.h"
 #include "InterpolaterStructure.h"
 
@@ -23,7 +24,7 @@ class CInterpolaterSelectPlotter;
 
 class CShapedVectorSelector;
 
-class CBaseParticleSpawnProperty : public IProperty
+class CBaseParticleSpawnProperty : public IProperty, public ISerializable
 {
 public:
 	CBaseParticleSpawnProperty(
@@ -100,5 +101,9 @@ public:
 
 public:
 	virtual void DrawPropertyUI() override;
+
+public:
+	virtual void Serialize(std::ofstream& ofs) override;
+	virtual void Deserialize(std::ifstream& ifs) override;
 };
 

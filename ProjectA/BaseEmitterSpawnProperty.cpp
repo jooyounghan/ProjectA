@@ -97,3 +97,20 @@ void CBaseEmitterSpawnProperty::DrawPropertyUI()
 	}
 }
 
+void CBaseEmitterSpawnProperty::Serialize(std::ofstream& ofs)
+{
+	SerializeHelper::SerializeElement<decltype(m_emitterSpawnPropertyCPU)>(ofs, m_emitterSpawnPropertyCPU);
+	SerializeHelper::SerializeElement<EShapedVector>(ofs, m_positionShapedVector);
+	SerializeHelper::SerializeElement<EShapedVector>(ofs, m_speedShapedVector);
+	SerializeHelper::SerializeElement <bool>(ofs, m_isImmortal);
+}
+
+void CBaseEmitterSpawnProperty::Deserialize(std::ifstream& ifs)
+{
+	m_emitterSpawnPropertyCPU = SerializeHelper::DeserializeElement<decltype(m_emitterSpawnPropertyCPU)>(ifs);
+	m_positionShapedVector = SerializeHelper::DeserializeElement<EShapedVector>(ifs);
+	m_speedShapedVector = SerializeHelper::DeserializeElement<EShapedVector>(ifs);
+	m_isImmortal = SerializeHelper::DeserializeElement <bool>(ifs);
+	m_isEmitterSpawnPropertyChanged = true;
+}
+

@@ -1,17 +1,14 @@
 #pragma once
-#include "Updatable.h"
+#include "IUpdatable.h"
+#include "ISerializable.h"
 #include "EmitterForceProperty.h"
 #include "EmitterStaticData.h"
+#include "DynamicBuffer.h"
 
 class CBaseEmitterSpawnProperty;
 class CBaseEmitterUpdateProperty;
 class CBaseParticleSpawnProperty;
 class CBaseParticleUpdateProperty;
-
-namespace D3D11
-{
-	class CDynamicBuffer;
-}
 
 struct SParticle
 {
@@ -24,7 +21,7 @@ struct SParticle
 	float life;
 };
 
-class AEmitter : public IUpdatable
+class AEmitter : public IUpdatable, public ISerializable
 {
 public:
 	AEmitter(
@@ -33,6 +30,7 @@ public:
 		const DirectX::XMVECTOR& position,
 		const DirectX::XMVECTOR& angle
 	);
+	~AEmitter() override = default;
 
 protected:
 	struct alignas(16)
@@ -68,17 +66,14 @@ public:
 	void SetInterpolaterLifeInformation(float life);
 	void SetColorInterpolaterInformation(UINT interpolaterID, UINT interpolaterDegree);
 
+public:
+	virtual void CreateProperty() = 0;
+
 protected:
 	std::unique_ptr<CBaseEmitterSpawnProperty> m_emitterSpawnProperty;
 	std::unique_ptr<CBaseEmitterUpdateProperty> m_emitterUpdateProperty;
 	std::unique_ptr<CBaseParticleSpawnProperty> m_particleSpawnProperty;
 	std::unique_ptr<CBaseParticleUpdateProperty> m_particleUpdateProperty;
-
-public:
-	void InjectAEmitterSpawnProperty(std::unique_ptr<CBaseEmitterSpawnProperty>& emitterSpawnProperty) noexcept;
-	void InjectAEmitterUpdateProperty(std::unique_ptr<CBaseEmitterUpdateProperty>& emitterUpdateProperty) noexcept;
-	void InjectAParticleSpawnProperty(std::unique_ptr<CBaseParticleSpawnProperty>& particleSpawnProperty) noexcept;
-	void InjectAParticleUpdateProperty(std::unique_ptr<CBaseParticleUpdateProperty>& particleSpawnProperty) noexcept;
 
 public:
 	inline CBaseEmitterSpawnProperty* GetAEmitterSpawnProperty() const noexcept { return m_emitterSpawnProperty.get(); }
@@ -95,6 +90,10 @@ public:
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
 	virtual void Update(ID3D11DeviceContext* deviceContext, float dt) override;
+
+public:
+	virtual void Serialize(std::ofstream& ofs) override;
+	virtual void Deserialize(std::ifstream& ifs) override;
 };
 
 

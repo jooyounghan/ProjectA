@@ -233,3 +233,13 @@ void CBaseParticleUpdateProperty::HandleNForce(
 	}
 	EndDisabled();
 }
+
+void CBaseParticleUpdateProperty::Serialize(std::ofstream& ofs)
+{
+
+}
+
+void CBaseParticleUpdateProperty::Deserialize(std::ifstream& ifs)
+{
+
+}

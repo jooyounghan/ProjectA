@@ -1,5 +1,5 @@
 #pragma once
-#include "Updatable.h"
+#include "IUpdatable.h"
 #include "ConstantBuffer.h"
 #include "DynamicBuffer.h"
 
@@ -17,7 +17,7 @@ public:
 		const DirectX::XMVECTOR& angle,
 		const DirectX::XMVECTOR& scale
 	);
-	virtual ~CModel() = 0;
+	~CModel() override = default;
 
 protected:
 	DirectX::XMVECTOR m_position;

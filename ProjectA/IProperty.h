@@ -1,5 +1,5 @@
 #pragma once
-#include "Updatable.h"
+#include "IUpdatable.h"
 
 class IProperty : public IUpdatable
 {

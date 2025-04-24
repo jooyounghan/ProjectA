@@ -1,5 +1,6 @@
 #pragma once
 #include "IProperty.h"
+#include "ISerializable.h"
 #include "ShapedVectorProperty.h"
 
 #include <memory>
@@ -10,7 +11,7 @@ namespace D3D11
 }
 class CShapedVectorSelector;
 
-class CBaseEmitterSpawnProperty : public IProperty
+class CBaseEmitterSpawnProperty : public IProperty, public ISerializable
 {
 public:
 	CBaseEmitterSpawnProperty();
@@ -64,5 +65,9 @@ public:
 
 public:
 	virtual void DrawPropertyUI() override;
+
+public:
+	virtual void Serialize(std::ofstream& ofs) override;
+	virtual void Deserialize(std::ifstream& ifs) override;
 };
 

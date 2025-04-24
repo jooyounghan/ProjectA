@@ -1,5 +1,5 @@
 #pragma once
-#include "Updatable.h"
+#include "IUpdatable.h"
 #include "DispatchIndirectStructure.h"
 #include "IndirectBuffer.h"
 #include "AppendBuffer.h"
@@ -19,7 +19,7 @@ class CEmitterManager : public IUpdatable
 {
 public:
 	CEmitterManager(UINT emitterTypeCount, UINT particleMaxCount);
-	~CEmitterManager() = default;
+	~CEmitterManager() override;
 
 #pragma region Emitter 멤버 변수 / 함수
 protected:

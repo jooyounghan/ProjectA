@@ -162,10 +162,12 @@
     <ClCompile Include="External\imgui_impl_win32.cpp" />
     <ClCompile Include="GlobalVariable.cpp" />
     <ClCompile Include="InterpolaterSelector.cpp" />
+    <ClCompile Include="ISerializable.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="ModelFactory.cpp" />
     <ClCompile Include="EmitterManager.cpp" />
+    <ClCompile Include="ParticleEmitter.cpp" />
     <ClCompile Include="ProjectAApp.cpp" />
     <ClCompile Include="ShapedVectorSelector.cpp" />
   </ItemGroup>
@@ -193,15 +195,17 @@
     <ClInclude Include="External\imgui_impl_dx11.h" />
     <ClInclude Include="External\imgui_impl_win32.h" />
     <ClInclude Include="GlobalVariable.h" />
+    <ClInclude Include="ISerializable.h" />
     <ClInclude Include="LinearInterpolater.h" />
     <ClInclude Include="MacroUtilities.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="ModelFactory.h" />
     <ClInclude Include="EmitterManager.h" />
+    <ClInclude Include="ParticleEmitter.h" />
     <ClInclude Include="ProjectAApp.h" />
     <ClInclude Include="ShapedVectorProperty.h" />
     <ClInclude Include="ShapedVectorSelector.h" />
-    <ClInclude Include="Updatable.h" />
+    <ClInclude Include="IUpdatable.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DefineLinkedWithCpp.hlsli" />

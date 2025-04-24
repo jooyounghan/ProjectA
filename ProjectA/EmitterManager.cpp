@@ -15,6 +15,7 @@
 
 #include "AEmitter.h"
 #include "EmitterStaticData.h"
+#include "EmitterSelector.h"
 #include "BaseEmitterSpawnProperty.h"
 #include "BaseEmitterUpdateProperty.h"
 #include "BaseParticleSpawnProperty.h"
@@ -30,7 +31,33 @@ CEmitterManager::CEmitterManager(UINT emitterTypeCount, UINT particleMaxCount)
 	: /*m_emitterTypeCount(emitterTypeCount),*/
 	m_particleMaxCount(particleMaxCount)
 {
+	std::ifstream ifs("./EmitterConfig.cfg", std::ios::binary);
+	if (ifs) 
+	{
+		size_t length = SerializeHelper::DeserializeElement<size_t>(ifs);
+		for (size_t idx = 0; idx < length; ++idx)
+		{
+			UINT emitterType = SerializeHelper::DeserializeElement<UINT>(ifs);
 
+			std::unique_ptr<AEmitter> emitter;
+			CEmitterSelector::CreateEmitter(static_cast<EEmitterType>(emitterType), emitter);
+
+			emitter->Deserialize(ifs);
+			m_emitters.emplace_back(move(emitter));
+		}
+	}
+}
+
+CEmitterManager::~CEmitterManager()
+{
+	std::ofstream ofs("./EmitterConfig.cfg", std::ios::binary);
+	SerializeHelper::SerializeElement<size_t>(ofs, m_emitters.size());
+
+	for (auto& emitter : m_emitters)
+	{
+		SerializeHelper::SerializeElement<UINT>(ofs, emitter->GetEmitterType());
+		emitter->Serialize(ofs);
+	}
 }
 
 void CEmitterManager::AddParticleEmitter(
@@ -91,6 +118,11 @@ bool CEmitterManager::FindEmitterFromID(
 
 void CEmitterManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
+	for (auto& emitter : m_emitters)
+	{
+		emitter->Initialize(device, deviceContext);
+	}
+
 	D3D11_DRAW_INSTANCED_INDIRECT_ARGS drawIndirectArgs;
 	AutoZeroMemory(drawIndirectArgs);
 	drawIndirectArgs.VertexCountPerInstance = 0;

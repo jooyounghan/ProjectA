@@ -1,5 +1,6 @@
 #pragma once
 #include "IProperty.h"
+#include "ISerializable.h"
 #include "EmitterForceProperty.h"
 
 #include <functional>
@@ -41,7 +42,7 @@ void SetNForceCount(UINT& nForceCount, ENForceKind forceKind, UINT newValue);
 void IncrementNForceCount(UINT& nForceCount, ENForceKind forceKind);
 void DecrementNForceCount(UINT& nForceCount, ENForceKind forceKind);
 
-class CBaseParticleUpdateProperty : public IProperty
+class CBaseParticleUpdateProperty : public IProperty, public ISerializable
 {
 public:
 	CBaseParticleUpdateProperty(
@@ -79,5 +80,9 @@ private:
 		const std::function<void(UINT)>& deleteButtonHandler,
 		const std::function<bool(UINT)>& handler
 	);
+
+public:
+	virtual void Serialize(std::ofstream& ofs) override;
+	virtual void Deserialize(std::ifstream& ifs) override;
 };
 

@@ -2,8 +2,6 @@
 #include "MacroUtilities.h"
 #include "BufferMacroUtilities.h"
 
-#include "DynamicBuffer.h"
-
 #include "BaseEmitterSpawnProperty.h"
 #include "BaseEmitterUpdateProperty.h"
 #include "BaseParticleSpawnProperty.h"
@@ -56,26 +54,6 @@ void AEmitter::SetColorInterpolaterInformation(UINT interpolaterID, UINT interpo
 	SEmitterInterpolaterInformation& emitterInterpolaterInformation = EmitterStaticData::GEmitterInterpolaterInformationCPU[emitterID];
 	emitterInterpolaterInformation.colorInterpolaterID = interpolaterID;
 	emitterInterpolaterInformation.colorInterpolaterDegree = interpolaterDegree;
-}
-
-void AEmitter::InjectAEmitterSpawnProperty(unique_ptr<CBaseEmitterSpawnProperty>& emitterSpawnProperty) noexcept
-{ 
-	m_emitterSpawnProperty = std::move(emitterSpawnProperty); 
-}
-
-void AEmitter::InjectAEmitterUpdateProperty(unique_ptr<CBaseEmitterUpdateProperty>& emitterUpdateProperty) noexcept
-{ 
-	m_emitterUpdateProperty = std::move(emitterUpdateProperty); 
-}
-
-void AEmitter::InjectAParticleSpawnProperty(unique_ptr<CBaseParticleSpawnProperty>& particleSpawnProperty) noexcept
-{ 
-	m_particleSpawnProperty = std::move(particleSpawnProperty); 
-}
-
-void AEmitter::InjectAParticleUpdateProperty(unique_ptr<CBaseParticleUpdateProperty>& particleSpawnProperty) noexcept
-{ 
-	m_particleUpdateProperty = std::move(particleSpawnProperty); 
 }
 
 void AEmitter::SetPosition(const XMVECTOR& position) noexcept
@@ -131,4 +109,30 @@ void AEmitter::Update(ID3D11DeviceContext* deviceContext, float dt)
 	UPDATE_PROPRTY(m_emitterUpdateProperty, deviceContext, dt);
 	UPDATE_PROPRTY(m_particleSpawnProperty, deviceContext, dt);
 	UPDATE_PROPRTY(m_particleUpdateProperty, deviceContext, dt);
+}
+
+void AEmitter::Serialize(std::ofstream& ofs)
+{
+	SerializeHelper::SerializeElement<decltype(m_emitterPropertyCPU)>(ofs, m_emitterPropertyCPU);
+	SerializeHelper::SerializeElement<XMVECTOR>(ofs, m_position);
+	SerializeHelper::SerializeElement<XMVECTOR>(ofs, m_angle);
+
+	m_emitterSpawnProperty->Serialize(ofs);
+	m_emitterUpdateProperty->Serialize(ofs);
+	m_particleSpawnProperty->Serialize(ofs);
+	m_particleUpdateProperty->Serialize(ofs);
+}
+
+void AEmitter::Deserialize(std::ifstream& ifs)
+{
+	m_emitterPropertyCPU = SerializeHelper::DeserializeElement<decltype(m_emitterPropertyCPU)>(ifs);
+	m_position = SerializeHelper::DeserializeElement<XMVECTOR>(ifs);
+	m_angle = SerializeHelper::DeserializeElement<XMVECTOR>(ifs);
+
+	m_emitterSpawnProperty->Deserialize(ifs);
+	m_emitterUpdateProperty->Deserialize(ifs);
+	m_particleSpawnProperty->Deserialize(ifs);
+	m_particleUpdateProperty->Deserialize(ifs);
+
+	m_isEmitterPropertyChanged = true;
 }

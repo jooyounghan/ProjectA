@@ -1,5 +1,5 @@
 #pragma once
-#include "Updatable.h"
+#include "IUpdatable.h"
 #include <d3d11.h>
 #include <wrl/client.h>
 #include <DirectXMath.h>
@@ -31,7 +31,7 @@ public:
 		float nearZ,
 		float farZ
 	) noexcept;
-	~CCamera() = default;
+	~CCamera() override = default;
 
 protected:
 	D3D11_VIEWPORT m_viewport;

@@ -67,7 +67,7 @@ private:
 #pragma region 테스트 변수
 	std::unique_ptr<CCamera> m_camera;
 	std::unique_ptr<CEmitterSelector> m_emitterSelector;
-	std::unique_ptr<CEmitterManager> m_particleManager;
+	std::unique_ptr<CEmitterManager> m_emitterManager;
 
 public:
 	void DrawEmitterHandler();

@@ -160,10 +160,10 @@ void CProjectAApp::Init()
 		m_width, m_height, 90.f, 0.01f, 100000.000f
 	);
 
-	m_particleManager = make_unique<CEmitterManager>(10, TotalParticleCount);
+	m_emitterManager = make_unique<CEmitterManager>(10, TotalParticleCount);
 
 	m_updatables.emplace_back(m_camera.get());
-	m_updatables.emplace_back(m_particleManager.get());
+	m_updatables.emplace_back(m_emitterManager.get());
 
 	for (auto& updatable : m_updatables)
 	{
@@ -225,9 +225,9 @@ void CProjectAApp::Update(float deltaTime)
 	m_deviceContext->VSSetConstantBuffers(0, 2, commonCbs);
 	m_deviceContext->GSSetConstantBuffers(0, 2, commonCbs);
 	m_deviceContext->PSSetConstantBuffers(0, 2, commonCbs);
-		m_particleManager->ExecuteParticleSystem(m_deviceContext);
-		m_particleManager->CaculateParticlesForce(m_deviceContext);
-		m_particleManager->DrawParticles(m_deviceContext);
+		m_emitterManager->ExecuteParticleSystem(m_deviceContext);
+		m_emitterManager->CaculateParticlesForce(m_deviceContext);
+		m_emitterManager->DrawParticles(m_deviceContext);
 	m_deviceContext->CSSetConstantBuffers(0, 2, commonNullCbs);
 	m_deviceContext->VSSetConstantBuffers(0, 2, commonNullCbs);
 	m_deviceContext->GSSetConstantBuffers(0, 2, commonNullCbs);
@@ -286,15 +286,12 @@ void CProjectAApp::DrawEmitterHandler()
 		m_emitterSelector->SelectEnums(emttierType);
 
 		static ImGuiChildFlags childFlag = ImGuiChildFlags_::ImGuiChildFlags_Border | ImGuiChildFlags_::ImGuiChildFlags_AlwaysAutoResize | ImGuiChildFlags_::ImGuiChildFlags_AutoResizeY;
-		if (BeginChild("##CreateEmitterChild", ImVec2(0.f, 0.f), childFlag))
-		{
-			if (m_emitterSelector->CreateEmitter(emttierType, createdEmitter))
-			{
-				m_particleManager->AddParticleEmitter(createdEmitter, m_device, m_deviceContext);
-				ImGui::CloseCurrentPopup();
-			}
 
-			EndChild();
+		if (Button("이미터 생성"))
+		{
+			CEmitterSelector::CreateEmitter(emttierType, createdEmitter);
+			m_emitterManager->AddParticleEmitter(createdEmitter, m_device, m_deviceContext);
+			ImGui::CloseCurrentPopup();
 		}
 
 		if (ImGui::Button("이미터 생성 종료"))
@@ -307,7 +304,7 @@ void CProjectAApp::DrawEmitterHandler()
 
 	constexpr int NotSelected = -1;
 	static int emitterIndex = -1;
-	vector<unique_ptr<AEmitter>>& emitters = m_particleManager->GetEmitters();
+	vector<unique_ptr<AEmitter>>& emitters = m_emitterManager->GetEmitters();
 
 	if (emitters.size() > 0)
 	{
@@ -359,4 +356,11 @@ void CProjectAApp::AppProcImpl(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 {
 	ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam);
 	if (m_camera) m_camera->HandleInput(msg, wParam, lParam);
+
+	switch(msg) 
+	{
+    case WM_DESTROY:
+		PostQuitMessage(0); // 메시지 루프 종료 요청
+		return ;
+	}
 }
