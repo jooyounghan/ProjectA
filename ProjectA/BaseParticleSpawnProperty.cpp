@@ -107,7 +107,7 @@ void CBaseParticleSpawnProperty::Update(ID3D11DeviceContext* deviceContext, floa
 void CBaseParticleSpawnProperty::DrawPropertyUI()
 {
 	const float& life = m_baseParticleSpawnPropertyCPU.life;
-	if (m_lastParticleLife - 1E-3 < life && life < m_lastParticleLife + 1E+3)
+	if (m_lastParticleLife - 1E-3 < life && life < m_lastParticleLife + 1E-3)
 	{
 	}
 	else
@@ -133,7 +133,7 @@ void CBaseParticleSpawnProperty::DrawPropertyUI()
 	}
 
 	SeparatorText("파티클 생명 주기 설정");
-	if (DragFloat("파티클 생명 주기", &m_baseParticleSpawnPropertyCPU.life, 0.1f, 0.f, 10.f, "%.f"))
+	if (DragFloat("파티클 생명 주기", &m_baseParticleSpawnPropertyCPU.life, 0.1f, 0.f, 10.f, "%.1f"))
 	{
 		m_isParticleSpawnPropertyChanged = true;
 	}
