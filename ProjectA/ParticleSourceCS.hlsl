@@ -1,5 +1,12 @@
 #include "SourceCommon.hlsli"
 
+cbuffer EmitterProperties : register(b2)
+{
+	uint emitterType;
+    uint emitterID;
+    float2 dummy;
+};
+
 #ifdef RUNTIME_SOURCE
 cbuffer SpawnProperty : register(b3)
 {
@@ -55,6 +62,12 @@ cbuffer SpawnProperty : register(b3)
 }
 #endif
 
+StructuredBuffer<matrix> emitterWorldTransforms : register(t0);
+
+RWStructuredBuffer<Particle> totalParticles : register(u0);
+ConsumeStructuredBuffer<uint> deathIndexSet : register(u1);
+AppendStructuredBuffer<uint> aliveIndexSet : register(u2);
+
 #ifdef RUNTIME_SOURCE
 [numthreads(1, 1, 1)]
 #else
@@ -69,7 +82,7 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 	if (threadID >= initialParticleCount) return;
 #endif
 
-	uint revivedIndex = deathParticleSet.Consume();
+	uint revivedIndex = deathIndexSet.Consume();
 
 	Particle sourcedParticle;
 
@@ -107,5 +120,5 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 	sourcedParticle.life = 0.f;
 #endif
 	totalParticles[revivedIndex] = sourcedParticle;
-    aliveFlags[revivedIndex] = 1;
+    aliveIndexSet.Append(revivedIndex);
 }

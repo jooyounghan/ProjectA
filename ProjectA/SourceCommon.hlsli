@@ -1,18 +1,5 @@
 #include "ParticleCommon.hlsli"
 
-cbuffer EmitterProperties : register(b2)
-{
-	uint emitterType;
-    uint emitterID;
-    float2 dummy;
-};
-
-StructuredBuffer<matrix> emitterWorldTransforms : register(t0);
-
-RWStructuredBuffer<Particle> totalParticles : register(u0);
-RWStructuredBuffer<uint> aliveFlags : register(u1);
-ConsumeStructuredBuffer<uint> deathParticleSet : register(u2);
-
 float rand(float2 seed)
 {
     return frac(sin(dot(seed, float2(12.9898, 78.233))) * 43758.5453);

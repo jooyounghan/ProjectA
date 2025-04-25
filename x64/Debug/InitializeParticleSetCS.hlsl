@@ -1,13 +1,68 @@
 #include "ParticleCommon.hlsli"
 #include "InterpolaterHelper.hlsli"
 
-#define Pcurrent particleDrawIndirectArgs[0]
+StructuredBuffer<ParticleEmitterInterpInform> particleEmitterInterpInforms : register(t0);
+StructuredBuffer<D1Dim4Prop> d1Dim4Props : register(t1);
+StructuredBuffer<D3Dim4Prop> d3Dim4Props : register(t2);
 
-RWStructuredBuffer<uint> particleDrawIndirectArgs: register(u0);
-RWStructuredBuffer<Particle> totalParticles : register(u1);
-RWStructuredBuffer<uint> aliveFlags : register(u2);
-AppendStructuredBuffer<uint> deathParticleSet : register(u3);
-RWStructuredBuffer<PrefixDesciptor> prefixDescriptor : register(u4);
+RWStructuredBuffer<Particle> totalParticles : register(u0);
+AppendStructuredBuffer<uint> deathIndexSet : register(u1);
+AppendStructuredBuffer<uint> aliveIndexSet : register(u2);
+
+
+float4 GetInterpolated(uint degree, uint interpolatedID, float4 timeSpent4, float maxLife)
+{
+    const uint CubicSplineMethod = 2;
+    const uint CatmullRomMethod = 3;
+    const float timeSpent = timeSpent4.x;
+
+    if (degree == 2)
+    {
+        D1Dim4Prop interpProp = d1Dim4Props[interpolatedID];
+        const uint stepsCount = interpProp.header.controlPointsCount - 1;
+
+        [unroll]
+        for (uint stepIdx = 0; stepIdx < stepsCount; ++stepIdx)
+        {
+            float x1 = interpProp.xProfiles[stepIdx];
+            float x2 = interpProp.xProfiles[stepIdx + 1];
+
+            if (x1 <= timeSpent && timeSpent < x2)
+            {
+                return Evaluate1Degree(timeSpent, interpProp.coefficient[stepIdx]);
+            }
+        }
+
+        return Evaluate1Degree(maxLife, interpProp.coefficient[stepsCount]);
+    }
+
+    else if (degree == 4)
+    {
+        D3Dim4Prop interpProp = d3Dim4Props[interpolatedID];
+        const uint interpolateMethod = interpProp.header.interpolaterFlag;
+        const uint stepsCount = interpProp.header.controlPointsCount - 1;
+
+        [unroll]
+        for (uint stepIdx = 0; stepIdx < stepsCount; ++stepIdx)
+        {
+            float x1 = interpProp.xProfiles[stepIdx];
+            float x2 = interpProp.xProfiles[stepIdx + 1];
+
+            if (x1 <= timeSpent && timeSpent < x2)
+            {
+                float t = (interpolateMethod == CubicSplineMethod)
+                    ? timeSpent - x1
+                    : (timeSpent - x1) / (x2 - x1);
+
+                return Evaluate3Degree(t, interpProp.coefficient[stepIdx]);
+            }
+        }
+
+        return Evaluate3Degree(0.f, interpProp.coefficient[stepsCount]);
+    }
+
+    return float4(0.f, 0.f, 0.f, 1.f);
+}
 
 [numthreads(LocalThreadCount, 1, 1)]
 void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID )
@@ -16,22 +71,6 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
     uint groupThreadID = GTid.x;
 	uint threadID = DTid.x;
 
-    // Initialize시, Prefix와 같은 초기화 항목 또한 초기화 수행
-    if(groupThreadID == 0)
-    {
-        if (threadID == 0)
-        {
-            Pcurrent = 0;
-        }
-        PrefixDesciptor pd = prefixDescriptor[groupID];
-        pd.aggregate = 0;
-        pd.statusFlag = 0;
-        pd.exclusivePrefix = 0;
-        pd.inclusivePrefix = 0;
-        prefixDescriptor[groupID] = pd;
-    }
-
-
 	if (threadID < particleMaxCount)
     {
 		Particle currentParticle = totalParticles[threadID];
@@ -39,21 +78,20 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
         currentParticle.life -= dt;
 		if (currentParticle.life < 1E-3f)
 		{
-            deathParticleSet.Append(threadID);
-            aliveFlags[threadID] = 0;
+            deathIndexSet.Append(threadID);
         }
 		else
 		{
-            aliveFlags[threadID] = 1;
+            aliveIndexSet.Append(threadID);
             
             // N차 이상 보간 일 경우, 색상에 대한 보간 ======================================================================
             const uint emitterID = currentParticle.emitterID;
-            const EmitterInterpolaterInformation interpolaterInformation = emitterInterpolaterInformations[emitterID];
-            const float maxLife = interpolaterInformation.maxLife;
+            const ParticleEmitterInterpInform interpInform = particleEmitterInterpInforms[emitterID];
+            const float maxLife = interpInform.maxLife;
 
             const uint colorInterpolaterNotSelected = ~0;
-            const uint colorInterpolaterID = interpolaterInformation.colorInterpolaterID;
-            const uint colorDegree = interpolaterInformation.colorInterpolaterDegree;
+            const uint colorInterpolaterID = interpInform.colorInterpolaterID;
+            const uint colorDegree = interpInform.colorInterpolaterDegree;
             const float timeSpent = maxLife - currentParticle.life;
 
             if (colorInterpolaterID != colorInterpolaterNotSelected)

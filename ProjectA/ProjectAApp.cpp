@@ -25,16 +25,14 @@
 #include "Camera.h"
 #include "EmitterSelector.h"
 
-#include "EmitterManager.h"
-#include "EmitterManagerStaticData.h"
+#include "ParticleEmitterManager.h"
+#include "EmitterManagerCommonData.h"
 
 #include "AEmitter.h"
-#include "EmitterStaticData.h"
-
-#include "BaseEmitterSpawnProperty.h"
-#include "BaseEmitterUpdateProperty.h"
-#include "BaseParticleSpawnProperty.h"
-#include "BaseParticleUpdateProperty.h"
+#include "InitialSpawnProperty.h"
+#include "EmitterUpdateProperty.h"
+#include "ARuntimeSpawnProperty.h"
+#include "ForceUpdateProperty.h"
 
 #include "GPUInterpolater.h"
 
@@ -139,18 +137,10 @@ void CProjectAApp::Init()
 #pragma endregion
 
 #pragma region 글로벌 변수 초기화
-	EmitterStaticData::InitializeGlobalEmitterProperty(MaxEmitterCount, m_device);
-	EmitterStaticData::InitializeEmitterDrawPSO(m_device);
+	CEmitterManagerCommonData::Intialize(TotalParticleCount, m_device);
 
 	CGPUInterpolater<4, 2>::InitializeGPUInterpProperty(m_device, MaxEmitterCount);
 	CGPUInterpolater<4, 4>::InitializeGPUInterpProperty(m_device, MaxEmitterCount);
-
-	CEmitterManagerStaticData::InitializeSetInitializingPSO(m_device);
-	CEmitterManagerStaticData::InitializePoolingCS(m_device);
-	CEmitterManagerStaticData::InitializeEmitterSourcingCS(m_device);
-	CEmitterManagerStaticData::InitializeParticleSimulateCS(m_device);
-	CEmitterManagerStaticData::InitializeRadixSortCS(m_device);
-	CEmitterManagerStaticData::InitializeParticleDrawPSO(m_device);
 #pragma endregion
 
 #pragma region 인스턴스 초기화
@@ -159,16 +149,10 @@ void CProjectAApp::Init()
 		XMVectorSet(0.f, 0.f, 0.f, 1.f),
 		m_width, m_height, 90.f, 0.01f, 100000.000f
 	);
+	m_camera->Initialize(m_device, m_deviceContext);
 
-	m_emitterManager = make_unique<CEmitterManager>(10, TotalParticleCount);
-
-	m_updatables.emplace_back(m_camera.get());
-	m_updatables.emplace_back(m_emitterManager.get());
-
-	for (auto& updatable : m_updatables)
-	{
-		updatable->Initialize(m_device, m_deviceContext);
-	}
+	ParticleEmitterManager& particleEmitterManager = ParticleEmitterManager::GetParticleEmitterManager();
+	particleEmitterManager.Initialize(m_device, m_deviceContext);
 #pragma endregion
 
 #pragma endregion
@@ -189,14 +173,13 @@ void CProjectAApp::Update(float deltaTime)
 #pragma endregion
 
 #pragma region 인스턴스 업데이트
-	for (auto& updatable : m_updatables)
-	{
-		updatable->Update(m_deviceContext, deltaTime);
-	}
+	m_camera->Update(m_deviceContext, deltaTime);
+
+	ParticleEmitterManager& particleEmitterManager = ParticleEmitterManager::GetParticleEmitterManager();
+	particleEmitterManager.Update(m_deviceContext, deltaTime);
 #pragma endregion
 
 #pragma region 글로벌 변수 업데이트
-	EmitterStaticData::UpdateGlobalEmitterProperty(m_deviceContext);
 	CGPUInterpolater<4, 2>::UpdateInterpProperty(m_deviceContext);
 	CGPUInterpolater<4, 4>::UpdateInterpProperty(m_deviceContext);
 #pragma endregion
@@ -216,7 +199,7 @@ void CProjectAApp::Update(float deltaTime)
 	ID3D11Buffer* cameraCb = m_camera->GetPropertiesBuffer();
 	ID3D11Buffer* singleNullCb = nullptr;
 	m_deviceContext->VSSetConstantBuffers(0, 1, &cameraCb);
-		EmitterStaticData::DrawEmittersDebugCube(m_deviceContext);
+	particleEmitterManager.DrawEmitters(m_deviceContext);
 	m_deviceContext->VSSetConstantBuffers(0, 1, &singleNullCb);
 
 	ID3D11Buffer* commonCbs[] = { m_appParamsGPU->GetBuffer(), m_camera->GetPropertiesBuffer() };
@@ -225,13 +208,15 @@ void CProjectAApp::Update(float deltaTime)
 	m_deviceContext->VSSetConstantBuffers(0, 2, commonCbs);
 	m_deviceContext->GSSetConstantBuffers(0, 2, commonCbs);
 	m_deviceContext->PSSetConstantBuffers(0, 2, commonCbs);
-		m_emitterManager->ExecuteParticleSystem(m_deviceContext);
-		m_emitterManager->CaculateParticlesForce(m_deviceContext);
-		m_emitterManager->DrawParticles(m_deviceContext);
+	particleEmitterManager.InitializeAliveFlag(m_deviceContext);
+	particleEmitterManager.SourceParticles(m_deviceContext);
+	particleEmitterManager.CalculateForces(m_deviceContext);
+	particleEmitterManager.DrawParticles(m_deviceContext);
 	m_deviceContext->CSSetConstantBuffers(0, 2, commonNullCbs);
 	m_deviceContext->VSSetConstantBuffers(0, 2, commonNullCbs);
 	m_deviceContext->GSSetConstantBuffers(0, 2, commonNullCbs);
 	m_deviceContext->PSSetConstantBuffers(0, 2, commonNullCbs);
+
 #pragma endregion
 
 #pragma region 카메라 -> 백버퍼 복사 및 UI 그리기
@@ -289,8 +274,19 @@ void CProjectAApp::DrawEmitterHandler()
 
 		if (Button("이미터 생성"))
 		{
-			CEmitterSelector::CreateEmitter(emttierType, createdEmitter);
-			m_emitterManager->AddParticleEmitter(createdEmitter, m_device, m_deviceContext);
+			switch (emttierType)
+			{
+			case EEmitterType::ParticleEmitter:
+			{
+				ParticleEmitterManager& particleEmitterManager = ParticleEmitterManager::GetParticleEmitterManager();
+				particleEmitterManager.AddEmitter(XMVectorZero(), XMVectorZero(), m_device, m_deviceContext);
+				break;
+			}
+			case EEmitterType::SpriteEmitter:
+				break;
+			default:
+				break;
+			}
 			ImGui::CloseCurrentPopup();
 		}
 
@@ -303,21 +299,24 @@ void CProjectAApp::DrawEmitterHandler()
 	}
 
 	constexpr int NotSelected = -1;
-	static int emitterIndex = -1;
-	vector<unique_ptr<AEmitter>>& emitters = m_emitterManager->GetEmitters();
+	static int particleEmitterIndex = -1;
 
+	ParticleEmitterManager& particleEmitterManager = ParticleEmitterManager::GetParticleEmitterManager();
+
+	vector<unique_ptr<AEmitter>>& emitters = particleEmitterManager.GetEmitters();
+	SeparatorText("파티클 이미터");
 	if (emitters.size() > 0)
 	{
 		PushID("Emitter Handler");
 
-		if (BeginCombo("Select Emitter", emitterIndex == NotSelected ? "Choose Emitter" : format("Emitter {}", emitterIndex + 1).c_str(), NULL))
+		if (BeginCombo("Select Particle Emitter", particleEmitterIndex == NotSelected ? "Choose Emitter" : format("Emitter {}", particleEmitterIndex + 1).c_str(), NULL))
 		{
 			for (int idx = 0; idx < emitters.size(); idx++)
 			{
-				const bool isSelected = (idx == emitterIndex);
+				const bool isSelected = (idx == particleEmitterIndex);
 				if (Selectable(format("Select Emitter {}", idx + 1).c_str(), isSelected))
 				{
-					emitterIndex = idx;
+					particleEmitterIndex = idx;
 				}
 
 				if (isSelected)
@@ -328,7 +327,7 @@ void CProjectAApp::DrawEmitterHandler()
 		PopID();
 	}
 
-	AEmitter* emitter = (emitterIndex == NotSelected) ? nullptr : emitters[emitterIndex].get();
+	AEmitter* emitter = (particleEmitterIndex == NotSelected) ? nullptr : emitters[particleEmitterIndex].get();
 	if (emitter)
 	{
 		XMVECTOR emitterPos = emitter->GetPosition();
@@ -345,10 +344,10 @@ void CProjectAApp::DrawEmitterHandler()
 			emitter->SetAngle(emitterAngle);
 		}
 
-		emitter->GetAEmitterSpawnProperty()->DrawPropertyUI();
-		emitter->GetAEmitterUpdateProperty()->DrawPropertyUI();
-		emitter->GetAParticleSpawnProperty()->DrawPropertyUI();
-		emitter->GetAParticleUpdateProperty()->DrawPropertyUI();
+		emitter->GetInitialSpawnProperty()->DrawPropertyUI();
+		emitter->GetEmitterUpdateProperty()->DrawPropertyUI();
+		emitter->GetRuntimeSpawnProperty()->DrawPropertyUI();
+		emitter->GetForceUpdateProperty()->DrawPropertyUI();
 	}
 }
 

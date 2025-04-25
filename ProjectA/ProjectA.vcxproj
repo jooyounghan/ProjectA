@@ -150,14 +150,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AEmitter.cpp" />
-    <ClCompile Include="BaseEmitterSpawnProperty.cpp" />
-    <ClCompile Include="BaseEmitterUpdateProperty.cpp" />
-    <ClCompile Include="BaseParticleSpawnProperty.cpp" />
-    <ClCompile Include="BaseParticleUpdateProperty.cpp" />
+    <ClCompile Include="InitialSpawnProperty.cpp" />
+    <ClCompile Include="EmitterUpdateProperty.cpp" />
+    <ClCompile Include="ARuntimeSpawnProperty.cpp" />
+    <ClCompile Include="ForceUpdateProperty.cpp" />
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="EmitterManagerStaticData.cpp" />
+    <ClCompile Include="EmitterManagerCommonData.cpp" />
     <ClCompile Include="EmitterSelector.cpp" />
-    <ClCompile Include="EmitterStaticData.cpp" />
     <ClCompile Include="External\imgui_impl_dx11.cpp" />
     <ClCompile Include="External\imgui_impl_win32.cpp" />
     <ClCompile Include="GlobalVariable.cpp" />
@@ -166,17 +165,20 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="ModelFactory.cpp" />
-    <ClCompile Include="EmitterManager.cpp" />
+    <ClCompile Include="AEmitterManager.cpp" />
     <ClCompile Include="ParticleEmitter.cpp" />
+    <ClCompile Include="ParticleEmitterManager.cpp" />
+    <ClCompile Include="ParticleSpawnProperty.cpp" />
     <ClCompile Include="ProjectAApp.cpp" />
     <ClCompile Include="ShapedVectorSelector.cpp" />
+    <ClCompile Include="SpriteEmitter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AEmitter.h" />
-    <ClInclude Include="BaseEmitterSpawnProperty.h" />
-    <ClInclude Include="BaseEmitterUpdateProperty.h" />
-    <ClInclude Include="BaseParticleSpawnProperty.h" />
-    <ClInclude Include="BaseParticleUpdateProperty.h" />
+    <ClInclude Include="InitialSpawnProperty.h" />
+    <ClInclude Include="EmitterUpdateProperty.h" />
+    <ClInclude Include="ARuntimeSpawnProperty.h" />
+    <ClInclude Include="ForceUpdateProperty.h" />
     <ClInclude Include="BaseSelector.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ControlPointGridView.h" />
@@ -184,9 +186,9 @@
     <ClInclude Include="CubicSplineInterpolater.h" />
     <ClInclude Include="DefineLinkedWithShader.h" />
     <ClInclude Include="EmitterForceProperty.h" />
-    <ClInclude Include="EmitterManagerStaticData.h" />
+    <ClInclude Include="EmitterManagerCommonData.h" />
     <ClInclude Include="EmitterSelector.h" />
-    <ClInclude Include="EmitterStaticData.h" />
+    <ClInclude Include="EmitterTypeDefinition.h" />
     <ClInclude Include="GPUInterpolater.h" />
     <ClInclude Include="Interpolater.h" />
     <ClInclude Include="InterpolaterStructure.h" />
@@ -200,27 +202,30 @@
     <ClInclude Include="MacroUtilities.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="ModelFactory.h" />
-    <ClInclude Include="EmitterManager.h" />
+    <ClInclude Include="AEmitterManager.h" />
     <ClInclude Include="ParticleEmitter.h" />
+    <ClInclude Include="ParticleEmitterManager.h" />
+    <ClInclude Include="ParticleInterpInformation.h" />
+    <ClInclude Include="ParticleSpawnProperty.h" />
+    <ClInclude Include="ParticleStructure.h" />
     <ClInclude Include="ProjectAApp.h" />
     <ClInclude Include="ShapedVectorProperty.h" />
     <ClInclude Include="ShapedVectorSelector.h" />
     <ClInclude Include="IUpdatable.h" />
+    <ClInclude Include="SpriteEmitter.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DefineLinkedWithCpp.hlsli" />
     <None Include="EmitterDrawCommon.hlsli" />
     <None Include="InterpolaterHelper.hlsli" />
-    <None Include="PoolingCommon.hlsli" />
     <None Include="CaculateForceCommon.hlsli" />
-    <None Include="SortingCommon.hlsli" />
     <None Include="SourceCommon.hlsli" />
     <None Include="ParticleCommon.hlsli" />
     <None Include="ParticleDrawCommon.hlsli" />
     <None Include="vcpkg.json" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="CalculateIndexPrefixSumCS.hlsl">
+    <FxCompile Include="ComputeIndirectArgsCS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
@@ -289,26 +294,6 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="InitializeParticleSetCS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="IndexRadixSortCS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="UpdateCurrentIndicesCS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>

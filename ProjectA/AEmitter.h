@@ -2,24 +2,15 @@
 #include "IUpdatable.h"
 #include "ISerializable.h"
 #include "EmitterForceProperty.h"
-#include "EmitterStaticData.h"
+#include "ParticleStructure.h"
 #include "DynamicBuffer.h"
 
-class CBaseEmitterSpawnProperty;
-class CBaseEmitterUpdateProperty;
-class CBaseParticleSpawnProperty;
-class CBaseParticleUpdateProperty;
+#include <functional>
 
-struct SParticle
-{
-	DirectX::XMVECTOR color;
-	DirectX::XMFLOAT3 position;
-	DirectX::XMFLOAT3 velocity;
-	DirectX::XMFLOAT3 accelerate;
-	UINT emitterType;
-	UINT emitterID;
-	float life;
-};
+class CInitialSpawnProperty;
+class CEmitterUpdateProperty;
+class ARuntimeSpawnProperty;
+class ForceUpdateProperty;
 
 class AEmitter : public IUpdatable, public ISerializable
 {
@@ -28,26 +19,27 @@ public:
 		UINT emitterType,
 		UINT emitterID,
 		const DirectX::XMVECTOR& position,
-		const DirectX::XMVECTOR& angle
+		const DirectX::XMVECTOR& angle,
+		const std::function<void(UINT, const DirectX::XMMATRIX&)>& worldTransformChangedHandler,
+		const std::function<void(UINT, const SEmitterForceProperty&)>& forcePropertyChangedHandler
 	);
 	~AEmitter() override = default;
 
 protected:
 	struct alignas(16)
 	{
-		UINT emitterType;
-		UINT emitterID;
+		const UINT emitterType;
+		const UINT emitterID;
 		DirectX::XMFLOAT2 padding;
 	} m_emitterPropertyCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterPropertyGPU;
-	bool m_isEmitterPropertyChanged;
 
 public:
 	inline UINT GetEmitterType() const noexcept { return m_emitterPropertyCPU.emitterType; }
 	inline UINT GetEmitterID() const noexcept { return m_emitterPropertyCPU.emitterID; }
 
 public:
-	ID3D11Buffer* GetEmitterPropertyBuffer() const noexcept;
+	inline ID3D11Buffer* GetEmitterPropertyBuffer() const noexcept { return m_emitterPropertyGPU->GetBuffer(); }
 
 protected:
 	bool m_isSpawned;
@@ -59,26 +51,26 @@ public:
 protected:
 	DirectX::XMVECTOR m_position;
 	DirectX::XMVECTOR m_angle;
+	bool m_isEmitterWorldTransformChanged;
 
-public:
-	void SetEmitterForceProperty(const SEmitterForceProperty& emitterForce);
-	void SetInterpolaterLifeInformation(float life);
-	void SetColorInterpolaterInformation(UINT interpolaterID, UINT interpolaterDegree);
+protected:
+	std::function<void(UINT, const DirectX::XMMATRIX&)> m_onWorldTransformChanged;
+	std::function<void(UINT, const SEmitterForceProperty&)> m_onForcePropertyChanged;
 
-public:
+protected:
 	virtual void CreateProperty() = 0;
 
 protected:
-	std::unique_ptr<CBaseEmitterSpawnProperty> m_emitterSpawnProperty;
-	std::unique_ptr<CBaseEmitterUpdateProperty> m_emitterUpdateProperty;
-	std::unique_ptr<CBaseParticleSpawnProperty> m_particleSpawnProperty;
-	std::unique_ptr<CBaseParticleUpdateProperty> m_particleUpdateProperty;
+	std::unique_ptr<CInitialSpawnProperty> m_initialSpawnProperty;
+	std::unique_ptr<CEmitterUpdateProperty> m_emitterUpdateProperty;
+	std::unique_ptr<ARuntimeSpawnProperty> m_runtimeSpawnProperty;
+	std::unique_ptr<ForceUpdateProperty> m_forceUpdateProperty;
 
 public:
-	inline CBaseEmitterSpawnProperty* GetAEmitterSpawnProperty() const noexcept { return m_emitterSpawnProperty.get(); }
-	inline CBaseEmitterUpdateProperty* GetAEmitterUpdateProperty() const noexcept { return m_emitterUpdateProperty.get(); }
-	inline CBaseParticleSpawnProperty* GetAParticleSpawnProperty() const noexcept { return m_particleSpawnProperty.get(); }
-	inline CBaseParticleUpdateProperty* GetAParticleUpdateProperty() const noexcept { return m_particleUpdateProperty.get(); }
+	inline CInitialSpawnProperty* GetInitialSpawnProperty() const noexcept { return m_initialSpawnProperty.get(); }
+	inline CEmitterUpdateProperty* GetEmitterUpdateProperty() const noexcept { return m_emitterUpdateProperty.get(); }
+	inline ARuntimeSpawnProperty* GetRuntimeSpawnProperty() const noexcept { return m_runtimeSpawnProperty.get(); }
+	inline ForceUpdateProperty* GetForceUpdateProperty() const noexcept { return m_forceUpdateProperty.get(); }
 
 public:
 	void SetPosition(const DirectX::XMVECTOR& position) noexcept;

@@ -61,13 +61,11 @@ public:
 		EInterpolationMethod interpolationMethod, 
 		std::unique_ptr<IInterpolater<Dim>>& interpolater
 	);
-
-public:
-	void RedrawSelectPlotter();
+	void ResetXYScale();
+	void UpdateInterpolatedResult();
 	void ViewInterpolatedPlots();
 
 protected:
-	void UpdateInterpolatedResult();
 	void UpdateTimeSteps(size_t numSteps);
 };
 
@@ -123,7 +121,7 @@ void CInterpolaterSelectPlotter<Dim>::CreateInterpolater(
 }
 
 template<uint32_t Dim>
-inline void CInterpolaterSelectPlotter<Dim>::RedrawSelectPlotter()
+inline void CInterpolaterSelectPlotter<Dim>::ResetXYScale()
 {
 	m_pointIns.clear();
 	for (uint32_t dimension = 0; dimension < Dim; ++dimension)
@@ -161,26 +159,6 @@ inline void CInterpolaterSelectPlotter<Dim>::RedrawSelectPlotter()
 	UpdateInterpolatedResult();
 }
 
-
-template<uint32_t Dim>
-void CInterpolaterSelectPlotter<Dim>::ViewInterpolatedPlots()
-{
-	if (ImPlot::BeginPlot(m_graphTitle.c_str(), ImVec2(-1, 0), ImPlotFlags_NoInputs))
-	{
-		ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
-		for (uint32_t dimension = 0; dimension < Dim; ++dimension)
-		{
-			ImPlot::PlotScatter(m_scatterLabels[dimension].c_str(), m_pointIns.data(), m_pointOuts[dimension].data(), static_cast<int>(m_pointIns.size()));
-		}
-
-		for (uint32_t dimension = 0; dimension < Dim; ++dimension)
-		{
-			ImPlot::PlotLine(m_scatterLabels[dimension].c_str(), m_timeSteps.data(), m_interpolatedResults[dimension].data(), static_cast<int>(m_timeSteps.size()));
-		}
-		ImPlot::EndPlot();
-	}
-}
-
 template<uint32_t Dim>
 inline void CInterpolaterSelectPlotter<Dim>::UpdateInterpolatedResult()
 {
@@ -199,6 +177,25 @@ inline void CInterpolaterSelectPlotter<Dim>::UpdateInterpolatedResult()
 				m_interpolatedResults[dimension].emplace_back(interpolatedResult[dimension]);
 			}
 		}
+	}
+}
+
+template<uint32_t Dim>
+void CInterpolaterSelectPlotter<Dim>::ViewInterpolatedPlots()
+{
+	if (ImPlot::BeginPlot(m_graphTitle.c_str(), ImVec2(-1, 0), ImPlotFlags_NoInputs))
+	{
+		ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+		for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+		{
+			ImPlot::PlotScatter(m_scatterLabels[dimension].c_str(), m_pointIns.data(), m_pointOuts[dimension].data(), static_cast<int>(m_pointIns.size()));
+		}
+
+		for (uint32_t dimension = 0; dimension < Dim; ++dimension)
+		{
+			ImPlot::PlotLine(m_scatterLabels[dimension].c_str(), m_timeSteps.data(), m_interpolatedResults[dimension].data(), static_cast<int>(m_timeSteps.size()));
+		}
+		ImPlot::EndPlot();
 	}
 }
 

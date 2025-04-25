@@ -46,6 +46,17 @@ uint GetNForceCount(uint nForceCount, uint forceKind)
     return (shiftedForceCount & filledMask);
 }
 
+bool IsForceEnabled(uint flags, uint bit)
+{
+    return ((flags >> bit) & 1) != 0;
+}
+
+float3 GetWorldPosition(float3 localPos, float4x4 worldMatrix)
+{
+    float4 worldPos = mul(float4(localPos, 1.f), worldMatrix);
+    return worldPos.xyz / worldPos.w;
+}
+
 // 수정 필요 ==============================================================
 float hash(float3 p)
 {

@@ -36,20 +36,11 @@
     <Filter Include="Shader\Particle\ExecuteEmitter\Source">
       <UniqueIdentifier>{9d2cebf0-b8b2-4967-aab1-2719eced9fa1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shader\Particle\ExecuteEmitter\Pooling">
-      <UniqueIdentifier>{e7ccd3b2-1121-4369-a7c4-4b317e72518b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shader\Particle\ExecuteEmitter\Initalize">
       <UniqueIdentifier>{2621a41f-4130-4e25-bd68-bb4cf99e1ee5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shader\Particle\ExecuteEmitter\Sorting">
-      <UniqueIdentifier>{4a72e4be-fc3b-4514-a038-447b28caa182}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shader\Particle\ExecuteEmitter\CaculateForce">
       <UniqueIdentifier>{ea9671aa-67ce-43da-9b1f-8cbc51677135}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader\Interpolater">
-      <UniqueIdentifier>{575a8112-5dc0-44d3-8b09-80b5fce09974}</UniqueIdentifier>
     </Filter>
     <Filter Include="헤더 파일\Interpolater">
       <UniqueIdentifier>{f075a1ab-bc9f-4799-8ba6-57d57e46fa7e}</UniqueIdentifier>
@@ -108,6 +99,27 @@
     <Filter Include="소스 파일\Interface">
       <UniqueIdentifier>{6fead2d8-039e-4d5a-befb-4068d05282a8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="헤더 파일\EmitterSystem\EmitterManager\Extended">
+      <UniqueIdentifier>{9147f3aa-451f-45ef-8d76-9d7ab1b71dae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\EmitterSystem\EmitterManager\Extended">
+      <UniqueIdentifier>{fc31db79-31d7-4276-a144-9e6c93057bcd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\EmitterSystem\Emitter\Extended\include">
+      <UniqueIdentifier>{ca221bf4-3db0-46ed-a138-d447f0d1884c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\EmitterSystem\Emitter\Property\Extended">
+      <UniqueIdentifier>{007b2f0e-2375-4782-968f-7b6bb351f47c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\EmitterSystem\Emitter\Property\Extended">
+      <UniqueIdentifier>{c94c447b-7b8d-4670-9b48-18c1fe8a5c04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\Particle\ExecuteEmitter\Initalize\Interpolater">
+      <UniqueIdentifier>{575a8112-5dc0-44d3-8b09-80b5fce09974}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\Particle\ExecuteEmitter\Indirect">
+      <UniqueIdentifier>{b944a09c-0cbf-4d4e-9945-5306ccecbae9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -122,7 +134,7 @@
     <ClCompile Include="External\imgui_impl_win32.cpp">
       <Filter>External</Filter>
     </ClCompile>
-    <ClCompile Include="EmitterManager.cpp">
+    <ClCompile Include="AEmitterManager.cpp">
       <Filter>소스 파일\EmitterSystem\EmitterManager</Filter>
     </ClCompile>
     <ClCompile Include="Model.cpp">
@@ -134,16 +146,16 @@
     <ClCompile Include="AEmitter.cpp">
       <Filter>소스 파일\EmitterSystem\Emitter</Filter>
     </ClCompile>
-    <ClCompile Include="BaseEmitterSpawnProperty.cpp">
+    <ClCompile Include="InitialSpawnProperty.cpp">
       <Filter>소스 파일\EmitterSystem\Emitter\Property</Filter>
     </ClCompile>
-    <ClCompile Include="BaseEmitterUpdateProperty.cpp">
+    <ClCompile Include="EmitterUpdateProperty.cpp">
       <Filter>소스 파일\EmitterSystem\Emitter\Property</Filter>
     </ClCompile>
-    <ClCompile Include="BaseParticleSpawnProperty.cpp">
+    <ClCompile Include="ARuntimeSpawnProperty.cpp">
       <Filter>소스 파일\EmitterSystem\Emitter\Property</Filter>
     </ClCompile>
-    <ClCompile Include="BaseParticleUpdateProperty.cpp">
+    <ClCompile Include="ForceUpdateProperty.cpp">
       <Filter>소스 파일\EmitterSystem\Emitter\Property</Filter>
     </ClCompile>
     <ClCompile Include="ShapedVectorSelector.cpp">
@@ -155,16 +167,13 @@
     <ClCompile Include="EmitterSelector.cpp">
       <Filter>소스 파일\UI</Filter>
     </ClCompile>
-    <ClCompile Include="EmitterStaticData.cpp">
-      <Filter>소스 파일\EmitterSystem\Emitter</Filter>
-    </ClCompile>
     <ClCompile Include="GlobalVariable.cpp">
       <Filter>소스 파일\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="ModelFactory.cpp">
       <Filter>소스 파일\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="EmitterManagerStaticData.cpp">
+    <ClCompile Include="EmitterManagerCommonData.cpp">
       <Filter>소스 파일\EmitterSystem\EmitterManager</Filter>
     </ClCompile>
     <ClCompile Include="ParticleEmitter.cpp">
@@ -172,6 +181,15 @@
     </ClCompile>
     <ClCompile Include="ISerializable.cpp">
       <Filter>소스 파일\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteEmitter.cpp">
+      <Filter>소스 파일\EmitterSystem\Emitter\Extended</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleEmitterManager.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleSpawnProperty.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -184,7 +202,7 @@
     <ClInclude Include="External\imgui_impl_win32.h">
       <Filter>External</Filter>
     </ClInclude>
-    <ClInclude Include="EmitterManager.h">
+    <ClInclude Include="AEmitterManager.h">
       <Filter>헤더 파일\EmitterSystem\EmitterManager</Filter>
     </ClInclude>
     <ClInclude Include="Model.h">
@@ -196,16 +214,16 @@
     <ClInclude Include="AEmitter.h">
       <Filter>헤더 파일\EmitterSystem\Emitter</Filter>
     </ClInclude>
-    <ClInclude Include="BaseEmitterSpawnProperty.h">
+    <ClInclude Include="InitialSpawnProperty.h">
       <Filter>헤더 파일\EmitterSystem\Emitter\Property</Filter>
     </ClInclude>
-    <ClInclude Include="BaseEmitterUpdateProperty.h">
+    <ClInclude Include="EmitterUpdateProperty.h">
       <Filter>헤더 파일\EmitterSystem\Emitter\Property</Filter>
     </ClInclude>
-    <ClInclude Include="BaseParticleSpawnProperty.h">
+    <ClInclude Include="ARuntimeSpawnProperty.h">
       <Filter>헤더 파일\EmitterSystem\Emitter\Property</Filter>
     </ClInclude>
-    <ClInclude Include="BaseParticleUpdateProperty.h">
+    <ClInclude Include="ForceUpdateProperty.h">
       <Filter>헤더 파일\EmitterSystem\Emitter\Property</Filter>
     </ClInclude>
     <ClInclude Include="ShapedVectorSelector.h">
@@ -259,10 +277,7 @@
     <ClInclude Include="ModelFactory.h">
       <Filter>헤더 파일\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="EmitterStaticData.h">
-      <Filter>헤더 파일\EmitterSystem\Emitter</Filter>
-    </ClInclude>
-    <ClInclude Include="EmitterManagerStaticData.h">
+    <ClInclude Include="EmitterManagerCommonData.h">
       <Filter>헤더 파일\EmitterSystem\EmitterManager</Filter>
     </ClInclude>
     <ClInclude Include="IUpdatable.h">
@@ -276,6 +291,24 @@
     </ClInclude>
     <ClInclude Include="ParticleEmitter.h">
       <Filter>헤더 파일\EmitterSystem\Emitter\Extended</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteEmitter.h">
+      <Filter>헤더 파일\EmitterSystem\Emitter\Extended</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleStructure.h">
+      <Filter>헤더 파일\EmitterSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="EmitterTypeDefinition.h">
+      <Filter>헤더 파일\EmitterSystem\Emitter\Extended\include</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleInterpInformation.h">
+      <Filter>헤더 파일\EmitterSystem\Emitter\Extended\include</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleEmitterManager.h">
+      <Filter>헤더 파일\EmitterSystem\EmitterManager\Extended</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleSpawnProperty.h">
+      <Filter>헤더 파일\EmitterSystem\Emitter\Property\Extended</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -292,20 +325,14 @@
     <None Include="SourceCommon.hlsli">
       <Filter>Shader\Particle\ExecuteEmitter\Source</Filter>
     </None>
-    <None Include="PoolingCommon.hlsli">
-      <Filter>Shader\Particle\ExecuteEmitter\Pooling</Filter>
-    </None>
     <None Include="CaculateForceCommon.hlsli">
       <Filter>Shader\Particle\ExecuteEmitter\CaculateForce</Filter>
     </None>
     <None Include="DefineLinkedWithCpp.hlsli">
       <Filter>Shader</Filter>
     </None>
-    <None Include="SortingCommon.hlsli">
-      <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
-    </None>
     <None Include="InterpolaterHelper.hlsli">
-      <Filter>Shader\Interpolater</Filter>
+      <Filter>Shader\Particle\ExecuteEmitter\Initalize\Interpolater</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -324,12 +351,6 @@
     <FxCompile Include="ParticleDrawPS.hlsl">
       <Filter>Shader\Particle\ParticleDraw</Filter>
     </FxCompile>
-    <FxCompile Include="CalculateIndexPrefixSumCS.hlsl">
-      <Filter>Shader\Particle\ExecuteEmitter\Pooling</Filter>
-    </FxCompile>
-    <FxCompile Include="UpdateCurrentIndicesCS.hlsl">
-      <Filter>Shader\Particle\ExecuteEmitter\Pooling</Filter>
-    </FxCompile>
     <FxCompile Include="ParticleSourceCS.hlsl">
       <Filter>Shader\Particle\ExecuteEmitter\Source</Filter>
     </FxCompile>
@@ -339,8 +360,8 @@
     <FxCompile Include="InitializeParticleSetCS.hlsl">
       <Filter>Shader\Particle\ExecuteEmitter\Initalize</Filter>
     </FxCompile>
-    <FxCompile Include="IndexRadixSortCS.hlsl">
-      <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
+    <FxCompile Include="ComputeIndirectArgsCS.hlsl">
+      <Filter>Shader\Particle\ExecuteEmitter\Indirect</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

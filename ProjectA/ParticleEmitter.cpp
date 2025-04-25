@@ -1,31 +1,42 @@
 #include "ParticleEmitter.h"
-#include "BaseEmitterSpawnProperty.h"
-#include "BaseEmitterUpdateProperty.h"
-#include "BaseParticleSpawnProperty.h"
-#include "BaseParticleUpdateProperty.h"
+#include "InitialSpawnProperty.h"
+#include "EmitterUpdateProperty.h"
+#include "ParticleSpawnProperty.h"
+#include "ForceUpdateProperty.h"
+
+#include "EmitterTypeDefinition.h"
 
 using namespace std;
+using namespace DirectX;
 
 ParticleEmitter::ParticleEmitter(
-	UINT emitterType, 
 	UINT emitterID, 
-	const DirectX::XMVECTOR& position, 
-	const DirectX::XMVECTOR& angle
+	const XMVECTOR& position, 
+	const XMVECTOR& angle,
+	const function<void(UINT, const XMMATRIX&)>& worldTransformChangedHandler,
+	const function<void(UINT, const SEmitterForceProperty&)>& forcePropertyChangedHandler,
+	const function<void(UINT, const SParticleInterpInformation&)>& interpInformationChangedHandler
 )
-	: AEmitter(emitterType, emitterID, position, angle)
+	: AEmitter(
+		static_cast<UINT>(EEmitterType::ParticleEmitter),
+		emitterID, position, angle,
+		worldTransformChangedHandler,
+		forcePropertyChangedHandler
+	),
+	m_onInterpInformationChanged(interpInformationChangedHandler)
 {
 
 }
 
 void ParticleEmitter::CreateProperty()
 {
-	m_emitterSpawnProperty = make_unique<CBaseEmitterSpawnProperty>();
-	m_emitterUpdateProperty = make_unique<CBaseEmitterUpdateProperty>();
-	m_particleSpawnProperty = make_unique<CBaseParticleSpawnProperty>(
-		[this](float life) { SetInterpolaterLifeInformation(life); },
-		[this](UINT interpolaterID, UINT interpolaterDegree) { SetColorInterpolaterInformation(interpolaterID, interpolaterDegree); }
+	m_initialSpawnProperty = make_unique<CInitialSpawnProperty>();
+	m_emitterUpdateProperty = make_unique<CEmitterUpdateProperty>();
+	m_runtimeSpawnProperty = make_unique<ParticleSpawnProperty>(
+		[this](const SParticleInterpInformation& interpInformation) { m_onInterpInformationChanged(GetEmitterID(), interpInformation); }
 	);
-	m_particleUpdateProperty = make_unique<CBaseParticleUpdateProperty>(
-		[this](const SEmitterForceProperty forceProperty) { SetEmitterForceProperty(forceProperty); }
+	m_forceUpdateProperty = make_unique<ForceUpdateProperty>(
+		[this](const SEmitterForceProperty& forceProperty) { m_onForcePropertyChanged(GetEmitterID(), forceProperty); }
 	);
 }
+

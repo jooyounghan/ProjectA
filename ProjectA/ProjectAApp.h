@@ -13,7 +13,7 @@ namespace D3D11
 class IUpdatable;
 class CCamera;
 class CEmitterSelector;
-class CEmitterManager;
+class AEmitterManager;
 
 class CProjectAApp : public App::CBaseApp
 {
@@ -52,9 +52,6 @@ private:
 	IDXGISwapChain* m_swapchain = nullptr;
 
 private:
-	std::vector<IUpdatable*> m_updatables;
-
-private:
 	struct alignas(16)
 	{
 		float dt;
@@ -67,7 +64,7 @@ private:
 #pragma region 테스트 변수
 	std::unique_ptr<CCamera> m_camera;
 	std::unique_ptr<CEmitterSelector> m_emitterSelector;
-	std::unique_ptr<CEmitterManager> m_emitterManager;
+
 
 public:
 	void DrawEmitterHandler();
