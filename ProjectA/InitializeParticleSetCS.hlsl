@@ -48,12 +48,12 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
             
             // N차 이상 보간 일 경우, 색상에 대한 보간 ======================================================================
             const uint emitterID = currentParticle.emitterID;
-            const EmitterInterpolaterInformation interpolaterInformation = emitterInterpolaterInformations[emitterID];
-            const float maxLife = interpolaterInformation.maxLife;
+            const EmitterInterpInform interpInform = emitterInterpInforms[emitterID];
+            const float maxLife = interpInform.maxLife;
 
             const uint colorInterpolaterNotSelected = ~0;
-            const uint colorInterpolaterID = interpolaterInformation.colorInterpolaterID;
-            const uint colorDegree = interpolaterInformation.colorInterpolaterDegree;
+            const uint colorInterpolaterID = interpInform.colorInterpolaterID;
+            const uint colorDegree = interpInform.colorInterpolaterDegree;
             const float timeSpent = maxLife - currentParticle.life;
 
             if (colorInterpolaterID != colorInterpolaterNotSelected)

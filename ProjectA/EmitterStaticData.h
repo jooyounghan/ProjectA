@@ -20,7 +20,7 @@ namespace D3D11
 	class CGraphicsPSOObject;
 }
 
-struct SEmitterInterpolaterInformation
+struct SEmitterInterpInfo
 {
 	float maxLife;
 	uint32_t colorInterpolaterID;
@@ -69,14 +69,14 @@ public:
 
 #pragma region Emitter Interpolater Property
 protected:
-	static std::vector<SEmitterInterpolaterInformation> GEmitterInterpolaterInformationCPU;
-	static std::vector<UINT> GChangedEmitterInterpolaterInformationIDs;
+	static std::vector<SEmitterInterpInfo> GEmitterInterpInformCPU;
+	static std::vector<UINT> GChangedEmitterInterpInforIDs;
 
 public:
-	static std::unique_ptr<D3D11::CStructuredBuffer> GEmitterInterpolaterInformationGPU;
+	static std::unique_ptr<D3D11::CStructuredBuffer> GEmitterInterpInformGPU;
 
 public:
-	static void AddChangedEmitterInterpolaterInformationID(UINT emitterID);
+	static void AddChangedEmitterInterpInformID(UINT emitterID);
 #pragma endregion
 
 public:

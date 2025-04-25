@@ -10,7 +10,7 @@
 #define MaxStepCount MaxControlPointsCount - 1
 
 template<uint32_t Dim, uint32_t CoefficientCount>
-struct SInterpolaterProperty
+struct SInterpProperty
 {
 	struct
 	{
@@ -28,7 +28,7 @@ struct SInterpolaterProperty
 };
 
 template<uint32_t Dim, uint32_t CoefficientCount>
-void SInterpolaterProperty<Dim, CoefficientCount>::UpdateInterpolaterProperty(
+void SInterpProperty<Dim, CoefficientCount>::UpdateInterpolaterProperty(
 	uint32_t interpolaterFlagIn, 
 	const std::vector<float>& xProfilesIn, 
 	const std::vector<std::array<float, CoefficientCount* Dim>> coefficientsIn
@@ -57,95 +57,95 @@ class CGPUInterpolater
 private:
 	struct InternalData
 	{
-		static std::vector<SInterpolaterProperty<Dim, CoefficientCount>> GInterpolaterPropertyCPU;
-		static std::queue<uint32_t> GInterpolaterIDQueue;
-		static std::vector<uint32_t> GChangedInterpolaterIDs;
+		static std::vector<SInterpProperty<Dim, CoefficientCount>> GInterpPropertyCPU;
+		static std::queue<uint32_t> GInterpPropertyIDQueue;
+		static std::vector<uint32_t> GChangedInterpPropertyIDs;
 	};
 
 public:
-	static std::unique_ptr<D3D11::CStructuredBuffer> GInterpolaterPropertyGPU;
+	static std::unique_ptr<D3D11::CStructuredBuffer> GInterpPropertyGPU;
 
 public:
-	static UINT IssueAvailableInterpolaterID();
-	static void ReclaimInterpolaterID(UINT interpolaterID) noexcept;
-	static SInterpolaterProperty<Dim, CoefficientCount>* GetInterpolaterProperty(UINT interpolaterID);
-	static void AddChangedEmitterInterpolaterPropertyID(UINT interpolaterPropertyID);
+	static UINT IssueAvailableInterpPropertyID();
+	static void ReclaimInterpPropertyID(UINT interpPropertyID) noexcept;
+	static SInterpProperty<Dim, CoefficientCount>* GetInterpProperty(UINT interpPropertyID);
+	static void AddChangedEmitterInterpPropertyID(UINT interpPropertyID);
 
 public:
-	static void InitializeGPUInterpolater(ID3D11Device* device, uint32_t maxEmitterCount);
-	static void UpdateInterpolaterProperty(ID3D11DeviceContext* deviceContext);
+	static void InitializeGPUInterpProperty(ID3D11Device* device, uint32_t maxEmitterCount);
+	static void UpdateInterpProperty(ID3D11DeviceContext* deviceContext);
 };
 
 template<uint32_t Dim, uint32_t CoefficientCount>
-std::vector<SInterpolaterProperty<Dim, CoefficientCount>> CGPUInterpolater<Dim, CoefficientCount>::InternalData::GInterpolaterPropertyCPU;
+std::vector<SInterpProperty<Dim, CoefficientCount>> CGPUInterpolater<Dim, CoefficientCount>::InternalData::GInterpPropertyCPU;
 
 template<uint32_t Dim, uint32_t CoefficientCount>
-std::queue<uint32_t> CGPUInterpolater<Dim, CoefficientCount>::InternalData::GInterpolaterIDQueue;
+std::queue<uint32_t> CGPUInterpolater<Dim, CoefficientCount>::InternalData::GInterpPropertyIDQueue;
 
 template<uint32_t Dim, uint32_t CoefficientCount>
-std::vector<uint32_t> CGPUInterpolater<Dim, CoefficientCount>::InternalData::GChangedInterpolaterIDs;
+std::vector<uint32_t> CGPUInterpolater<Dim, CoefficientCount>::InternalData::GChangedInterpPropertyIDs;
 
 template<uint32_t Dim, uint32_t CoefficientCount>
-std::unique_ptr<D3D11::CStructuredBuffer> CGPUInterpolater<Dim, CoefficientCount>::GInterpolaterPropertyGPU;
+std::unique_ptr<D3D11::CStructuredBuffer> CGPUInterpolater<Dim, CoefficientCount>::GInterpPropertyGPU;
 
 template<uint32_t Dim, uint32_t CoefficientCount>
-inline UINT CGPUInterpolater<Dim, CoefficientCount>::IssueAvailableInterpolaterID()
+inline UINT CGPUInterpolater<Dim, CoefficientCount>::IssueAvailableInterpPropertyID()
 {
-	if (InternalData::GInterpolaterIDQueue.empty()) { throw std::exception("No Interpolater ID To Issue"); }
+	if (InternalData::GInterpPropertyIDQueue.empty()) { throw std::exception("No Interpolater ID To Issue"); }
 
-	UINT interpolaterID = InternalData::GInterpolaterIDQueue.front();
-	InternalData::GInterpolaterIDQueue.pop();
+	UINT interpolaterID = InternalData::GInterpPropertyIDQueue.front();
+	InternalData::GInterpPropertyIDQueue.pop();
 
 	return interpolaterID;
 }
 
 template<uint32_t Dim, uint32_t CoefficientCount>
-void CGPUInterpolater<Dim, CoefficientCount>::ReclaimInterpolaterID(UINT interpolaterID) noexcept
+void CGPUInterpolater<Dim, CoefficientCount>::ReclaimInterpPropertyID(UINT interpPropertyID) noexcept
 {
-	InternalData::GInterpolaterIDQueue.push(interpolaterID);
+	InternalData::GInterpPropertyIDQueue.push(interpPropertyID);
 }
 
 template<uint32_t Dim, uint32_t CoefficientCount>
-SInterpolaterProperty<Dim, CoefficientCount>* CGPUInterpolater<Dim, CoefficientCount>::GetInterpolaterProperty(UINT interpolaterID)
+SInterpProperty<Dim, CoefficientCount>* CGPUInterpolater<Dim, CoefficientCount>::GetInterpProperty(UINT interpPropertyID)
 {
-	if (InternalData::GInterpolaterPropertyCPU.size() > interpolaterID)
+	if (InternalData::GInterpPropertyCPU.size() > interpPropertyID)
 	{
-		return &InternalData::GInterpolaterPropertyCPU[interpolaterID];
+		return &InternalData::GInterpPropertyCPU[interpPropertyID];
 	}
 	return nullptr;
 }
 
 template<uint32_t Dim, uint32_t CoefficientCount>
-inline void CGPUInterpolater<Dim, CoefficientCount>::AddChangedEmitterInterpolaterPropertyID(UINT interpolaterPropertyID)
+inline void CGPUInterpolater<Dim, CoefficientCount>::AddChangedEmitterInterpPropertyID(UINT interpPropID)
 {
-	InternalData::GChangedInterpolaterIDs.emplace_back(interpolaterPropertyID);
+	InternalData::GChangedInterpPropertyIDs.emplace_back(interpPropID);
 }
 
 template<uint32_t Dim, uint32_t CoefficientCount>
-void CGPUInterpolater<Dim, CoefficientCount>::InitializeGPUInterpolater(ID3D11Device* device, uint32_t maxEmitterCount)
+void CGPUInterpolater<Dim, CoefficientCount>::InitializeGPUInterpProperty(ID3D11Device* device, uint32_t maxEmitterCount)
 {
 	for (uint32_t idx = 0; idx < maxEmitterCount; ++idx)
 	{
-		InternalData::GInterpolaterIDQueue.push(idx);
+		InternalData::GInterpPropertyIDQueue.push(idx);
 	}
 
-	InternalData::GInterpolaterPropertyCPU.resize(maxEmitterCount);
-	GInterpolaterPropertyGPU = std::make_unique<D3D11::CStructuredBuffer>(
-		static_cast<UINT>(sizeof(SInterpolaterProperty<Dim, CoefficientCount>)),
+	InternalData::GInterpPropertyCPU.resize(maxEmitterCount);
+	GInterpPropertyGPU = std::make_unique<D3D11::CStructuredBuffer>(
+		static_cast<UINT>(sizeof(SInterpProperty<Dim, CoefficientCount>)),
 		maxEmitterCount,
-		InternalData::GInterpolaterPropertyCPU.data()
+		InternalData::GInterpPropertyCPU.data()
 		);
-	GInterpolaterPropertyGPU->InitializeBuffer(device);
+	GInterpPropertyGPU->InitializeBuffer(device);
 }
 
 template<uint32_t Dim, uint32_t CoefficientCount>
-void CGPUInterpolater<Dim, CoefficientCount>::UpdateInterpolaterProperty(ID3D11DeviceContext* deviceContext)
+void CGPUInterpolater<Dim, CoefficientCount>::UpdateInterpProperty(ID3D11DeviceContext* deviceContext)
 {
-	UINT changedInterpolaterIDsCount = static_cast<UINT>(InternalData::GChangedInterpolaterIDs.size());
+	UINT changedInterpolaterIDsCount = static_cast<UINT>(InternalData::GChangedInterpPropertyIDs.size());
 	if (changedInterpolaterIDsCount > 0)
 	{
-		GInterpolaterPropertyGPU->StageNthElement(deviceContext, InternalData::GChangedInterpolaterIDs.data(), changedInterpolaterIDsCount);
-		GInterpolaterPropertyGPU->UploadNthElement(deviceContext, InternalData::GChangedInterpolaterIDs.data(), changedInterpolaterIDsCount);
-		InternalData::GChangedInterpolaterIDs.clear();
+		GInterpPropertyGPU->StageNthElement(deviceContext, InternalData::GChangedInterpPropertyIDs.data(), changedInterpolaterIDsCount);
+		GInterpPropertyGPU->UploadNthElement(deviceContext, InternalData::GChangedInterpPropertyIDs.data(), changedInterpolaterIDsCount);
+		InternalData::GChangedInterpPropertyIDs.clear();
 	}
 }

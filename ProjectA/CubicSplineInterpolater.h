@@ -130,7 +130,7 @@ inline void CCubicSplineInterpolater<Dim>::UpdateCoefficient()
 		}
 	}
 
-	if (Parent::m_interpolaterPropertyCached)
+	if (Parent::m_interpPropCached)
 	{
 		Parent::UpdateInterpolaterProperty();
 	}

@@ -103,8 +103,8 @@ void CProjectAApp::Init()
 	m_appParamsGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_appParamsCPU));
 	m_appParamsGPU->InitializeBuffer(m_device);
 
-	sizeof(SInterpolaterProperty<4, 2>);
-	sizeof(SInterpolaterProperty<4, 4>);
+	sizeof(SInterpProperty<4, 2>);
+	sizeof(SInterpProperty<4, 4>);
 
 	CRasterizerState::InitializeDefaultRasterizerStates(m_device);
 	CBlendState::InitializeDefaultBlendStates(m_device);
@@ -142,8 +142,8 @@ void CProjectAApp::Init()
 	EmitterStaticData::InitializeGlobalEmitterProperty(MaxEmitterCount, m_device);
 	EmitterStaticData::InitializeEmitterDrawPSO(m_device);
 
-	CGPUInterpolater<4, 2>::InitializeGPUInterpolater(m_device, MaxEmitterCount);
-	CGPUInterpolater<4, 4>::InitializeGPUInterpolater(m_device, MaxEmitterCount);
+	CGPUInterpolater<4, 2>::InitializeGPUInterpProperty(m_device, MaxEmitterCount);
+	CGPUInterpolater<4, 4>::InitializeGPUInterpProperty(m_device, MaxEmitterCount);
 
 	CEmitterManagerStaticData::InitializeSetInitializingPSO(m_device);
 	CEmitterManagerStaticData::InitializePoolingCS(m_device);
@@ -197,8 +197,8 @@ void CProjectAApp::Update(float deltaTime)
 
 #pragma region 글로벌 변수 업데이트
 	EmitterStaticData::UpdateGlobalEmitterProperty(m_deviceContext);
-	CGPUInterpolater<4, 2>::UpdateInterpolaterProperty(m_deviceContext);
-	CGPUInterpolater<4, 4>::UpdateInterpolaterProperty(m_deviceContext);
+	CGPUInterpolater<4, 2>::UpdateInterpProperty(m_deviceContext);
+	CGPUInterpolater<4, 4>::UpdateInterpProperty(m_deviceContext);
 #pragma endregion
 
 #pragma region 카메라 초기화 및 설정

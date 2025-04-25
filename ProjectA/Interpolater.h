@@ -66,8 +66,8 @@ protected:
 	std::vector<CoeffType> m_coefficients;
 
 protected:
-	UINT m_interpolaterPropertyID;
-	SInterpolaterProperty<Dim, CoefficientCount>* m_interpolaterPropertyCached;
+	UINT m_interpPropID;
+	SInterpProperty<Dim, CoefficientCount>* m_interpPropCached;
 
 public:
 	void UpdateInterpolaterProperty();
@@ -77,7 +77,7 @@ public:
 	virtual UINT GetInterpolaterFlag() = 0;
 
 public:
-	virtual UINT GetInterpolaterID() override { return m_interpolaterPropertyID; }
+	virtual UINT GetInterpolaterID() override { return m_interpPropID; }
 	virtual uint32_t GetCoefficientCount() override { return CoefficientCount; };
 	virtual void UpdateCoefficient() override;
 
@@ -99,7 +99,7 @@ inline AInterpolater<Dim, CoefficientCount>::AInterpolater(
 	m_startPoint(startPoint),
 	m_endPoint(endPoint),
 	m_controlPoints(controlPoints),
-	m_interpolaterPropertyID(~0)
+	m_interpPropID(~0)
 {
 	SetGPUInterpolater(useGPUInterpolater);
 }
@@ -114,33 +114,33 @@ AInterpolater<Dim, CoefficientCount>::~AInterpolater()
 template<uint32_t Dim, uint32_t CoefficientCount>
 void AInterpolater<Dim, CoefficientCount>::UpdateInterpolaterProperty()
 {
-	if (m_interpolaterPropertyCached)
+	if (m_interpPropCached)
 	{
-		m_interpolaterPropertyCached->UpdateInterpolaterProperty(
+		m_interpPropCached->UpdateInterpolaterProperty(
 			GetInterpolaterFlag(),
 			m_xProfiles,
 			m_coefficients
 		);
-		CGPUInterpolater<Dim, CoefficientCount>::AddChangedEmitterInterpolaterPropertyID(m_interpolaterPropertyID);
+		CGPUInterpolater<Dim, CoefficientCount>::AddChangedEmitterInterpPropertyID(m_interpPropID);
 	}
 }
 
 template<uint32_t Dim, uint32_t CoefficientCount>
 inline void AInterpolater<Dim, CoefficientCount>::SetGPUInterpolater(bool onoff)
 {
-	if (onoff == (m_interpolaterPropertyCached == nullptr))
+	if (onoff == (m_interpPropCached == nullptr))
 	{
 		if (onoff)
 		{
-			m_interpolaterPropertyID = CGPUInterpolater<Dim, CoefficientCount>::IssueAvailableInterpolaterID();
-			m_interpolaterPropertyCached = CGPUInterpolater<Dim, CoefficientCount>::GetInterpolaterProperty(m_interpolaterPropertyID);
+			m_interpPropID = CGPUInterpolater<Dim, CoefficientCount>::IssueAvailableInterpPropertyID();
+			m_interpPropCached = CGPUInterpolater<Dim, CoefficientCount>::GetInterpProperty(m_interpPropID);
 		}
 		else
 		{
-			CGPUInterpolater<Dim, CoefficientCount>::ReclaimInterpolaterID(m_interpolaterPropertyID);
-			CGPUInterpolater<Dim, CoefficientCount>::AddChangedEmitterInterpolaterPropertyID(m_interpolaterPropertyID);
-			ZeroMemory(m_interpolaterPropertyCached, sizeof(SInterpolaterProperty<Dim, CoefficientCount>));
-			m_interpolaterPropertyCached = nullptr;
+			CGPUInterpolater<Dim, CoefficientCount>::ReclaimInterpPropertyID(m_interpPropID);
+			CGPUInterpolater<Dim, CoefficientCount>::AddChangedEmitterInterpPropertyID(m_interpPropID);
+			ZeroMemory(m_interpPropCached, sizeof(SInterpProperty<Dim, CoefficientCount>));
+			m_interpPropCached = nullptr;
 		}
 	}
 }

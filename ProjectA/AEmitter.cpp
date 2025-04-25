@@ -42,16 +42,16 @@ void AEmitter::SetEmitterForceProperty(const SEmitterForceProperty& emitterForce
 void AEmitter::SetInterpolaterLifeInformation(float life)
 {
 	const UINT& emitterID = m_emitterPropertyCPU.emitterID;
-	EmitterStaticData::AddChangedEmitterInterpolaterInformationID(emitterID);
-	SEmitterInterpolaterInformation& emitterInterpolaterInformation = EmitterStaticData::GEmitterInterpolaterInformationCPU[emitterID];
+	EmitterStaticData::AddChangedEmitterInterpInformID(emitterID);
+	SEmitterInterpInfo& emitterInterpolaterInformation = EmitterStaticData::GEmitterInterpInformCPU[emitterID];
 	emitterInterpolaterInformation.maxLife = life;
 }
 
 void AEmitter::SetColorInterpolaterInformation(UINT interpolaterID, UINT interpolaterDegree)
 {
 	const UINT& emitterID = m_emitterPropertyCPU.emitterID;
-	EmitterStaticData::AddChangedEmitterInterpolaterInformationID(emitterID);
-	SEmitterInterpolaterInformation& emitterInterpolaterInformation = EmitterStaticData::GEmitterInterpolaterInformationCPU[emitterID];
+	EmitterStaticData::AddChangedEmitterInterpInformID(emitterID);
+	SEmitterInterpInfo& emitterInterpolaterInformation = EmitterStaticData::GEmitterInterpInformCPU[emitterID];
 	emitterInterpolaterInformation.colorInterpolaterID = interpolaterID;
 	emitterInterpolaterInformation.colorInterpolaterDegree = interpolaterDegree;
 }

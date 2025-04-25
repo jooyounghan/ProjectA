@@ -197,9 +197,9 @@ void CEmitterManager::InitializeParticleSet(ID3D11DeviceContext* deviceContext)
 	const static UINT dispatchX = UINT(ceil(m_particleMaxCount / LocalThreadCount));
 
 	ID3D11ShaderResourceView* selectSetSRVs[] = { 
-		EmitterStaticData::GEmitterInterpolaterInformationGPU->GetSRV(), 
-		CGPUInterpolater<4, 2>::GInterpolaterPropertyGPU->GetSRV(), 
-		CGPUInterpolater<4, 4>::GInterpolaterPropertyGPU->GetSRV() 
+		EmitterStaticData::GEmitterInterpInformGPU->GetSRV(), 
+		CGPUInterpolater<4, 2>::GInterpPropertyGPU->GetSRV(), 
+		CGPUInterpolater<4, 4>::GInterpPropertyGPU->GetSRV() 
 	};
 	ID3D11ShaderResourceView* selectSetNullSRVs[] = { nullptr, nullptr, nullptr };
 	ID3D11UnorderedAccessView* selectSetUavs[] = { 

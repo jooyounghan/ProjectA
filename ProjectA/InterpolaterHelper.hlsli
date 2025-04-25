@@ -2,7 +2,7 @@
 
 #define MaxStepCount MaxControlPointsCount - 1
 
-struct EmitterInterpolaterInformation
+struct EmitterInterpInform
 {
     float maxLife;
     uint colorInterpolaterID;
@@ -10,29 +10,29 @@ struct EmitterInterpolaterInformation
     float emitterInterpolaterInformationDummy;
 };
 
-struct InterpolaterHeader
+struct InterpPropertyHeader
 {
     uint controlPointsCount;
     uint interpolaterFlag;
 };
 
-struct Degree1Dim4InterpolaterProperty
+struct D1Dim4Prop
 {
-    InterpolaterHeader header;
+    InterpPropertyHeader header;
     float xProfiles[MaxControlPointsCount];
     float coefficient[MaxStepCount][4][2];
 };
 
-struct Degree3Dim4InterpolaterProperty
+struct D3Dim4Prop
 {
-    InterpolaterHeader header;
+    InterpPropertyHeader header;
     float xProfiles[MaxControlPointsCount];
     float coefficient[MaxStepCount][4][4];
 };
 
-StructuredBuffer<EmitterInterpolaterInformation> emitterInterpolaterInformations : register(t0);
-StructuredBuffer<Degree1Dim4InterpolaterProperty> firstDegreeInterpolaters : register(t1);
-StructuredBuffer<Degree3Dim4InterpolaterProperty> thirdDegreeInterpolaters : register(t2);
+StructuredBuffer<EmitterInterpInform> emitterInterpInforms : register(t0);
+StructuredBuffer<D1Dim4Prop> d1Dim4Props : register(t1);
+StructuredBuffer<D3Dim4Prop> d3Dim4Props : register(t2);
 
 static float Get3DegreeFunction(float a, float b, float c, float d, float x) { return (((a * x) + b) * x + c) * x + d; }
 
@@ -65,35 +65,35 @@ float4 GetInterpolated(uint degree, uint interpolatedID, float4 timeSpent4, floa
 
     if (degree == 2)
     {
-        Degree1Dim4InterpolaterProperty interpolaterProperty = firstDegreeInterpolaters[interpolatedID];
-        const uint stepsCount = interpolaterProperty.header.controlPointsCount - 1;
+        D1Dim4Prop interpProp = d1Dim4Props[interpolatedID];
+        const uint stepsCount = interpProp.header.controlPointsCount - 1;
 
         [unroll]
         for (uint stepIdx = 0; stepIdx < stepsCount; ++stepIdx)
         {
-            float x1 = interpolaterProperty.xProfiles[stepIdx];
-            float x2 = interpolaterProperty.xProfiles[stepIdx + 1];
+            float x1 = interpProp.xProfiles[stepIdx];
+            float x2 = interpProp.xProfiles[stepIdx + 1];
 
             if (x1 <= timeSpent && timeSpent < x2)
             {
-                return Evaluate1Degree(timeSpent, interpolaterProperty.coefficient[stepIdx]);
+                return Evaluate1Degree(timeSpent, interpProp.coefficient[stepIdx]);
             }
         }
 
-        return Evaluate1Degree(maxLife, interpolaterProperty.coefficient[stepsCount]);
+        return Evaluate1Degree(maxLife, interpProp.coefficient[stepsCount]);
     }
 
     else if (degree == 4)
     {
-        Degree3Dim4InterpolaterProperty interpolaterProperty = thirdDegreeInterpolaters[interpolatedID];
-        const uint interpolateMethod = interpolaterProperty.header.interpolaterFlag;
-        const uint stepsCount = interpolaterProperty.header.controlPointsCount - 1;
+        D3Dim4Prop interpProp = d3Dim4Props[interpolatedID];
+        const uint interpolateMethod = interpProp.header.interpolaterFlag;
+        const uint stepsCount = interpProp.header.controlPointsCount - 1;
 
         [unroll]
         for (uint stepIdx = 0; stepIdx < stepsCount; ++stepIdx)
         {
-            float x1 = interpolaterProperty.xProfiles[stepIdx];
-            float x2 = interpolaterProperty.xProfiles[stepIdx + 1];
+            float x1 = interpProp.xProfiles[stepIdx];
+            float x2 = interpProp.xProfiles[stepIdx + 1];
 
             if (x1 <= timeSpent && timeSpent < x2)
             {
@@ -101,11 +101,11 @@ float4 GetInterpolated(uint degree, uint interpolatedID, float4 timeSpent4, floa
                     ? timeSpent - x1
                     : (timeSpent - x1) / (x2 - x1);
 
-                return Evaluate3Degree(t, interpolaterProperty.coefficient[stepIdx]);
+                return Evaluate3Degree(t, interpProp.coefficient[stepIdx]);
             }
         }
 
-        return Evaluate3Degree(0.f, interpolaterProperty.coefficient[stepsCount]);
+        return Evaluate3Degree(0.f, interpProp.coefficient[stepsCount]);
     }
 
     return float4(0.f, 0.f, 0.f, 1.f);

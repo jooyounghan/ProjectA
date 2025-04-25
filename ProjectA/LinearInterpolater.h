@@ -67,7 +67,7 @@ inline void CLinearInterpolater<Dim>::UpdateCoefficient()
 		Parent::m_coefficients.emplace_back(coefficient);
 	}
 
-	if (Parent::m_interpolaterPropertyCached)
+	if (Parent::m_interpPropCached)
 	{
 		Parent::UpdateInterpolaterProperty();
 	}

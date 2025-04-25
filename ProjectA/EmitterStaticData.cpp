@@ -33,9 +33,9 @@ vector<SEmitterForceProperty> EmitterStaticData::GEmitterForcePropertyCPU;
 unique_ptr<CStructuredBuffer> EmitterStaticData::GEmitterForcePropertyGPU = nullptr;
 vector<UINT> EmitterStaticData::GChangedEmitterForceIDs;
 
-vector<SEmitterInterpolaterInformation> EmitterStaticData::GEmitterInterpolaterInformationCPU;
-unique_ptr<CStructuredBuffer> EmitterStaticData::GEmitterInterpolaterInformationGPU = nullptr;
-vector<UINT> EmitterStaticData::GChangedEmitterInterpolaterInformationIDs;
+vector<SEmitterInterpInfo> EmitterStaticData::GEmitterInterpInformCPU;
+unique_ptr<CStructuredBuffer> EmitterStaticData::GEmitterInterpInformGPU = nullptr;
+vector<UINT> EmitterStaticData::GChangedEmitterInterpInforIDs;
 
 const vector<XMFLOAT3> EmitterStaticData::GEmitterBoxPositions = ModelFactory::CreateBoxPositions(XMVectorSet(1.f, 1.f, 1.f, 0.f));
 const vector<UINT> EmitterStaticData::GEmitterBoxIndices = ModelFactory::CreateIndices();
@@ -71,9 +71,9 @@ void EmitterStaticData::AddChangedEmitterForceID(UINT emitterID)
 	GChangedEmitterForceIDs.emplace_back(emitterID);
 }
 
-void EmitterStaticData::AddChangedEmitterInterpolaterInformationID(UINT emitterID)
+void EmitterStaticData::AddChangedEmitterInterpInformID(UINT emitterID)
 {
-	GChangedEmitterInterpolaterInformationIDs.emplace_back(emitterID);
+	GChangedEmitterInterpInforIDs.emplace_back(emitterID);
 }
 
 void EmitterStaticData::InitializeGlobalEmitterProperty(UINT emitterMaxCount, ID3D11Device* device)
@@ -87,12 +87,12 @@ void EmitterStaticData::InitializeGlobalEmitterProperty(UINT emitterMaxCount, ID
 	SEmitterForceProperty initialForceProperty;
 	AutoZeroMemory(initialForceProperty);
 
-	SEmitterInterpolaterInformation initialEmitterInterpolationInformation;
+	SEmitterInterpInfo initialEmitterInterpolationInformation;
 	AutoZeroMemory(initialEmitterInterpolationInformation);
 
 	GEmitterWorldTransformCPU.resize(GEmitterMaxCount, ZERO_MATRIX);
 	GEmitterForcePropertyCPU.resize(GEmitterMaxCount, initialForceProperty);
-	GEmitterInterpolaterInformationCPU.resize(GEmitterMaxCount, initialEmitterInterpolationInformation);
+	GEmitterInterpInformCPU.resize(GEmitterMaxCount, initialEmitterInterpolationInformation);
 
 	GEmitterInstancedTrnasformGPU = make_unique<CDynamicBuffer>(
 		static_cast<UINT>(sizeof(XMMATRIX)),
@@ -112,16 +112,16 @@ void EmitterStaticData::InitializeGlobalEmitterProperty(UINT emitterMaxCount, ID
 		GEmitterMaxCount,
 		GEmitterForcePropertyCPU.data()
 	);
-	GEmitterInterpolaterInformationGPU = make_unique<CStructuredBuffer>(
-		static_cast<UINT>(sizeof(SEmitterInterpolaterInformation)),
+	GEmitterInterpInformGPU = make_unique<CStructuredBuffer>(
+		static_cast<UINT>(sizeof(SEmitterInterpInfo)),
 		GEmitterMaxCount,
-		GEmitterInterpolaterInformationCPU.data()
+		GEmitterInterpInformCPU.data()
 	);
 
 	GEmitterInstancedTrnasformGPU->InitializeBuffer(device);
 	GEmitterWorldTrnasformGPU->InitializeBuffer(device);
 	GEmitterForcePropertyGPU->InitializeBuffer(device);
-	GEmitterInterpolaterInformationGPU->InitializeBuffer(device);
+	GEmitterInterpInformGPU->InitializeBuffer(device);
 }
 
 void EmitterStaticData::UpdateGlobalEmitterProperty(ID3D11DeviceContext* deviceContext)
@@ -156,12 +156,12 @@ void EmitterStaticData::UpdateGlobalEmitterProperty(ID3D11DeviceContext* deviceC
 		GChangedEmitterForceIDs.clear();
 	}
 
-	UINT emitterInterpolaterInformationChagnedIDsCount = static_cast<UINT>(GChangedEmitterInterpolaterInformationIDs.size());
+	UINT emitterInterpolaterInformationChagnedIDsCount = static_cast<UINT>(GChangedEmitterInterpInforIDs.size());
 	if (emitterInterpolaterInformationChagnedIDsCount > 0)
 	{
-		GEmitterInterpolaterInformationGPU->StageNthElement(deviceContext, GChangedEmitterInterpolaterInformationIDs.data(), emitterInterpolaterInformationChagnedIDsCount);
-		GEmitterInterpolaterInformationGPU->UploadNthElement(deviceContext, GChangedEmitterInterpolaterInformationIDs.data(), emitterInterpolaterInformationChagnedIDsCount);
-		GChangedEmitterInterpolaterInformationIDs.clear();
+		GEmitterInterpInformGPU->StageNthElement(deviceContext, GChangedEmitterInterpInforIDs.data(), emitterInterpolaterInformationChagnedIDsCount);
+		GEmitterInterpInformGPU->UploadNthElement(deviceContext, GChangedEmitterInterpInforIDs.data(), emitterInterpolaterInformationChagnedIDsCount);
+		GChangedEmitterInterpInforIDs.clear();
 	}
 }
 
