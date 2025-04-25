@@ -25,8 +25,9 @@ UINT EmitterStaticData::GEmitterMaxCount = 0;
 queue<UINT> EmitterStaticData::GEmitterIDQueue;
 
 vector<XMMATRIX> EmitterStaticData::GEmitterWorldTransformCPU;
-unique_ptr<CDynamicBuffer> EmitterStaticData::GEmitterWorldTransformGPU = nullptr;
-vector<UINT> EmitterStaticData::GChangedEmitterWorldPositionIDs;
+unique_ptr<CDynamicBuffer> EmitterStaticData::GEmitterInstancedTrnasformGPU = nullptr;
+unique_ptr<CStructuredBuffer> EmitterStaticData::GEmitterWorldTrnasformGPU = nullptr;
+vector<UINT> EmitterStaticData::GChangedEmitterWorldTransformIDs;
 
 vector<SEmitterForceProperty> EmitterStaticData::GEmitterForcePropertyCPU;
 unique_ptr<CStructuredBuffer> EmitterStaticData::GEmitterForcePropertyGPU = nullptr;
@@ -60,9 +61,9 @@ void EmitterStaticData::ReclaimEmitterID(UINT emitterID) noexcept
 	GEmitterIDQueue.push(emitterID);
 }
 
-void EmitterStaticData::AddChangedEmitterWorldPositionID(UINT emitterID)
+void EmitterStaticData::AddChangedEmitterTransformID(UINT emitterID)
 {
-	GChangedEmitterWorldPositionIDs.emplace_back(emitterID);
+	GChangedEmitterWorldTransformIDs.emplace_back(emitterID);
 }
 
 void EmitterStaticData::AddChangedEmitterForceID(UINT emitterID)
@@ -93,12 +94,19 @@ void EmitterStaticData::InitializeGlobalEmitterProperty(UINT emitterMaxCount, ID
 	GEmitterForcePropertyCPU.resize(GEmitterMaxCount, initialForceProperty);
 	GEmitterInterpolaterInformationCPU.resize(GEmitterMaxCount, initialEmitterInterpolationInformation);
 
-	GEmitterWorldTransformGPU = make_unique<CDynamicBuffer>(
+	GEmitterInstancedTrnasformGPU = make_unique<CDynamicBuffer>(
 		static_cast<UINT>(sizeof(XMMATRIX)),
 		GEmitterMaxCount,
 		GEmitterWorldTransformCPU.data(),
 		D3D11_BIND_VERTEX_BUFFER
 	);
+
+	GEmitterWorldTrnasformGPU = make_unique<CStructuredBuffer>(
+		static_cast<UINT>(sizeof(XMMATRIX)),
+		GEmitterMaxCount,
+		GEmitterWorldTransformCPU.data()
+	);
+
 	GEmitterForcePropertyGPU = make_unique<CStructuredBuffer>(
 		static_cast<UINT>(sizeof(SEmitterForceProperty)),
 		GEmitterMaxCount,
@@ -110,19 +118,34 @@ void EmitterStaticData::InitializeGlobalEmitterProperty(UINT emitterMaxCount, ID
 		GEmitterInterpolaterInformationCPU.data()
 	);
 
-	GEmitterWorldTransformGPU->InitializeBuffer(device);
+	GEmitterInstancedTrnasformGPU->InitializeBuffer(device);
+	GEmitterWorldTrnasformGPU->InitializeBuffer(device);
 	GEmitterForcePropertyGPU->InitializeBuffer(device);
 	GEmitterInterpolaterInformationGPU->InitializeBuffer(device);
 }
 
 void EmitterStaticData::UpdateGlobalEmitterProperty(ID3D11DeviceContext* deviceContext)
 {
-	UINT emitterWorldPositionChangedIDsCount = static_cast<UINT>(GChangedEmitterWorldPositionIDs.size());
+	UINT emitterWorldPositionChangedIDsCount = static_cast<UINT>(GChangedEmitterWorldTransformIDs.size());
 	if (emitterWorldPositionChangedIDsCount > 0)
 	{
-		GEmitterWorldTransformGPU->StageNthElement(deviceContext, GChangedEmitterWorldPositionIDs.data(), emitterWorldPositionChangedIDsCount);
-		GEmitterWorldTransformGPU->UploadNthElement(deviceContext, GChangedEmitterWorldPositionIDs.data(), emitterWorldPositionChangedIDsCount);
-		GChangedEmitterWorldPositionIDs.clear();
+		GEmitterInstancedTrnasformGPU->StageNthElement(deviceContext, GChangedEmitterWorldTransformIDs.data(), emitterWorldPositionChangedIDsCount);
+		GEmitterInstancedTrnasformGPU->UploadNthElement(deviceContext, GChangedEmitterWorldTransformIDs.data(), emitterWorldPositionChangedIDsCount);
+
+		for (const UINT changedId : GChangedEmitterWorldTransformIDs)
+		{
+			GEmitterWorldTransformCPU[changedId] = XMMatrixTranspose(GEmitterWorldTransformCPU[changedId]);
+		}
+
+		GEmitterWorldTrnasformGPU->StageNthElement(deviceContext, GChangedEmitterWorldTransformIDs.data(), emitterWorldPositionChangedIDsCount);
+		GEmitterWorldTrnasformGPU->UploadNthElement(deviceContext, GChangedEmitterWorldTransformIDs.data(), emitterWorldPositionChangedIDsCount);
+
+		for (const UINT changedId : GChangedEmitterWorldTransformIDs)
+		{
+			GEmitterWorldTransformCPU[changedId] = XMMatrixTranspose(GEmitterWorldTransformCPU[changedId]);
+		}
+
+		GChangedEmitterWorldTransformIDs.clear();
 	}
 
 	UINT emitterForceChagnedIDsCount = static_cast<UINT>(GChangedEmitterForceIDs.size());
@@ -189,7 +212,7 @@ void EmitterStaticData::InitializeEmitterDrawPSO(ID3D11Device* device)
 
 void EmitterStaticData::DrawEmittersDebugCube(ID3D11DeviceContext* deviceContext)
 {
-	static vector<ID3D11Buffer*> vertexBuffer = { GEmitterPositionBuffer->GetBuffer(), GEmitterWorldTransformGPU->GetBuffer() };
+	static vector<ID3D11Buffer*> vertexBuffer = { GEmitterPositionBuffer->GetBuffer(), GEmitterInstancedTrnasformGPU->GetBuffer() };
 	static vector<ID3D11Buffer*> vertexNullBuffer = vector<ID3D11Buffer*>(vertexBuffer.size(), nullptr);
 	static ID3D11Buffer* indexBuffer = GEmitterIndexBuffer->GetBuffer();
 	static vector<UINT> strides = { static_cast<UINT>(sizeof(XMFLOAT3)), static_cast<UINT>(sizeof(XMMATRIX)) };

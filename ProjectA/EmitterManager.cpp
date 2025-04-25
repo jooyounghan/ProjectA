@@ -90,7 +90,7 @@ void CEmitterManager::RemoveParticleEmitter(UINT emitterID)
 	{
 		EmitterStaticData::ReclaimEmitterID(emitterID);
 		EmitterStaticData::GEmitterWorldTransformCPU[emitterID] = ZERO_MATRIX;
-		EmitterStaticData::AddChangedEmitterWorldPositionID(emitterID);
+		EmitterStaticData::AddChangedEmitterTransformID(emitterID);
 		m_emitters.erase(iter);
 	}
 	else 
@@ -223,11 +223,15 @@ void CEmitterManager::InitializeParticleSet(ID3D11DeviceContext* deviceContext)
 
 void CEmitterManager::SourceEmitter(ID3D11DeviceContext* deviceContext)
 {
-	ID3D11UnorderedAccessView* selectSetUavs[] = { m_totalParticles->GetUAV(), m_aliveFlags->GetUAV(), m_deathParticleSet->GetUAV() };
-	ID3D11UnorderedAccessView* selectSetNullUavs[] = { nullptr, nullptr, nullptr };
+
+	ID3D11ShaderResourceView* sourceSrvs[] = { EmitterStaticData::GEmitterWorldTrnasformGPU->GetSRV() };
+	ID3D11ShaderResourceView* sourceNullSrvs[] = { nullptr };
+	ID3D11UnorderedAccessView* sourceUavs[] = { m_totalParticles->GetUAV(), m_aliveFlags->GetUAV(), m_deathParticleSet->GetUAV() };
+	ID3D11UnorderedAccessView* sourceNullUavs[] = { nullptr, nullptr, nullptr };
 	UINT initialValue[3] = { NULL, NULL, static_cast<UINT>(-1) };
 
-	deviceContext->CSSetUnorderedAccessViews(0, 3, selectSetUavs, initialValue);
+	deviceContext->CSSetShaderResources(0, 1, sourceSrvs);
+	deviceContext->CSSetUnorderedAccessViews(0, 3, sourceUavs, initialValue);
 #pragma region ÃÊ±âÈ­ ¼Ò½Ì
 	CEmitterManagerStaticData::GParticleInitialSourceCS->SetShader(deviceContext);
 	for (auto& emitter : m_emitters)
@@ -265,7 +269,8 @@ void CEmitterManager::SourceEmitter(ID3D11DeviceContext* deviceContext)
 	ID3D11Buffer* emitterPropertiesNullBuffer[] = { nullptr, nullptr };
 	deviceContext->CSSetConstantBuffers(2, 2, emitterPropertiesNullBuffer);
 
-	deviceContext->CSSetUnorderedAccessViews(0, 3, selectSetNullUavs, nullptr);
+	deviceContext->CSSetUnorderedAccessViews(0, 3, sourceNullUavs, nullptr);
+	deviceContext->CSSetShaderResources(0, 1, sourceNullSrvs);
 }
 
 void CEmitterManager::PoolingParticles(ID3D11DeviceContext* deviceContext)
@@ -363,20 +368,25 @@ void CEmitterManager::SortingParitcleIndices(ID3D11DeviceContext* deviceContext)
 
 void CEmitterManager::CaculateParticlesForce(ID3D11DeviceContext* deviceContext)
 {
-	ID3D11ShaderResourceView* simulateSrvs[] = { m_particleDrawIndirectStagingGPU->GetSRV(), m_indicesBuffers->GetSRV(), EmitterStaticData::GEmitterForcePropertyGPU->GetSRV() };
-	ID3D11ShaderResourceView* simulateNullSrvs[] = { nullptr, nullptr, nullptr };
+	ID3D11ShaderResourceView* simulateSrvs[] = { 
+		m_particleDrawIndirectStagingGPU->GetSRV(), 
+		m_indicesBuffers->GetSRV(), 
+		EmitterStaticData::GEmitterWorldTrnasformGPU->GetSRV(),
+		EmitterStaticData::GEmitterForcePropertyGPU->GetSRV() 
+	};
+	ID3D11ShaderResourceView* simulateNullSrvs[] = { nullptr, nullptr, nullptr, nullptr };
 
 	ID3D11UnorderedAccessView* simulateUav = m_totalParticles->GetUAV();
 	ID3D11UnorderedAccessView* simulateNullUav = nullptr;
 
 	CEmitterManagerStaticData::GCaculateParticleForceCS->SetShader(deviceContext);
 
-	deviceContext->CSSetShaderResources(0, 3, simulateSrvs);
+	deviceContext->CSSetShaderResources(0, 4, simulateSrvs);
 	deviceContext->CSSetUnorderedAccessViews(0, 1, &simulateUav, nullptr);
 
 	deviceContext->DispatchIndirect(m_indexedParticleDispatchIndirectBuffer->GetBuffer(), NULL);
 
-	deviceContext->CSSetShaderResources(0, 3, simulateNullSrvs);
+	deviceContext->CSSetShaderResources(0, 4, simulateNullSrvs);
 	deviceContext->CSSetUnorderedAccessViews(0, 1, &simulateNullUav, nullptr);
 }
 

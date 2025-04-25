@@ -35,7 +35,6 @@ public:
 protected:
 	struct alignas(16)
 	{
-		DirectX::XMMATRIX emitterWorldTransform;
 		UINT emitterType;
 		UINT emitterID;
 		DirectX::XMFLOAT2 padding;

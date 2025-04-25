@@ -88,7 +88,7 @@ void AEmitter::Update(ID3D11DeviceContext* deviceContext, float dt)
 	if (m_isEmitterPropertyChanged)
 	{
 		const UINT& emitterID = m_emitterPropertyCPU.emitterID;
-		EmitterStaticData::AddChangedEmitterWorldPositionID(emitterID);
+		EmitterStaticData::AddChangedEmitterTransformID(emitterID);
 
 		XMMATRIX& emitterWorldTrans = EmitterStaticData::GEmitterWorldTransformCPU[emitterID];
 		emitterWorldTrans = XMMatrixAffineTransformation(
@@ -97,7 +97,6 @@ void AEmitter::Update(ID3D11DeviceContext* deviceContext, float dt)
 			XMQuaternionRotationRollPitchYawFromVector(m_angle),
 			m_position
 		);
-		m_emitterPropertyCPU.emitterWorldTransform = XMMatrixTranspose(emitterWorldTrans);
 
 		m_emitterPropertyGPU->Stage(deviceContext);
 		m_emitterPropertyGPU->Upload(deviceContext);

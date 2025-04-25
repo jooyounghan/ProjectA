@@ -16,6 +16,7 @@ cbuffer SpawnProperty : register(b3)
 	float2 maxSpeedRadian;
 	float2 minMaxSpeed;
 	float2 particleSpawnPropertyDummy2;
+	float4 color;
 }
 #elif defined(INITIAL_SOURCE)
 cbuffer SpawnProperty : register(b3)
@@ -33,6 +34,7 @@ cbuffer SpawnProperty : register(b3)
 	float2 maxSpeedRadian;
 	float2 minMaxSpeed;
 	float2 particleSpawnPropertyDummy2;
+	float4 color;
 }
 #else
 cbuffer SpawnProperty : register(b3)
@@ -49,6 +51,7 @@ cbuffer SpawnProperty : register(b3)
 	float2 maxSpeedRadian;
 	float2 minMaxSpeed;
 	float2 particleSpawnPropertyDummy2;
+	float4 color;
 }
 #endif
 
@@ -83,10 +86,10 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 	float3 velocity = randSpeed * float3(cos(randSpeedRads.x) * cos(randSpeedRads.y), sin(randSpeedRads.y), sin(randSpeedRads.x) * cos(randSpeedRads.y));
 	float4 worldVelocity = mul(mul(float4(velocity, 0.f), speedTransformation), emitterWorldTransformation);
 	
-    sourcedParticle.color = float4(1.f, 1.f, 1.f, 1.f);
 	sourcedParticle.worldPos = worldPos.xyz;
 	sourcedParticle.velocity = worldVelocity.xyz;
 	sourcedParticle.accelerate = float3(0.f, 0.f, 0.f);
+	sourcedParticle.color = color;
 	sourcedParticle.emitterID = emitterID;
 	sourcedParticle.emitterType = emitterType;
 

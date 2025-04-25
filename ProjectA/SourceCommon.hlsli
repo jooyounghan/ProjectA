@@ -2,12 +2,12 @@
 
 cbuffer EmitterProperties : register(b2)
 {
-	matrix emitterWorldTransformation;
 	uint emitterType;
     uint emitterID;
-    uint colorInterpolaterID;
-    uint colorInterpolaterDegree;
+    float2 dummy;
 };
+
+StructuredBuffer<matrix> emitterWorldTransforms : register(t0);
 
 RWStructuredBuffer<Particle> totalParticles : register(u0);
 RWStructuredBuffer<uint> aliveFlags : register(u1);

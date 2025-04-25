@@ -50,11 +50,13 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
             const uint emitterID = currentParticle.emitterID;
             const EmitterInterpolaterInformation interpolaterInformation = emitterInterpolaterInformations[emitterID];
             const float maxLife = interpolaterInformation.maxLife;
+
+            const uint colorInterpolaterNotSelected = ~0;
             const uint colorInterpolaterID = interpolaterInformation.colorInterpolaterID;
             const uint colorDegree = interpolaterInformation.colorInterpolaterDegree;
             const float timeSpent = maxLife - currentParticle.life;
 
-            if (colorDegree > 0)
+            if (colorInterpolaterID != colorInterpolaterNotSelected)
             {
                 currentParticle.color = GetInterpolated(colorDegree, colorInterpolaterID, float4(timeSpent, timeSpent, timeSpent, timeSpent), maxLife);
             }
@@ -64,14 +66,6 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
             currentParticle.velocity += currentParticle.accelerate * dt;
             currentParticle.worldPos += currentParticle.velocity * dt;
             // ==============================================================================================================
-            // 
-            //if (currentParticle.worldPos.y < 0.f)
-            //{
-            //    currentParticle.worldPos.y = 1E-3;
-            //    currentParticle.velocity.x = currentParticle.velocity.x * 0.2f;
-            //    currentParticle.velocity.y = currentParticle.velocity.y * -0.2f;
-            //    currentParticle.velocity.z = currentParticle.velocity.z * 0.2f;
-            //}
 
             totalParticles[threadID] = currentParticle;
         }		

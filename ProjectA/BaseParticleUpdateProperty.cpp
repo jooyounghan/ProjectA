@@ -236,10 +236,12 @@ void CBaseParticleUpdateProperty::HandleNForce(
 
 void CBaseParticleUpdateProperty::Serialize(std::ofstream& ofs)
 {
+	SerializeHelper::SerializeElement<SEmitterForceProperty>(ofs, m_emitterForceProperty);
 
 }
 
 void CBaseParticleUpdateProperty::Deserialize(std::ifstream& ifs)
 {
-
+	m_emitterForceProperty = SerializeHelper::DeserializeElement<SEmitterForceProperty>(ifs);
+	m_isEmitterForcePropertyChanged = true;
 }

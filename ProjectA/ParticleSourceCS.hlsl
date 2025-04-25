@@ -73,18 +73,24 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 
 	Particle sourcedParticle;
 
-	float dt2 = dt * dt;
-    float2 randPositionRads = lerp(minPositionRadian, maxPositionRadian, hash22(float2(revivedIndex * dt2, revivedIndex * dt)));
-	float randPositionRadius = lerp(minMaxRadius.x, minMaxRadius.y, rand(float2(revivedIndex * dt, revivedIndex * dt2)));
+	const float pMaxCount = float(particleMaxCount);
+	const float rand1 = pMaxCount;
+	const float rand2 = pMaxCount + 1;
+	const float rand3 = pMaxCount + 2;
+	const float rand4 = pMaxCount + 3;
+	const matrix emitterWorldTransform = emitterWorldTransforms[emitterID];
+
+    float2 randPositionRads = lerp(minPositionRadian, maxPositionRadian, hash22(float2(revivedIndex / rand1, revivedIndex / rand1)));
+	float randPositionRadius = lerp(minMaxRadius.x, minMaxRadius.y, rand(float2(revivedIndex / rand2, revivedIndex / rand2)));
 	float3 randPos = randPositionRadius * float3(cos(randPositionRads.x) * cos(randPositionRads.y), sin(randPositionRads.y), sin(randPositionRads.x) * cos(randPositionRads.y));
-	float4 worldPos = mul(mul(float4(randPos, 1.f), positionTransformation), emitterWorldTransformation);
+	float4 worldPos = mul(mul(float4(randPos, 1.f), positionTransformation), emitterWorldTransform);
 	worldPos.xyz /= worldPos.w;
 
-	float2 randSpeedRads = lerp(minSpeedRadian, maxSpeedRadian, hash22(float2(revivedIndex * dt, revivedIndex * dt2)));
-	float speedHash = rand(float2(revivedIndex * dt2, revivedIndex * dt));
+	float2 randSpeedRads = lerp(minSpeedRadian, maxSpeedRadian, hash22(float2(revivedIndex / rand3, revivedIndex / rand3)));
+	float speedHash = rand(float2(revivedIndex / rand4, revivedIndex / rand4));
 	float randSpeed = lerp(minMaxSpeed.x, minMaxSpeed.y, speedHash);
 	float3 velocity = randSpeed * float3(cos(randSpeedRads.x) * cos(randSpeedRads.y), sin(randSpeedRads.y), sin(randSpeedRads.x) * cos(randSpeedRads.y));
-	float4 worldVelocity = mul(mul(float4(velocity, 0.f), speedTransformation), emitterWorldTransformation);
+	float4 worldVelocity = mul(mul(float4(velocity, 0.f), speedTransformation), emitterWorldTransform);
 	
 	sourcedParticle.worldPos = worldPos.xyz;
 	sourcedParticle.velocity = worldVelocity.xyz;

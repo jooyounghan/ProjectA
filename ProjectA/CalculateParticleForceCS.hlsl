@@ -1,10 +1,12 @@
 #include "CaculateForceCommon.hlsli"
 
 #define Pcurrent particleDrawIndirectArgs[0]
+#define EPSILON 1e-3f
 
 StructuredBuffer<uint> particleDrawIndirectArgs: register(t0);
 StructuredBuffer<uint> currentIndices : register(t1);
-StructuredBuffer<ForceProperty> emitterForces : register(t2);
+StructuredBuffer<matrix> emitterWorldTransforms : register(t2);
+StructuredBuffer<ForceProperty> emitterForces : register(t3);
 
 RWStructuredBuffer<Particle> particles : register(u0);
 
@@ -27,103 +29,92 @@ void main( uint3 DTid : SV_DispatchThreadID )
 
 		Particle currentParticle = particles[particleIndex];
 
-		// 가속도 계산
 		const uint emitterID = currentParticle.emitterID;
 		const uint emitterType = currentParticle.emitterType;
-        const float3 position = currentParticle.worldPos;
+
+		const float3 position = currentParticle.worldPos;
 		const float3 velocity = currentParticle.velocity;
+		const matrix emitterWorldTransform = emitterWorldTransforms[emitterID];
+		const ForceProperty forceProperty = emitterForces[emitterID];
+        const uint forceFlag = forceProperty.forceFlag;
 		float3 force = float3(0.f, 0.f, 0.f);
 
-		ForceProperty forceProperty = emitterForces[emitterID];
 
-		uint forceFlag = forceProperty.forceFlag;
 
-		uint gravityFlag = (forceFlag >> GravityFlag);
-		uint dragFlag = (forceFlag >> DragFlag);
-		uint curlNoiseFlag = (forceFlag >> CurlNoiseFlag);
-		uint vortextFlag = (forceFlag >> VortexFlag);
-		uint pointInteractionFlag = (forceFlag >> PointInteractionFlag);
+        if (IsForceEnabled(forceFlag, GravityFlag))
+        {
+            force += forceProperty.gravityForce;
+        }
 
-		if (gravityFlag & 1)
-		{
-			force += forceProperty.gravityForce;
-		}
+        if (IsForceEnabled(forceFlag, DragFlag))
+        {
+            force -= forceProperty.dragCoefficient * length(velocity) * velocity;
+        }
 
-		if (dragFlag & 1)
-		{
-			force -= forceProperty.dragCoefficient * length(velocity) * velocity;
-		}
-		
-		if (curlNoiseFlag & 1)
-		{
-			force += forceProperty.curlNoiseCoefficient * CurlNoise(position, max(forceProperty.curlNoiseOctave, 0.1f));
-		}
+        if (IsForceEnabled(forceFlag, CurlNoiseFlag))
+        {
+            float octave = max(forceProperty.curlNoiseOctave, 0.1f);
+            force += forceProperty.curlNoiseCoefficient * CurlNoise(position, octave);
+        }
 
-		if (vortextFlag & 1)
-		{
-			const uint vortexCount = GetNForceCount(forceProperty.nForceCount, NForceVortexKind);
+        if (IsForceEnabled(forceFlag, VortexFlag))
+        {
+            uint vortexCount = GetNForceCount(forceProperty.nForceCount, NForceVortexKind);
 
-			[unroll]
-			for (uint vortexIdx = 0; vortexIdx < vortexCount; ++vortexIdx)
-			{
-                VortexForceProperty vortexForceProperty = forceProperty.nVortexForce[vortexIdx];
-                float3 origin = vortexForceProperty.vortexOrigin;
-                float3 vortexAxis = vortexForceProperty.vortexAxis;
-                float vortexRadius = vortexForceProperty.vortexRadius;
-                float vortexDeathHorizonRadius = vortexForceProperty.vortexDeathHorizonRadius;
-                float vortexCoefficient = vortexForceProperty.vortexCoefficient;
-                float vortexTightness = vortexForceProperty.vortexTightness;
-				
-				float3 originToPos = position - origin;
+            [unroll]
+            for (uint i = 0; i < vortexCount; ++i)
+            {
+                VortexForceProperty v = forceProperty.nVortexForce[i];
 
-				float3 vortexDir = cross(vortexAxis, originToPos);
-				float vortexDirLength = length(vortexDir);
+                float3 origin = GetWorldPosition(v.vortexOrigin, emitterWorldTransform);
+                float3 toPos = position - origin;
 
-				float3 centripetalDir = dot(originToPos, vortexAxis) * vortexAxis - originToPos;
-				float vortexDistance = length(centripetalDir);
-				
-				if (vortexDirLength > 1E-3f && vortexDistance > 1E-3f)
-				{
-					vortexDir = normalize(vortexDir);
-					centripetalDir = normalize(centripetalDir);
-					
-                    float scale = lerp(1.f, 0.f, saturate(vortexDistance / max(vortexRadius, 1E-3)));
-                    force += scale * vortexCoefficient * vortexDir;
-                    					
-                    float currentTangentialSpeed = dot(velocity + scale * vortexCoefficient * dt, vortexDir);
-                    float centripetalForceMagnitude = currentTangentialSpeed * currentTangentialSpeed / vortexDistance;
-                    force += (centripetalForceMagnitude + scale * vortexTightness) * centripetalDir;
+                float3 vortexDir = cross(v.vortexAxis, toPos);
+                float vortexDirLen = length(vortexDir);
+
+                float3 centripetalDir = dot(toPos, v.vortexAxis) * v.vortexAxis - toPos;
+                float vortexDist = length(centripetalDir);
+
+                if (vortexDirLen > EPSILON && vortexDist > EPSILON)
+                {
+                    vortexDir = normalize(vortexDir);
+                    centripetalDir = normalize(centripetalDir);
+
+                    float scale = lerp(1.f, 0.f, saturate(vortexDist / max(v.vortexRadius, EPSILON)));
+                    force += scale * v.vortexCoefficient * vortexDir;
+
+                    float tangentSpeed = dot(velocity + scale * v.vortexCoefficient * dt, vortexDir);
+                    float centripetalMag = tangentSpeed * tangentSpeed / vortexDist;
+                    force += (centripetalMag + scale * v.vortexTightness) * centripetalDir;
                 }
 
-				if (vortexDistance < vortexDeathHorizonRadius)
-				{
-					currentParticle.life = 0.f;
-				}
-			}
-		}
+                if (vortexDist < v.vortexDeathHorizonRadius)
+                {
+                    currentParticle.life = 0.f;
+                }
+            }
+        }
 
-		if (pointInteractionFlag & 1)
-		{
-			const uint pointInteractionCount = GetNForceCount(forceProperty.nForceCount, NForcePointInteraction);
+        if (IsForceEnabled(forceFlag, PointInteractionFlag))
+        {
+            uint piCount = GetNForceCount(forceProperty.nForceCount, NForcePointInteraction);
 
-			[unroll]
-			for (uint pointInteractionIdx = 0; pointInteractionIdx < pointInteractionCount; ++pointInteractionIdx)
-			{
-                PointInteractionForceProperty pointInteractionForceProperty = forceProperty.nPointInteractionForce[pointInteractionIdx];
-                float3 origin = pointInteractionForceProperty.pointInteractionCenter;
-                float interactionRadius = pointInteractionForceProperty.interactionRadius;
-                float interactionCoefficient = pointInteractionForceProperty.interactionCoefficient;
-				
-				float3 posToOrigin = origin - position;
-				float distance = length(posToOrigin);
-				
-				if (distance > 1E-3)
-				{
-					float scale = lerp(1.f, 0.f, saturate(distance / max(interactionRadius, 1E-3)));
-					force += scale * interactionCoefficient * normalize(posToOrigin);
-				}
-			}
-		}
+            [unroll]
+            for (uint i = 0; i < piCount; ++i)
+            {
+                PointInteractionForceProperty pi = forceProperty.nPointInteractionForce[i];
+
+                float3 origin = GetWorldPosition(pi.pointInteractionCenter, emitterWorldTransform);
+                float3 toOrigin = origin - position;
+                float dist = length(toOrigin);
+
+                if (dist > EPSILON)
+                {
+                    float scale = lerp(1.f, 0.f, saturate(dist / max(pi.interactionRadius, EPSILON)));
+                    force += scale * pi.interactionCoefficient * normalize(toOrigin);
+                }
+            }
+        }
 
         currentParticle.accelerate = force;
 		

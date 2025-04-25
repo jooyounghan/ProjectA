@@ -180,6 +180,7 @@ void CBaseParticleSpawnProperty::DrawPropertyUI()
 		m_colorInterpolationSelectPlotter->CreateInterpolater(m_useGPUColorInterpolater, m_colorInterpolationMethod, m_colorInterpolater);
 		m_onColorInterpolationChanged(m_colorInterpolater->GetInterpolaterID(), m_colorInterpolater->GetCoefficientCount());
 	}
+
 	if (Checkbox("GPU 기반 색상 보간", &m_useGPUColorInterpolater))
 	{
 		OnCheckGPUColorInterpolater();
@@ -231,10 +232,9 @@ void CBaseParticleSpawnProperty::Deserialize(std::ifstream& ifs)
 	m_colorInterpolationMethod = SerializeHelper::DeserializeElement<EInterpolationMethod>(ifs);
 
 	m_useGPUColorInterpolater = SerializeHelper::DeserializeElement<bool>(ifs);
-	OnCheckGPUColorInterpolater();
 
-	m_colorInterpolater->UpdateCoefficient();
-	m_colorInterpolationSelectPlotter->RedrawSelectPlotter();
+	OnCheckGPUColorInterpolater();
+	AdjustControlPointsFromLife();
 
 	m_isParticleSpawnPropertyChanged = true;
 }

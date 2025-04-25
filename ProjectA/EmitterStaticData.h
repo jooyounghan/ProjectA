@@ -45,13 +45,14 @@ public:
 #pragma region EmitterWorldTransformation
 protected:
 	static std::vector<DirectX::XMMATRIX> GEmitterWorldTransformCPU;
-	static std::vector<UINT> GChangedEmitterWorldPositionIDs;
+	static std::vector<UINT> GChangedEmitterWorldTransformIDs;
 
 public:
-	static std::unique_ptr<D3D11::CDynamicBuffer> GEmitterWorldTransformGPU;
+	static std::unique_ptr<D3D11::CDynamicBuffer> GEmitterInstancedTrnasformGPU;
+	static std::unique_ptr<D3D11::CStructuredBuffer> GEmitterWorldTrnasformGPU;
 
 public:
-	static void AddChangedEmitterWorldPositionID(UINT emitterID);
+	static void AddChangedEmitterTransformID(UINT emitterID);
 #pragma endregion
 
 #pragma region Emitter Force
