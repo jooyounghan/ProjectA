@@ -44,6 +44,7 @@ bool CShapedVectorSelector::SetShapedVectorProperty(EShapedVector selectedShaped
 	{
 	case EShapedVector::None:
 		ResetShapedVector();
+		isChanged = true;
 		break;
 	case EShapedVector::Manual:
 		isChanged |= CShapedVectorSelector::SetManualShapedVector();

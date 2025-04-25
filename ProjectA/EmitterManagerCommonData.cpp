@@ -31,6 +31,7 @@ unique_ptr<CAppendBuffer> CEmitterManagerCommonData::GDeathIndexSet;
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GInitializeParticleSetCS = make_unique<CComputeShader>();
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GParticleInitialSourceCS = make_unique<CComputeShader>();
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GParticleRuntimeSourceCS = make_unique<CComputeShader>();
+unique_ptr<CComputeShader> CEmitterManagerCommonData::GCalcualteIndirectArgCS = make_unique<CComputeShader>();
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GCaculateParticleForceCS = make_unique<CComputeShader>();
 
 unique_ptr<CVertexShader> CEmitterManagerCommonData::GParticleDrawVS = make_unique<CVertexShader>(0);
@@ -74,6 +75,10 @@ void CEmitterManagerCommonData::Intialize(
 
 	sourceMacro[0] = { "RUNTIME_SOURCE", nullptr };
 	GParticleRuntimeSourceCS->CreateShader(L"./ParticleSourceCS.hlsl", sourceMacro, "main", "cs_5_0", device);
+#pragma endregion
+
+#pragma region Indirect 인자 계산 관련 CS
+	GCalcualteIndirectArgCS->CreateShader(L"./ComputeIndirectArgsCS.hlsl", nullptr, "main", "cs_5_0", device);
 #pragma endregion
 
 #pragma region Particle 시뮬레이션 관련 CS

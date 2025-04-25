@@ -46,6 +46,12 @@ public:
 	static std::unique_ptr<D3D11::CComputeShader> GParticleRuntimeSourceCS;
 #pragma endregion
 
+#pragma region Indirect 인자 계산 관련 CS
+public:
+	static std::unique_ptr<D3D11::CComputeShader> GCalcualteIndirectArgCS;
+#pragma endregion
+
+
 #pragma region Particle 시뮬레이션 관련 CS
 public:
 	static std::unique_ptr<D3D11::CComputeShader> GCaculateParticleForceCS;

@@ -1,20 +1,24 @@
 #include "CaculateForceCommon.hlsli"
 
-#define Pcurrent particleDrawIndirectArgs[0]
 #define EPSILON 1e-3f
 
-StructuredBuffer<uint> particleDrawIndirectArgs: register(t0);
-StructuredBuffer<uint> currentIndices : register(t1);
-StructuredBuffer<matrix> emitterWorldTransforms : register(t2);
-StructuredBuffer<ForceProperty> emitterForces : register(t3);
+cbuffer indirectStagingBuffer : register(b2)
+{
+    uint emitterTotalParticleCount;
+    uint3 indirectStagingDummy;
+};
 
-RWStructuredBuffer<Particle> particles : register(u0);
+StructuredBuffer<matrix> emitterWorldTransforms : register(t0);
+StructuredBuffer<ForceProperty> emitterForces : register(t1);
+
+RWStructuredBuffer<Particle> totalParticles : register(u0);
+ConsumeStructuredBuffer<uint> aliveIndexSet : register(u1);
 
 [numthreads(LocalThreadCount, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
 {
-	uint index = DTid.x;
-	if (index < Pcurrent)
+	uint threadID = DTid.x;
+    if (threadID < emitterTotalParticleCount)
 	{
 		const uint GravityFlag = 0;
 		const uint DragFlag = 1;
@@ -25,9 +29,9 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		const uint NForceVortexKind = 0;
 		const uint NForcePointInteraction = 1;
 
-		const uint particleIndex = currentIndices[index];
-
-		Particle currentParticle = particles[particleIndex];
+        uint index = aliveIndexSet.Consume();
+       
+        Particle currentParticle = totalParticles[index];
 
 		const uint emitterID = currentParticle.emitterID;
 		const uint emitterType = currentParticle.emitterType;
@@ -38,8 +42,6 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		const ForceProperty forceProperty = emitterForces[emitterID];
         const uint forceFlag = forceProperty.forceFlag;
 		float3 force = float3(0.f, 0.f, 0.f);
-
-
 
         if (IsForceEnabled(forceFlag, GravityFlag))
         {
@@ -118,6 +120,6 @@ void main( uint3 DTid : SV_DispatchThreadID )
 
         currentParticle.accelerate = force;
 		
-		particles[particleIndex] = currentParticle;
-	}
+        totalParticles[index] = currentParticle;
+    }
 }

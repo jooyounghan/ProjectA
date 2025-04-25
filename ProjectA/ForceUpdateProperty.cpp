@@ -213,10 +213,10 @@ void ForceUpdateProperty::HandleNForce(
 
 		for (auto& removedVortexIdx : removedForcesIdx)
 		{
-			DecrementNForceCount(m_emitterForceProperty.nForceCount, ENForceKind::Vortex);
+			DecrementNForceCount(m_emitterForceProperty.nForceCount, nForceKind);
 			if (nForceCount == 1)
 			{
-				SetFlag(EForceFlag::Vortex, false);
+				SetFlag(forceFlag, false);
 				break;
 			}
 			else if (nForceCount == MaxNForceCount)

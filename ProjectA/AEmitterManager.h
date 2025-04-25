@@ -3,6 +3,7 @@
 
 #include "EmitterForceProperty.h"
 #include "DispatchIndirectStructure.h"
+
 #include "IndirectBuffer.h"
 #include "AppendBuffer.h"
 
@@ -58,8 +59,12 @@ public:
 
 protected:
 	std::unique_ptr<D3D11::CAppendBuffer> m_aliveIndexSet;
-	std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DRAW_INSTANCED_INDIRECT_ARGS>> m_drawIndirectBuffer;
+
+protected:
+	std::unique_ptr<D3D11::CDynamicBuffer> m_dispatchIndirectStagingBuffer;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_dispatchIndirectCalculatedBuffer;
 	std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DISPATCH_INDIRECT_ARGS>> m_dispatchIndirectBuffer;
+	std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DRAW_INSTANCED_INDIRECT_ARGS>> m_drawIndirectBuffer;
 
 public:
 	inline std::vector<std::unique_ptr<AEmitter>>& GetEmitters() noexcept { return m_emitters; };
