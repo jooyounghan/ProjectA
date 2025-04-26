@@ -3,6 +3,7 @@
 #include <d3d11.h>
 #include <memory>
 #include <vector>
+#include <string>
 
 namespace D3D11
 {
@@ -66,7 +67,8 @@ private:
 	std::unique_ptr<CEmitterSelector> m_emitterSelector;
 
 
-public:
+private:
 	void DrawEmitterHandler();
+	void DrawEmitterSelector(const std::string& emitterName, int& emitterSelectIndex, AEmitterManager& emitterManager);
 #pragma endregion
 };

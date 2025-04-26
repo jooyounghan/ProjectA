@@ -29,7 +29,7 @@ ParticleEmitterManager::ParticleEmitterManager(UINT maxEmitterCount)
 
 ParticleEmitterManager& ParticleEmitterManager::GetParticleEmitterManager()
 {
-	static ParticleEmitterManager particleEmitterManager(100);
+	static ParticleEmitterManager particleEmitterManager(MaxParticleEmitterCount);
 	return particleEmitterManager;
 }
 
@@ -39,11 +39,6 @@ void ParticleEmitterManager::ReclaimEmitterID(UINT emitterID) noexcept
 	AddInterpolaterInformChangedEmitterID(emitterID);
 
 	AEmitterManager::ReclaimEmitterID(emitterID);
-}
-
-void ParticleEmitterManager::AddInterpolaterInformChangedEmitterID(UINT emitterID)
-{
-	m_interpInformationChangedEmitterIDs.emplace_back(emitterID);
 }
 
 UINT ParticleEmitterManager::AddEmitter(
@@ -89,19 +84,6 @@ void ParticleEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceCo
 		m_emitterInterpInformationCPU.data()
 	);
 	m_emitterInterpInformationGPU->InitializeBuffer(device);
-}
-
-void ParticleEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
-{
-	AEmitterManager::UpdateImpl(deviceContext, dt);
-
-	UINT interpInformationChangedCount = static_cast<UINT>(m_interpInformationChangedEmitterIDs.size());
-	if (interpInformationChangedCount > 0)
-	{
-		m_emitterInterpInformationGPU->StageNthElement(deviceContext, m_interpInformationChangedEmitterIDs.data(), interpInformationChangedCount);
-		m_emitterInterpInformationGPU->UploadNthElement(deviceContext, m_interpInformationChangedEmitterIDs.data(), interpInformationChangedCount);
-		m_interpInformationChangedEmitterIDs.clear();
-	}
 }
 
 void ParticleEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceContext)

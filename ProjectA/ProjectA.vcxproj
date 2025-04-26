@@ -172,9 +172,12 @@
     <ClCompile Include="ProjectAApp.cpp" />
     <ClCompile Include="ShapedVectorSelector.cpp" />
     <ClCompile Include="SpriteEmitter.cpp" />
+    <ClCompile Include="SpriteEmitterManager.cpp" />
+    <ClCompile Include="SpriteSpawnProperty.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AEmitter.h" />
+    <ClInclude Include="InitialPropertyDefinition.h" />
     <ClInclude Include="InitialSpawnProperty.h" />
     <ClInclude Include="EmitterUpdateProperty.h" />
     <ClInclude Include="ARuntimeSpawnProperty.h" />
@@ -205,7 +208,7 @@
     <ClInclude Include="AEmitterManager.h" />
     <ClInclude Include="ParticleEmitter.h" />
     <ClInclude Include="ParticleEmitterManager.h" />
-    <ClInclude Include="ParticleInterpInformation.h" />
+    <ClInclude Include="InterpInformation.h" />
     <ClInclude Include="ParticleSpawnProperty.h" />
     <ClInclude Include="ParticleStructure.h" />
     <ClInclude Include="ProjectAApp.h" />
@@ -213,6 +216,8 @@
     <ClInclude Include="ShapedVectorSelector.h" />
     <ClInclude Include="IUpdatable.h" />
     <ClInclude Include="SpriteEmitter.h" />
+    <ClInclude Include="SpriteEmitterManager.h" />
+    <ClInclude Include="SpriteSpawnProperty.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DefineLinkedWithCpp.hlsli" />

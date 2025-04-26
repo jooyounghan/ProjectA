@@ -181,6 +181,11 @@ void AEmitterManager::Update(ID3D11DeviceContext* deviceContext, float dt)
 	UpdateImpl(deviceContext, dt);	
 }
 
+void AEmitterManager::AddInterpolaterInformChangedEmitterID(UINT emitterID)
+{
+	m_interpInformationChangedEmitterIDs.emplace_back(emitterID);
+}
+
 void AEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 	D3D11_DISPATCH_INDIRECT_ARGS dispatchIndirectArgs;
@@ -266,6 +271,14 @@ void AEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
 		m_forcePropertyGPU->StageNthElement(deviceContext, m_forcePropertyChangedEmitterIDs.data(), forcePropertyChangedCount);
 		m_forcePropertyGPU->UploadNthElement(deviceContext, m_forcePropertyChangedEmitterIDs.data(), forcePropertyChangedCount);
 		m_forcePropertyChangedEmitterIDs.clear();
+	}
+
+	UINT interpInformationChangedCount = static_cast<UINT>(m_interpInformationChangedEmitterIDs.size());
+	if (interpInformationChangedCount > 0)
+	{
+		m_emitterInterpInformationGPU->StageNthElement(deviceContext, m_interpInformationChangedEmitterIDs.data(), interpInformationChangedCount);
+		m_emitterInterpInformationGPU->UploadNthElement(deviceContext, m_interpInformationChangedEmitterIDs.data(), interpInformationChangedCount);
+		m_interpInformationChangedEmitterIDs.clear();
 	}
 }
 

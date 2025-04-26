@@ -186,10 +186,16 @@
       <Filter>소스 파일\EmitterSystem\Emitter\Extended</Filter>
     </ClCompile>
     <ClCompile Include="ParticleEmitterManager.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\EmitterSystem\EmitterManager\Extended</Filter>
     </ClCompile>
     <ClCompile Include="ParticleSpawnProperty.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\EmitterSystem\Emitter\Property\Extended</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteEmitterManager.cpp">
+      <Filter>소스 파일\EmitterSystem\EmitterManager\Extended</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteSpawnProperty.cpp">
+      <Filter>소스 파일\EmitterSystem\Emitter\Property\Extended</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -301,7 +307,7 @@
     <ClInclude Include="EmitterTypeDefinition.h">
       <Filter>헤더 파일\EmitterSystem\Emitter\Extended\include</Filter>
     </ClInclude>
-    <ClInclude Include="ParticleInterpInformation.h">
+    <ClInclude Include="InterpInformation.h">
       <Filter>헤더 파일\EmitterSystem\Emitter\Extended\include</Filter>
     </ClInclude>
     <ClInclude Include="ParticleEmitterManager.h">
@@ -309,6 +315,15 @@
     </ClInclude>
     <ClInclude Include="ParticleSpawnProperty.h">
       <Filter>헤더 파일\EmitterSystem\Emitter\Property\Extended</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteEmitterManager.h">
+      <Filter>헤더 파일\EmitterSystem\EmitterManager\Extended</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteSpawnProperty.h">
+      <Filter>헤더 파일\EmitterSystem\Emitter\Property\Extended</Filter>
+    </ClInclude>
+    <ClInclude Include="InitialPropertyDefinition.h">
+      <Filter>헤더 파일\EmitterSystem\Emitter\Property</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

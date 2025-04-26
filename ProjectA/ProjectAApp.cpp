@@ -26,6 +26,7 @@
 #include "EmitterSelector.h"
 
 #include "ParticleEmitterManager.h"
+#include "SpriteEmitterManager.h"
 #include "EmitterManagerCommonData.h"
 
 #include "AEmitter.h"
@@ -40,7 +41,6 @@
 #pragma  endregion
 
 #define TotalParticleCount 1024 * 1024
-#define MaxEmitterCount 1000
 
 using namespace std;
 using namespace App;
@@ -139,8 +139,8 @@ void CProjectAApp::Init()
 #pragma region 글로벌 변수 초기화
 	CEmitterManagerCommonData::Intialize(TotalParticleCount, m_device);
 
-	CGPUInterpolater<4, 2>::InitializeGPUInterpProperty(m_device, MaxEmitterCount);
-	CGPUInterpolater<4, 4>::InitializeGPUInterpProperty(m_device, MaxEmitterCount);
+	CGPUInterpolater<4, 2>::InitializeGPUInterpProperty(m_device, MaxParticleEmitterCount + MaxSpriteEmitterCount);
+	CGPUInterpolater<4, 4>::InitializeGPUInterpProperty(m_device, MaxParticleEmitterCount + MaxSpriteEmitterCount);
 #pragma endregion
 
 #pragma region 인스턴스 초기화
@@ -153,6 +153,10 @@ void CProjectAApp::Init()
 
 	ParticleEmitterManager& particleEmitterManager = ParticleEmitterManager::GetParticleEmitterManager();
 	particleEmitterManager.Initialize(m_device, m_deviceContext);
+
+	SpriteEmitterManager& spriteEmitterManager = SpriteEmitterManager::GetSpriteEmitterManager();
+	spriteEmitterManager.Initialize(m_device, m_deviceContext);
+
 #pragma endregion
 
 #pragma endregion
@@ -177,6 +181,9 @@ void CProjectAApp::Update(float deltaTime)
 
 	ParticleEmitterManager& particleEmitterManager = ParticleEmitterManager::GetParticleEmitterManager();
 	particleEmitterManager.Update(m_deviceContext, deltaTime);
+
+	SpriteEmitterManager& spriteEmitterManager = SpriteEmitterManager::GetSpriteEmitterManager();
+	spriteEmitterManager.Update(m_deviceContext, deltaTime);
 #pragma endregion
 
 #pragma region 글로벌 변수 업데이트
@@ -283,7 +290,11 @@ void CProjectAApp::DrawEmitterHandler()
 				break;
 			}
 			case EEmitterType::SpriteEmitter:
+			{
+				SpriteEmitterManager& spriteEmitterManager = SpriteEmitterManager::GetSpriteEmitterManager();
+				spriteEmitterManager.AddEmitter(XMVectorZero(), XMVectorZero(), m_device, m_deviceContext);
 				break;
+			}
 			default:
 				break;
 			}
@@ -298,25 +309,33 @@ void CProjectAApp::DrawEmitterHandler()
 		ImGui::EndPopup();
 	}
 
-	constexpr int NotSelected = -1;
 	static int particleEmitterIndex = -1;
-
+	static int spriteEmitterIndex = -1;
 	ParticleEmitterManager& particleEmitterManager = ParticleEmitterManager::GetParticleEmitterManager();
+	SpriteEmitterManager& spriteEmitterManager = SpriteEmitterManager::GetSpriteEmitterManager();
 
-	vector<unique_ptr<AEmitter>>& emitters = particleEmitterManager.GetEmitters();
-	SeparatorText("파티클 이미터");
-	if (emitters.size() > 0)
+	DrawEmitterSelector("파티클 이미터", particleEmitterIndex, particleEmitterManager);
+	DrawEmitterSelector("스프라이트 이미터", spriteEmitterIndex, spriteEmitterManager);
+
+}
+void CProjectAApp::DrawEmitterSelector(const std::string& emitterName, int& emitterSelectIndex, AEmitterManager& emitterManager)
+{
+	constexpr int NotSelected = -1;
+
+	vector<unique_ptr<AEmitter>>& particleEmitters = emitterManager.GetEmitters();
+	SeparatorText(emitterName.c_str());
+	if (particleEmitters.size() > 0)
 	{
-		PushID("Emitter Handler");
+		PushID(format("{} Handler", emitterName).c_str());
 
-		if (BeginCombo("Select Particle Emitter", particleEmitterIndex == NotSelected ? "Choose Emitter" : format("Emitter {}", particleEmitterIndex + 1).c_str(), NULL))
+		if (BeginCombo(format("{} 선택", emitterName).c_str(), emitterSelectIndex == NotSelected ? "Choose Emitter" : format("{} {}", emitterName, emitterSelectIndex + 1).c_str(), NULL))
 		{
-			for (int idx = 0; idx < emitters.size(); idx++)
+			for (int idx = 0; idx < particleEmitters.size(); idx++)
 			{
-				const bool isSelected = (idx == particleEmitterIndex);
+				const bool isSelected = (idx == emitterSelectIndex);
 				if (Selectable(format("Select Emitter {}", idx + 1).c_str(), isSelected))
 				{
-					particleEmitterIndex = idx;
+					emitterSelectIndex = idx;
 				}
 
 				if (isSelected)
@@ -327,18 +346,19 @@ void CProjectAApp::DrawEmitterHandler()
 		PopID();
 	}
 
-	AEmitter* emitter = (particleEmitterIndex == NotSelected) ? nullptr : emitters[particleEmitterIndex].get();
+	AEmitter* emitter = (emitterSelectIndex == NotSelected) ? nullptr : particleEmitters[emitterSelectIndex].get();
+
 	if (emitter)
 	{
 		XMVECTOR emitterPos = emitter->GetPosition();
-		if (DragFloat3("이미터 위치", emitterPos.m128_f32, 0.1f, -1000.f, 1000.f, "%.1f"))
+		if (DragFloat3(format("{} 위치", emitterName).c_str(), emitterPos.m128_f32, 0.1f, -1000.f, 1000.f, "%.1f"))
 		{
 			emitter->SetPosition(emitterPos);
 		}
 
 		XMVECTOR emitterAngle = emitter->GetAngle();
 		emitterAngle = XMVectorScale(emitterAngle, 180.f / XM_PI);
-		if (DragFloat3("이미터 각도", emitterAngle.m128_f32, 0.1f, -360, 360.f, "%.1f"))
+		if (DragFloat3(format("{} 각도", emitterName).c_str(), emitterAngle.m128_f32, 0.1f, -360, 360.f, "%.1f"))
 		{
 			emitterAngle = XMVectorScale(emitterAngle, XM_PI / 180.f);
 			emitter->SetAngle(emitterAngle);

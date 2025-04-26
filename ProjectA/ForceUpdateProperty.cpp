@@ -1,5 +1,7 @@
 #include "ForceUpdateProperty.h"
 #include "MacroUtilities.h"
+#include "InitialPropertyDefinition.h"
+
 #include "imgui.h"
 
 #include <exception>

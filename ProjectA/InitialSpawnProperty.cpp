@@ -4,10 +4,9 @@
 
 #include "DynamicBuffer.h"
 #include "ShapedVectorSelector.h"
+#include "InitialPropertyDefinition.h"
 
 #include <limits>
-
-#define InitLife 1.f
 
 using namespace std;
 using namespace D3D11;
@@ -16,12 +15,12 @@ using namespace ImGui;
 
 CInitialSpawnProperty::CInitialSpawnProperty()
 	: m_isEmitterSpawnPropertyChanged(false),
-	m_positionShapedVector(EShapedVector::Sphere),
-	m_positionOrigin(XMFLOAT3(0.f, 0.f, 0.f)),
-	m_positionUpVector(XMVectorSet(0.f, 1.f, 0.f, 0.f)),
-	m_speedShapedVector(EShapedVector::None),
-	m_speedOrigin(XMFLOAT3(0.f, 0.f, 0.f)),
-	m_speedUpVector(XMVectorSet(0.f, 1.f, 0.f, 0.f)),
+	m_positionShapedVector(InitPositionShapedVector),
+	m_positionOrigin(InitOrigin),
+	m_positionUpVector(InitUpVector),
+	m_speedShapedVector(InitSpeedShapedVector),
+	m_speedOrigin(InitOrigin),
+	m_speedUpVector(InitUpVector),
 	m_isImmortal(false)
 {
 	AutoZeroMemory(m_emitterSpawnPropertyCPU);

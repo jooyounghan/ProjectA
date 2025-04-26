@@ -4,7 +4,6 @@
 #include "ShapedVectorProperty.h"
 
 #include "Interpolater.h"
-
 #include "ShapedVectorSelector.h"
 #include "ControlPointGridView.h"
 #include "InterpolaterSelector.h"
@@ -48,7 +47,7 @@ protected:
 			struct
 			{
 				char padding3[88];
-				float padding4[2];
+				DirectX::XMFLOAT2 size;
 			};
 		};
 		DirectX::XMVECTOR color;
@@ -89,7 +88,7 @@ protected:
 	std::unique_ptr<CInterpolaterSelectPlotter<4>> m_colorInterpolationSelectPlotter;
 
 protected:
-	void AdjustControlPointsFromLife();
+	virtual void AdjustControlPointsFromLife();
 
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;

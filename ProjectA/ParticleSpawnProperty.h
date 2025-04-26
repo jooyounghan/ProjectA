@@ -1,6 +1,6 @@
 #pragma once
 #include "ARuntimeSpawnProperty.h"
-#include "ParticleInterpInformation.h"
+#include "InterpInformation.h"
 
 #include <functional>
 

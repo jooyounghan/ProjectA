@@ -6,8 +6,6 @@
 #include <functional>
 #include <memory>
 
-#define LoopInfinity static_cast<UINT8>(~0)
-
 template<uint32_t Dim>
 class IInterpolater;
 

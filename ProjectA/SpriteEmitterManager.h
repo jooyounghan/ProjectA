@@ -1,18 +1,19 @@
 #pragma once
 #include "AEmitterManager.h"
 
-#define MaxParticleEmitterCount 250
+#define MaxSpriteEmitterCount 250
 
-class ParticleEmitterManager : public AEmitterManager
+class SpriteEmitterManager : public AEmitterManager
 {
 private:
-	ParticleEmitterManager(UINT maxEmitterCount);
-	ParticleEmitterManager(const ParticleEmitterManager&) = delete;
-	ParticleEmitterManager& operator=(const ParticleEmitterManager&) = delete;
-	~ParticleEmitterManager() override = default;
+	SpriteEmitterManager(UINT maxEmitterCount);
+	SpriteEmitterManager(const SpriteEmitterManager&) = delete;
+	SpriteEmitterManager& operator=(const SpriteEmitterManager&) = delete;
+	~SpriteEmitterManager() override = default;
+
 
 public:
-	static ParticleEmitterManager& GetParticleEmitterManager();
+	static SpriteEmitterManager& GetSpriteEmitterManager();
 
 protected:
 	virtual UINT GetEmitterType() const noexcept override { return static_cast<UINT>(EEmitterType::ParticleEmitter); }
@@ -21,13 +22,13 @@ protected:
 	virtual void ReclaimEmitterID(UINT emitterID) noexcept override;
 
 protected:
-	std::vector<SParticleInterpInformation> m_emitterInterpInformationCPU;
+	std::vector<SSpriteInterpInformation> m_emitterInterpInformationCPU;
 
 public:
 	virtual UINT AddEmitter(
 		DirectX::XMVECTOR position,
 		DirectX::XMVECTOR angle,
-		ID3D11Device* device, 
+		ID3D11Device* device,
 		ID3D11DeviceContext* deviceContext
 	) override;
 

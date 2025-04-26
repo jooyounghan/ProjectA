@@ -1,5 +1,6 @@
 #include "EmitterUpdateProperty.h"
 
+#include "InitialPropertyDefinition.h"
 #include "ControlPointGridView.h"
 #include "InterpolaterSelector.h"
 
@@ -10,7 +11,7 @@ using namespace ImGui;
 CEmitterUpdateProperty::CEmitterUpdateProperty()
 	: IProperty(),
 	m_currentTime(0.f),
-	m_loopTime(10.f),
+	m_loopTime(InitLife),
 	m_spawnCount(0.f),
 	m_saturatedSpawnCount(0),
 	m_isLoopInfinity(true),

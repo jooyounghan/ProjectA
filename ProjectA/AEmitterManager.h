@@ -2,7 +2,9 @@
 #include "IUpdatable.h"
 
 #include "EmitterForceProperty.h"
+#include "EmitterTypeDefinition.h"
 #include "DispatchIndirectStructure.h"
+#include "InterpInformation.h"
 
 #include "IndirectBuffer.h"
 #include "AppendBuffer.h"
@@ -54,8 +56,14 @@ protected:
 public:
 	void AddForceChangedEmitterID(UINT emitterID);
 
+protected:
+	std::vector<UINT> m_interpInformationChangedEmitterIDs;
+
 public:
-	virtual void AddInterpolaterInformChangedEmitterID(UINT emitterID) = 0;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_emitterInterpInformationGPU;
+
+public:
+	void AddInterpolaterInformChangedEmitterID(UINT emitterID);
 
 protected:
 	std::unique_ptr<D3D11::CAppendBuffer> m_aliveIndexSet;

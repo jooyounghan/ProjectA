@@ -1,6 +1,6 @@
 #pragma once
 #include "AEmitter.h"
-#include "ParticleInterpInformation.h"
+#include "InterpInformation.h"
 
 class ParticleEmitter : public AEmitter
 {

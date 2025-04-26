@@ -1,9 +1,5 @@
 #include "ParticleSpawnProperty.h"
-
-#include "Interpolater.h"
-#include "ShapedVectorSelector.h"
-#include "InterpolaterSelector.h"
-#include "ControlPointGridView.h"
+#include "MacroUtilities.h"
 
 using namespace std;
 
@@ -12,6 +8,7 @@ ParticleSpawnProperty::ParticleSpawnProperty(
 )
 	: m_onParticleInterpInformationChanged(particleInterpInformationChangedHandler)
 {
+	AutoZeroMemory(m_particleInterpInformation);
 }
 
 void ParticleSpawnProperty::OnInterpolateInformationChagned()
