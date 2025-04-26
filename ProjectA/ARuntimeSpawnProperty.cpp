@@ -136,6 +136,11 @@ void ARuntimeSpawnProperty::DrawPropertyUI()
 	if (!ImGui::CollapsingHeader("파티클 생성 프로퍼티"))
 		return;
 
+	DrawPropertyUIImpl();
+}
+
+void ARuntimeSpawnProperty::DrawPropertyUIImpl()
+{
 	SeparatorText("파티클 생성 위치 설정");
 	m_positionShapedVectorSelector->SelectEnums(m_positionShapedVector);
 	if (m_positionShapedVectorSelector->SetShapedVectorProperty(m_positionShapedVector))

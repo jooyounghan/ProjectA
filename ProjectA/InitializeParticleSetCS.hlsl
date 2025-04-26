@@ -9,6 +9,12 @@ RWStructuredBuffer<Particle> totalParticles : register(u0);
 AppendStructuredBuffer<uint> deathIndexSet : register(u1);
 AppendStructuredBuffer<uint> aliveIndexSet : register(u2);
 
+cbuffer EmitterManagerProperties : register(b2)
+{
+    uint particleMaxCount;
+    uint emitterType;
+    uint2 emitterManagerPropertyDummy;
+};
 
 float4 GetInterpolated(uint degree, uint interpolatedID, float4 timeSpent4, float maxLife)
 {

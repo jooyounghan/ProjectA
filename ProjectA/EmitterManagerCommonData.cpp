@@ -24,10 +24,6 @@ using namespace std;
 using namespace DirectX;
 using namespace D3D11;
 
-UINT CEmitterManagerCommonData::GParticleMaxCount = 0;
-unique_ptr<CStructuredBuffer> CEmitterManagerCommonData::GTotalParticles;
-unique_ptr<CAppendBuffer> CEmitterManagerCommonData::GDeathIndexSet;
-
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GInitializeParticleSetCS = make_unique<CComputeShader>();
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GParticleInitialSourceCS = make_unique<CComputeShader>();
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GParticleRuntimeSourceCS = make_unique<CComputeShader>();
@@ -47,21 +43,8 @@ unique_ptr<CGraphicsPSOObject> CEmitterManagerCommonData::GDrawEmitterPSO[Emitte
 unique_ptr<CConstantBuffer> CEmitterManagerCommonData::GEmitterPositionBuffer = nullptr;
 unique_ptr<CConstantBuffer> CEmitterManagerCommonData::GEmitterIndexBuffer = nullptr;
 
-void CEmitterManagerCommonData::Intialize(
-	UINT particleMaxCount, 
-	ID3D11Device* device
-)
+void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 {
-#pragma region Particle 관련 멤버변수
-	GParticleMaxCount = particleMaxCount;
-
-	GTotalParticles = make_unique<CStructuredBuffer>(static_cast<UINT>(sizeof(SParticle)), GParticleMaxCount, nullptr);
-	GDeathIndexSet = make_unique<CAppendBuffer>(4, GParticleMaxCount, nullptr);
-
-	GTotalParticles->InitializeBuffer(device);
-	GDeathIndexSet->InitializeBuffer(device);
-#pragma endregion
-
 #pragma region Particle Initialize 관련 CS
 	GInitializeParticleSetCS->CreateShader(L"./InitializeParticleSetCS.hlsl", nullptr, "main", "cs_5_0", device);
 #pragma endregion

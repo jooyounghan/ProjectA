@@ -17,10 +17,17 @@
 
 class AEmitter;
 
+#define MaxParticleCount 1024 * 1024
+
 class AEmitterManager : public IUpdatable
 {
 public:
-	AEmitterManager(const std::string& managerName, UINT maxEmitterCount);
+	AEmitterManager(
+		const std::string& managerName, 
+		UINT emitterType,
+		UINT maxEmitterCount,
+		UINT maxParticleCount
+	);
 	~AEmitterManager() override;
 
 protected:
@@ -31,6 +38,17 @@ protected:
 	virtual UINT GetEmitterType() const noexcept = 0;
 
 protected:
+	struct alignas(16)
+	{
+		const UINT particleMaxCount;
+		const UINT emitterType;
+		const UINT padding1;
+		const UINT padding2;
+	} m_emitterManagerPropertyCPU;
+	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterManagerPropertyGPU;
+
+
+protected:
 	UINT m_maxEmitterCount;
 	std::vector<std::unique_ptr<AEmitter>> m_emitters;
 	std::queue<UINT> m_emitterIDQueue;
@@ -38,6 +56,10 @@ protected:
 protected:
 	UINT IssueAvailableEmitterID();
 	virtual void ReclaimEmitterID(UINT emitterID) noexcept;
+
+protected:
+	std::unique_ptr<D3D11::CStructuredBuffer> m_totalParticles;
+	std::unique_ptr<D3D11::CAppendBuffer> m_deathIndexSet;
 
 protected:
 	std::vector<DirectX::XMMATRIX> m_worldTransformCPU;

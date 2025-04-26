@@ -83,8 +83,12 @@ void ForceUpdateProperty::DrawPropertyUI()
 {
 	if (!CollapsingHeader("파티클 업데이트 프로퍼티"))
 		return;
-	
 
+	DrawPropertyUIImpl();
+}
+
+void ForceUpdateProperty::DrawPropertyUIImpl()
+{
 	HandleSingleForce("중력", EForceFlag::Gravity, [&]()
 		{
 			return DragFloat3("중력 벡터", &m_emitterForceProperty.gravityForce.x, 0.1f, -1000.f, 1000.f, "%.1f");
@@ -107,14 +111,14 @@ void ForceUpdateProperty::DrawPropertyUI()
 	);
 
 	HandleNForce("Vortex", EForceFlag::Vortex, ENForceKind::Vortex,
-		[&](UINT addIndex) { 	
+		[&](UINT addIndex) {
 			SVortexForce& vortexForce = m_emitterForceProperty.nVortexForce[addIndex];
 			AutoZeroMemory(vortexForce);
 		},
 		[&](UINT deleteIndex) {
 			memmove(&m_emitterForceProperty.nVortexForce[deleteIndex],
-			&m_emitterForceProperty.nVortexForce[deleteIndex + 1],
-			sizeof(SVortexForce) * (MaxNForceCount - (deleteIndex + 1)));
+				&m_emitterForceProperty.nVortexForce[deleteIndex + 1],
+				sizeof(SVortexForce) * (MaxNForceCount - (deleteIndex + 1)));
 		},
 		[&](UINT currentIndex) {
 			bool isChanged = false;

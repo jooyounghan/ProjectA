@@ -6,7 +6,10 @@
 class ParticleEmitterManager : public AEmitterManager
 {
 private:
-	ParticleEmitterManager(UINT maxEmitterCount);
+	ParticleEmitterManager(
+		UINT maxEmitterCount,
+		UINT maxParticleCount
+	);
 	ParticleEmitterManager(const ParticleEmitterManager&) = delete;
 	ParticleEmitterManager& operator=(const ParticleEmitterManager&) = delete;
 	~ParticleEmitterManager() override = default;

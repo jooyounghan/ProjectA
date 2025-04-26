@@ -39,7 +39,7 @@ protected:
 	virtual void AdjustControlPointsFromLife() override;
 	virtual void OnInterpolateInformationChagned() override;
 
-public:
-	virtual void DrawPropertyUI() override;
+protected:
+	virtual void DrawPropertyUIImpl() override;
 };
 

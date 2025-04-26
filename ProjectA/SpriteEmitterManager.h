@@ -6,7 +6,10 @@
 class SpriteEmitterManager : public AEmitterManager
 {
 private:
-	SpriteEmitterManager(UINT maxEmitterCount);
+	SpriteEmitterManager(
+		UINT maxEmitterCount,
+		UINT maxParticleCount
+	);
 	SpriteEmitterManager(const SpriteEmitterManager&) = delete;
 	SpriteEmitterManager& operator=(const SpriteEmitterManager&) = delete;
 	~SpriteEmitterManager() override = default;
@@ -16,7 +19,7 @@ public:
 	static SpriteEmitterManager& GetSpriteEmitterManager();
 
 protected:
-	virtual UINT GetEmitterType() const noexcept override { return static_cast<UINT>(EEmitterType::ParticleEmitter); }
+	virtual UINT GetEmitterType() const noexcept override { return static_cast<UINT>(EEmitterType::SpriteEmitter); }
 
 protected:
 	virtual void ReclaimEmitterID(UINT emitterID) noexcept override;

@@ -63,6 +63,11 @@ void CInitialSpawnProperty::DrawPropertyUI()
 	if (!ImGui::CollapsingHeader("이미터 생성 프로퍼티"))
 		return;
 
+	DrawPropertyUIImpl();
+}
+
+void CInitialSpawnProperty::DrawPropertyUIImpl()
+{
 	SeparatorText("파티클 정보 설정");
 	if (DragInt("초기 파티클 개수", (int*)&m_emitterSpawnPropertyCPU.initialParticleCount, 1.f, 0, 100000))
 	{

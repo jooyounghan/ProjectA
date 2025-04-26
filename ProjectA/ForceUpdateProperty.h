@@ -66,6 +66,9 @@ public:
 public:
 	virtual void DrawPropertyUI() override;
 
+protected:
+	virtual void DrawPropertyUIImpl() override;
+
 private:
 	void HandleSingleForce(
 		const std::string& forceName, 

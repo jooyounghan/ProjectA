@@ -1,14 +1,20 @@
 #include "SourceCommon.hlsli"
 
-cbuffer EmitterProperties : register(b2)
+cbuffer EmitterManagerProperties : register(b2)
 {
-	uint emitterType;
+    uint particleMaxCount;
+    uint emitterType;
+    uint2 emitterPropertyDummy;
+};
+
+cbuffer EmitterProperties : register(b3)
+{
     uint emitterID;
-    float2 dummy;
+    uint3 emitterManagerPropertyDummy;
 };
 
 #ifdef RUNTIME_SOURCE
-cbuffer SpawnProperty : register(b3)
+cbuffer SpawnProperty : register(b4)
 {
 	matrix positionTransformation;
 	float2 minPositionRadian;
@@ -26,7 +32,7 @@ cbuffer SpawnProperty : register(b3)
 	float4 color;
 }
 #elif defined(INITIAL_SOURCE)
-cbuffer SpawnProperty : register(b3)
+cbuffer SpawnProperty : register(b4)
 {
 	matrix positionTransformation;
 	float2 minPositionRadian;
@@ -44,7 +50,7 @@ cbuffer SpawnProperty : register(b3)
 	float4 color;
 }
 #else
-cbuffer SpawnProperty : register(b3)
+cbuffer SpawnProperty : register(b4)
 {
 	matrix positionTransformation;
 	float2 minPositionRadian;

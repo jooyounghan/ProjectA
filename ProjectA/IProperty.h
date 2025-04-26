@@ -8,4 +8,7 @@ public:
 
 public:
     virtual void DrawPropertyUI() = 0;
+
+protected:
+    virtual void DrawPropertyUIImpl() = 0;
 };

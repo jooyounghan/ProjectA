@@ -21,7 +21,8 @@ AEmitter::AEmitter(
 	const function<void(UINT, const XMMATRIX&)>& worldTransformChangedHandler,
 	const function<void(UINT, const SEmitterForceProperty&)>& forcePropertyChangedHandler
 ) :
-	m_emitterPropertyCPU{ emitterType, emitterID, XMFLOAT2(0.f, 0.f) },
+	m_emitterType(emitterType),
+	m_emitterPropertyCPU{ emitterID, 0, 0, 0 },
 	m_isSpawned(false),
 	m_position(position),
 	m_angle(angle),

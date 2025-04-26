@@ -29,8 +29,14 @@ using namespace std;
 using namespace DirectX;
 using namespace D3D11;
 
-AEmitterManager::AEmitterManager(const std::string& managerName, UINT maxEmitterCount)
-	: m_managerName(managerName), m_maxEmitterCount(maxEmitterCount)
+AEmitterManager::AEmitterManager(
+	const string& managerName, 
+	UINT emitterType,
+	UINT maxEmitterCount,
+	UINT maxParticleCount
+)
+	: m_managerName(managerName), m_maxEmitterCount(maxEmitterCount),
+	m_emitterManagerPropertyCPU{ maxParticleCount, emitterType, 0, 0 }
 {
 	for (UINT idx = 0; idx < m_maxEmitterCount; ++idx)
 	{
@@ -201,7 +207,17 @@ void AEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* 
 	drawIndirectArgs.StartVertexLocation = NULL;
 	drawIndirectArgs.StartInstanceLocation = NULL;
 
-	const UINT particleMaxCount = CEmitterManagerCommonData::GParticleMaxCount;
+	const UINT particleMaxCount = m_emitterManagerPropertyCPU.particleMaxCount;
+
+	m_emitterManagerPropertyGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_emitterManagerPropertyCPU));
+	m_emitterManagerPropertyGPU->InitializeBuffer(device);
+
+	m_totalParticles = make_unique<CStructuredBuffer>(static_cast<UINT>(sizeof(SParticle)), particleMaxCount, nullptr);
+	m_deathIndexSet = make_unique<CAppendBuffer>(4, particleMaxCount, nullptr);
+
+	m_totalParticles->InitializeBuffer(device);
+	m_deathIndexSet->InitializeBuffer(device);
+
 	m_aliveIndexSet = make_unique<CAppendBuffer>(4, particleMaxCount, nullptr);
 	m_drawIndirectBuffer = make_unique<CIndirectBuffer<D3D11_DRAW_INSTANCED_INDIRECT_ARGS>>(1, &drawIndirectArgs);
 
@@ -286,9 +302,10 @@ void AEmitterManager::SourceParticles(ID3D11DeviceContext* deviceContext)
 {
 	ID3D11ShaderResourceView* sourceSrvs[] = { m_worldTransformGPU->GetSRV() };
 	ID3D11ShaderResourceView* sourceNullSrvs[] = { nullptr };
+
 	ID3D11UnorderedAccessView* sourceUavs[] = {
-		CEmitterManagerCommonData::GTotalParticles->GetUAV(),
-		CEmitterManagerCommonData::GDeathIndexSet->GetUAV(),
+		m_totalParticles->GetUAV(),
+		m_deathIndexSet->GetUAV(),
 		m_aliveIndexSet->GetUAV()
 	};
 	ID3D11UnorderedAccessView* sourceNullUavs[] = { nullptr, nullptr, nullptr };
@@ -305,15 +322,16 @@ void AEmitterManager::SourceParticles(ID3D11DeviceContext* deviceContext)
 		{
 			CInitialSpawnProperty* initialSpawnProperty = emitter->GetInitialSpawnProperty();
 			ID3D11Buffer* emitterInitialSourceBuffers[] = {
+				m_emitterManagerPropertyGPU->GetBuffer(),
 				emitter->GetEmitterPropertyBuffer(),
 				initialSpawnProperty->GetInitialSpawnPropertyBuffer()
 			};
-			ID3D11Buffer* emitterInitialSourceNullBuffers[] = { nullptr, nullptr };
+			ID3D11Buffer* emitterInitialSourceNullBuffers[] = { nullptr, nullptr, nullptr };
 
-			deviceContext->CSSetConstantBuffers(2, 2, emitterInitialSourceBuffers);
+			deviceContext->CSSetConstantBuffers(2, 3, emitterInitialSourceBuffers);
 			const UINT dispatchX = UINT(ceil(initialSpawnProperty->GetInitialParticleCount() / LocalThreadCount));
 			deviceContext->Dispatch(dispatchX, 1, 1);
-			deviceContext->CSSetConstantBuffers(2, 2, emitterInitialSourceNullBuffers);
+			deviceContext->CSSetConstantBuffers(2, 3, emitterInitialSourceNullBuffers);
 			emitter->SetSpawned(true);
 		}
 	}
@@ -328,16 +346,17 @@ void AEmitterManager::SourceParticles(ID3D11DeviceContext* deviceContext)
 		ARuntimeSpawnProperty* runtimeSpawnProperty = emitter->GetRuntimeSpawnProperty();
 
 		ID3D11Buffer* emitterRuntimeSourceBuffers[] = {
+			m_emitterManagerPropertyGPU->GetBuffer(),
 			emitter->GetEmitterPropertyBuffer(),
 			runtimeSpawnProperty->GetParticleSpawnPropertyBuffer()
 		};
 
-		ID3D11Buffer* emitterRuntimeSourceNullBuffers[] = { nullptr, nullptr };
+		ID3D11Buffer* emitterRuntimeSourceNullBuffers[] = { nullptr, nullptr, nullptr };
 
-		deviceContext->CSSetConstantBuffers(2, 2, emitterRuntimeSourceBuffers);
+		deviceContext->CSSetConstantBuffers(2, 3, emitterRuntimeSourceBuffers);
 		const UINT dispatchX = emitterUpdateProperty->GetSpawnCount();
 		deviceContext->Dispatch(dispatchX, 1, 1);
-		deviceContext->CSSetConstantBuffers(2, 2, emitterRuntimeSourceNullBuffers);
+		deviceContext->CSSetConstantBuffers(2, 3, emitterRuntimeSourceNullBuffers);
 	}
 #pragma endregion
 
@@ -375,7 +394,7 @@ void AEmitterManager::CalculateForces(ID3D11DeviceContext* deviceContext)
 	ID3D11ShaderResourceView* simulateSrvs[] = { m_worldTransformGPU->GetSRV(), m_forcePropertyGPU->GetSRV()};
 	ID3D11ShaderResourceView* simulateNullSrvs[] = { nullptr, nullptr};
 
-	ID3D11UnorderedAccessView* simulateUavs[] = { CEmitterManagerCommonData::GTotalParticles->GetUAV(), m_aliveIndexSet->GetUAV() };
+	ID3D11UnorderedAccessView* simulateUavs[] = { m_totalParticles->GetUAV(), m_aliveIndexSet->GetUAV() };
 	ID3D11UnorderedAccessView* simulateNullUavs[] = { nullptr, nullptr };
 	UINT initialValue[2] = { NULL,  static_cast<UINT>(-1) };
 

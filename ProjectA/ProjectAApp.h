@@ -58,7 +58,7 @@ private:
 		float dt;
 		float appWidth;
 		float appHeight;
-		UINT particleTotalCount;
+		UINT appDummy;
 	} m_appParamsCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_appParamsGPU;
 
@@ -69,6 +69,6 @@ private:
 
 private:
 	void DrawEmitterHandler();
-	void DrawEmitterSelector(const std::string& emitterName, int& emitterSelectIndex, AEmitterManager& emitterManager);
+	void DrawEmitterSelector(const std::string& emitterName, int& emitterSelectIndex, AEmitterManager* emitterManager);
 #pragma endregion
 };

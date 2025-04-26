@@ -109,6 +109,11 @@ void CEmitterUpdateProperty::DrawPropertyUI()
 	if (!ImGui::CollapsingHeader("이미터 업데이트 프로퍼티"))
 		return;
 
+	DrawPropertyUIImpl();
+}
+
+void CEmitterUpdateProperty::DrawPropertyUIImpl()
+{
 	SeparatorText("이미터 루프 설정");
 	BeginDisabled(m_isLoopInfinity);
 	{

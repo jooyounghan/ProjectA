@@ -26,16 +26,20 @@ public:
 	~AEmitter() override = default;
 
 protected:
+	UINT m_emitterType;
+
+protected:
 	struct alignas(16)
 	{
-		const UINT emitterType;
 		const UINT emitterID;
-		DirectX::XMFLOAT2 padding;
+		const UINT padding1;
+		const UINT padding2;
+		const UINT padding3;
 	} m_emitterPropertyCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterPropertyGPU;
 
 public:
-	inline UINT GetEmitterType() const noexcept { return m_emitterPropertyCPU.emitterType; }
+	inline UINT GetEmitterType() const noexcept { return m_emitterType; }
 	inline UINT GetEmitterID() const noexcept { return m_emitterPropertyCPU.emitterID; }
 
 public:

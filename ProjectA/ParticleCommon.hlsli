@@ -16,7 +16,7 @@ cbuffer AppParams : register(b0)
     float dt;
     float appWidth;
     float appHeight;
-    uint particleMaxCount;
+    uint appDummy;
 };
 
 cbuffer CameraViewProj : register(b1)

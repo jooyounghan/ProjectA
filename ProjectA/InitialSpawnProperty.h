@@ -70,6 +70,9 @@ public:
 public:
 	virtual void DrawPropertyUI() override;
 
+protected:
+	virtual void DrawPropertyUIImpl() override;
+
 public:
 	virtual void Serialize(std::ofstream& ofs) override;
 	virtual void Deserialize(std::ifstream& ifs) override;

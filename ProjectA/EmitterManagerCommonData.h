@@ -26,14 +26,7 @@ namespace D3D11
 class CEmitterManagerCommonData
 {
 public:
-	static void Intialize(UINT particleMaxCount, ID3D11Device* device);
-
-#pragma region Particle 관련 멤버변수
-public:
-	static UINT GParticleMaxCount;
-	static std::unique_ptr<D3D11::CStructuredBuffer> GTotalParticles;
-	static std::unique_ptr<D3D11::CAppendBuffer> GDeathIndexSet;
-#pragma endregion
+	static void Intialize(ID3D11Device* device);
 
 #pragma region Particle Initialize 관련 CS
 public:

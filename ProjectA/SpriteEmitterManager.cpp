@@ -17,8 +17,11 @@ using namespace std;
 using namespace DirectX;
 using namespace D3D11;
 
-SpriteEmitterManager::SpriteEmitterManager(UINT maxEmitterCount)
-	: AEmitterManager("SpriteEmitterManager", maxEmitterCount)
+SpriteEmitterManager::SpriteEmitterManager(
+	UINT maxEmitterCount,
+	UINT maxParticleCount
+)
+	: AEmitterManager("SpriteEmitterManager", static_cast<UINT>(EEmitterType::SpriteEmitter), maxEmitterCount, maxParticleCount)
 {
 	SSpriteInterpInformation spriteInterpInformation;
 	AutoZeroMemory(spriteInterpInformation);
@@ -29,7 +32,7 @@ SpriteEmitterManager::SpriteEmitterManager(UINT maxEmitterCount)
 
 SpriteEmitterManager& SpriteEmitterManager::GetSpriteEmitterManager()
 {
-	static SpriteEmitterManager spriteEmitterManager(MaxSpriteEmitterCount);
+	static SpriteEmitterManager spriteEmitterManager(MaxSpriteEmitterCount, MaxParticleCount);
 	return spriteEmitterManager;
 }
 

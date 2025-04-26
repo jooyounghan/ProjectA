@@ -84,9 +84,9 @@ void SpriteSpawnProperty::OnInterpolateInformationChagned()
 	m_onSpriteInterpInformationChanged(m_spriteSizeInterpInformation);
 }
 
-void SpriteSpawnProperty::DrawPropertyUI()
+void SpriteSpawnProperty::DrawPropertyUIImpl()
 {
-	ARuntimeSpawnProperty::DrawPropertyUI();
+	ARuntimeSpawnProperty::DrawPropertyUIImpl();
 
 	SeparatorText("스프라이트 크기 설정");
 	EInterpolationMethod currnetSpriteSizeInterpolateKind = m_spriteSizeInterpolationMethod;
@@ -111,6 +111,4 @@ void SpriteSpawnProperty::DrawPropertyUI()
 	}
 
 	m_spriteSizeInterpolationSelectPlotter->ViewInterpolatedPlots();
-
-
 }

@@ -40,14 +40,14 @@
 #include <format>
 #pragma  endregion
 
-#define TotalParticleCount 1024 * 1024
-
 using namespace std;
 using namespace App;
 using namespace D3D11;
 using namespace DirectX;
 using namespace ImGui;
 
+
+#define CurrentEmitterTypeCount 2
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
 	HWND hWnd,
@@ -137,7 +137,7 @@ void CProjectAApp::Init()
 #pragma endregion
 
 #pragma region 글로벌 변수 초기화
-	CEmitterManagerCommonData::Intialize(TotalParticleCount, m_device);
+	CEmitterManagerCommonData::Intialize(m_device);
 
 	CGPUInterpolater<4, 2>::InitializeGPUInterpProperty(m_device, MaxParticleEmitterCount + MaxSpriteEmitterCount);
 	CGPUInterpolater<4, 4>::InitializeGPUInterpProperty(m_device, MaxParticleEmitterCount + MaxSpriteEmitterCount);
@@ -151,11 +151,16 @@ void CProjectAApp::Init()
 	);
 	m_camera->Initialize(m_device, m_deviceContext);
 
-	ParticleEmitterManager& particleEmitterManager = ParticleEmitterManager::GetParticleEmitterManager();
-	particleEmitterManager.Initialize(m_device, m_deviceContext);
 
-	SpriteEmitterManager& spriteEmitterManager = SpriteEmitterManager::GetSpriteEmitterManager();
-	spriteEmitterManager.Initialize(m_device, m_deviceContext);
+	AEmitterManager* emitterManagers[] = {
+		&ParticleEmitterManager::GetParticleEmitterManager(),
+		&SpriteEmitterManager::GetSpriteEmitterManager()
+	};
+
+	for (auto& emitterManager : emitterManagers)
+	{
+		emitterManager->Initialize(m_device, m_deviceContext);
+	}
 
 #pragma endregion
 
@@ -170,7 +175,6 @@ void CProjectAApp::Update(float deltaTime)
 	m_appParamsCPU.dt = deltaTime;
 	m_appParamsCPU.appWidth = static_cast<float>(m_width);
 	m_appParamsCPU.appHeight = static_cast<float>(m_height);
-	m_appParamsCPU.particleTotalCount = TotalParticleCount;
 
 	m_appParamsGPU->Stage(m_deviceContext);
 	m_appParamsGPU->Upload(m_deviceContext);
@@ -179,11 +183,15 @@ void CProjectAApp::Update(float deltaTime)
 #pragma region 인스턴스 업데이트
 	m_camera->Update(m_deviceContext, deltaTime);
 
-	ParticleEmitterManager& particleEmitterManager = ParticleEmitterManager::GetParticleEmitterManager();
-	particleEmitterManager.Update(m_deviceContext, deltaTime);
+	AEmitterManager* emitterManagers[] = {
+		&ParticleEmitterManager::GetParticleEmitterManager(),
+		&SpriteEmitterManager::GetSpriteEmitterManager()
+	};
 
-	SpriteEmitterManager& spriteEmitterManager = SpriteEmitterManager::GetSpriteEmitterManager();
-	spriteEmitterManager.Update(m_deviceContext, deltaTime);
+	for (auto& emitterManager : emitterManagers)
+	{
+		emitterManager->Update(m_deviceContext, deltaTime);
+	}
 #pragma endregion
 
 #pragma region 글로벌 변수 업데이트
@@ -206,7 +214,10 @@ void CProjectAApp::Update(float deltaTime)
 	ID3D11Buffer* cameraCb = m_camera->GetPropertiesBuffer();
 	ID3D11Buffer* singleNullCb = nullptr;
 	m_deviceContext->VSSetConstantBuffers(0, 1, &cameraCb);
-	particleEmitterManager.DrawEmitters(m_deviceContext);
+	for (auto& emitterManager : emitterManagers)
+	{
+		emitterManager->DrawEmitters(m_deviceContext);
+	}
 	m_deviceContext->VSSetConstantBuffers(0, 1, &singleNullCb);
 
 	ID3D11Buffer* commonCbs[] = { m_appParamsGPU->GetBuffer(), m_camera->GetPropertiesBuffer() };
@@ -215,10 +226,13 @@ void CProjectAApp::Update(float deltaTime)
 	m_deviceContext->VSSetConstantBuffers(0, 2, commonCbs);
 	m_deviceContext->GSSetConstantBuffers(0, 2, commonCbs);
 	m_deviceContext->PSSetConstantBuffers(0, 2, commonCbs);
-	particleEmitterManager.InitializeAliveFlag(m_deviceContext);
-	particleEmitterManager.SourceParticles(m_deviceContext);
-	particleEmitterManager.CalculateForces(m_deviceContext);
-	particleEmitterManager.DrawParticles(m_deviceContext);
+	for (auto& emitterManager : emitterManagers)
+	{
+		emitterManager->InitializeAliveFlag(m_deviceContext);
+		emitterManager->SourceParticles(m_deviceContext);
+		emitterManager->CalculateForces(m_deviceContext);
+		emitterManager->DrawParticles(m_deviceContext);
+	}
 	m_deviceContext->CSSetConstantBuffers(0, 2, commonNullCbs);
 	m_deviceContext->VSSetConstantBuffers(0, 2, commonNullCbs);
 	m_deviceContext->GSSetConstantBuffers(0, 2, commonNullCbs);
@@ -309,24 +323,27 @@ void CProjectAApp::DrawEmitterHandler()
 		ImGui::EndPopup();
 	}
 
-	static int particleEmitterIndex = -1;
-	static int spriteEmitterIndex = -1;
-	ParticleEmitterManager& particleEmitterManager = ParticleEmitterManager::GetParticleEmitterManager();
-	SpriteEmitterManager& spriteEmitterManager = SpriteEmitterManager::GetSpriteEmitterManager();
+	static int emitterSelectIndex[CurrentEmitterTypeCount] = { -1 , -1 } ;
+	static string emitterNames[CurrentEmitterTypeCount] = { "파티클 이미터", "스프라이트 이미터" };
+	AEmitterManager* emitterManagers[CurrentEmitterTypeCount] = {
+		&ParticleEmitterManager::GetParticleEmitterManager(),
+		&SpriteEmitterManager::GetSpriteEmitterManager()
+	};
 
-	DrawEmitterSelector("파티클 이미터", particleEmitterIndex, particleEmitterManager);
-	DrawEmitterSelector("스프라이트 이미터", spriteEmitterIndex, spriteEmitterManager);
-
+	for (size_t idx = 0; idx < CurrentEmitterTypeCount; ++idx)
+	{
+		DrawEmitterSelector(emitterNames[idx], emitterSelectIndex[idx], emitterManagers[idx]);
+	}
 }
-void CProjectAApp::DrawEmitterSelector(const std::string& emitterName, int& emitterSelectIndex, AEmitterManager& emitterManager)
+void CProjectAApp::DrawEmitterSelector(const std::string& emitterName, int& emitterSelectIndex, AEmitterManager* emitterManager)
 {
 	constexpr int NotSelected = -1;
 
-	vector<unique_ptr<AEmitter>>& particleEmitters = emitterManager.GetEmitters();
+	PushID(format("{} Handler", emitterName).c_str());
+	vector<unique_ptr<AEmitter>>& particleEmitters = emitterManager->GetEmitters();
 	SeparatorText(emitterName.c_str());
 	if (particleEmitters.size() > 0)
 	{
-		PushID(format("{} Handler", emitterName).c_str());
 
 		if (BeginCombo(format("{} 선택", emitterName).c_str(), emitterSelectIndex == NotSelected ? "Choose Emitter" : format("{} {}", emitterName, emitterSelectIndex + 1).c_str(), NULL))
 		{
@@ -343,7 +360,17 @@ void CProjectAApp::DrawEmitterSelector(const std::string& emitterName, int& emit
 			}
 			EndCombo();
 		}
-		PopID();
+
+		if (emitterSelectIndex != NotSelected)
+		{
+			SameLine();
+			if (Button("이미터 삭제"))
+			{
+				UINT emitterID = particleEmitters[emitterSelectIndex]->GetEmitterID();
+				emitterManager->RemoveEmitter(emitterID);
+				emitterSelectIndex = NotSelected;
+			}
+		}
 	}
 
 	AEmitter* emitter = (emitterSelectIndex == NotSelected) ? nullptr : particleEmitters[emitterSelectIndex].get();
@@ -369,6 +396,7 @@ void CProjectAApp::DrawEmitterSelector(const std::string& emitterName, int& emit
 		emitter->GetRuntimeSpawnProperty()->DrawPropertyUI();
 		emitter->GetForceUpdateProperty()->DrawPropertyUI();
 	}
+	PopID();
 }
 
 void CProjectAApp::AppProcImpl(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
