@@ -192,7 +192,7 @@
     <ClInclude Include="EmitterManagerCommonData.h" />
     <ClInclude Include="EmitterSelector.h" />
     <ClInclude Include="EmitterTypeDefinition.h" />
-    <ClInclude Include="GPUInterpolater.h" />
+    <ClInclude Include="GPUInterpPropertyManager.h" />
     <ClInclude Include="Interpolater.h" />
     <ClInclude Include="InterpolaterStructure.h" />
     <ClInclude Include="InterpolaterSelector.h" />

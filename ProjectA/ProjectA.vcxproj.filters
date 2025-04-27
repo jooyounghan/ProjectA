@@ -274,7 +274,7 @@
     <ClInclude Include="InterpolaterStructure.h">
       <Filter>헤더 파일\Interpolater\Structure</Filter>
     </ClInclude>
-    <ClInclude Include="GPUInterpolater.h">
+    <ClInclude Include="GPUInterpPropertyManager.h">
       <Filter>헤더 파일\Interpolater</Filter>
     </ClInclude>
     <ClInclude Include="GlobalVariable.h">

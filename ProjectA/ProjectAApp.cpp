@@ -35,7 +35,7 @@
 #include "ARuntimeSpawnProperty.h"
 #include "ForceUpdateProperty.h"
 
-#include "GPUInterpolater.h"
+#include "GPUInterpPropertyManager.h"
 
 #include <format>
 #pragma  endregion
@@ -138,9 +138,6 @@ void CProjectAApp::Init()
 
 #pragma region 글로벌 변수 초기화
 	CEmitterManagerCommonData::Intialize(m_device);
-
-	CGPUInterpolater<4, 2>::InitializeGPUInterpProperty(m_device, MaxParticleEmitterCount + MaxSpriteEmitterCount);
-	CGPUInterpolater<4, 4>::InitializeGPUInterpProperty(m_device, MaxParticleEmitterCount + MaxSpriteEmitterCount);
 #pragma endregion
 
 #pragma region 인스턴스 초기화
@@ -192,11 +189,6 @@ void CProjectAApp::Update(float deltaTime)
 	{
 		emitterManager->Update(m_deviceContext, deltaTime);
 	}
-#pragma endregion
-
-#pragma region 글로벌 변수 업데이트
-	CGPUInterpolater<4, 2>::UpdateInterpProperty(m_deviceContext);
-	CGPUInterpolater<4, 4>::UpdateInterpProperty(m_deviceContext);
 #pragma endregion
 
 #pragma region 카메라 초기화 및 설정

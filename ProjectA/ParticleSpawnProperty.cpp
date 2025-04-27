@@ -4,9 +4,12 @@
 using namespace std;
 
 ParticleSpawnProperty::ParticleSpawnProperty(
+	uint32_t maxEmitterCount,
 	const function<void(const SParticleInterpInformation&)>& particleInterpInformationChangedHandler
 )
-	: m_onParticleInterpInformationChanged(particleInterpInformationChangedHandler)
+	: 
+	ARuntimeSpawnProperty(maxEmitterCount),
+	m_onParticleInterpInformationChanged(particleInterpInformationChangedHandler)
 {
 	AutoZeroMemory(m_particleInterpInformation);
 }

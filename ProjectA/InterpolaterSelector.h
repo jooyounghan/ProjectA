@@ -57,7 +57,8 @@ protected:
 
 public:
 	void CreateInterpolater(
-		bool useGPUInterpolater,
+		CGPUInterpPropertyManager<Dim, 2>* d1GpuInterpProeprtyManager,
+		CGPUInterpPropertyManager<Dim, 4>* d3GpuInterpProeprtyManager,
 		EInterpolationMethod interpolationMethod, 
 		std::unique_ptr<IInterpolater<Dim>>& interpolater
 	);
@@ -91,7 +92,8 @@ CInterpolaterSelectPlotter<Dim>::CInterpolaterSelectPlotter(
 
 template<uint32_t Dim>
 void CInterpolaterSelectPlotter<Dim>::CreateInterpolater(
-	bool useGPUInterpolater,
+	CGPUInterpPropertyManager<Dim, 2>* d1GpuInterpProeprtyManager,
+	CGPUInterpPropertyManager<Dim, 4>* d3GpuInterpProeprtyManager,
 	EInterpolationMethod interpolationMethod, 
 	std::unique_ptr<IInterpolater<Dim>>& interpolater
 )
@@ -101,16 +103,28 @@ void CInterpolaterSelectPlotter<Dim>::CreateInterpolater(
 		interpolater.reset();
 	}
 
+	std::unique_ptr<AInterpolater<Dim, 2>> d1Interpolater;
+	std::unique_ptr<AInterpolater<Dim, 4>> d3Interpolater;
+
 	switch (interpolationMethod)
 	{
 	case EInterpolationMethod::Linear:
-		interpolater = std::make_unique<CLinearInterpolater<Dim>>(useGPUInterpolater, m_startPoint, m_endPoint, m_controlPoints);
+	{
+		d1Interpolater = std::make_unique<CLinearInterpolater<Dim>>(m_startPoint, m_endPoint, m_controlPoints);
+		d1Interpolater->SetGPUInterpolater(d1GpuInterpProeprtyManager);
+		interpolater = std::move(d1Interpolater);
 		break;
+	}
 	case EInterpolationMethod::CubicSpline:
-		interpolater = std::make_unique<CCubicSplineInterpolater<Dim>>(useGPUInterpolater, m_startPoint, m_endPoint, m_controlPoints);
+		d3Interpolater = std::make_unique<CCubicSplineInterpolater<Dim>>(m_startPoint, m_endPoint, m_controlPoints);
+		d3Interpolater->SetGPUInterpolater(d3GpuInterpProeprtyManager);
+		interpolater = std::move(d3Interpolater);
+
 		break;
 	case EInterpolationMethod::CatmullRom:
-		interpolater = std::make_unique<CCatmullRomInterpolater<Dim>>(useGPUInterpolater, m_startPoint, m_endPoint, m_controlPoints);
+		d3Interpolater = std::make_unique<CCatmullRomInterpolater<Dim>>(m_startPoint, m_endPoint, m_controlPoints);
+		d3Interpolater->SetGPUInterpolater(d3GpuInterpProeprtyManager);
+		interpolater = std::move(d3Interpolater);
 		break;
 	}
 	if (interpolater != nullptr)

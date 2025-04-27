@@ -36,6 +36,10 @@ public:
 	) override;
 
 protected:
+	std::unique_ptr<CGPUInterpPropertyManager<2, 2>> m_spriteSizeD1Dim4PorpertyManager;
+	std::unique_ptr<CGPUInterpPropertyManager<2, 4>> m_spriteSizeD3Dim4PorpertyManager;
+
+protected:
 	virtual void InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
 
 public:
@@ -43,3 +47,7 @@ public:
 	virtual void DrawParticles(ID3D11DeviceContext* deviceContext) override;
 };
 
+// ParticleSpawnEmitter와 
+// SpriteSpawnEmitter에 functoin으로 
+// OnInterpolaterChanged와 같은 식으로
+// m_colorD1Dim4PorpertyManager, m_colorD3Dim4PorpertyManager로 처리

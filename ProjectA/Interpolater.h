@@ -1,6 +1,6 @@
 #pragma once
 #include "InterpolaterStructure.h"
-#include "GPUInterpolater.h"
+#include "GPUInterpPropertyManager.h"
 
 #include <vector>
 #include <DirectXMath.h>
@@ -48,7 +48,6 @@ class AInterpolater : public IInterpolater<Dim>
 {
 public:
 	AInterpolater(
-		bool useGPUInterpolater,
 		const SControlPoint<Dim>& startPoint,
 		const SControlPoint<Dim>& endPoint,
 		const std::vector<SControlPoint<Dim>>& controlPoints
@@ -67,11 +66,11 @@ protected:
 
 protected:
 	UINT m_interpPropID;
-	SInterpProperty<Dim, CoefficientCount>* m_interpPropCached;
+	CGPUInterpPropertyManager<Dim, CoefficientCount>* m_gpuInterpProeprtyManager;
 
 public:
 	void UpdateInterpolaterProperty();
-	void SetGPUInterpolater(bool onoff);
+	void SetGPUInterpolater(CGPUInterpPropertyManager<Dim, CoefficientCount>* gpuInterpProeprtyManager);
 
 public:
 	virtual UINT GetInterpolaterFlag() = 0;
@@ -90,7 +89,6 @@ protected:
 
 template<uint32_t Dim, uint32_t CoefficientCount>
 inline AInterpolater<Dim, CoefficientCount>::AInterpolater(
-	bool useGPUInterpolater,
 	const SControlPoint<Dim>& startPoint, 
 	const SControlPoint<Dim>& endPoint, 
 	const std::vector<SControlPoint<Dim>>& controlPoints
@@ -101,47 +99,47 @@ inline AInterpolater<Dim, CoefficientCount>::AInterpolater(
 	m_controlPoints(controlPoints),
 	m_interpPropID(~0)
 {
-	SetGPUInterpolater(useGPUInterpolater);
 }
 
 template<uint32_t Dim, uint32_t CoefficientCount>
 AInterpolater<Dim, CoefficientCount>::~AInterpolater()
 {
-	SetGPUInterpolater(false);
+	SetGPUInterpolater(nullptr);
 }
 
 
 template<uint32_t Dim, uint32_t CoefficientCount>
 void AInterpolater<Dim, CoefficientCount>::UpdateInterpolaterProperty()
 {
-	if (m_interpPropCached)
+	if (m_gpuInterpProeprtyManager)
 	{
-		m_interpPropCached->UpdateInterpolaterProperty(
+		SInterpProperty<Dim, CoefficientCount>* interpProperty = m_gpuInterpProeprtyManager->GetInterpProperty(m_interpPropID);
+		interpProperty->UpdateInterpolaterProperty(
 			GetInterpolaterFlag(),
 			m_xProfiles,
 			m_coefficients
 		);
-		CGPUInterpolater<Dim, CoefficientCount>::AddChangedEmitterInterpPropertyID(m_interpPropID);
+		m_gpuInterpProeprtyManager->AddChangedEmitterInterpPropertyID(m_interpPropID);
 	}
 }
 
 template<uint32_t Dim, uint32_t CoefficientCount>
-inline void AInterpolater<Dim, CoefficientCount>::SetGPUInterpolater(bool onoff)
+inline void AInterpolater<Dim, CoefficientCount>::SetGPUInterpolater(CGPUInterpPropertyManager<Dim, CoefficientCount>* gpuInterpProeprtyManager)
 {
-	if (onoff == (m_interpPropCached == nullptr))
+	if (m_gpuInterpProeprtyManager)
 	{
-		if (onoff)
-		{
-			m_interpPropID = CGPUInterpolater<Dim, CoefficientCount>::IssueAvailableInterpPropertyID();
-			m_interpPropCached = CGPUInterpolater<Dim, CoefficientCount>::GetInterpProperty(m_interpPropID);
-		}
-		else
-		{
-			CGPUInterpolater<Dim, CoefficientCount>::ReclaimInterpPropertyID(m_interpPropID);
-			CGPUInterpolater<Dim, CoefficientCount>::AddChangedEmitterInterpPropertyID(m_interpPropID);
-			ZeroMemory(m_interpPropCached, sizeof(SInterpProperty<Dim, CoefficientCount>));
-			m_interpPropCached = nullptr;
-		}
+		m_gpuInterpProeprtyManager->ReclaimInterpPropertyID(m_interpPropID);
+		m_gpuInterpProeprtyManager->AddChangedEmitterInterpPropertyID(m_interpPropID);
+
+		SInterpProperty<Dim, CoefficientCount>* interpProperty = m_gpuInterpProeprtyManager->GetInterpProperty(m_interpPropID);
+		ZeroMemory(interpProperty, sizeof(SInterpProperty<Dim, CoefficientCount>));
+	}
+
+	m_gpuInterpProeprtyManager = gpuInterpProeprtyManager;
+
+	if (m_gpuInterpProeprtyManager)
+	{
+		m_interpPropID = m_gpuInterpProeprtyManager->IssueAvailableInterpPropertyID();
 	}
 }
 

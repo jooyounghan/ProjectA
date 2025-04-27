@@ -110,6 +110,10 @@ public:
 	) = 0;
 	void RemoveEmitter(UINT emitterID);
 
+protected:
+	std::unique_ptr<CGPUInterpPropertyManager<4, 2>> m_colorD1Dim4PorpertyManager;
+	std::unique_ptr<CGPUInterpPropertyManager<4, 4>> m_colorD3Dim4PorpertyManager;
+
 public:
 	void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override final;
 	void Update(ID3D11DeviceContext* deviceContext, float dt) override final;

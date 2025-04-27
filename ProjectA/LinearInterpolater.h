@@ -6,7 +6,6 @@ class CLinearInterpolater : public AInterpolater<Dim, 2>
 {
 public:
 	CLinearInterpolater(
-		bool useGPUInterpolater,
 		const SControlPoint<Dim>& startPoint,
 		const SControlPoint<Dim>& endPoint,
 		const std::vector<SControlPoint<Dim>>& controlPoints
@@ -26,12 +25,11 @@ protected:
 
 template<uint32_t Dim>
 inline CLinearInterpolater<Dim>::CLinearInterpolater(
-	bool useGPUInterpolater,
 	const SControlPoint<Dim>& startPoint, 
 	const SControlPoint<Dim>& endPoint, 
 	const std::vector<SControlPoint<Dim>>& controlPoints
 )
-	: AInterpolater<Dim, 2>(useGPUInterpolater, startPoint, endPoint, controlPoints)
+	: AInterpolater<Dim, 2>(startPoint, endPoint, controlPoints)
 {
 	UpdateCoefficient();
 }
@@ -67,7 +65,7 @@ inline void CLinearInterpolater<Dim>::UpdateCoefficient()
 		Parent::m_coefficients.emplace_back(coefficient);
 	}
 
-	if (Parent::m_interpPropCached)
+	if (Parent::m_gpuInterpProeprtyManager)
 	{
 		Parent::UpdateInterpolaterProperty();
 	}

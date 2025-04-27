@@ -8,6 +8,7 @@ class ParticleSpawnProperty : public ARuntimeSpawnProperty
 {
 public:
 	ParticleSpawnProperty(
+		uint32_t maxEmitterCount,
 		const std::function<void(const SParticleInterpInformation&)>& particleInterpInformationChangedHandler
 	);
 	~ParticleSpawnProperty() override = default;

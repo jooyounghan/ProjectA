@@ -10,7 +10,7 @@
 #include "ConstantBuffer.h"
 
 #include "SpriteEmitter.h"
-#include "GPUInterpolater.h"
+#include "GPUInterpPropertyManager.h"
 #include "MacroUtilities.h"
 
 using namespace std;

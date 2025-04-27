@@ -7,6 +7,7 @@
 #include "ShapedVectorSelector.h"
 #include "ControlPointGridView.h"
 #include "InterpolaterSelector.h"
+#include "GPUInterpPropertyManager.h"
 
 #include <vector>
 #include <memory>
@@ -19,7 +20,7 @@ namespace D3D11
 class ARuntimeSpawnProperty : public IProperty, public ISerializable
 {
 public:
-	ARuntimeSpawnProperty();
+	ARuntimeSpawnProperty(uint32_t maxEmitterCount);
 	~ARuntimeSpawnProperty() override = default;
 
 protected:
@@ -78,10 +79,7 @@ protected:
 	std::unique_ptr<IInterpolater<4>> m_colorInterpolater;
 
 protected:
-	bool m_useGPUColorInterpolater;
-
-protected:
-	void OnCheckGPUColorInterpolater();
+	bool m_checkGPUColorInterpolater;
 
 protected:
 	std::unique_ptr<CControlPointGridView<4>> m_colorControlPointGridView;

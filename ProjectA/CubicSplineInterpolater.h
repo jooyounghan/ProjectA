@@ -7,7 +7,6 @@ class CCubicSplineInterpolater : public AInterpolater<Dim, 4>
 {
 public:
 	CCubicSplineInterpolater(
-		bool useGPUInterpolater,
 		const SControlPoint<Dim>& startPoint,
 		const SControlPoint<Dim>& endPoint,
 		const std::vector<SControlPoint<Dim>>& controlPoints
@@ -33,12 +32,11 @@ protected:
 
 template<uint32_t Dim>
 inline CCubicSplineInterpolater<Dim>::CCubicSplineInterpolater(
-	bool useGPUInterpolater,
 	const SControlPoint<Dim>& startPoint,
 	const SControlPoint<Dim>& endPoint,
 	const std::vector<SControlPoint<Dim>>& controlPoints
 )
-	: AInterpolater<Dim, 4>(useGPUInterpolater, startPoint, endPoint, controlPoints)
+	: AInterpolater<Dim, 4>(startPoint, endPoint, controlPoints)
 {
 	UpdateCoefficient();
 }
@@ -130,7 +128,7 @@ inline void CCubicSplineInterpolater<Dim>::UpdateCoefficient()
 		}
 	}
 
-	if (Parent::m_interpPropCached)
+	if (Parent::m_gpuInterpProeprtyManager)
 	{
 		Parent::UpdateInterpolaterProperty();
 	}

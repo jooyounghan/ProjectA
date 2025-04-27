@@ -7,10 +7,13 @@ using namespace DirectX;
 using namespace ImGui;
 
 SpriteSpawnProperty::SpriteSpawnProperty(
+	uint32_t maxEmitterCount,
 	const function<void(const SSpriteInterpInformation&)>& spriteInterpInformationChangedHandler
 )
-	: m_onSpriteInterpInformationChanged(spriteInterpInformationChangedHandler),
-	m_useGPUSpriteSizeInterpolater(false),
+	: 
+	ARuntimeSpawnProperty(maxEmitterCount),
+	m_onSpriteInterpInformationChanged(spriteInterpInformationChangedHandler),
+	m_checkGPUSpriteSizeInterpolater(false),
 	m_spriteSizeInitControlPoint{ 0.f, MakeArray(0.f, 0.f) },
 	m_spriteSizeFinalControlPoint{ InitLife, MakeArray(10.f, 10.f) },
 	m_spriteSizeInterpolationMethod(EInterpolationMethod::Linear)
@@ -29,31 +32,20 @@ SpriteSpawnProperty::SpriteSpawnProperty(
 
 	m_spriteSizeInterpolationSelectPlotter = make_unique<CInterpolaterSelectPlotter<2>>(
 		"스프라이트 크기 보간 방법",
-		"Color Control Points",
+		"Sprite Size Control Points",
 		array<string, 2>{ "X 크기", "Y 크기" },
 		m_spriteSizeInitControlPoint,
 		m_spriteSizeFinalControlPoint,
 		m_spriteSizeControlPoints
 	);
 
-	m_spriteSizeInterpolationSelectPlotter->CreateInterpolater(m_useGPUSpriteSizeInterpolater, m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater);
+	m_spriteSizeInterpolationSelectPlotter->CreateInterpolater(
+		m_d1Dim2PorpertyManager.get(),
+		m_d3Dim2PorpertyManager.get(),
+		m_spriteSizeInterpolationMethod, 
+		m_spriteSizeInterpolater
+	);
 	m_spriteSizeInterpolationSelectPlotter->ResetXYScale();
-}
-
-void SpriteSpawnProperty::OnCheckGPUSpriteSizeInterpolater()
-{
-	if (m_useGPUSpriteSizeInterpolater)
-	{
-		m_baseParticleSpawnPropertyCPU.size = XMFLOAT2(0.f, 0.f);
-		m_isParticleSpawnPropertyChanged = true;
-	}
-	else
-	{
-
-	}
-
-	m_spriteSizeInterpolationSelectPlotter->CreateInterpolater(m_useGPUSpriteSizeInterpolater, m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater);
-
 }
 
 void SpriteSpawnProperty::AdjustControlPointsFromLife()
@@ -94,13 +86,23 @@ void SpriteSpawnProperty::DrawPropertyUIImpl()
 	if (m_spriteSizeInterpolationMethod != currnetSpriteSizeInterpolateKind)
 	{
 		m_spriteSizeInterpolationMethod = currnetSpriteSizeInterpolateKind;
-		m_spriteSizeInterpolationSelectPlotter->CreateInterpolater(m_useGPUSpriteSizeInterpolater, m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater);
+		m_spriteSizeInterpolationSelectPlotter->CreateInterpolater(
+			m_d1Dim2PorpertyManager.get(),
+			m_d3Dim2PorpertyManager.get(), 
+			m_spriteSizeInterpolationMethod, 
+			m_spriteSizeInterpolater
+		);
 		OnInterpolateInformationChagned();
 	}
 
-	if (Checkbox("GPU 기반 스프라이트 크기 보간", &m_useGPUSpriteSizeInterpolater))
+	if (Checkbox("GPU 기반 스프라이트 크기 보간", &m_checkGPUSpriteSizeInterpolater))
 	{
-		OnCheckGPUSpriteSizeInterpolater();
+		m_spriteSizeInterpolationSelectPlotter->CreateInterpolater(
+			m_d1Dim2PorpertyManager.get(),
+			m_d3Dim2PorpertyManager.get(),
+			m_spriteSizeInterpolationMethod,
+			m_spriteSizeInterpolater
+		);
 		OnInterpolateInformationChagned();
 	}
 

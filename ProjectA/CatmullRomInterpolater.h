@@ -6,7 +6,6 @@ class CCatmullRomInterpolater : public AInterpolater<Dim, 4>
 {
 public:
 	CCatmullRomInterpolater(
-		bool useGPUInterpolater,
 		const SControlPoint<Dim>& startPoint,
 		const SControlPoint<Dim>& endPoint,
 		const std::vector<SControlPoint<Dim>>& controlPoints
@@ -27,12 +26,11 @@ protected:
 
 template<uint32_t Dim>
 inline CCatmullRomInterpolater<Dim>::CCatmullRomInterpolater(
-	bool useGPUInterpolater,
 	const SControlPoint<Dim>& startPoint, 
 	const SControlPoint<Dim>& endPoint, 
 	const std::vector<SControlPoint<Dim>>& controlPoints
 )
-	: AInterpolater<Dim, 4>(useGPUInterpolater, startPoint, endPoint, controlPoints)
+	: AInterpolater<Dim, 4>(startPoint, endPoint, controlPoints)
 {
 	UpdateCoefficient();
 }
@@ -72,7 +70,7 @@ inline void CCatmullRomInterpolater<Dim>::UpdateCoefficient()
 		Parent::m_coefficients.emplace_back(coefficient);
 	}
 
-	if (Parent::m_interpPropCached)
+	if (Parent::m_gpuInterpProeprtyManager)
 	{
 		Parent::UpdateInterpolaterProperty();
 	}

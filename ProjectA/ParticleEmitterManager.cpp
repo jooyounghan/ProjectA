@@ -10,7 +10,7 @@
 #include "ConstantBuffer.h"
 
 #include "ParticleEmitter.h"
-#include "GPUInterpolater.h"
+#include "GPUInterpPropertyManager.h"
 #include "MacroUtilities.h"
 
 using namespace std;
@@ -96,8 +96,8 @@ void ParticleEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceCont
 
 	ID3D11ShaderResourceView* initializeSRVs[] = { 
 		m_emitterInterpInformationGPU->GetSRV(),
-		CGPUInterpolater<4, 2>::GInterpPropertyGPU->GetSRV(), 
-		CGPUInterpolater<4, 4>::GInterpPropertyGPU->GetSRV() 
+		CGPUInterpPropertyManager<4, 2>::GInterpPropertyGPU->GetSRV(), 
+		CGPUInterpPropertyManager<4, 4>::GInterpPropertyGPU->GetSRV() 
 	};
 	ID3D11ShaderResourceView* initializeNullSRVs[] = { nullptr, nullptr, nullptr };
 	ID3D11UnorderedAccessView* initializeUavs[] = { 

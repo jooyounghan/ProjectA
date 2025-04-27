@@ -21,7 +21,7 @@
 #include "ARuntimeSpawnProperty.h"
 #include "ForceUpdateProperty.h"
 
-#include "GPUInterpolater.h"
+#include "GPUInterpPropertyManager.h"
 
 #include <format>
 

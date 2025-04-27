@@ -10,7 +10,7 @@ using namespace D3D11;
 using namespace DirectX;
 using namespace ImGui;		
 
-ARuntimeSpawnProperty::ARuntimeSpawnProperty()
+ARuntimeSpawnProperty::ARuntimeSpawnProperty(uint32_t maxEmitterCount)
 	: IProperty(),
 	m_currentLifeTime(0.f),
 	m_isParticleSpawnPropertyChanged(false),
@@ -23,7 +23,7 @@ ARuntimeSpawnProperty::ARuntimeSpawnProperty()
 	m_colorInitControlPoint{ 0.f, MakeArray(1.f, 0.f, 0.f, 1.f)},
 	m_colorFinalControlPoint{ InitLife, MakeArray(0.f, 0.f ,1.f, 1.f)},
 	m_colorInterpolationMethod(EInterpolationMethod::Linear),
-	m_useGPUColorInterpolater(false)
+	m_checkGPUColorInterpolater(false)
 {
 	AutoZeroMemory(m_baseParticleSpawnPropertyCPU);
 
@@ -40,6 +40,9 @@ ARuntimeSpawnProperty::ARuntimeSpawnProperty()
 		m_speedOrigin, m_speedUpVector,
 		m_baseParticleSpawnPropertyCPU.shapedSpeedVectorProperty
 	);
+
+	m_d1Dim4PorpertyManager = make_unique<CGPUInterpPropertyManager<4, 2>>(maxEmitterCount);
+	m_d3Dim4PorpertyManager = make_unique<CGPUInterpPropertyManager<4, 4>>(maxEmitterCount);
 
 	m_colorControlPointGridView = make_unique<CControlPointGridView<4>>(
 		"시간",
@@ -60,26 +63,17 @@ ARuntimeSpawnProperty::ARuntimeSpawnProperty()
 		m_colorControlPoints
 	);
 
-	m_colorInterpolationSelectPlotter->CreateInterpolater(m_useGPUColorInterpolater, m_colorInterpolationMethod, m_colorInterpolater);
+	m_colorInterpolationSelectPlotter->CreateInterpolater(
+		m_d1Dim4PorpertyManager.get(), 
+		m_d3Dim4PorpertyManager.get(), 
+		m_colorInterpolationMethod, 
+		m_colorInterpolater
+	);
 	m_colorInterpolationSelectPlotter->ResetXYScale();
 }
 
 ID3D11Buffer* ARuntimeSpawnProperty::GetParticleSpawnPropertyBuffer() const noexcept { return m_baseParticleSpawnPropertyGPU->GetBuffer(); }
 
-void ARuntimeSpawnProperty::OnCheckGPUColorInterpolater()
-{
-	if (m_useGPUColorInterpolater)
-	{
-		m_baseParticleSpawnPropertyCPU.color = XMVectorZero();
-		m_isParticleSpawnPropertyChanged = true;
-	}
-	else
-	{
-
-	}
-
-	m_colorInterpolationSelectPlotter->CreateInterpolater(m_useGPUColorInterpolater, m_colorInterpolationMethod, m_colorInterpolater);
-}
 
 void ARuntimeSpawnProperty::AdjustControlPointsFromLife()
 {
@@ -105,6 +99,9 @@ void ARuntimeSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext
 	OnInterpolateInformationChagned();
 	m_baseParticleSpawnPropertyGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_baseParticleSpawnPropertyCPU));
 	m_baseParticleSpawnPropertyGPU->InitializeBuffer(device);
+
+	m_d1Dim4PorpertyManager->Initialize(device, deviceContext);
+	m_d3Dim4PorpertyManager->Initialize(device, deviceContext);
 }
 
 void ARuntimeSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
@@ -116,7 +113,10 @@ void ARuntimeSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 		m_currentLifeTime = max(m_currentLifeTime - life, 0.f);
 	}
 
-	if (!m_useGPUColorInterpolater)
+	m_d1Dim4PorpertyManager->Update(deviceContext, dt);
+	m_d3Dim4PorpertyManager->Update(deviceContext, dt);
+
+	if (!m_checkGPUColorInterpolater)
 	{
 		array<float, 4> interpolatedColor = m_colorInterpolater->GetInterpolated(m_currentLifeTime);
 		m_baseParticleSpawnPropertyCPU.color = XMVectorSet(interpolatedColor[0], interpolatedColor[1], interpolatedColor[2], interpolatedColor[3]);
@@ -168,13 +168,23 @@ void ARuntimeSpawnProperty::DrawPropertyUIImpl()
 	if (m_colorInterpolationMethod != currnetColorInterpolateKind)
 	{
 		m_colorInterpolationMethod = currnetColorInterpolateKind;
-		m_colorInterpolationSelectPlotter->CreateInterpolater(m_useGPUColorInterpolater, m_colorInterpolationMethod, m_colorInterpolater);
+		m_colorInterpolationSelectPlotter->CreateInterpolater(
+			m_d1Dim4PorpertyManager.get(),
+			m_d3Dim4PorpertyManager.get(),
+			m_colorInterpolationMethod, 
+			m_colorInterpolater
+		);
 		OnInterpolateInformationChagned();
 	}
 
-	if (Checkbox("GPU 기반 색상 보간", &m_useGPUColorInterpolater))
+	if (Checkbox("GPU 기반 색상 보간", &m_checkGPUColorInterpolater))
 	{
-		OnCheckGPUColorInterpolater();
+		m_colorInterpolationSelectPlotter->CreateInterpolater(
+			m_d1Dim4PorpertyManager.get(),
+			m_d3Dim4PorpertyManager.get(),
+			m_colorInterpolationMethod,
+			m_colorInterpolater
+		);
 		OnInterpolateInformationChagned();
 	}
 
@@ -204,7 +214,7 @@ void ARuntimeSpawnProperty::Serialize(std::ofstream& ofs)
 	SerializeHelper::SerializeVector<SControlPoint<4>>(ofs, m_colorControlPoints);
 	SerializeHelper::SerializeElement<EInterpolationMethod>(ofs, m_colorInterpolationMethod);
 
-	SerializeHelper::SerializeElement<bool>(ofs, m_useGPUColorInterpolater);
+	SerializeHelper::SerializeElement<bool>(ofs, m_checkGPUColorInterpolater);
 }
 
 void ARuntimeSpawnProperty::Deserialize(std::ifstream& ifs)
@@ -224,10 +234,14 @@ void ARuntimeSpawnProperty::Deserialize(std::ifstream& ifs)
 	m_colorControlPoints = SerializeHelper::DeserializeVector<SControlPoint<4>>(ifs);
 	m_colorInterpolationMethod = SerializeHelper::DeserializeElement<EInterpolationMethod>(ifs);
 
-	m_useGPUColorInterpolater = SerializeHelper::DeserializeElement<bool>(ifs);
+	m_checkGPUColorInterpolater = SerializeHelper::DeserializeElement<bool>(ifs);
 
-	OnCheckGPUColorInterpolater();
 	AdjustControlPointsFromLife();
+	m_colorInterpolationSelectPlotter->CreateInterpolater(
+		m_d1Dim4PorpertyManager.get(),
+		m_d3Dim4PorpertyManager.get(),
+		m_colorInterpolationMethod,
+		m_colorInterpolater
+	);
 	OnInterpolateInformationChagned();
 }
-
