@@ -116,7 +116,8 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 	sourcedParticle.accelerate = float3(0.f, 0.f, 0.f);
 	sourcedParticle.color = color;
 	sourcedParticle.emitterID = emitterID;
-	sourcedParticle.emitterType = emitterType;
+	sourcedParticle.xyScale = float2(1.f, 1.f);
+	sourcedParticle.dummy = uint3(0, 0, 0);
 
 #ifdef RUNTIME_SOURCE
 	sourcedParticle.life = life;

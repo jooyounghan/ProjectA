@@ -80,52 +80,6 @@ UINT ParticleEmitterManager::AddEmitter(
 	return particleEmitterID;
 }
 
-
-void ParticleEmitterManager::SelectColorGPUInterpolater(
-	UINT emitterID,
-	UINT colorInterpolaterID,
-	bool isColorGPUInterpolaterOn,
-	EInterpolationMethod colorInterpolationMethod,
-	IInterpolater<4>* colorInterpolater
-)
-{
-	ParticleEmitter* particleEmitter = reinterpret_cast<ParticleEmitter*>(GetEmitter(emitterID));
-	if (colorInterpolaterID == InterpPropertyNotSelect && isColorGPUInterpolaterOn)
-	{
-		switch (colorInterpolationMethod)
-		{
-		case EInterpolationMethod::Linear:
-		{
-			colorInterpolaterID = m_colorD1Dim4PorpertyManager->IssueAvailableInterpPropertyID();
-			break;
-		}
-		case EInterpolationMethod::CubicSpline:
-		case EInterpolationMethod::CatmullRom:
-		{
-			colorInterpolaterID = m_colorD3Dim4PorpertyManager->IssueAvailableInterpPropertyID();
-			break;
-		}
-		}
-		particleEmitter->SetColorInterpolaterID(colorInterpolaterID);
-	}
-
-	else if (colorInterpolaterID != InterpPropertyNotSelect && !isColorGPUInterpolaterOn)
-	{
-		particleEmitter->SetColorInterpolaterID(InterpPropertyNotSelect);
-		switch (colorInterpolationMethod)
-		{
-		case EInterpolationMethod::Linear:
-			m_colorD1Dim4PorpertyManager->ReclaimInterpPropertyID(colorInterpolaterID);
-			break;
-		case EInterpolationMethod::CubicSpline:
-		case EInterpolationMethod::CatmullRom:
-			m_colorD3Dim4PorpertyManager->ReclaimInterpPropertyID(colorInterpolaterID);
-			break;
-		}
-	}
-	else;
-}
-
 void ParticleEmitterManager::UpdateColorGPUInterpolaterImpl(
 	UINT emitterID,
 	UINT colorInterpolaterID, 
@@ -174,7 +128,8 @@ void ParticleEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceCont
 
 	UINT initDeathParticleCount[] = { NULL, NULL, NULL };
 
-	CEmitterManagerCommonData::GInitializeParticleSetCS->SetShader(deviceContext);
+	UINT emitterTypeIndex = GetEmitterType();
+	CEmitterManagerCommonData::GInitializeParticleSetCS[emitterTypeIndex]->SetShader(deviceContext);
 
 	deviceContext->CSSetConstantBuffers(2, 1, initializeCBs);
 	deviceContext->CSSetShaderResources(0, 3, initializeSRVs);
@@ -194,13 +149,15 @@ void ParticleEmitterManager::DrawParticles(ID3D11DeviceContext* deviceContext)
 	};
 	ID3D11ShaderResourceView* patriclesNullSrvs[] = { nullptr, nullptr };
 
+	UINT emitterTypeIndex = GetEmitterType();
+
 	const float blendColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	CEmitterManagerCommonData::GDrawParticlePSO->ApplyPSO(deviceContext, blendColor, 0xFFFFFFFF);
+	CEmitterManagerCommonData::GDrawParticlePSO[emitterTypeIndex]->ApplyPSO(deviceContext, blendColor, 0xFFFFFFFF);
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 	deviceContext->VSSetShaderResources(0, 2, patriclesSrvs);
 
 	deviceContext->DrawInstancedIndirect(m_drawIndirectBuffer->GetBuffer(), NULL);
 
 	deviceContext->VSSetShaderResources(0, 2, patriclesNullSrvs);
-	CEmitterManagerCommonData::GDrawParticlePSO->RemovePSO(deviceContext);
+	CEmitterManagerCommonData::GDrawParticlePSO[emitterTypeIndex]->RemovePSO(deviceContext);
 }

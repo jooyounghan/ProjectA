@@ -172,6 +172,44 @@ void AEmitterManager::RemoveEmitter(UINT emitterID)
 	}
 }
 
+void AEmitterManager::SelectColorGPUInterpolater(UINT emitterID, UINT colorInterpolaterID, bool isColorGPUInterpolaterOn, EInterpolationMethod colorInterpolationMethod, IInterpolater<4>* colorInterpolater)
+{
+	AEmitter* particleEmitter = GetEmitter(emitterID);
+	if (colorInterpolaterID == InterpPropertyNotSelect && isColorGPUInterpolaterOn)
+	{
+		switch (colorInterpolationMethod)
+		{
+		case EInterpolationMethod::Linear:
+		{
+			colorInterpolaterID = m_colorD1Dim4PorpertyManager->IssueAvailableInterpPropertyID();
+			break;
+		}
+		case EInterpolationMethod::CubicSpline:
+		case EInterpolationMethod::CatmullRom:
+		{
+			colorInterpolaterID = m_colorD3Dim4PorpertyManager->IssueAvailableInterpPropertyID();
+			break;
+		}
+		}
+		particleEmitter->SetColorInterpolaterID(colorInterpolaterID);
+	}
+
+	else if (colorInterpolaterID != InterpPropertyNotSelect && !isColorGPUInterpolaterOn)
+	{
+		particleEmitter->SetColorInterpolaterID(InterpPropertyNotSelect);
+		switch (colorInterpolationMethod)
+		{
+		case EInterpolationMethod::Linear:
+			m_colorD1Dim4PorpertyManager->ReclaimInterpPropertyID(colorInterpolaterID);
+			break;
+		case EInterpolationMethod::CubicSpline:
+		case EInterpolationMethod::CatmullRom:
+			m_colorD3Dim4PorpertyManager->ReclaimInterpPropertyID(colorInterpolaterID);
+			break;
+		}
+	}
+	else;
+}
 
 void AEmitterManager::UpdateColorGPUInterpolater(
 	UINT emitterID,

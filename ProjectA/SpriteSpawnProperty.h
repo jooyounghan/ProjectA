@@ -20,9 +20,6 @@ protected:
 	std::function<void(bool, float, EInterpolationMethod, IInterpolater<2>*)> m_onGpuSpriteSizeInterpolaterUpdated;
 
 protected:
-	SSpriteInterpInformation m_spriteSizeInterpInformation;
-
-protected:
 	SControlPoint<2> m_spriteSizeInitControlPoint;
 	SControlPoint<2> m_spriteSizeFinalControlPoint;
 	std::vector<SControlPoint<2>> m_spriteSizeControlPoints;
@@ -39,7 +36,15 @@ protected:
 protected:
 	virtual void AdjustControlPointsFromLife() override;
 
+
+public:
+	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
+
 protected:
 	virtual void DrawPropertyUIImpl() override;
+
+public:
+	virtual void Serialize(std::ofstream& ofs) override;
+	virtual void Deserialize(std::ifstream& ifs) override;
 };
 

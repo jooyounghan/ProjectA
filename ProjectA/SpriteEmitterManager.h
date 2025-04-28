@@ -36,17 +36,8 @@ public:
 	) override;
 
 protected:
-	std::unique_ptr<CGPUInterpPropertyManager<2, 2>> m_spriteSizeD1Dim4PorpertyManager;
-	std::unique_ptr<CGPUInterpPropertyManager<2, 4>> m_spriteSizeD3Dim4PorpertyManager;
-
-protected:
-	virtual void SelectColorGPUInterpolater(
-		UINT emitterID,
-		UINT colorInterpolaterID,
-		bool isColorGPUInterpolaterOn,
-		EInterpolationMethod colorInterpolationMethod,
-		IInterpolater<4>* colorInterpolater
-	) override;
+	std::unique_ptr<CGPUInterpPropertyManager<2, 2>> m_spriteSizeD1Dim2PorpertyManager;
+	std::unique_ptr<CGPUInterpPropertyManager<2, 4>> m_spriteSizeD3Dim2PorpertyManager;
 
 protected:
 	virtual void UpdateColorGPUInterpolaterImpl(

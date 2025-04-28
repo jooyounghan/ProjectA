@@ -70,6 +70,8 @@ ARuntimeSpawnProperty::ARuntimeSpawnProperty(
 		m_colorInterpolater
 	);
 	m_colorInterpolationSelectPlotter->ResetXYScale();
+
+	AdjustControlPointsFromLife();
 }
 
 
@@ -88,6 +90,7 @@ void ARuntimeSpawnProperty::AdjustControlPointsFromLife()
 
 	m_colorInterpolater->UpdateCoefficient();
 	m_colorInterpolationSelectPlotter->ResetXYScale();
+
 	m_onGpuColorInterpolaterUpdated(
 		m_checkGPUColorInterpolater, m_baseParticleSpawnPropertyCPU.maxLife, 
 		m_colorInterpolationMethod, m_colorInterpolater.get()
@@ -187,7 +190,6 @@ void ARuntimeSpawnProperty::DrawPropertyUIImpl()
 			m_colorInterpolationMethod,
 			m_colorInterpolater
 		);
-
 
 		m_onGpuColorInterpolaterSelected(
 			m_checkGPUColorInterpolater, m_colorInterpolationMethod, m_colorInterpolater.get()

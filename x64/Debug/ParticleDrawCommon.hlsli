@@ -4,7 +4,7 @@ struct ParticleVSOut
 {
     float4 viewPos : POSITION0;
     float4 color : COLOR;
-    float life : LIFE;
+    float2 xyScale : SCALE;
 };
 
 struct ParticleGSOut
@@ -12,7 +12,6 @@ struct ParticleGSOut
     float4 viewPos : SV_Position;
     float2 texCoord : TEXCOORD;
     float4 color : COLOR;
-    float life : LIFE;
 };
 
 float smoothstep(float edge0, float edge1, float x)

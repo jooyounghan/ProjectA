@@ -121,13 +121,13 @@ protected:
 	std::unique_ptr<CGPUInterpPropertyManager<4, 4>> m_colorD3Dim4PorpertyManager;
 
 protected:
-	virtual void SelectColorGPUInterpolater(
+	void SelectColorGPUInterpolater(
 		UINT emitterID,
 		UINT colorInterpolaterID,
 		bool isColorGPUInterpolaterOn,
 		EInterpolationMethod colorInterpolationMethod,
 		IInterpolater<4>* colorInterpolater
-	) = 0;
+	);
 
 protected:
 	void UpdateColorGPUInterpolater(

@@ -34,7 +34,6 @@ void main( uint3 DTid : SV_DispatchThreadID )
         Particle currentParticle = totalParticles[index];
 
 		const uint emitterID = currentParticle.emitterID;
-		const uint emitterType = currentParticle.emitterType;
 
 		const float3 position = currentParticle.worldPos;
 		const float3 velocity = currentParticle.velocity;

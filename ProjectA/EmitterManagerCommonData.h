@@ -30,7 +30,7 @@ public:
 
 #pragma region Particle Initialize 包访 CS
 public:
-	static std::unique_ptr<D3D11::CComputeShader> GInitializeParticleSetCS;
+	static std::unique_ptr<D3D11::CComputeShader> GInitializeParticleSetCS[EmitterTypeCount];
 #pragma endregion
 
 #pragma region Particle 家教 包访 CS
@@ -54,8 +54,8 @@ public:
 public:
 	static std::unique_ptr<D3D11::CVertexShader> GParticleDrawVS;
 	static std::unique_ptr<D3D11::CGeometryShader> GParticleDrawGS;
-	static std::unique_ptr<D3D11::CPixelShader> GParticleDrawPS;
-	static std::unique_ptr<D3D11::CGraphicsPSOObject> GDrawParticlePSO;
+	static std::unique_ptr<D3D11::CPixelShader> GParticleDrawPS[EmitterTypeCount];
+	static std::unique_ptr<D3D11::CGraphicsPSOObject> GDrawParticlePSO[EmitterTypeCount];
 #pragma endregion
 
 #pragma region Emitter 弊府扁 PSO

@@ -21,8 +21,6 @@ SpriteSpawnProperty::SpriteSpawnProperty(
 	m_spriteSizeFinalControlPoint{ InitLife, MakeArray(10.f, 10.f) },
 	m_spriteSizeInterpolationMethod(EInterpolationMethod::Linear)
 {
-	AutoZeroMemory(m_spriteSizeInterpInformation);
-
 	m_spriteSizeControlPointGridView = make_unique<CControlPointGridView<2>>(
 		"시간",
 		array<string, 2>{ "X 크기", "Y 크기" },
@@ -47,11 +45,14 @@ SpriteSpawnProperty::SpriteSpawnProperty(
 		m_spriteSizeInterpolater
 	);
 	m_spriteSizeInterpolationSelectPlotter->ResetXYScale();
+
+	AdjustControlPointsFromLife();
 }
 
 void SpriteSpawnProperty::AdjustControlPointsFromLife()
 {
 	ARuntimeSpawnProperty::AdjustControlPointsFromLife();
+
 	const float& maxLife = m_baseParticleSpawnPropertyCPU.maxLife;
 	m_spriteSizeFinalControlPoint.x = maxLife;
 	m_spriteSizeControlPoints.erase(
@@ -65,8 +66,27 @@ void SpriteSpawnProperty::AdjustControlPointsFromLife()
 
 	m_spriteSizeInterpolater->UpdateCoefficient();
 	m_spriteSizeInterpolationSelectPlotter->ResetXYScale();
+
+	m_onGpuSpriteSizeInterpolaterUpdated(
+		m_checkGPUSpriteSizeInterpolater, m_baseParticleSpawnPropertyCPU.maxLife,
+		m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater.get()
+	);
 }
 
+
+void SpriteSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
+{
+	ARuntimeSpawnProperty::Initialize(device, deviceContext);
+
+	m_onGpuSpriteSizeInterpolaterSelected(
+		m_checkGPUSpriteSizeInterpolater, m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater.get()
+	);
+
+	m_onGpuSpriteSizeInterpolaterUpdated(
+		m_checkGPUSpriteSizeInterpolater, m_baseParticleSpawnPropertyCPU.maxLife, 
+		m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater.get()
+	);
+}
 
 void SpriteSpawnProperty::DrawPropertyUIImpl()
 {
@@ -82,6 +102,11 @@ void SpriteSpawnProperty::DrawPropertyUIImpl()
 			m_spriteSizeInterpolationMethod, 
 			m_spriteSizeInterpolater
 		);
+
+		m_onGpuSpriteSizeInterpolaterUpdated(
+			m_checkGPUSpriteSizeInterpolater, m_baseParticleSpawnPropertyCPU.maxLife,
+			m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater.get()
+		);
 	}
 
 	if (Checkbox("GPU 기반 스프라이트 크기 보간", &m_checkGPUSpriteSizeInterpolater))
@@ -90,13 +115,60 @@ void SpriteSpawnProperty::DrawPropertyUIImpl()
 			m_spriteSizeInterpolationMethod,
 			m_spriteSizeInterpolater
 		);
+
+		m_onGpuSpriteSizeInterpolaterSelected(
+			m_checkGPUSpriteSizeInterpolater, m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater.get()
+		);
+
+		m_onGpuSpriteSizeInterpolaterUpdated(
+			m_checkGPUSpriteSizeInterpolater, m_baseParticleSpawnPropertyCPU.maxLife,
+			m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater.get()
+		);
 	}
 
 	if (m_spriteSizeControlPointGridView->DrawControlPointGridView())
 	{
 		m_spriteSizeInterpolater->UpdateCoefficient();
 		m_spriteSizeInterpolationSelectPlotter->ResetXYScale();
+
+		m_onGpuSpriteSizeInterpolaterUpdated(
+			m_checkGPUSpriteSizeInterpolater, m_baseParticleSpawnPropertyCPU.maxLife,
+			m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater.get()
+		);
 	}
 
 	m_spriteSizeInterpolationSelectPlotter->ViewInterpolatedPlots();
+}
+
+void SpriteSpawnProperty::Serialize(std::ofstream& ofs)
+{
+	ARuntimeSpawnProperty::Serialize(ofs);
+
+	SerializeHelper::SerializeElement<SControlPoint<2>>(ofs, m_spriteSizeInitControlPoint);
+	SerializeHelper::SerializeElement<SControlPoint<2>>(ofs, m_spriteSizeFinalControlPoint);
+	SerializeHelper::SerializeVector<SControlPoint<2>>(ofs, m_spriteSizeControlPoints);
+	SerializeHelper::SerializeElement<EInterpolationMethod>(ofs, m_spriteSizeInterpolationMethod);
+
+	SerializeHelper::SerializeElement<bool>(ofs, m_checkGPUSpriteSizeInterpolater);
+}
+
+void SpriteSpawnProperty::Deserialize(std::ifstream& ifs)
+{
+	ARuntimeSpawnProperty::Deserialize(ifs);
+
+	m_spriteSizeInitControlPoint = SerializeHelper::DeserializeElement<SControlPoint<2>>(ifs);
+	m_spriteSizeFinalControlPoint = SerializeHelper::DeserializeElement<SControlPoint<2>>(ifs);
+	m_spriteSizeControlPoints = SerializeHelper::DeserializeVector<SControlPoint<2>>(ifs);
+	m_spriteSizeInterpolationMethod = SerializeHelper::DeserializeElement<EInterpolationMethod>(ifs);
+
+	m_checkGPUSpriteSizeInterpolater = SerializeHelper::DeserializeElement<bool>(ifs);
+
+	m_onGpuSpriteSizeInterpolaterSelected(
+		m_checkGPUSpriteSizeInterpolater, m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater.get()
+	);
+
+	m_onGpuSpriteSizeInterpolaterUpdated(
+		m_checkGPUSpriteSizeInterpolater, m_baseParticleSpawnPropertyCPU.maxLife,
+		m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater.get()
+	);
 }

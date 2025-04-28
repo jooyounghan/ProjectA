@@ -6,9 +6,10 @@ struct Particle
     float3 worldPos;
     float3 velocity;
     float3 accelerate;
-    uint emitterType;
     uint emitterID;
     float life;
+    float2 xyScale;
+    uint3 dummy;
 };
 
 cbuffer AppParams : register(b0)
