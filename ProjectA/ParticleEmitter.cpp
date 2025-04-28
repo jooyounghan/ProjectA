@@ -15,9 +15,8 @@ ParticleEmitter::ParticleEmitter(
 	const XMVECTOR& angle,
 	const function<void(UINT, const XMMATRIX&)>& worldTransformChangedHandler,
 	const function<void(UINT, const SEmitterForceProperty&)>& forcePropertyChangedHandler,
-	const function<void(UINT, EInterpolationMethod, bool)>& gpuColorInterpolaterSelectedHandler,
-	const function<void(UINT, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler,
-	const function<void(UINT, float, UINT, UINT)>& particleInterpInformChangedHandler
+	const std::function<void(UINT, UINT, bool, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterSelectedHandler,
+	const std::function<void(UINT, UINT, bool, float, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler
 )
 	: AEmitter(
 		static_cast<UINT>(EEmitterType::ParticleEmitter),
@@ -26,8 +25,7 @@ ParticleEmitter::ParticleEmitter(
 		forcePropertyChangedHandler,
 		gpuColorInterpolaterSelectedHandler,
 		gpuColorInterpolaterUpdatedHandler
-	),
-	m_onParticleInterpInforChanged(particleInterpInformChangedHandler)
+	)
 {
 
 }
@@ -37,9 +35,23 @@ void ParticleEmitter::CreateProperty()
 	m_initialSpawnProperty = make_unique<CInitialSpawnProperty>();
 	m_emitterUpdateProperty = make_unique<CEmitterUpdateProperty>();
 	m_runtimeSpawnProperty = make_unique<ParticleSpawnProperty>(
-		[this](EInterpolationMethod colorIntperpolationMethod, bool isColorGPUInterpolaterOn) { m_onGpuColorInterpolaterSelected(GetEmitterID(), colorIntperpolationMethod, isColorGPUInterpolaterOn); },
-		[this](EInterpolationMethod colorIntperpolationMethod, IInterpolater<4>* colorInterpolater) { m_onGpuColorInterpolaterUpdated(m_colorInterpolaterID, colorIntperpolationMethod, colorInterpolater); },
-		[this](float maxLife, UINT interpoalterCofficientCount) { m_onParticleInterpInforChanged(GetEmitterID(), maxLife, m_colorInterpolaterID, interpoalterCofficientCount); }
+		[this](
+			bool isColorGPUInterpolaterOn,
+			EInterpolationMethod colorIntperpolationMethod,
+			IInterpolater<4>* colorInterpolater
+			)
+		{
+			m_onGpuColorInterpolaterSelected(GetEmitterID(), m_colorInterpolaterID, isColorGPUInterpolaterOn, colorIntperpolationMethod, colorInterpolater);
+		},
+		[this](
+			bool isColorGPUInterpolaterOn, 
+			float maxLife, 
+			EInterpolationMethod colorIntperpolationMethod, 
+			IInterpolater<4>* colorInterpolater
+			)
+		{ 
+			m_onGpuColorInterpolaterUpdated(GetEmitterID(), m_colorInterpolaterID, isColorGPUInterpolaterOn, maxLife, colorIntperpolationMethod, colorInterpolater);
+		}
 	);
 	m_forceUpdateProperty = make_unique<ForceUpdateProperty>(
 		[this](const SEmitterForceProperty& forceProperty) { m_onForcePropertyChanged(GetEmitterID(), forceProperty); }

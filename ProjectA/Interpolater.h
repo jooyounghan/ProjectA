@@ -37,7 +37,9 @@ public:
 	virtual ~IInterpolater() = default;
 
 public:
-	virtual uint32_t GetCoefficientCount() = 0;
+	virtual uint32_t GetDegree() = 0;
+
+public:
 	virtual void UpdateCoefficient() = 0;
 	virtual const float* GetXProfilesAddress() const noexcept = 0;
 	virtual size_t GetXProfilesCount() const noexcept = 0;
@@ -75,10 +77,7 @@ public:
 	virtual size_t GetCoefficientsCount() const noexcept override final { return m_coefficients.size() * CoefficientCount * Dim; }
 
 public:
-	virtual UINT GetInterpolaterFlag() = 0;
-
-public:
-	virtual uint32_t GetCoefficientCount() override { return CoefficientCount; };
+	virtual uint32_t GetDegree() override { return CoefficientCount - 1; };
 	virtual void UpdateCoefficient() override;
 
 protected:

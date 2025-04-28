@@ -40,8 +40,42 @@ protected:
 	std::unique_ptr<CGPUInterpPropertyManager<2, 4>> m_spriteSizeD3Dim4PorpertyManager;
 
 protected:
-	void SetSpriteSizeGPUInterpolateOption(UINT emitterID, EInterpolationMethod spriteSizeInterpolationMethod, bool isSpriteSizeGPUInterpolaterOn);
-	void UpdateSpriteSizeGPUInterpolater(UINT spriteSizeInterpolaterID, EInterpolationMethod spriteSizeInterpolationMethod, IInterpolater<2>* spriteSizeInterpolater);
+	virtual void SelectColorGPUInterpolater(
+		UINT emitterID,
+		UINT colorInterpolaterID,
+		bool isColorGPUInterpolaterOn,
+		EInterpolationMethod colorInterpolationMethod,
+		IInterpolater<4>* colorInterpolater
+	) override;
+
+protected:
+	virtual void UpdateColorGPUInterpolaterImpl(
+		UINT emitterID,
+		UINT colorInterpolaterID,
+		bool isColorGPUInterpolaterOn,
+		float maxLife,
+		EInterpolationMethod colorInterpolationMethod,
+		IInterpolater<4>* colorInterpolater
+	) override;
+
+protected:
+	void SelectSpriteSizeGPUInterpolater(
+		UINT emitterID,
+		UINT spriteSizeInterpolaterID,
+		bool isSpriteSizeGPUInterpolaterOn,
+		EInterpolationMethod spriteSizeInterpolationMethod,
+		IInterpolater<2>* spriteSizeInterpolater
+	);
+
+protected:
+	void UpdateSpriteSizeGPUInterpolater(
+		UINT emitterID,
+		UINT spriteSizeInterpolaterID, 
+		bool isSpriteSizeGPUInterpolaterOn,
+		float maxLife, 
+		EInterpolationMethod spriteSizeInterpolationMethod, 
+		IInterpolater<2>* spriteSizeInterpolater
+	);
 
 protected:
 	virtual void InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;

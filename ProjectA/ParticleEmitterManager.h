@@ -34,6 +34,26 @@ public:
 		ID3D11DeviceContext* deviceContext
 	) override;
 
+
+protected:
+	virtual void SelectColorGPUInterpolater(
+		UINT emitterID,
+		UINT colorInterpolaterID,
+		bool isColorGPUInterpolaterOn,
+		EInterpolationMethod colorInterpolationMethod,
+		IInterpolater<4>* colorInterpolater
+	) override;
+
+protected:
+	virtual void UpdateColorGPUInterpolaterImpl(
+		UINT emitterID,
+		UINT colorInterpolaterID,
+		bool isColorGPUInterpolaterOn,
+		float maxLife,
+		EInterpolationMethod colorInterpolationMethod,
+		IInterpolater<4>* colorInterpolater
+	) override;
+
 protected:
 	virtual void InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
 

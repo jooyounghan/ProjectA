@@ -11,11 +11,10 @@ public:
 		const DirectX::XMVECTOR& angle,
 		const std::function<void(UINT, const DirectX::XMMATRIX&)>& worldTransformChangedHandler,
 		const std::function<void(UINT, const SEmitterForceProperty&)>& forcePropertyChangedHandler,
-		const std::function<void(UINT, EInterpolationMethod, bool)>& gpuColorInterpolaterSelectedHandler,
-		const std::function<void(UINT, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler,
-		const std::function<void(UINT, EInterpolationMethod, bool)>& gpuSpriteSizeInterpolaterSelectedHandler,
-		const std::function<void(UINT, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterUpdatedHandler,
-		const std::function<void(UINT, float, UINT, UINT, UINT, UINT)>& spriteInterpInformationChangedHandler
+		const std::function<void(UINT, UINT, bool, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterSelectedHandler,
+		const std::function<void(UINT, UINT, bool, float, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler,
+		const std::function<void(UINT, UINT, bool, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterSelectedHandler,
+		const std::function<void(UINT, UINT, bool, float, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterUpdatedHandler
 	);
 	~SpriteEmitter() override = default;
 
@@ -26,11 +25,9 @@ public:
 	inline UINT GetSpriteSizeInterpolaterID() const noexcept { return m_spriteSizeInterpolaterID; }
 	inline void SetSpriteSizeInterpolaterID(UINT spriteSizeInterpolaterID) noexcept { m_spriteSizeInterpolaterID = spriteSizeInterpolaterID; }
 
-
 protected:
-	std::function<void(UINT, EInterpolationMethod, bool)> m_onSpriteSizeInterpolaterSelected;
-	std::function<void(UINT, EInterpolationMethod, IInterpolater<2>*)> m_onSpriteSizeInterpolaterUpdated;
-	std::function<void(UINT, float, UINT, UINT, UINT, UINT)> m_onSpriteInterpInformationChanged;
+	std::function<void(UINT, UINT, bool, EInterpolationMethod, IInterpolater<2>*)> m_onSpriteSizeInterpolaterSelected;
+	std::function<void(UINT, UINT, bool, float, EInterpolationMethod, IInterpolater<2>*)> m_onSpriteSizeInterpolaterUpdated;
 
 public:
 	virtual void CreateProperty() override;

@@ -22,8 +22,8 @@ class ARuntimeSpawnProperty : public IProperty, public ISerializable
 {
 public:
 	ARuntimeSpawnProperty(
-		const std::function<void(EInterpolationMethod, bool)>& gpuColorInterpolaterSelectHandler,
-		const std::function<void(EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler
+		const std::function<void(bool, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterSelectedHandler,
+		const std::function<void(bool, float, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler
 	);
 	~ARuntimeSpawnProperty() override = default;
 
@@ -58,7 +58,7 @@ protected:
 	bool m_isParticleSpawnPropertyChanged;
 
 public:
-	ID3D11Buffer* GetParticleSpawnPropertyBuffer() const noexcept;
+	ID3D11Buffer* GetParticleSpawnPropertyBuffer() const noexcept { return m_baseParticleSpawnPropertyGPU->GetBuffer(); }
 
 protected:
 	EShapedVector m_positionShapedVector;
@@ -82,8 +82,10 @@ protected:
 protected:
 	bool m_checkGPUColorInterpolater;
 	UINT m_gpuColorInterpolaterID;
-	std::function<void(EInterpolationMethod, bool)> m_onGpuColorInterpolaterSelected;
-	std::function<void(EInterpolationMethod, IInterpolater<4>*)> m_onGpuColorInterpolaterUpdated;
+
+protected:
+	std::function<void(bool, EInterpolationMethod, IInterpolater<4>*)> m_onGpuColorInterpolaterSelected;
+	std::function<void(bool, float, EInterpolationMethod, IInterpolater<4>*)> m_onGpuColorInterpolaterUpdated;
 
 public:
 	inline void SetGPUColorInterpolaterID(UINT gpuColorInterpolaterID) noexcept { m_gpuColorInterpolaterID = gpuColorInterpolaterID; }

@@ -20,8 +20,8 @@ AEmitter::AEmitter(
 	const XMVECTOR& angle,
 	const function<void(UINT, const XMMATRIX&)>& worldTransformChangedHandler,
 	const function<void(UINT, const SEmitterForceProperty&)>& forcePropertyChangedHandler,
-	const function<void(UINT, EInterpolationMethod, bool)>& gpuColorInterpolaterSelectedHandler,
-	const function<void(UINT, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler
+	const function<void(UINT, UINT, bool, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterSelectedHandler,
+	const function<void(UINT, UINT, bool, float, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler
 ) :
 	m_emitterType(emitterType),
 	m_emitterPropertyCPU{ emitterID, 0, 0, 0 },

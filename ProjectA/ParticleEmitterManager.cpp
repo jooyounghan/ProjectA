@@ -64,28 +64,83 @@ UINT ParticleEmitterManager::AddEmitter(
 			m_forcePropertyCPU[emitterID] = forceProperty;
 			AddForceChangedEmitterID(emitterID);
 		},
-		[this](UINT emitterID, EInterpolationMethod colorInterpolationMethod, bool isColorGPUInterpolaterOn)
+		[this](UINT emitterID, UINT colorInterpolaterID, bool isColorGPUInterpolaterOn, EInterpolationMethod colorInterpolationMethod, IInterpolater<4>* colorInterpolater)
 		{
-			SetColorGPUInterpolateOption(emitterID, colorInterpolationMethod, isColorGPUInterpolaterOn);
+			SelectColorGPUInterpolater(emitterID, colorInterpolaterID, isColorGPUInterpolaterOn, colorInterpolationMethod, colorInterpolater);
 		},
-		[this](UINT colorInterpolaterID, EInterpolationMethod colorInterpolationMethod, IInterpolater<4>* colorInterpolater)
+		[this](UINT emitterID, UINT colorInterpolaterID, bool isColorGPUInterpolaterOn, float maxLife, EInterpolationMethod colorInterpolationMethod, IInterpolater<4>* colorInterpolater)
 		{
-			UpdateColorGPUInterpolater(colorInterpolaterID, colorInterpolationMethod, colorInterpolater);
-		},
-		[this](UINT emitterID, float maxLife, UINT colorInterpolaterID, UINT colorCoefficientCount) 
-		{
-			m_emitterInterpInformationCPU[emitterID].maxLife = maxLife;
-			m_emitterInterpInformationCPU[emitterID].colorInterpolaterID = colorInterpolaterID;
-			m_emitterInterpInformationCPU[emitterID].colorInterpolaterDegree = colorCoefficientCount;
-			AddInterpolaterInformChangedEmitterID(emitterID);
+			UpdateColorGPUInterpolater(emitterID, colorInterpolaterID, isColorGPUInterpolaterOn, maxLife, colorInterpolationMethod, colorInterpolater);
 		}
 	);
 
-	particleEmitter->Initialize(device, deviceContext);
-
+	ParticleEmitter* emitter = particleEmitter.get();
 	m_emitters.emplace_back(std::move(particleEmitter));
+	emitter->Initialize(device, deviceContext);
 	return particleEmitterID;
 }
+
+
+void ParticleEmitterManager::SelectColorGPUInterpolater(
+	UINT emitterID,
+	UINT colorInterpolaterID,
+	bool isColorGPUInterpolaterOn,
+	EInterpolationMethod colorInterpolationMethod,
+	IInterpolater<4>* colorInterpolater
+)
+{
+	ParticleEmitter* particleEmitter = reinterpret_cast<ParticleEmitter*>(GetEmitter(emitterID));
+	if (colorInterpolaterID == InterpPropertyNotSelect && isColorGPUInterpolaterOn)
+	{
+		switch (colorInterpolationMethod)
+		{
+		case EInterpolationMethod::Linear:
+		{
+			colorInterpolaterID = m_colorD1Dim4PorpertyManager->IssueAvailableInterpPropertyID();
+			break;
+		}
+		case EInterpolationMethod::CubicSpline:
+		case EInterpolationMethod::CatmullRom:
+		{
+			colorInterpolaterID = m_colorD3Dim4PorpertyManager->IssueAvailableInterpPropertyID();
+			break;
+		}
+		}
+		particleEmitter->SetColorInterpolaterID(colorInterpolaterID);
+	}
+
+	else if (colorInterpolaterID != InterpPropertyNotSelect && !isColorGPUInterpolaterOn)
+	{
+		particleEmitter->SetColorInterpolaterID(InterpPropertyNotSelect);
+		switch (colorInterpolationMethod)
+		{
+		case EInterpolationMethod::Linear:
+			m_colorD1Dim4PorpertyManager->ReclaimInterpPropertyID(colorInterpolaterID);
+			break;
+		case EInterpolationMethod::CubicSpline:
+		case EInterpolationMethod::CatmullRom:
+			m_colorD3Dim4PorpertyManager->ReclaimInterpPropertyID(colorInterpolaterID);
+			break;
+		}
+	}
+	else;
+}
+
+void ParticleEmitterManager::UpdateColorGPUInterpolaterImpl(
+	UINT emitterID,
+	UINT colorInterpolaterID, 
+	bool isColorGPUInterpolaterOn, 
+	float maxLife, 
+	EInterpolationMethod colorInterpolationMethod, 
+	IInterpolater<4>* colorInterpolater
+)
+{
+	m_emitterInterpInformationCPU[emitterID].maxLife = maxLife;
+	m_emitterInterpInformationCPU[emitterID].colorInterpolaterID = colorInterpolaterID;
+	m_emitterInterpInformationCPU[emitterID].colorInterpolaterDegree = colorInterpolater->GetDegree();
+	AddInterpolaterInformChangedEmitterID(emitterID);
+}
+
 
 void ParticleEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {

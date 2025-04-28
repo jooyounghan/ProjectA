@@ -16,7 +16,6 @@ protected:
 	using Parent = AInterpolater<Dim, 2>;
 
 public:
-	virtual UINT GetInterpolaterFlag() override;
 	virtual void UpdateCoefficient() override;
 
 protected:
@@ -32,12 +31,6 @@ inline CLinearInterpolater<Dim>::CLinearInterpolater(
 	: AInterpolater<Dim, 2>(startPoint, endPoint, controlPoints)
 {
 	UpdateCoefficient();
-}
-
-template<uint32_t Dim>
-UINT CLinearInterpolater<Dim>::GetInterpolaterFlag()
-{
-	return 1;
 }
 
 template<uint32_t Dim>

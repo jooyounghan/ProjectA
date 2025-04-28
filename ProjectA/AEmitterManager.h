@@ -121,8 +121,31 @@ protected:
 	std::unique_ptr<CGPUInterpPropertyManager<4, 4>> m_colorD3Dim4PorpertyManager;
 
 protected:
-	void SetColorGPUInterpolateOption(UINT emitterID, EInterpolationMethod colorInterpolationMethod, bool isColorGPUInterpolaterOn);
-	void UpdateColorGPUInterpolater(UINT colorInterpolaterID, EInterpolationMethod colorInterpolationMethod, IInterpolater<4>* colorInterpolater);
+	virtual void SelectColorGPUInterpolater(
+		UINT emitterID,
+		UINT colorInterpolaterID,
+		bool isColorGPUInterpolaterOn,
+		EInterpolationMethod colorInterpolationMethod,
+		IInterpolater<4>* colorInterpolater
+	) = 0;
+
+protected:
+	void UpdateColorGPUInterpolater(
+		UINT emitterID,
+		UINT colorInterpolaterID, 
+		bool isColorGPUInterpolaterOn, 
+		float maxLife, 
+		EInterpolationMethod colorInterpolationMethod, 
+		IInterpolater<4>* colorInterpolater
+	);
+	virtual void UpdateColorGPUInterpolaterImpl(
+		UINT emitterID,
+		UINT colorInterpolaterID,
+		bool isColorGPUInterpolaterOn,
+		float maxLife,
+		EInterpolationMethod colorInterpolationMethod,
+		IInterpolater<4>* colorInterpolater
+	) = 0;
 
 public:
 	void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override final;

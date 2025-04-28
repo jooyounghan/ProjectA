@@ -16,7 +16,6 @@ protected:
 	using Parent = AInterpolater<Dim, 4>;
 
 public:
-	virtual UINT GetInterpolaterFlag() override;
 	virtual void UpdateCoefficient() override;
 	virtual std::array<float, Dim> GetInterpolated(float x) noexcept override;
 
@@ -33,12 +32,6 @@ inline CCatmullRomInterpolater<Dim>::CCatmullRomInterpolater(
 	: AInterpolater<Dim, 4>(startPoint, endPoint, controlPoints)
 {
 	UpdateCoefficient();
-}
-
-template<uint32_t Dim>
-UINT CCatmullRomInterpolater<Dim>::GetInterpolaterFlag()
-{
-	return 3;
 }
 
 template<uint32_t Dim>

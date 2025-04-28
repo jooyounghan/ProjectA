@@ -18,11 +18,11 @@ cbuffer EmitterManagerProperties : register(b2)
 
 float4 GetInterpolated(uint degree, uint interpolatedID, float4 timeSpent4, float maxLife)
 {
-    const uint CubicSplineMethod = 2;
+    const uint CubicSplineMethod = 1;
     const uint CatmullRomMethod = 3;
     const float timeSpent = timeSpent4.x;
 
-    if (degree == 2)
+    if (degree == 1)
     {
         D1Dim4Prop interpProp = d1Dim4Props[interpolatedID];
         const uint stepsCount = interpProp.header.controlPointsCount - 1;
@@ -42,10 +42,10 @@ float4 GetInterpolated(uint degree, uint interpolatedID, float4 timeSpent4, floa
         return Evaluate1Degree(maxLife, interpProp.coefficient[stepsCount]);
     }
 
-    else if (degree == 4)
+    else if (degree == 3)
     {
         D3Dim4Prop interpProp = d3Dim4Props[interpolatedID];
-        const uint interpolateMethod = interpProp.header.interpolaterFlag;
+        const uint interpolateMethod = interpProp.header.interpolateMethod;
         const uint stepsCount = interpProp.header.controlPointsCount - 1;
 
         [unroll]

@@ -13,7 +13,7 @@ struct ParticleEmitterInterpInform
 struct InterpPropertyHeader
 {
     uint controlPointsCount;
-    uint interpolaterFlag;
+    uint interpolateMethod;
 };
 
 struct D1Dim4Prop

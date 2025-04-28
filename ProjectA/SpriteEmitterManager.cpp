@@ -59,47 +59,75 @@ UINT SpriteEmitterManager::AddEmitter(DirectX::XMVECTOR position, DirectX::XMVEC
 			m_forcePropertyCPU[emitterID] = forceProperty;
 			AddForceChangedEmitterID(emitterID);
 		},
-		[this](UINT emitterID, EInterpolationMethod colorInterpolationMethod, bool isColorGPUInterpolaterOn)
+		[this](UINT emitterID, UINT colorInterpolaterID, bool isColorGPUInterpolaterOn, EInterpolationMethod colorInterpolationMethod, IInterpolater<4>* colorInterpolater)
 		{
-			SetColorGPUInterpolateOption(emitterID, colorInterpolationMethod, isColorGPUInterpolaterOn);
+			SelectColorGPUInterpolater(emitterID, colorInterpolaterID, isColorGPUInterpolaterOn, colorInterpolationMethod, colorInterpolater);
 		},
-		[this](UINT colorInterpolaterID, EInterpolationMethod colorInterpolationMethod, IInterpolater<4>* colorInterpolater)
+		[this](UINT emitterID, UINT colorInterpolaterID, bool isColorGPUInterpolaterOn, float maxLife, EInterpolationMethod colorInterpolationMethod, IInterpolater<4>* colorInterpolater)
 		{
-			UpdateColorGPUInterpolater(colorInterpolaterID, colorInterpolationMethod, colorInterpolater);
+			UpdateColorGPUInterpolater(emitterID, colorInterpolaterID, isColorGPUInterpolaterOn, maxLife, colorInterpolationMethod, colorInterpolater);
 		},
-		[this](UINT emitterID, EInterpolationMethod spriteSizeInterpolationMethod, bool isspriteSizeGPUInterpolaterOn)
+		[this](UINT emitterID, UINT spriteSizeInterpolaterID, bool isSpriteSizeGPUInterpolaterOn, EInterpolationMethod spriteSizeInterpolationMethod, IInterpolater<2>* spriteSizeInterpolater)
 		{
-			SetSpriteSizeGPUInterpolateOption(emitterID, spriteSizeInterpolationMethod, isspriteSizeGPUInterpolaterOn);
+			SelectSpriteSizeGPUInterpolater(emitterID, spriteSizeInterpolaterID, isSpriteSizeGPUInterpolaterOn, spriteSizeInterpolationMethod, spriteSizeInterpolater);
 		},
-		[this](UINT spriteSizeInterpolaterID, EInterpolationMethod spriteSizeInterpolationMethod, IInterpolater<2>* spriteSizeInterpolater)
+		[this](UINT emitterID, UINT spriteSizeInterpolaterID, bool isSpriteSizeGPUInterpolaterOn, float maxLife, EInterpolationMethod spriteSizeInterpolationMethod, IInterpolater<2>* spriteSizeInterpolater)
 		{
-			UpdateSpriteSizeGPUInterpolater(spriteSizeInterpolaterID, spriteSizeInterpolationMethod, spriteSizeInterpolater);
-		},
-		[this](UINT emitterID, float maxLife, UINT colorInterpolaterID, UINT colorCoefficientCount, UINT spriteSizeInterpolaterID, UINT spriteSizeCoefficientCount)
-		{
-			m_emitterInterpInformationCPU[emitterID].maxLife = maxLife;
-			m_emitterInterpInformationCPU[emitterID].colorInterpolaterID = colorInterpolaterID;
-			m_emitterInterpInformationCPU[emitterID].colorInterpolaterDegree = colorCoefficientCount;
-			m_emitterInterpInformationCPU[emitterID].spriteSizeInterpolaterID = spriteSizeInterpolaterID;
-			m_emitterInterpInformationCPU[emitterID].spriteSizeInterpolaterDegree = spriteSizeCoefficientCount;
-			AddInterpolaterInformChangedEmitterID(emitterID);
+			UpdateSpriteSizeGPUInterpolater(emitterID, spriteSizeInterpolaterID, isSpriteSizeGPUInterpolaterOn, maxLife, spriteSizeInterpolationMethod, spriteSizeInterpolater);
 		}
 	);
 
-	spriteEmitter->Initialize(device, deviceContext);
-
+	SpriteEmitter* emitter = spriteEmitter.get();
 	m_emitters.emplace_back(std::move(spriteEmitter));
+	emitter->Initialize(device, deviceContext);
 	return spriteEmitterID;
 
 }
 
-void SpriteEmitterManager::SetSpriteSizeGPUInterpolateOption(UINT emitterID, EInterpolationMethod spriteSizeInterpolationMethod, bool isSpriteSizeGPUInterpolaterOn)
+void SpriteEmitterManager::SelectColorGPUInterpolater(
+	UINT emitterID, 
+	UINT colorInterpolaterID, 
+	bool isColorGPUInterpolaterOn, 
+	EInterpolationMethod colorInterpolationMethod, 
+	IInterpolater<4>* colorInterpolater
+)
 {
 
 }
 
-void SpriteEmitterManager::UpdateSpriteSizeGPUInterpolater(UINT spriteSizeInterpolaterID, EInterpolationMethod spriteSizeInterpolationMethod, IInterpolater<2>* spriteSizeInterpolater)
+void SpriteEmitterManager::UpdateColorGPUInterpolaterImpl(
+	UINT emitterID, 
+	UINT colorInterpolaterID, 
+	bool isColorGPUInterpolaterOn, 
+	float maxLife, 
+	EInterpolationMethod colorInterpolationMethod, 
+	IInterpolater<4>* colorInterpolater
+)
 {
+
+}
+
+void SpriteEmitterManager::SelectSpriteSizeGPUInterpolater(
+	UINT emitterID, 
+	UINT spriteSizeInterpolaterID, 
+	bool isSpriteSizeGPUInterpolaterOn, 
+	EInterpolationMethod spriteSizeInterpolationMethod, 
+	IInterpolater<2>* spriteSizeInterpolater
+)
+{
+
+}
+
+void SpriteEmitterManager::UpdateSpriteSizeGPUInterpolater(
+	UINT emitterID,
+	UINT spriteSizeInterpolaterID,
+	bool isSpriteSizeGPUInterpolaterOn,
+	float maxLife,
+	EInterpolationMethod spriteSizeInterpolationMethod, 
+	IInterpolater<2>* spriteSizeInterpolater
+)
+{
+
 
 }
 

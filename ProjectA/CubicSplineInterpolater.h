@@ -17,7 +17,6 @@ protected:
 	using Parent = AInterpolater<Dim, 4>;
 
 public:
-	virtual UINT GetInterpolaterFlag() override;
 	virtual void UpdateCoefficient() override;
 	virtual std::array<float, Dim> GetInterpolated(float x) noexcept override;
 
@@ -39,12 +38,6 @@ inline CCubicSplineInterpolater<Dim>::CCubicSplineInterpolater(
 	: AInterpolater<Dim, 4>(startPoint, endPoint, controlPoints)
 {
 	UpdateCoefficient();
-}
-
-template<uint32_t Dim>
-UINT CCubicSplineInterpolater<Dim>::GetInterpolaterFlag()
-{
-	return 2;
 }
 
 template<uint32_t Dim>

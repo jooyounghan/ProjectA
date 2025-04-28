@@ -7,17 +7,15 @@ using namespace DirectX;
 using namespace ImGui;
 
 SpriteSpawnProperty::SpriteSpawnProperty(
-	const std::function<void(EInterpolationMethod, bool)>& gpuColorInterpolaterSelectHandler,
-	const std::function<void(EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler,
-	const std::function<void(EInterpolationMethod, bool)>& gpuSpriteSizeInterpolaterSelectedHandler,
-	const std::function<void(EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterUpdatedHandler,
-	const function<void(float, UINT, UINT)>& spriteInterpInformationChangedHandler
+	const std::function<void(bool, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterSelectedHandler,
+	const std::function<void(bool, float, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler,
+	const std::function<void(bool, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterSelectedHandler,
+	const std::function<void(bool, float, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterUpdatedHandler
 )
 	: 
-	ARuntimeSpawnProperty(gpuColorInterpolaterSelectHandler, gpuColorInterpolaterUpdatedHandler),
+	ARuntimeSpawnProperty(gpuColorInterpolaterSelectedHandler, gpuColorInterpolaterUpdatedHandler),
 	m_onGpuSpriteSizeInterpolaterSelected(gpuSpriteSizeInterpolaterSelectedHandler),
 	m_onGpuSpriteSizeInterpolaterUpdated(gpuSpriteSizeInterpolaterUpdatedHandler),
-	m_onSpriteInterpInformationChanged(spriteInterpInformationChangedHandler),
 	m_checkGPUSpriteSizeInterpolater(false),
 	m_spriteSizeInitControlPoint{ 0.f, MakeArray(0.f, 0.f) },
 	m_spriteSizeFinalControlPoint{ InitLife, MakeArray(10.f, 10.f) },

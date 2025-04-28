@@ -4,13 +4,11 @@
 using namespace std;
 
 ParticleSpawnProperty::ParticleSpawnProperty(
-	const std::function<void(EInterpolationMethod, bool)>& gpuColorInterpolaterSelectHandler,
-	const std::function<void(EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler,
-	const function<void(float, UINT)>& particleInterpInformChangedHandler
+	const function<void(bool, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterSelectedHandler,
+	const function<void(bool, float, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler
 )
 	: 
-	ARuntimeSpawnProperty(gpuColorInterpolaterSelectHandler, gpuColorInterpolaterUpdatedHandler),
-	m_onParticleInterpInforChanged(particleInterpInformChangedHandler)
+	ARuntimeSpawnProperty(gpuColorInterpolaterSelectedHandler, gpuColorInterpolaterUpdatedHandler)
 {
 
 }

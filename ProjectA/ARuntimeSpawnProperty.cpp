@@ -11,8 +11,8 @@ using namespace DirectX;
 using namespace ImGui;		
 
 ARuntimeSpawnProperty::ARuntimeSpawnProperty(
-	const function<void(EInterpolationMethod, bool)>& gpuColorInterpolaterSelectHandler,
-	const function<void(EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler
+	const function<void(bool, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterSelectedHandler,
+	const function<void(bool, float, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler
 )
 	: IProperty(),
 	m_currentLifeTime(0.f),
@@ -27,7 +27,7 @@ ARuntimeSpawnProperty::ARuntimeSpawnProperty(
 	m_colorFinalControlPoint{ InitLife, MakeArray(0.f, 0.f ,1.f, 1.f) },
 	m_colorInterpolationMethod(EInterpolationMethod::Linear),
 	m_checkGPUColorInterpolater(false),
-	m_onGpuColorInterpolaterSelected(gpuColorInterpolaterSelectHandler),
+	m_onGpuColorInterpolaterSelected(gpuColorInterpolaterSelectedHandler),
 	m_onGpuColorInterpolaterUpdated(gpuColorInterpolaterUpdatedHandler)
 {
 	AutoZeroMemory(m_baseParticleSpawnPropertyCPU);
@@ -72,8 +72,6 @@ ARuntimeSpawnProperty::ARuntimeSpawnProperty(
 	m_colorInterpolationSelectPlotter->ResetXYScale();
 }
 
-ID3D11Buffer* ARuntimeSpawnProperty::GetParticleSpawnPropertyBuffer() const noexcept { return m_baseParticleSpawnPropertyGPU->GetBuffer(); }
-
 
 void ARuntimeSpawnProperty::AdjustControlPointsFromLife()
 {
@@ -90,6 +88,10 @@ void ARuntimeSpawnProperty::AdjustControlPointsFromLife()
 
 	m_colorInterpolater->UpdateCoefficient();
 	m_colorInterpolationSelectPlotter->ResetXYScale();
+	m_onGpuColorInterpolaterUpdated(
+		m_checkGPUColorInterpolater, m_baseParticleSpawnPropertyCPU.maxLife, 
+		m_colorInterpolationMethod, m_colorInterpolater.get()
+	);
 	m_isParticleSpawnPropertyChanged = true;
 }
 
@@ -98,6 +100,14 @@ void ARuntimeSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext
 {
 	m_baseParticleSpawnPropertyGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_baseParticleSpawnPropertyCPU));
 	m_baseParticleSpawnPropertyGPU->InitializeBuffer(device);
+
+	m_onGpuColorInterpolaterSelected(
+		m_checkGPUColorInterpolater, m_colorInterpolationMethod, m_colorInterpolater.get()
+	);
+	m_onGpuColorInterpolaterUpdated(
+		m_checkGPUColorInterpolater, m_baseParticleSpawnPropertyCPU.maxLife, 
+		m_colorInterpolationMethod, m_colorInterpolater.get()
+	);
 }
 
 void ARuntimeSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
@@ -164,6 +174,11 @@ void ARuntimeSpawnProperty::DrawPropertyUIImpl()
 			m_colorInterpolationMethod, 
 			m_colorInterpolater
 		);
+
+		m_onGpuColorInterpolaterUpdated(
+			m_checkGPUColorInterpolater, m_baseParticleSpawnPropertyCPU.maxLife,
+			m_colorInterpolationMethod, m_colorInterpolater.get()
+		);
 	}
 
 	if (Checkbox("GPU 기반 색상 보간", &m_checkGPUColorInterpolater))
@@ -172,12 +187,27 @@ void ARuntimeSpawnProperty::DrawPropertyUIImpl()
 			m_colorInterpolationMethod,
 			m_colorInterpolater
 		);
+
+
+		m_onGpuColorInterpolaterSelected(
+			m_checkGPUColorInterpolater, m_colorInterpolationMethod, m_colorInterpolater.get()
+		);
+
+		m_onGpuColorInterpolaterUpdated(
+			m_checkGPUColorInterpolater, m_baseParticleSpawnPropertyCPU.maxLife,
+			m_colorInterpolationMethod, m_colorInterpolater.get()
+		);
 	}
 
 	if (m_colorControlPointGridView->DrawControlPointGridView())
 	{
 		m_colorInterpolater->UpdateCoefficient();
 		m_colorInterpolationSelectPlotter->ResetXYScale();
+
+		m_onGpuColorInterpolaterUpdated(
+			m_checkGPUColorInterpolater, m_baseParticleSpawnPropertyCPU.maxLife,
+			m_colorInterpolationMethod, m_colorInterpolater.get()
+		);
 	}
 
 	m_colorInterpolationSelectPlotter->ViewInterpolatedPlots();
@@ -222,9 +252,18 @@ void ARuntimeSpawnProperty::Deserialize(std::ifstream& ifs)
 
 	m_checkGPUColorInterpolater = SerializeHelper::DeserializeElement<bool>(ifs);
 
-	AdjustControlPointsFromLife();
 	m_colorInterpolationSelectPlotter->CreateInterpolater(
 		m_colorInterpolationMethod,
 		m_colorInterpolater
+	);
+	
+	m_isParticleSpawnPropertyChanged = true;
+
+	m_onGpuColorInterpolaterSelected(
+		m_checkGPUColorInterpolater, m_colorInterpolationMethod, m_colorInterpolater.get()
+	);
+	m_onGpuColorInterpolaterUpdated(
+		m_checkGPUColorInterpolater, m_baseParticleSpawnPropertyCPU.maxLife,
+		m_colorInterpolationMethod, m_colorInterpolater.get()
 	);
 }

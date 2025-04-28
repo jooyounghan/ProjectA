@@ -8,18 +8,16 @@ class SpriteSpawnProperty : public ARuntimeSpawnProperty
 {
 public:
 	SpriteSpawnProperty(
-		const std::function<void(EInterpolationMethod, bool)>& gpuColorInterpolaterSelectHandler,
-		const std::function<void(EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler,
-		const std::function<void(EInterpolationMethod, bool)>& gpuSpriteSizeInterpolaterSelectedHandler,
-		const std::function<void(EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterUpdatedHandler,
-		const std::function<void(float, UINT, UINT)>& spriteInterpInformationChangedHandler
+		const std::function<void(bool, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterSelectedHandler,
+		const std::function<void(bool, float, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler,
+		const std::function<void(bool, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterSelectedHandler,
+		const std::function<void(bool, float, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterUpdatedHandler
 	);
 	~SpriteSpawnProperty() override = default;
 
 protected:
-	std::function<void(EInterpolationMethod, bool)> m_onGpuSpriteSizeInterpolaterSelected;
-	std::function<void(EInterpolationMethod, IInterpolater<2>*)> m_onGpuSpriteSizeInterpolaterUpdated;
-	std::function<void(float, UINT, UINT)> m_onSpriteInterpInformationChanged;
+	std::function<void(bool, EInterpolationMethod, IInterpolater<2>*)> m_onGpuSpriteSizeInterpolaterSelected;
+	std::function<void(bool, float, EInterpolationMethod, IInterpolater<2>*)> m_onGpuSpriteSizeInterpolaterUpdated;
 
 protected:
 	SSpriteInterpInformation m_spriteSizeInterpInformation;

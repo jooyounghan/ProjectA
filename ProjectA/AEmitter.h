@@ -24,8 +24,8 @@ public:
 		const DirectX::XMVECTOR& angle,
 		const std::function<void(UINT, const DirectX::XMMATRIX&)>& worldTransformChangedHandler,
 		const std::function<void(UINT, const SEmitterForceProperty&)>& forcePropertyChangedHandler,
-		const std::function<void(UINT, EInterpolationMethod, bool)>& gpuColorInterpolaterSelectedHandler,
-		const std::function<void(UINT, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler
+		const std::function<void(UINT, UINT, bool, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterSelectedHandler,
+		const std::function<void(UINT, UINT, bool, float, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler
 	);
 	~AEmitter() override = default;
 
@@ -71,8 +71,8 @@ public:
 protected:
 	std::function<void(UINT, const DirectX::XMMATRIX&)> m_onWorldTransformChanged;
 	std::function<void(UINT, const SEmitterForceProperty&)> m_onForcePropertyChanged;
-	std::function<void(UINT, EInterpolationMethod, bool)> m_onGpuColorInterpolaterSelected;
-	std::function<void(UINT, EInterpolationMethod, IInterpolater<4>*)> m_onGpuColorInterpolaterUpdated;
+	std::function<void(UINT, UINT, bool, EInterpolationMethod, IInterpolater<4>*)> m_onGpuColorInterpolaterSelected;
+	std::function<void(UINT, UINT, bool, float, EInterpolationMethod, IInterpolater<4>*)> m_onGpuColorInterpolaterUpdated;
 
 protected:
 	virtual void CreateProperty() = 0;
