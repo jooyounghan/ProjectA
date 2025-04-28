@@ -269,3 +269,9 @@ gantt
 - 파티클 색상에 대한 파티클 기준 보간(GPU 내 보간 수행) 구현 완료
 - 이미터에 대한 설정 값을 저장하고 불러올 수 있도록 Serialize / Deserialize 구현 진행
 	- fstream을 활용하여 바이너리 데이터를 단순히 쓰고 읽는 방식으로 구현
+
+### 25.04.25
+- Serialize / Deserialize 구현 완료
+- Sprite Emitter Manager 구현 시작
+	- 기존의 경우 하나의 EmitterManager에서 모든 파티클을 관리하려고 했으나, 세부적인 Compute Shader 패스가 이미터의 종류마다 다르기 때문에, 각 이미터 타입에 대한 매니저가 존재하고, 이 내부에서 파티클 풀링 등을 활용하여 데이터를 처리하도록 수정
+- 파티클 풀링을 위한 파티클 인덱스를 Prefix Sum과 같은 방법으로 계산하였는데, AppendStructuredBuffer / ConsumedStruturedBuffer를 통하여 간단하게 구하는 방식으로 단순화
