@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <memory>
+#include <functional>
 
 namespace D3D11
 {
@@ -20,11 +21,11 @@ namespace D3D11
 class ARuntimeSpawnProperty : public IProperty, public ISerializable
 {
 public:
-	ARuntimeSpawnProperty(uint32_t maxEmitterCount);
+	ARuntimeSpawnProperty(
+		const std::function<void(EInterpolationMethod, bool)>& gpuColorInterpolaterSelectHandler,
+		const std::function<void(EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler
+	);
 	~ARuntimeSpawnProperty() override = default;
-
-protected:
-	virtual void OnInterpolateInformationChagned() = 0;
 
 protected:
 	float m_currentLifeTime;
@@ -80,6 +81,12 @@ protected:
 
 protected:
 	bool m_checkGPUColorInterpolater;
+	UINT m_gpuColorInterpolaterID;
+	std::function<void(EInterpolationMethod, bool)> m_onGpuColorInterpolaterSelected;
+	std::function<void(EInterpolationMethod, IInterpolater<4>*)> m_onGpuColorInterpolaterUpdated;
+
+public:
+	inline void SetGPUColorInterpolaterID(UINT gpuColorInterpolaterID) noexcept { m_gpuColorInterpolaterID = gpuColorInterpolaterID; }
 
 protected:
 	std::unique_ptr<CControlPointGridView<4>> m_colorControlPointGridView;

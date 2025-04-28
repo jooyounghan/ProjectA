@@ -15,15 +15,23 @@ SpriteEmitter::SpriteEmitter(
 	const DirectX::XMVECTOR& angle, 
 	const std::function<void(UINT, const DirectX::XMMATRIX&)>& worldTransformChangedHandler,
 	const std::function<void(UINT, const SEmitterForceProperty&)>& forcePropertyChangedHandler, 
-	const std::function<void(UINT, const SSpriteInterpInformation&)>& interpInformationChangedHandler
+	const std::function<void(UINT, EInterpolationMethod, bool)>& gpuColorInterpolaterSelectedHandler,
+	const std::function<void(UINT, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler,
+	const std::function<void(UINT, EInterpolationMethod, bool)>& gpuSpriteSizeInterpolaterSelectedHandler,
+	const std::function<void(UINT, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterUpdatedHandler,
+	const std::function<void(UINT, float, UINT, UINT, UINT, UINT)>& spriteInterpInformationChangedHandler
 )
 	: AEmitter(
 		static_cast<UINT>(EEmitterType::SpriteEmitter),
 		emitterID, position, angle,
 		worldTransformChangedHandler,
-		forcePropertyChangedHandler
+		forcePropertyChangedHandler,
+		gpuColorInterpolaterSelectedHandler,
+		gpuColorInterpolaterUpdatedHandler
 	),
-	m_onInterpInformationChanged(interpInformationChangedHandler)
+	m_onSpriteSizeInterpolaterSelected(gpuSpriteSizeInterpolaterSelectedHandler),
+	m_onSpriteSizeInterpolaterUpdated(gpuSpriteSizeInterpolaterUpdatedHandler),
+	m_onSpriteInterpInformationChanged(spriteInterpInformationChangedHandler)
 {
 }
 
@@ -32,7 +40,11 @@ void SpriteEmitter::CreateProperty()
 	m_initialSpawnProperty = make_unique<CInitialSpawnProperty>();
 	m_emitterUpdateProperty = make_unique<CEmitterUpdateProperty>();
 	m_runtimeSpawnProperty = make_unique<SpriteSpawnProperty>(
-		[this](const SSpriteInterpInformation& interpInformation) { m_onInterpInformationChanged(GetEmitterID(), interpInformation); }
+		[this](EInterpolationMethod colorIntperpolationMethod, bool isColorGPUInterpolaterOn) { m_onGpuColorInterpolaterSelected(GetEmitterID(), colorIntperpolationMethod, isColorGPUInterpolaterOn); },
+		[this](EInterpolationMethod colorIntperpolationMethod, IInterpolater<4>* colorInterpolater) { m_onGpuColorInterpolaterUpdated(m_colorInterpolaterID, colorIntperpolationMethod, colorInterpolater); },
+		[this](EInterpolationMethod spriteSizeIntperpolationMethod, bool isSpriteSizeGPUInterpolaterOn) { m_onSpriteSizeInterpolaterSelected(GetEmitterID(), spriteSizeIntperpolationMethod, isSpriteSizeGPUInterpolaterOn); },
+		[this](EInterpolationMethod spriteSizeIntperpolationMethod, IInterpolater<2>* spriteSizeInterpolater) { m_onSpriteSizeInterpolaterUpdated(m_colorInterpolaterID, spriteSizeIntperpolationMethod, spriteSizeInterpolater); },
+		[this](float maxLife, UINT colorInterpoalterCofficientCount, UINT spriteSizeInterpoalterCofficientCount) { m_onSpriteInterpInformationChanged(GetEmitterID(), maxLife, m_colorInterpolaterID, colorInterpoalterCofficientCount, m_spriteSizeInterpolaterID, spriteSizeInterpoalterCofficientCount); }
 	);
 	m_forceUpdateProperty = make_unique<ForceUpdateProperty>(
 		[this](const SEmitterForceProperty& forceProperty) { m_onForcePropertyChanged(GetEmitterID(), forceProperty); }

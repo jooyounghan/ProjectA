@@ -57,8 +57,6 @@ protected:
 
 public:
 	void CreateInterpolater(
-		CGPUInterpPropertyManager<Dim, 2>* d1GpuInterpProeprtyManager,
-		CGPUInterpPropertyManager<Dim, 4>* d3GpuInterpProeprtyManager,
 		EInterpolationMethod interpolationMethod, 
 		std::unique_ptr<IInterpolater<Dim>>& interpolater
 	);
@@ -92,8 +90,6 @@ CInterpolaterSelectPlotter<Dim>::CInterpolaterSelectPlotter(
 
 template<uint32_t Dim>
 void CInterpolaterSelectPlotter<Dim>::CreateInterpolater(
-	CGPUInterpPropertyManager<Dim, 2>* d1GpuInterpProeprtyManager,
-	CGPUInterpPropertyManager<Dim, 4>* d3GpuInterpProeprtyManager,
 	EInterpolationMethod interpolationMethod, 
 	std::unique_ptr<IInterpolater<Dim>>& interpolater
 )
@@ -103,30 +99,19 @@ void CInterpolaterSelectPlotter<Dim>::CreateInterpolater(
 		interpolater.reset();
 	}
 
-	std::unique_ptr<AInterpolater<Dim, 2>> d1Interpolater;
-	std::unique_ptr<AInterpolater<Dim, 4>> d3Interpolater;
-
 	switch (interpolationMethod)
 	{
 	case EInterpolationMethod::Linear:
-	{
-		d1Interpolater = std::make_unique<CLinearInterpolater<Dim>>(m_startPoint, m_endPoint, m_controlPoints);
-		d1Interpolater->SetGPUInterpolater(d1GpuInterpProeprtyManager);
-		interpolater = std::move(d1Interpolater);
+		interpolater = std::make_unique<CLinearInterpolater<Dim>>(m_startPoint, m_endPoint, m_controlPoints);
 		break;
-	}
 	case EInterpolationMethod::CubicSpline:
-		d3Interpolater = std::make_unique<CCubicSplineInterpolater<Dim>>(m_startPoint, m_endPoint, m_controlPoints);
-		d3Interpolater->SetGPUInterpolater(d3GpuInterpProeprtyManager);
-		interpolater = std::move(d3Interpolater);
-
+		interpolater = std::make_unique<CCubicSplineInterpolater<Dim>>(m_startPoint, m_endPoint, m_controlPoints);
 		break;
 	case EInterpolationMethod::CatmullRom:
-		d3Interpolater = std::make_unique<CCatmullRomInterpolater<Dim>>(m_startPoint, m_endPoint, m_controlPoints);
-		d3Interpolater->SetGPUInterpolater(d3GpuInterpProeprtyManager);
-		interpolater = std::move(d3Interpolater);
+		interpolater = std::make_unique<CCatmullRomInterpolater<Dim>>(m_startPoint, m_endPoint, m_controlPoints);
 		break;
 	}
+
 	if (interpolater != nullptr)
 	{
 		m_interpolater = interpolater.get();

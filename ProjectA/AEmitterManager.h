@@ -4,7 +4,10 @@
 #include "EmitterForceProperty.h"
 #include "EmitterTypeDefinition.h"
 #include "DispatchIndirectStructure.h"
+
 #include "InterpInformation.h"
+#include "InterpolaterStructure.h"
+#include "Interpolater.h"
 
 #include "IndirectBuffer.h"
 #include "AppendBuffer.h"
@@ -16,6 +19,9 @@
 #include <string>
 
 class AEmitter;
+
+template<uint32_t Dim, uint32_t CoefficientCount>
+class CGPUInterpPropertyManager;
 
 #define MaxParticleCount 1024 * 1024
 
@@ -113,6 +119,10 @@ public:
 protected:
 	std::unique_ptr<CGPUInterpPropertyManager<4, 2>> m_colorD1Dim4PorpertyManager;
 	std::unique_ptr<CGPUInterpPropertyManager<4, 4>> m_colorD3Dim4PorpertyManager;
+
+protected:
+	void SetColorGPUInterpolateOption(UINT emitterID, EInterpolationMethod colorInterpolationMethod, bool isColorGPUInterpolaterOn);
+	void UpdateColorGPUInterpolater(UINT colorInterpolaterID, EInterpolationMethod colorInterpolationMethod, IInterpolater<4>* colorInterpolater);
 
 public:
 	void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override final;

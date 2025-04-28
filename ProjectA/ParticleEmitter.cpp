@@ -15,15 +15,19 @@ ParticleEmitter::ParticleEmitter(
 	const XMVECTOR& angle,
 	const function<void(UINT, const XMMATRIX&)>& worldTransformChangedHandler,
 	const function<void(UINT, const SEmitterForceProperty&)>& forcePropertyChangedHandler,
-	const function<void(UINT, const SParticleInterpInformation&)>& interpInformationChangedHandler
+	const function<void(UINT, EInterpolationMethod, bool)>& gpuColorInterpolaterSelectedHandler,
+	const function<void(UINT, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler,
+	const function<void(UINT, float, UINT, UINT)>& particleInterpInformChangedHandler
 )
 	: AEmitter(
 		static_cast<UINT>(EEmitterType::ParticleEmitter),
 		emitterID, position, angle,
 		worldTransformChangedHandler,
-		forcePropertyChangedHandler
+		forcePropertyChangedHandler,
+		gpuColorInterpolaterSelectedHandler,
+		gpuColorInterpolaterUpdatedHandler
 	),
-	m_onInterpInformationChanged(interpInformationChangedHandler)
+	m_onParticleInterpInforChanged(particleInterpInformChangedHandler)
 {
 
 }
@@ -33,7 +37,9 @@ void ParticleEmitter::CreateProperty()
 	m_initialSpawnProperty = make_unique<CInitialSpawnProperty>();
 	m_emitterUpdateProperty = make_unique<CEmitterUpdateProperty>();
 	m_runtimeSpawnProperty = make_unique<ParticleSpawnProperty>(
-		[this](const SParticleInterpInformation& interpInformation) { m_onInterpInformationChanged(GetEmitterID(), interpInformation); }
+		[this](EInterpolationMethod colorIntperpolationMethod, bool isColorGPUInterpolaterOn) { m_onGpuColorInterpolaterSelected(GetEmitterID(), colorIntperpolationMethod, isColorGPUInterpolaterOn); },
+		[this](EInterpolationMethod colorIntperpolationMethod, IInterpolater<4>* colorInterpolater) { m_onGpuColorInterpolaterUpdated(m_colorInterpolaterID, colorIntperpolationMethod, colorInterpolater); },
+		[this](float maxLife, UINT interpoalterCofficientCount) { m_onParticleInterpInforChanged(GetEmitterID(), maxLife, m_colorInterpolaterID, interpoalterCofficientCount); }
 	);
 	m_forceUpdateProperty = make_unique<ForceUpdateProperty>(
 		[this](const SEmitterForceProperty& forceProperty) { m_onForcePropertyChanged(GetEmitterID(), forceProperty); }

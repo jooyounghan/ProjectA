@@ -7,11 +7,16 @@ using namespace DirectX;
 using namespace ImGui;
 
 SpriteSpawnProperty::SpriteSpawnProperty(
-	uint32_t maxEmitterCount,
-	const function<void(const SSpriteInterpInformation&)>& spriteInterpInformationChangedHandler
+	const std::function<void(EInterpolationMethod, bool)>& gpuColorInterpolaterSelectHandler,
+	const std::function<void(EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler,
+	const std::function<void(EInterpolationMethod, bool)>& gpuSpriteSizeInterpolaterSelectedHandler,
+	const std::function<void(EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterUpdatedHandler,
+	const function<void(float, UINT, UINT)>& spriteInterpInformationChangedHandler
 )
 	: 
-	ARuntimeSpawnProperty(maxEmitterCount),
+	ARuntimeSpawnProperty(gpuColorInterpolaterSelectHandler, gpuColorInterpolaterUpdatedHandler),
+	m_onGpuSpriteSizeInterpolaterSelected(gpuSpriteSizeInterpolaterSelectedHandler),
+	m_onGpuSpriteSizeInterpolaterUpdated(gpuSpriteSizeInterpolaterUpdatedHandler),
 	m_onSpriteInterpInformationChanged(spriteInterpInformationChangedHandler),
 	m_checkGPUSpriteSizeInterpolater(false),
 	m_spriteSizeInitControlPoint{ 0.f, MakeArray(0.f, 0.f) },
@@ -40,8 +45,6 @@ SpriteSpawnProperty::SpriteSpawnProperty(
 	);
 
 	m_spriteSizeInterpolationSelectPlotter->CreateInterpolater(
-		m_d1Dim2PorpertyManager.get(),
-		m_d3Dim2PorpertyManager.get(),
 		m_spriteSizeInterpolationMethod, 
 		m_spriteSizeInterpolater
 	);
@@ -66,15 +69,6 @@ void SpriteSpawnProperty::AdjustControlPointsFromLife()
 	m_spriteSizeInterpolationSelectPlotter->ResetXYScale();
 }
 
-void SpriteSpawnProperty::OnInterpolateInformationChagned()
-{
-	m_spriteSizeInterpInformation.maxLife = m_baseParticleSpawnPropertyCPU.maxLife;
-	m_spriteSizeInterpInformation.colorInterpolaterID = m_colorInterpolater->GetInterpolaterID();
-	m_spriteSizeInterpInformation.colorInterpolaterDegree = m_colorInterpolater->GetCoefficientCount();
-	m_spriteSizeInterpInformation.spriteSizeInterpolaterID = m_spriteSizeInterpolater->GetInterpolaterID();
-	m_spriteSizeInterpInformation.spriteSizeInterpolaterDegree = m_spriteSizeInterpolater->GetCoefficientCount();
-	m_onSpriteInterpInformationChanged(m_spriteSizeInterpInformation);
-}
 
 void SpriteSpawnProperty::DrawPropertyUIImpl()
 {
@@ -87,23 +81,17 @@ void SpriteSpawnProperty::DrawPropertyUIImpl()
 	{
 		m_spriteSizeInterpolationMethod = currnetSpriteSizeInterpolateKind;
 		m_spriteSizeInterpolationSelectPlotter->CreateInterpolater(
-			m_d1Dim2PorpertyManager.get(),
-			m_d3Dim2PorpertyManager.get(), 
 			m_spriteSizeInterpolationMethod, 
 			m_spriteSizeInterpolater
 		);
-		OnInterpolateInformationChagned();
 	}
 
 	if (Checkbox("GPU 기반 스프라이트 크기 보간", &m_checkGPUSpriteSizeInterpolater))
 	{
 		m_spriteSizeInterpolationSelectPlotter->CreateInterpolater(
-			m_d1Dim2PorpertyManager.get(),
-			m_d3Dim2PorpertyManager.get(),
 			m_spriteSizeInterpolationMethod,
 			m_spriteSizeInterpolater
 		);
-		OnInterpolateInformationChagned();
 	}
 
 	if (m_spriteSizeControlPointGridView->DrawControlPointGridView())

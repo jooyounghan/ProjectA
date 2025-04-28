@@ -8,18 +8,13 @@ class ParticleSpawnProperty : public ARuntimeSpawnProperty
 {
 public:
 	ParticleSpawnProperty(
-		uint32_t maxEmitterCount,
-		const std::function<void(const SParticleInterpInformation&)>& particleInterpInformationChangedHandler
+		const std::function<void(EInterpolationMethod, bool)>& gpuColorInterpolaterSelectHandler,
+		const std::function<void(EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler,
+		const std::function<void(float, UINT)>& particleInterpInformChangedHandler
 	);
 	~ParticleSpawnProperty() override = default;
 
 protected:
-	std::function<void(const SParticleInterpInformation&)> m_onParticleInterpInformationChanged;
-
-protected:
-	SParticleInterpInformation m_particleInterpInformation;
-
-protected:
-	virtual void OnInterpolateInformationChagned() override;
+	std::function<void(float, UINT)> m_onParticleInterpInforChanged;
 };
 

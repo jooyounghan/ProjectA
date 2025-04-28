@@ -4,20 +4,13 @@
 using namespace std;
 
 ParticleSpawnProperty::ParticleSpawnProperty(
-	uint32_t maxEmitterCount,
-	const function<void(const SParticleInterpInformation&)>& particleInterpInformationChangedHandler
+	const std::function<void(EInterpolationMethod, bool)>& gpuColorInterpolaterSelectHandler,
+	const std::function<void(EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler,
+	const function<void(float, UINT)>& particleInterpInformChangedHandler
 )
 	: 
-	ARuntimeSpawnProperty(maxEmitterCount),
-	m_onParticleInterpInformationChanged(particleInterpInformationChangedHandler)
+	ARuntimeSpawnProperty(gpuColorInterpolaterSelectHandler, gpuColorInterpolaterUpdatedHandler),
+	m_onParticleInterpInforChanged(particleInterpInformChangedHandler)
 {
-	AutoZeroMemory(m_particleInterpInformation);
-}
 
-void ParticleSpawnProperty::OnInterpolateInformationChagned()
-{
-	m_particleInterpInformation.maxLife = m_baseParticleSpawnPropertyCPU.maxLife;
-	m_particleInterpInformation.colorInterpolaterID = m_colorInterpolater->GetInterpolaterID();
-	m_particleInterpInformation.colorInterpolaterDegree = m_colorInterpolater->GetCoefficientCount();
-	m_onParticleInterpInformationChanged(m_particleInterpInformation);
 }

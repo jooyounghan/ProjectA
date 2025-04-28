@@ -172,6 +172,72 @@ void AEmitterManager::RemoveEmitter(UINT emitterID)
 	}
 }
 
+
+void AEmitterManager::SetColorGPUInterpolateOption(
+	UINT emitterID,
+	EInterpolationMethod colorInterpolationMethod,
+	bool isColorGPUInterpolaterOn
+)
+{
+	AEmitter* emitter = GetEmitter(emitterID);
+	UINT currentColorInterpPropertyID = InterpPropertyNotSelect;
+	UINT lastColorInterpPropertyID = emitter->GetColorInterpolaterID();
+
+	switch (colorInterpolationMethod)
+	{
+	case EInterpolationMethod::Linear:
+	{
+		if (isColorGPUInterpolaterOn)
+		{
+			currentColorInterpPropertyID = m_colorD1Dim4PorpertyManager->IssueAvailableInterpPropertyID();
+		}
+		else
+		{
+			m_colorD1Dim4PorpertyManager->ReclaimInterpPropertyID(lastColorInterpPropertyID);
+		}
+		break;
+	}
+	case EInterpolationMethod::CubicSpline:
+	case EInterpolationMethod::CatmullRom:
+		if (isColorGPUInterpolaterOn)
+		{
+			currentColorInterpPropertyID = m_colorD3Dim4PorpertyManager->IssueAvailableInterpPropertyID();
+		}
+		else
+		{
+			m_colorD3Dim4PorpertyManager->ReclaimInterpPropertyID(lastColorInterpPropertyID);
+		}
+		break;
+	}
+	emitter->SetColorInterpolaterID(currentColorInterpPropertyID);
+}
+
+void AEmitterManager::UpdateColorGPUInterpolater(UINT colorInterpolaterID, EInterpolationMethod colorInterpolationMethod, IInterpolater<4>* colorInterpolater)
+{
+	switch (colorInterpolationMethod)
+	{
+	case EInterpolationMethod::Linear:
+	{
+		SInterpProperty<4, 2>* interpProperty = m_colorD1Dim4PorpertyManager->GetInterpProperty(colorInterpolaterID);
+		interpProperty->UpdateInterpolaterProperty(
+			colorInterpolater->GetCoefficientCount(),
+			colorInterpolater->GetXProfilesAddress(), colorInterpolater->GetXProfilesCount(),
+			colorInterpolater->GetCoefficientsAddress(), colorInterpolater->GetCoefficientsCount()
+		);
+		break;
+	}
+	case EInterpolationMethod::CubicSpline:
+	case EInterpolationMethod::CatmullRom:
+		SInterpProperty<4, 4>* interpProperty = m_colorD3Dim4PorpertyManager->GetInterpProperty(colorInterpolaterID);
+		interpProperty->UpdateInterpolaterProperty(
+			colorInterpolater->GetCoefficientCount(),
+			colorInterpolater->GetXProfilesAddress(), colorInterpolater->GetXProfilesCount(),
+			colorInterpolater->GetCoefficientsAddress(), colorInterpolater->GetCoefficientsCount()
+		);
+		break;
+	}
+}
+
 void AEmitterManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 	InitializeImpl(device, deviceContext);
@@ -254,6 +320,11 @@ void AEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* 
 	m_worldTransformGPU->InitializeBuffer(device);
 	m_forcePropertyGPU->InitializeBuffer(device);
 
+	m_colorD1Dim4PorpertyManager = make_unique<CGPUInterpPropertyManager<4, 2>>(m_maxEmitterCount);
+	m_colorD3Dim4PorpertyManager = make_unique<CGPUInterpPropertyManager<4, 4>>(m_maxEmitterCount);
+
+	m_colorD1Dim4PorpertyManager->Initialize(device, deviceContext);
+	m_colorD3Dim4PorpertyManager->Initialize(device, deviceContext);
 
 }
 
@@ -296,6 +367,9 @@ void AEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
 		m_emitterInterpInformationGPU->UploadNthElement(deviceContext, m_interpInformationChangedEmitterIDs.data(), interpInformationChangedCount);
 		m_interpInformationChangedEmitterIDs.clear();
 	}
+
+	m_colorD1Dim4PorpertyManager->Update(deviceContext, dt);
+	m_colorD3Dim4PorpertyManager->Update(deviceContext, dt);
 }
 
 void AEmitterManager::SourceParticles(ID3D11DeviceContext* deviceContext)

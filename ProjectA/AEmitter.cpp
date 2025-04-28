@@ -19,7 +19,9 @@ AEmitter::AEmitter(
 	const XMVECTOR& position,
 	const XMVECTOR& angle,
 	const function<void(UINT, const XMMATRIX&)>& worldTransformChangedHandler,
-	const function<void(UINT, const SEmitterForceProperty&)>& forcePropertyChangedHandler
+	const function<void(UINT, const SEmitterForceProperty&)>& forcePropertyChangedHandler,
+	const function<void(UINT, EInterpolationMethod, bool)>& gpuColorInterpolaterSelectedHandler,
+	const function<void(UINT, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler
 ) :
 	m_emitterType(emitterType),
 	m_emitterPropertyCPU{ emitterID, 0, 0, 0 },
@@ -27,8 +29,11 @@ AEmitter::AEmitter(
 	m_position(position),
 	m_angle(angle),
 	m_isEmitterWorldTransformChanged(false),
+	m_colorInterpolaterID(InterpPropertyNotSelect),
 	m_onWorldTransformChanged(worldTransformChangedHandler),
-	m_onForcePropertyChanged(forcePropertyChangedHandler)
+	m_onForcePropertyChanged(forcePropertyChangedHandler),
+	m_onGpuColorInterpolaterSelected(gpuColorInterpolaterSelectedHandler),
+	m_onGpuColorInterpolaterUpdated(gpuColorInterpolaterUpdatedHandler)
 {
 
 }

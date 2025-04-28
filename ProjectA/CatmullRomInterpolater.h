@@ -69,11 +69,6 @@ inline void CCatmullRomInterpolater<Dim>::UpdateCoefficient()
 		}
 		Parent::m_coefficients.emplace_back(coefficient);
 	}
-
-	if (Parent::m_gpuInterpProeprtyManager)
-	{
-		Parent::UpdateInterpolaterProperty();
-	}
 }
 
 template<uint32_t Dim>

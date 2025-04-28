@@ -64,9 +64,19 @@ UINT ParticleEmitterManager::AddEmitter(
 			m_forcePropertyCPU[emitterID] = forceProperty;
 			AddForceChangedEmitterID(emitterID);
 		},
-		[this](UINT emitterID, const SParticleInterpInformation& interpInformation) 
+		[this](UINT emitterID, EInterpolationMethod colorInterpolationMethod, bool isColorGPUInterpolaterOn)
 		{
-			m_emitterInterpInformationCPU[emitterID] = interpInformation;
+			SetColorGPUInterpolateOption(emitterID, colorInterpolationMethod, isColorGPUInterpolaterOn);
+		},
+		[this](UINT colorInterpolaterID, EInterpolationMethod colorInterpolationMethod, IInterpolater<4>* colorInterpolater)
+		{
+			UpdateColorGPUInterpolater(colorInterpolaterID, colorInterpolationMethod, colorInterpolater);
+		},
+		[this](UINT emitterID, float maxLife, UINT colorInterpolaterID, UINT colorCoefficientCount) 
+		{
+			m_emitterInterpInformationCPU[emitterID].maxLife = maxLife;
+			m_emitterInterpInformationCPU[emitterID].colorInterpolaterID = colorInterpolaterID;
+			m_emitterInterpInformationCPU[emitterID].colorInterpolaterDegree = colorCoefficientCount;
 			AddInterpolaterInformChangedEmitterID(emitterID);
 		}
 	);
@@ -96,8 +106,8 @@ void ParticleEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceCont
 
 	ID3D11ShaderResourceView* initializeSRVs[] = { 
 		m_emitterInterpInformationGPU->GetSRV(),
-		CGPUInterpPropertyManager<4, 2>::GInterpPropertyGPU->GetSRV(), 
-		CGPUInterpPropertyManager<4, 4>::GInterpPropertyGPU->GetSRV() 
+		m_colorD1Dim4PorpertyManager->GetGPUInterpPropertySRV(),
+		m_colorD3Dim4PorpertyManager->GetGPUInterpPropertySRV()
 	};
 	ID3D11ShaderResourceView* initializeNullSRVs[] = { nullptr, nullptr, nullptr };
 	ID3D11UnorderedAccessView* initializeUavs[] = { 

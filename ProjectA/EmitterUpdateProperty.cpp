@@ -41,7 +41,7 @@ CEmitterUpdateProperty::CEmitterUpdateProperty()
 		m_spawnControlPoints
 	);
 
-	m_spawnRateInterpolaterSelectPlotter->CreateInterpolater(nullptr, nullptr, m_spawnRateInterpolationMethod, m_spawnRateInterpolater);
+	m_spawnRateInterpolaterSelectPlotter->CreateInterpolater(m_spawnRateInterpolationMethod, m_spawnRateInterpolater);
 	m_spawnRateInterpolaterSelectPlotter->ResetXYScale();
 }
 
@@ -140,7 +140,7 @@ void CEmitterUpdateProperty::DrawPropertyUIImpl()
 	if (m_spawnRateInterpolationMethod != currentSpawnRateInterpolateKind)
 	{
 		m_spawnRateInterpolationMethod = currentSpawnRateInterpolateKind;
-		m_spawnRateInterpolaterSelectPlotter->CreateInterpolater(nullptr, nullptr, m_spawnRateInterpolationMethod, m_spawnRateInterpolater);
+		m_spawnRateInterpolaterSelectPlotter->CreateInterpolater(m_spawnRateInterpolationMethod, m_spawnRateInterpolater);
 	}
 
 	if (m_spawnRateControlPointGridView->DrawControlPointGridView())
@@ -176,7 +176,7 @@ void CEmitterUpdateProperty::Deserialize(std::ifstream& ifs)
 	m_spawnControlPoints = SerializeHelper::DeserializeVector<SControlPoint<1>>(ifs);
 	m_spawnRateInterpolationMethod = SerializeHelper::DeserializeElement<EInterpolationMethod>(ifs);
 
-	m_spawnRateInterpolaterSelectPlotter->CreateInterpolater(nullptr, nullptr, m_spawnRateInterpolationMethod, m_spawnRateInterpolater);
+	m_spawnRateInterpolaterSelectPlotter->CreateInterpolater(m_spawnRateInterpolationMethod, m_spawnRateInterpolater);
 	m_spawnRateInterpolater->UpdateCoefficient();
 	m_spawnRateInterpolaterSelectPlotter->ResetXYScale();
 }

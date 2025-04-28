@@ -10,7 +10,10 @@ using namespace D3D11;
 using namespace DirectX;
 using namespace ImGui;		
 
-ARuntimeSpawnProperty::ARuntimeSpawnProperty(uint32_t maxEmitterCount)
+ARuntimeSpawnProperty::ARuntimeSpawnProperty(
+	const function<void(EInterpolationMethod, bool)>& gpuColorInterpolaterSelectHandler,
+	const function<void(EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler
+)
 	: IProperty(),
 	m_currentLifeTime(0.f),
 	m_isParticleSpawnPropertyChanged(false),
@@ -20,10 +23,12 @@ ARuntimeSpawnProperty::ARuntimeSpawnProperty(uint32_t maxEmitterCount)
 	m_speedShapedVector(InitSpeedShapedVector),
 	m_speedOrigin(InitOrigin),
 	m_speedUpVector(InitUpVector),
-	m_colorInitControlPoint{ 0.f, MakeArray(1.f, 0.f, 0.f, 1.f)},
-	m_colorFinalControlPoint{ InitLife, MakeArray(0.f, 0.f ,1.f, 1.f)},
+	m_colorInitControlPoint{ 0.f, MakeArray(1.f, 0.f, 0.f, 1.f) },
+	m_colorFinalControlPoint{ InitLife, MakeArray(0.f, 0.f ,1.f, 1.f) },
 	m_colorInterpolationMethod(EInterpolationMethod::Linear),
-	m_checkGPUColorInterpolater(false)
+	m_checkGPUColorInterpolater(false),
+	m_onGpuColorInterpolaterSelected(gpuColorInterpolaterSelectHandler),
+	m_onGpuColorInterpolaterUpdated(gpuColorInterpolaterUpdatedHandler)
 {
 	AutoZeroMemory(m_baseParticleSpawnPropertyCPU);
 
@@ -40,9 +45,6 @@ ARuntimeSpawnProperty::ARuntimeSpawnProperty(uint32_t maxEmitterCount)
 		m_speedOrigin, m_speedUpVector,
 		m_baseParticleSpawnPropertyCPU.shapedSpeedVectorProperty
 	);
-
-	m_d1Dim4PorpertyManager = make_unique<CGPUInterpPropertyManager<4, 2>>(maxEmitterCount);
-	m_d3Dim4PorpertyManager = make_unique<CGPUInterpPropertyManager<4, 4>>(maxEmitterCount);
 
 	m_colorControlPointGridView = make_unique<CControlPointGridView<4>>(
 		"시간",
@@ -64,8 +66,6 @@ ARuntimeSpawnProperty::ARuntimeSpawnProperty(uint32_t maxEmitterCount)
 	);
 
 	m_colorInterpolationSelectPlotter->CreateInterpolater(
-		m_d1Dim4PorpertyManager.get(), 
-		m_d3Dim4PorpertyManager.get(), 
 		m_colorInterpolationMethod, 
 		m_colorInterpolater
 	);
@@ -96,12 +96,8 @@ void ARuntimeSpawnProperty::AdjustControlPointsFromLife()
 
 void ARuntimeSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
-	OnInterpolateInformationChagned();
 	m_baseParticleSpawnPropertyGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_baseParticleSpawnPropertyCPU));
 	m_baseParticleSpawnPropertyGPU->InitializeBuffer(device);
-
-	m_d1Dim4PorpertyManager->Initialize(device, deviceContext);
-	m_d3Dim4PorpertyManager->Initialize(device, deviceContext);
 }
 
 void ARuntimeSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
@@ -112,9 +108,6 @@ void ARuntimeSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 	{
 		m_currentLifeTime = max(m_currentLifeTime - life, 0.f);
 	}
-
-	m_d1Dim4PorpertyManager->Update(deviceContext, dt);
-	m_d3Dim4PorpertyManager->Update(deviceContext, dt);
 
 	if (!m_checkGPUColorInterpolater)
 	{
@@ -159,7 +152,6 @@ void ARuntimeSpawnProperty::DrawPropertyUIImpl()
 	if (DragFloat("파티클 생명 주기", &m_baseParticleSpawnPropertyCPU.maxLife, 0.1f, 0.f, 10.f, "%.1f"))
 	{
 		AdjustControlPointsFromLife();
-		OnInterpolateInformationChagned();
 	}
 
 	SeparatorText("파티클 색상 설정");
@@ -169,23 +161,17 @@ void ARuntimeSpawnProperty::DrawPropertyUIImpl()
 	{
 		m_colorInterpolationMethod = currnetColorInterpolateKind;
 		m_colorInterpolationSelectPlotter->CreateInterpolater(
-			m_d1Dim4PorpertyManager.get(),
-			m_d3Dim4PorpertyManager.get(),
 			m_colorInterpolationMethod, 
 			m_colorInterpolater
 		);
-		OnInterpolateInformationChagned();
 	}
 
 	if (Checkbox("GPU 기반 색상 보간", &m_checkGPUColorInterpolater))
 	{
 		m_colorInterpolationSelectPlotter->CreateInterpolater(
-			m_d1Dim4PorpertyManager.get(),
-			m_d3Dim4PorpertyManager.get(),
 			m_colorInterpolationMethod,
 			m_colorInterpolater
 		);
-		OnInterpolateInformationChagned();
 	}
 
 	if (m_colorControlPointGridView->DrawControlPointGridView())
@@ -238,10 +224,7 @@ void ARuntimeSpawnProperty::Deserialize(std::ifstream& ifs)
 
 	AdjustControlPointsFromLife();
 	m_colorInterpolationSelectPlotter->CreateInterpolater(
-		m_d1Dim4PorpertyManager.get(),
-		m_d3Dim4PorpertyManager.get(),
 		m_colorInterpolationMethod,
 		m_colorInterpolater
 	);
-	OnInterpolateInformationChagned();
 }

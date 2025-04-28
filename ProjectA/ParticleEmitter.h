@@ -11,12 +11,14 @@ public:
 		const DirectX::XMVECTOR& angle,
 		const std::function<void(UINT, const DirectX::XMMATRIX&)>& worldTransformChangedHandler,
 		const std::function<void(UINT, const SEmitterForceProperty&)>& forcePropertyChangedHandler,
-		const std::function<void(UINT, const SParticleInterpInformation&)>& interpInformationChangedHandler
+		const std::function<void(UINT, EInterpolationMethod, bool)>& gpuColorInterpolaterSelectedHandler,
+		const std::function<void(UINT, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler,
+		const std::function<void(UINT, float, UINT, UINT)>& particleInterpInformChangedHandler
 	);
 	~ParticleEmitter() override = default;
 
 protected:
-	std::function<void(UINT, const SParticleInterpInformation&)> m_onInterpInformationChanged;
+	std::function<void(UINT, float, UINT, UINT)> m_onParticleInterpInforChanged;
 
 protected:
 	virtual void CreateProperty() override;

@@ -127,11 +127,6 @@ inline void CCubicSplineInterpolater<Dim>::UpdateCoefficient()
 			coefficient[4 * dimension + 2] = (cubicSplineContorlPoints[idx + 1].y[dimension] - cubicSplineContorlPoints[idx].y[dimension]) / stepSizes[idx] - stepSizes[idx] * (secondDerivative[idx + 1][dimension] + 2.f * secondDerivative[idx][dimension]) / 6.f;
 		}
 	}
-
-	if (Parent::m_gpuInterpProeprtyManager)
-	{
-		Parent::UpdateInterpolaterProperty();
-	}
 }
 
 template<uint32_t Dim>

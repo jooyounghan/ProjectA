@@ -59,9 +59,29 @@ UINT SpriteEmitterManager::AddEmitter(DirectX::XMVECTOR position, DirectX::XMVEC
 			m_forcePropertyCPU[emitterID] = forceProperty;
 			AddForceChangedEmitterID(emitterID);
 		},
-		[this](UINT emitterID, const SSpriteInterpInformation& interpInformation)
+		[this](UINT emitterID, EInterpolationMethod colorInterpolationMethod, bool isColorGPUInterpolaterOn)
 		{
-			m_emitterInterpInformationCPU[emitterID] = interpInformation;
+			SetColorGPUInterpolateOption(emitterID, colorInterpolationMethod, isColorGPUInterpolaterOn);
+		},
+		[this](UINT colorInterpolaterID, EInterpolationMethod colorInterpolationMethod, IInterpolater<4>* colorInterpolater)
+		{
+			UpdateColorGPUInterpolater(colorInterpolaterID, colorInterpolationMethod, colorInterpolater);
+		},
+		[this](UINT emitterID, EInterpolationMethod spriteSizeInterpolationMethod, bool isspriteSizeGPUInterpolaterOn)
+		{
+			SetSpriteSizeGPUInterpolateOption(emitterID, spriteSizeInterpolationMethod, isspriteSizeGPUInterpolaterOn);
+		},
+		[this](UINT spriteSizeInterpolaterID, EInterpolationMethod spriteSizeInterpolationMethod, IInterpolater<2>* spriteSizeInterpolater)
+		{
+			UpdateSpriteSizeGPUInterpolater(spriteSizeInterpolaterID, spriteSizeInterpolationMethod, spriteSizeInterpolater);
+		},
+		[this](UINT emitterID, float maxLife, UINT colorInterpolaterID, UINT colorCoefficientCount, UINT spriteSizeInterpolaterID, UINT spriteSizeCoefficientCount)
+		{
+			m_emitterInterpInformationCPU[emitterID].maxLife = maxLife;
+			m_emitterInterpInformationCPU[emitterID].colorInterpolaterID = colorInterpolaterID;
+			m_emitterInterpInformationCPU[emitterID].colorInterpolaterDegree = colorCoefficientCount;
+			m_emitterInterpInformationCPU[emitterID].spriteSizeInterpolaterID = spriteSizeInterpolaterID;
+			m_emitterInterpInformationCPU[emitterID].spriteSizeInterpolaterDegree = spriteSizeCoefficientCount;
 			AddInterpolaterInformChangedEmitterID(emitterID);
 		}
 	);
@@ -70,6 +90,16 @@ UINT SpriteEmitterManager::AddEmitter(DirectX::XMVECTOR position, DirectX::XMVEC
 
 	m_emitters.emplace_back(std::move(spriteEmitter));
 	return spriteEmitterID;
+
+}
+
+void SpriteEmitterManager::SetSpriteSizeGPUInterpolateOption(UINT emitterID, EInterpolationMethod spriteSizeInterpolationMethod, bool isSpriteSizeGPUInterpolaterOn)
+{
+
+}
+
+void SpriteEmitterManager::UpdateSpriteSizeGPUInterpolater(UINT spriteSizeInterpolaterID, EInterpolationMethod spriteSizeInterpolationMethod, IInterpolater<2>* spriteSizeInterpolater)
+{
 
 }
 
@@ -83,6 +113,20 @@ void SpriteEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceCont
 		m_emitterInterpInformationCPU.data()
 	);
 	m_emitterInterpInformationGPU->InitializeBuffer(device);
+
+	m_spriteSizeD1Dim4PorpertyManager = make_unique<CGPUInterpPropertyManager<2, 2>>(m_maxEmitterCount);
+	m_spriteSizeD3Dim4PorpertyManager = make_unique<CGPUInterpPropertyManager<2, 4>>(m_maxEmitterCount);
+
+	m_spriteSizeD1Dim4PorpertyManager->Initialize(device, deviceContext);
+	m_spriteSizeD3Dim4PorpertyManager->Initialize(device, deviceContext);
+}
+
+void SpriteEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
+{
+	AEmitterManager::UpdateImpl(deviceContext, dt);
+
+	m_spriteSizeD1Dim4PorpertyManager->Update(deviceContext, dt);
+	m_spriteSizeD3Dim4PorpertyManager->Update(deviceContext, dt);
 }
 
 void SpriteEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceContext)

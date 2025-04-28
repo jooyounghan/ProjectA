@@ -40,14 +40,14 @@ protected:
 	std::unique_ptr<CGPUInterpPropertyManager<2, 4>> m_spriteSizeD3Dim4PorpertyManager;
 
 protected:
+	void SetSpriteSizeGPUInterpolateOption(UINT emitterID, EInterpolationMethod spriteSizeInterpolationMethod, bool isSpriteSizeGPUInterpolaterOn);
+	void UpdateSpriteSizeGPUInterpolater(UINT spriteSizeInterpolaterID, EInterpolationMethod spriteSizeInterpolationMethod, IInterpolater<2>* spriteSizeInterpolater);
+
+protected:
 	virtual void InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
+	virtual void UpdateImpl(ID3D11DeviceContext* deviceContext, float dt) override;
 
 public:
 	virtual void InitializeAliveFlag(ID3D11DeviceContext* deviceContext) override;
 	virtual void DrawParticles(ID3D11DeviceContext* deviceContext) override;
 };
-
-// ParticleSpawnEmitter와 
-// SpriteSpawnEmitter에 functoin으로 
-// OnInterpolaterChanged와 같은 식으로
-// m_colorD1Dim4PorpertyManager, m_colorD3Dim4PorpertyManager로 처리

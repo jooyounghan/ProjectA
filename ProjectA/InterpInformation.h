@@ -1,6 +1,7 @@
 #pragma once
 #include <DirectXMath.h>
 
+
 struct SParticleInterpInformation
 {
 	float maxLife;
