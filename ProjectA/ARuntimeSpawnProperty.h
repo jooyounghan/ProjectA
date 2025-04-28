@@ -49,7 +49,7 @@ protected:
 			struct
 			{
 				char padding3[88];
-				DirectX::XMFLOAT2 size;
+				DirectX::XMFLOAT2 xyScale;
 			};
 		};
 		DirectX::XMVECTOR color;
@@ -100,6 +100,9 @@ protected:
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
 	virtual void Update(ID3D11DeviceContext* deviceContext, float dt) override;
+
+protected:
+	virtual void UpdateImpl(ID3D11DeviceContext* deviceContext, float dt);
 
 public:
 	virtual void DrawPropertyUI() override;

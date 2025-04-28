@@ -41,6 +41,9 @@ public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
 
 protected:
+	virtual void UpdateImpl(ID3D11DeviceContext* deviceContext, float dt);
+
+protected:
 	virtual void DrawPropertyUIImpl() override;
 
 public:

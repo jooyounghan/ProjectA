@@ -52,11 +52,11 @@ void SpriteEmitter::CreateProperty()
 		},
 		[this](bool isSpriteSizeGPUInterpolaterOn, EInterpolationMethod spriteSizeIntperpolationMethod, IInterpolater<2>* spriteSizeInterpolater)
 		{
-			m_onSpriteSizeInterpolaterSelected(GetEmitterID(), m_colorInterpolaterID, isSpriteSizeGPUInterpolaterOn, spriteSizeIntperpolationMethod, spriteSizeInterpolater);
+			m_onSpriteSizeInterpolaterSelected(GetEmitterID(), m_spriteSizeInterpolaterID, isSpriteSizeGPUInterpolaterOn, spriteSizeIntperpolationMethod, spriteSizeInterpolater);
 		},
 		[this](bool isSpriteSizeGPUInterpolaterOn, float maxLife, EInterpolationMethod spriteSizeIntperpolationMethod, IInterpolater<2>* spriteSizeInterpolater) 
 		{ 
-			m_onSpriteSizeInterpolaterUpdated(GetEmitterID(), m_colorInterpolaterID, isSpriteSizeGPUInterpolaterOn, maxLife, spriteSizeIntperpolationMethod, spriteSizeInterpolater);
+			m_onSpriteSizeInterpolaterUpdated(GetEmitterID(), m_spriteSizeInterpolaterID, isSpriteSizeGPUInterpolaterOn, maxLife, spriteSizeIntperpolationMethod, spriteSizeInterpolater);
 		}
 	);
 	m_forceUpdateProperty = make_unique<ForceUpdateProperty>(

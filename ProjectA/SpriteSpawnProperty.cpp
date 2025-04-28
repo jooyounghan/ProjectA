@@ -88,6 +88,16 @@ void SpriteSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* 
 	);
 }
 
+void SpriteSpawnProperty::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
+{
+	if (!m_checkGPUSpriteSizeInterpolater)
+	{
+		array<float, 2> interpolatedXYScale = m_spriteSizeInterpolater->GetInterpolated(m_currentLifeTime);
+		m_baseParticleSpawnPropertyCPU.xyScale = XMFLOAT2(interpolatedXYScale[0], interpolatedXYScale[1]);
+		m_isParticleSpawnPropertyChanged = true;
+	}
+}
+
 void SpriteSpawnProperty::DrawPropertyUIImpl()
 {
 	ARuntimeSpawnProperty::DrawPropertyUIImpl();
@@ -162,6 +172,12 @@ void SpriteSpawnProperty::Deserialize(std::ifstream& ifs)
 	m_spriteSizeInterpolationMethod = SerializeHelper::DeserializeElement<EInterpolationMethod>(ifs);
 
 	m_checkGPUSpriteSizeInterpolater = SerializeHelper::DeserializeElement<bool>(ifs);
+
+	m_spriteSizeInterpolationSelectPlotter->CreateInterpolater(
+		m_spriteSizeInterpolationMethod,
+		m_spriteSizeInterpolater
+	);
+	m_spriteSizeInterpolationSelectPlotter->ResetXYScale();
 
 	m_onGpuSpriteSizeInterpolaterSelected(
 		m_checkGPUSpriteSizeInterpolater, m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater.get()

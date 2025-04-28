@@ -13,25 +13,7 @@ cbuffer EmitterProperties : register(b3)
     uint3 emitterManagerPropertyDummy;
 };
 
-#ifdef RUNTIME_SOURCE
-cbuffer SpawnProperty : register(b4)
-{
-	matrix positionTransformation;
-	float2 minPositionRadian;
-	float2 maxPositionRadian;
-	float2 minMaxRadius;
-
-	float life;
-	float particleSpawnPropertyDummy1;
-
-	matrix speedTransformation;
-	float2 minSpeedRadian;
-	float2 maxSpeedRadian;
-	float2 minMaxSpeed;
-	float2 particleSpawnPropertyDummy2;
-	float4 color;
-}
-#elif defined(INITIAL_SOURCE)
+#ifdef INITIAL_SOURCE
 cbuffer SpawnProperty : register(b4)
 {
 	matrix positionTransformation;
@@ -46,7 +28,26 @@ cbuffer SpawnProperty : register(b4)
 	float2 minSpeedRadian;
 	float2 maxSpeedRadian;
 	float2 minMaxSpeed;
-	float2 particleSpawnPropertyDummy2;
+	float2 xyScale;
+	float4 color;
+}
+
+#elif defined(RUNTIME_SOURCE)
+cbuffer SpawnProperty : register(b4)
+{
+	matrix positionTransformation;
+	float2 minPositionRadian;
+	float2 maxPositionRadian;
+	float2 minMaxRadius;
+
+	float life;
+	float particleSpawnPropertyDummy1;
+
+	matrix speedTransformation;
+	float2 minSpeedRadian;
+	float2 maxSpeedRadian;
+	float2 minMaxSpeed;
+	float2 xyScale;
 	float4 color;
 }
 #else
@@ -63,7 +64,7 @@ cbuffer SpawnProperty : register(b4)
 	float2 minSpeedRadian;
 	float2 maxSpeedRadian;
 	float2 minMaxSpeed;
-	float2 particleSpawnPropertyDummy2;
+    float2 xyScale;
 	float4 color;
 }
 #endif
@@ -116,7 +117,7 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 	sourcedParticle.accelerate = float3(0.f, 0.f, 0.f);
 	sourcedParticle.color = color;
 	sourcedParticle.emitterID = emitterID;
-	sourcedParticle.xyScale = float2(1.f, 1.f);
+	sourcedParticle.xyScale = xyScale;
 	sourcedParticle.dummy = uint3(0, 0, 0);
 
 #ifdef RUNTIME_SOURCE

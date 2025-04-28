@@ -33,6 +33,7 @@ ARuntimeSpawnProperty::ARuntimeSpawnProperty(
 	AutoZeroMemory(m_baseParticleSpawnPropertyCPU);
 
 	m_baseParticleSpawnPropertyCPU.maxLife = InitLife;
+	m_baseParticleSpawnPropertyCPU.xyScale = InitXYScale;
 
 	m_positionShapedVectorSelector = make_unique<CShapedVectorSelector>(
 		"생성 위치 벡터", "생성 반지름",
@@ -122,18 +123,23 @@ void ARuntimeSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 		m_currentLifeTime = max(m_currentLifeTime - life, 0.f);
 	}
 
-	if (!m_checkGPUColorInterpolater)
-	{
-		array<float, 4> interpolatedColor = m_colorInterpolater->GetInterpolated(m_currentLifeTime);
-		m_baseParticleSpawnPropertyCPU.color = XMVectorSet(interpolatedColor[0], interpolatedColor[1], interpolatedColor[2], interpolatedColor[3]);
-		m_isParticleSpawnPropertyChanged = true;
-	}
+	UpdateImpl(deviceContext, dt);
 
 	if (m_isParticleSpawnPropertyChanged)
 	{
 		m_baseParticleSpawnPropertyGPU->Stage(deviceContext);
 		m_baseParticleSpawnPropertyGPU->Upload(deviceContext);
 		m_isParticleSpawnPropertyChanged = false;
+	}
+}
+
+void ARuntimeSpawnProperty::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
+{
+	if (!m_checkGPUColorInterpolater)
+	{
+		array<float, 4> interpolatedColor = m_colorInterpolater->GetInterpolated(m_currentLifeTime);
+		m_baseParticleSpawnPropertyCPU.color = XMVectorSet(interpolatedColor[0], interpolatedColor[1], interpolatedColor[2], interpolatedColor[3]);
+		m_isParticleSpawnPropertyChanged = true;
 	}
 }
 
@@ -258,7 +264,8 @@ void ARuntimeSpawnProperty::Deserialize(std::ifstream& ifs)
 		m_colorInterpolationMethod,
 		m_colorInterpolater
 	);
-	
+	m_colorInterpolationSelectPlotter->ResetXYScale();
+
 	m_isParticleSpawnPropertyChanged = true;
 
 	m_onGpuColorInterpolaterSelected(

@@ -26,6 +26,7 @@ CInitialSpawnProperty::CInitialSpawnProperty()
 	AutoZeroMemory(m_emitterSpawnPropertyCPU);
 	m_emitterSpawnPropertyCPU.initialParticleCount = 0;
 	m_emitterSpawnPropertyCPU.initialParticleLife = InitLife;
+	m_emitterSpawnPropertyCPU.xyScale = InitXYScale;
 
 	m_positionShapedVectorSelector = make_unique<CShapedVectorSelector>(
 		"초기 위치 벡터", "초기 반지름",

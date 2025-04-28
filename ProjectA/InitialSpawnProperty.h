@@ -36,7 +36,7 @@ protected:
 			struct
 			{
 				char padding2[88];
-				float padding3[2];
+				DirectX::XMFLOAT2 xyScale;
 			};
 		};
 		DirectX::XMVECTOR color;

@@ -26,7 +26,6 @@ cbuffer EmitterManagerProperties : register(b2)
 float2 GetInterpolatedDim2(uint degree, uint interpolatedID, float2 timeSpent2, float maxLife)
 {
     const uint CubicSplineMethod = 1;
-    const uint CatmullRomMethod = 3;
     const float timeSpent = timeSpent2.x;
 
     if (degree == 1)
@@ -80,7 +79,6 @@ float2 GetInterpolatedDim2(uint degree, uint interpolatedID, float2 timeSpent2, 
 float4 GetInterpolatedDim4(uint degree, uint interpolatedID, float4 timeSpent4, float maxLife)
 {
     const uint CubicSplineMethod = 1;
-    const uint CatmullRomMethod = 3;
     const float timeSpent = timeSpent4.x;
 
     if (degree == 1)

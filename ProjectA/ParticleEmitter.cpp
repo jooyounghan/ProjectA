@@ -35,20 +35,11 @@ void ParticleEmitter::CreateProperty()
 	m_initialSpawnProperty = make_unique<CInitialSpawnProperty>();
 	m_emitterUpdateProperty = make_unique<CEmitterUpdateProperty>();
 	m_runtimeSpawnProperty = make_unique<ParticleSpawnProperty>(
-		[this](
-			bool isColorGPUInterpolaterOn,
-			EInterpolationMethod colorIntperpolationMethod,
-			IInterpolater<4>* colorInterpolater
-			)
+		[this](bool isColorGPUInterpolaterOn, EInterpolationMethod colorIntperpolationMethod, IInterpolater<4>* colorInterpolater)
 		{
 			m_onGpuColorInterpolaterSelected(GetEmitterID(), m_colorInterpolaterID, isColorGPUInterpolaterOn, colorIntperpolationMethod, colorInterpolater);
 		},
-		[this](
-			bool isColorGPUInterpolaterOn, 
-			float maxLife, 
-			EInterpolationMethod colorIntperpolationMethod, 
-			IInterpolater<4>* colorInterpolater
-			)
+		[this](bool isColorGPUInterpolaterOn,  float maxLife, EInterpolationMethod colorIntperpolationMethod, IInterpolater<4>* colorInterpolater)
 		{ 
 			m_onGpuColorInterpolaterUpdated(GetEmitterID(), m_colorInterpolaterID, isColorGPUInterpolaterOn, maxLife, colorIntperpolationMethod, colorInterpolater);
 		}
