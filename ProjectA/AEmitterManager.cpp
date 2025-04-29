@@ -58,7 +58,6 @@ AEmitterManager::AEmitterManager(
 
 AEmitterManager::~AEmitterManager()
 {
-#pragma region Serialize
 	string managerConfigurePath = format("./{}Config.cfg", m_managerName);
 
 	std::ofstream ofs(managerConfigurePath.c_str(), std::ios::binary);
@@ -75,7 +74,6 @@ AEmitterManager::~AEmitterManager()
 		SerializeHelper::SerializeElement<XMVECTOR>(ofs, angle);
 		emitter->Serialize(ofs);
 	}
-#pragma endregion
 }
 
 void AEmitterManager::LoadManager(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
