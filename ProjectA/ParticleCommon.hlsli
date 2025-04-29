@@ -9,7 +9,8 @@ struct Particle
     uint emitterID;
     float life;
     float2 xyScale;
-    uint3 dummy;
+    float spriteIndex;
+    uint2 dummy;
 };
 
 cbuffer AppParams : register(b0)

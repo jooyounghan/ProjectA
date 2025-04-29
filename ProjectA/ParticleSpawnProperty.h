@@ -12,5 +12,8 @@ public:
 		const std::function<void(bool, float, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler
 	);
 	~ParticleSpawnProperty() override = default;
+
+protected:
+	virtual void DrawPropertyUIImpl() override;
 };
 

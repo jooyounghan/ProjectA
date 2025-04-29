@@ -40,7 +40,7 @@ protected:
 			{
 				char padding1[88];
 				float maxLife;
-				float padding2;
+				float spriteIndex;
 			};
 		};
 		union
@@ -53,12 +53,12 @@ protected:
 			};
 		};
 		DirectX::XMVECTOR color;
-	} m_baseParticleSpawnPropertyCPU;
-	std::unique_ptr<D3D11::CDynamicBuffer> m_baseParticleSpawnPropertyGPU;
-	bool m_isParticleSpawnPropertyChanged;
+	} m_runtimeSpawnPropertyCPU;
+	std::unique_ptr<D3D11::CDynamicBuffer> m_runtimeSpawnPropertyGPU;
+	bool m_isRuntimeSpawnPropertyChanged;
 
 public:
-	ID3D11Buffer* GetParticleSpawnPropertyBuffer() const noexcept { return m_baseParticleSpawnPropertyGPU->GetBuffer(); }
+	ID3D11Buffer* GetParticleSpawnPropertyBuffer() const noexcept { return m_runtimeSpawnPropertyGPU->GetBuffer(); }
 
 protected:
 	EShapedVector m_positionShapedVector;
@@ -105,7 +105,7 @@ protected:
 	virtual void UpdateImpl(ID3D11DeviceContext* deviceContext, float dt);
 
 public:
-	virtual void DrawPropertyUI() override;
+	virtual void DrawPropertyUI() override final;
 
 protected:
 	virtual void DrawPropertyUIImpl() override;

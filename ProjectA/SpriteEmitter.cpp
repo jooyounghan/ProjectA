@@ -20,7 +20,9 @@ SpriteEmitter::SpriteEmitter(
 	const std::function<void(UINT, UINT, bool, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterSelectedHandler,
 	const std::function<void(UINT, UINT, bool, float, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler,
 	const std::function<void(UINT, UINT, bool, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterSelectedHandler,
-	const std::function<void(UINT, UINT, bool, float, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterUpdatedHandler
+	const std::function<void(UINT, UINT, bool, float, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterUpdatedHandler,
+	const std::function<void(UINT, UINT, bool, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterSelectedHandler,
+	const std::function<void(UINT, UINT, bool, float, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterUpdatedHandler
 )
 	: AEmitter(
 		static_cast<UINT>(EEmitterType::SpriteEmitter),
@@ -32,7 +34,10 @@ SpriteEmitter::SpriteEmitter(
 	),
 	m_spriteSizeInterpolaterID(InterpPropertyNotSelect),
 	m_onSpriteSizeInterpolaterSelected(gpuSpriteSizeInterpolaterSelectedHandler),
-	m_onSpriteSizeInterpolaterUpdated(gpuSpriteSizeInterpolaterUpdatedHandler)
+	m_onSpriteSizeInterpolaterUpdated(gpuSpriteSizeInterpolaterUpdatedHandler),
+	m_spriteIndexInterpolaterID(InterpPropertyNotSelect),
+	m_onSpriteIndexInterpolaterSelected(gpuSpriteIndexInterpolaterSelectedHandler),
+	m_onSpriteIndexInterpolaterUpdated(gpuSpriteIndexInterpolaterUpdatedHandler)
 {
 }
 
@@ -57,6 +62,14 @@ void SpriteEmitter::CreateProperty()
 		[this](bool isSpriteSizeGPUInterpolaterOn, float maxLife, EInterpolationMethod spriteSizeIntperpolationMethod, IInterpolater<2>* spriteSizeInterpolater) 
 		{ 
 			m_onSpriteSizeInterpolaterUpdated(GetEmitterID(), m_spriteSizeInterpolaterID, isSpriteSizeGPUInterpolaterOn, maxLife, spriteSizeIntperpolationMethod, spriteSizeInterpolater);
+		},
+		[this](bool isSpriteIndexGPUInterpolaterOn, EInterpolationMethod spriteIndexIntperpolationMethod, IInterpolater<1>* spriteIndexInterpolater)
+		{
+			m_onSpriteIndexInterpolaterSelected(GetEmitterID(), m_spriteIndexInterpolaterID, isSpriteIndexGPUInterpolaterOn, spriteIndexIntperpolationMethod, spriteIndexInterpolater);
+		},
+			[this](bool isSpriteIndexGPUInterpolaterOn, float maxLife, EInterpolationMethod spriteIndexIntperpolationMethod, IInterpolater<1>* spriteIndexInterpolater)
+		{
+			m_onSpriteIndexInterpolaterUpdated(GetEmitterID(), m_spriteIndexInterpolaterID, isSpriteIndexGPUInterpolaterOn, maxLife, spriteIndexIntperpolationMethod, spriteIndexInterpolater);
 		}
 	);
 	m_forceUpdateProperty = make_unique<ForceUpdateProperty>(

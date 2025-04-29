@@ -41,7 +41,7 @@ cbuffer SpawnProperty : register(b4)
 	float2 minMaxRadius;
 
 	float life;
-	float particleSpawnPropertyDummy1;
+	float spriteIndex;
 
 	matrix speedTransformation;
 	float2 minSpeedRadian;
@@ -118,14 +118,17 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 	sourcedParticle.color = color;
 	sourcedParticle.emitterID = emitterID;
 	sourcedParticle.xyScale = xyScale;
-	sourcedParticle.dummy = uint3(0, 0, 0);
+	sourcedParticle.dummy = uint2(0, 0);
 
-#ifdef RUNTIME_SOURCE
-	sourcedParticle.life = life;
-#elif defined(INITIAL_SOURCE)
+#ifdef INITIAL_SOURCE
 	sourcedParticle.life = initialParticleLife;
+	sourcedParticle.spriteIndex = 0.f;
+#elif defined(RUNTIME_SOURCE)
+	sourcedParticle.life = life;
+	sourcedParticle.spriteIndex = spriteIndex;
 #else
 	sourcedParticle.life = 0.f;
+	sourcedParticle.spriteIndex = 0.f;
 #endif
 	totalParticles[revivedIndex] = sourcedParticle;
     aliveIndexSet.Append(revivedIndex);

@@ -40,6 +40,10 @@ protected:
 	std::unique_ptr<CGPUInterpPropertyManager<2, 4>> m_spriteSizeD3Dim2PorpertyManager;
 
 protected:
+	std::unique_ptr<CGPUInterpPropertyManager<1, 2>> m_spriteIndexD1Dim1PorpertyManager;
+	std::unique_ptr<CGPUInterpPropertyManager<1, 4>> m_spriteIndexD3Dim1PorpertyManager;
+
+protected:
 	virtual void UpdateColorGPUInterpolaterImpl(
 		UINT emitterID,
 		UINT colorInterpolaterID,
@@ -66,6 +70,25 @@ protected:
 		float maxLife, 
 		EInterpolationMethod spriteSizeInterpolationMethod, 
 		IInterpolater<2>* spriteSizeInterpolater
+	);
+
+protected:
+	void SelectSpriteIndexGPUInterpolater(
+		UINT emitterID,
+		UINT spriteIndexInterpolaterID,
+		bool isSpriteIndexGPUInterpolaterOn,
+		EInterpolationMethod spriteIndexInterpolationMethod,
+		IInterpolater<1>* spriteIndexInterpolater
+	);
+
+protected:
+	void UpdateSpriteIndexGPUInterpolater(
+		UINT emitterID,
+		UINT spriteIndexInterpolaterID,
+		bool isSpriteIndexGPUInterpolaterOn,
+		float maxLife,
+		EInterpolationMethod spriteIndexInterpolationMethod,
+		IInterpolater<1>* spriteIndexInterpolater
 	);
 
 protected:

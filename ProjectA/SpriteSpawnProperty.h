@@ -11,13 +11,19 @@ public:
 		const std::function<void(bool, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterSelectedHandler,
 		const std::function<void(bool, float, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler,
 		const std::function<void(bool, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterSelectedHandler,
-		const std::function<void(bool, float, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterUpdatedHandler
+		const std::function<void(bool, float, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterUpdatedHandler,
+		const std::function<void(bool, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterSelectedHandler,
+		const std::function<void(bool, float, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterUpdatedHandler
 	);
 	~SpriteSpawnProperty() override = default;
 
 protected:
 	std::function<void(bool, EInterpolationMethod, IInterpolater<2>*)> m_onGpuSpriteSizeInterpolaterSelected;
 	std::function<void(bool, float, EInterpolationMethod, IInterpolater<2>*)> m_onGpuSpriteSizeInterpolaterUpdated;
+
+protected:
+	std::function<void(bool, EInterpolationMethod, IInterpolater<1>*)> m_onGpuSpriteIndexInterpolaterSelected;
+	std::function<void(bool, float, EInterpolationMethod, IInterpolater<1>*)> m_onGpuSpriteIndexInterpolaterUpdated;
 
 protected:
 	SControlPoint<2> m_spriteSizeInitControlPoint;
@@ -34,6 +40,24 @@ protected:
 	std::unique_ptr<CInterpolaterSelectPlotter<2>> m_spriteSizeInterpolationSelectPlotter;
 
 protected:
+	SControlPoint<1> m_spriteIndexInitControlPoint;
+	SControlPoint<1> m_spriteIndexFinalControlPoint;
+	std::vector<SControlPoint<1>> m_spriteIndexControlPoints;
+	EInterpolationMethod m_spriteIndexInterpolationMethod;
+	std::unique_ptr<IInterpolater<1>> m_spriteIndexInterpolater;
+
+protected:
+	bool m_checkGPUSpriteIndexInterpolater;
+
+protected:
+	std::unique_ptr<CControlPointGridView<1>> m_spriteIndexControlPointGridView;
+	std::unique_ptr<CInterpolaterSelectPlotter<1>> m_spriteIndexInterpolationSelectPlotter;
+
+private:
+	void CreateSpriteSizeInterpolaterUI();
+	void CreateSpriteIndexInterpolaterUI();
+
+protected:
 	virtual void AdjustControlPointsFromLife() override;
 
 
@@ -45,6 +69,10 @@ protected:
 
 protected:
 	virtual void DrawPropertyUIImpl() override;
+
+private:
+	void DrawSpriteSizeSetting();
+	void DrawSpriteIndexSetting();
 
 public:
 	virtual void Serialize(std::ofstream& ofs) override;

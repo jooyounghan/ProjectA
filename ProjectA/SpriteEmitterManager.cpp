@@ -74,6 +74,14 @@ UINT SpriteEmitterManager::AddEmitter(DirectX::XMVECTOR position, DirectX::XMVEC
 		[this](UINT emitterID, UINT spriteSizeInterpolaterID, bool isSpriteSizeGPUInterpolaterOn, float maxLife, EInterpolationMethod spriteSizeInterpolationMethod, IInterpolater<2>* spriteSizeInterpolater)
 		{
 			UpdateSpriteSizeGPUInterpolater(emitterID, spriteSizeInterpolaterID, isSpriteSizeGPUInterpolaterOn, maxLife, spriteSizeInterpolationMethod, spriteSizeInterpolater);
+		},
+		[this](UINT emitterID, UINT spriteIndexInterpolaterID, bool isSpriteIndexGPUInterpolaterOn, EInterpolationMethod spriteIndexInterpolationMethod, IInterpolater<1>* spriteIndexInterpolater)
+		{
+			SelectSpriteIndexGPUInterpolater(emitterID, spriteIndexInterpolaterID, isSpriteIndexGPUInterpolaterOn, spriteIndexInterpolationMethod, spriteIndexInterpolater);
+		},
+		[this](UINT emitterID, UINT spriteIndexInterpolaterID, bool isSpriteIndexGPUInterpolaterOn, float maxLife, EInterpolationMethod spriteIndexInterpolationMethod, IInterpolater<1>* spriteIndexInterpolater)
+		{
+			UpdateSpriteIndexGPUInterpolater(emitterID, spriteIndexInterpolaterID, isSpriteIndexGPUInterpolaterOn, maxLife, spriteIndexInterpolationMethod, spriteIndexInterpolater);
 		}
 	);
 
@@ -187,6 +195,93 @@ void SpriteEmitterManager::UpdateSpriteSizeGPUInterpolater(
 	AddInterpolaterInformChangedEmitterID(emitterID);
 }
 
+void SpriteEmitterManager::SelectSpriteIndexGPUInterpolater(
+	UINT emitterID, 
+	UINT spriteIndexInterpolaterID, 
+	bool isSpriteIndexGPUInterpolaterOn, 
+	EInterpolationMethod spriteIndexInterpolationMethod, 
+	IInterpolater<1>* spriteIndexInterpolater
+)
+{
+	SpriteEmitter* spriteEmitter = reinterpret_cast<SpriteEmitter*>(GetEmitter(emitterID));
+	if (spriteIndexInterpolaterID == InterpPropertyNotSelect && isSpriteIndexGPUInterpolaterOn)
+	{
+		switch (spriteIndexInterpolationMethod)
+		{
+		case EInterpolationMethod::Linear:
+		{
+			spriteIndexInterpolaterID = m_spriteIndexD1Dim1PorpertyManager->IssueAvailableInterpPropertyID();
+			break;
+		}
+		case EInterpolationMethod::CubicSpline:
+		case EInterpolationMethod::CatmullRom:
+		{
+			spriteIndexInterpolaterID = m_spriteIndexD3Dim1PorpertyManager->IssueAvailableInterpPropertyID();
+			break;
+		}
+		}
+		spriteEmitter->SetSpriteIndexInterpolaterID(spriteIndexInterpolaterID);
+	}
+	else if (spriteIndexInterpolaterID != InterpPropertyNotSelect && !isSpriteIndexGPUInterpolaterOn)
+	{
+		spriteEmitter->SetSpriteIndexInterpolaterID(InterpPropertyNotSelect);
+		switch (spriteIndexInterpolationMethod)
+		{
+		case EInterpolationMethod::Linear:
+			m_spriteIndexD1Dim1PorpertyManager->ReclaimInterpPropertyID(spriteIndexInterpolaterID);
+			break;
+		case EInterpolationMethod::CubicSpline:
+		case EInterpolationMethod::CatmullRom:
+			m_spriteIndexD3Dim1PorpertyManager->ReclaimInterpPropertyID(spriteIndexInterpolaterID);
+			break;
+		}
+	}
+	else;
+}
+
+void SpriteEmitterManager::UpdateSpriteIndexGPUInterpolater(
+	UINT emitterID, 
+	UINT spriteIndexInterpolaterID, 
+	bool isSpriteIndexGPUInterpolaterOn, 
+	float maxLife,
+	EInterpolationMethod spriteIndexInterpolationMethod, 
+	IInterpolater<1>* spriteIndexInterpolater
+)
+{
+	if (spriteIndexInterpolaterID != InterpPropertyNotSelect && isSpriteIndexGPUInterpolaterOn)
+	{
+		switch (spriteIndexInterpolationMethod)
+		{
+		case EInterpolationMethod::Linear:
+		{
+			SInterpProperty<1, 2>* interpProperty = m_spriteIndexD1Dim1PorpertyManager->GetInterpProperty(spriteIndexInterpolaterID);
+			interpProperty->UpdateInterpolaterProperty(
+				static_cast<UINT>(spriteIndexInterpolationMethod),
+				spriteIndexInterpolater->GetXProfilesAddress(), spriteIndexInterpolater->GetXProfilesCount(),
+				spriteIndexInterpolater->GetCoefficientsAddress(), spriteIndexInterpolater->GetCoefficientsCount()
+			);
+			m_spriteIndexD1Dim1PorpertyManager->AddChangedEmitterInterpPropertyID(spriteIndexInterpolaterID);
+			break;
+		}
+		case EInterpolationMethod::CubicSpline:
+		case EInterpolationMethod::CatmullRom:
+			SInterpProperty<1, 4>* interpProperty = m_spriteIndexD3Dim1PorpertyManager->GetInterpProperty(spriteIndexInterpolaterID);
+			interpProperty->UpdateInterpolaterProperty(
+				static_cast<UINT>(spriteIndexInterpolationMethod),
+				spriteIndexInterpolater->GetXProfilesAddress(), spriteIndexInterpolater->GetXProfilesCount(),
+				spriteIndexInterpolater->GetCoefficientsAddress(), spriteIndexInterpolater->GetCoefficientsCount()
+			);
+			m_spriteIndexD3Dim1PorpertyManager->AddChangedEmitterInterpPropertyID(spriteIndexInterpolaterID);
+			break;
+		}
+	}
+
+	m_emitterInterpInformationCPU[emitterID].maxLife = maxLife;
+	m_emitterInterpInformationCPU[emitterID].spriteIndexInterpolaterID = spriteIndexInterpolaterID;
+	m_emitterInterpInformationCPU[emitterID].spriteIndexInterpolaterDegree = spriteIndexInterpolater->GetDegree();
+	AddInterpolaterInformChangedEmitterID(emitterID);
+}
+
 void SpriteEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 	AEmitterManager::InitializeImpl(device, deviceContext);
@@ -203,6 +298,12 @@ void SpriteEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceCont
 
 	m_spriteSizeD1Dim2PorpertyManager->Initialize(device, deviceContext);
 	m_spriteSizeD3Dim2PorpertyManager->Initialize(device, deviceContext);
+
+	m_spriteIndexD1Dim1PorpertyManager = make_unique< CGPUInterpPropertyManager<1, 2>>(m_maxEmitterCount);
+	m_spriteIndexD3Dim1PorpertyManager = make_unique< CGPUInterpPropertyManager<1, 4>>(m_maxEmitterCount);
+
+	m_spriteIndexD1Dim1PorpertyManager->Initialize(device, deviceContext);
+	m_spriteIndexD3Dim1PorpertyManager->Initialize(device, deviceContext);
 }
 
 void SpriteEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
@@ -252,8 +353,8 @@ void SpriteEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceContex
 void SpriteEmitterManager::DrawParticles(ID3D11DeviceContext* deviceContext)
 {
 	ID3D11ShaderResourceView* patriclesSrvs[] = {
-	m_totalParticles->GetSRV(),
-	m_aliveIndexSet->GetSRV()
+		m_totalParticles->GetSRV(),
+		m_aliveIndexSet->GetSRV()
 	};
 	ID3D11ShaderResourceView* patriclesNullSrvs[] = { nullptr, nullptr };
 

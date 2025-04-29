@@ -108,6 +108,12 @@ void CInitialSpawnProperty::DrawPropertyUIImpl()
 	{
 		m_isEmitterSpawnPropertyChanged = true;
 	}
+
+	SeparatorText("파티클 크기");
+	if (DragFloat2("파티클 X-Y 크기", &m_emitterSpawnPropertyCPU.xyScale.x, 0.01f, 0.f, 10.f, "%.2f"))
+	{
+		m_isEmitterSpawnPropertyChanged = true;
+	}
 }
 
 void CInitialSpawnProperty::Serialize(std::ofstream& ofs)

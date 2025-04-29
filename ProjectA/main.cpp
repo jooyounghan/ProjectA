@@ -6,7 +6,7 @@
 int main()
 {
 	UINT AppWidth = 1920;
-	UINT AppHeight = 1200;
+	UINT AppHeight = 1080;
 
 	CProjectAApp* testApp = CProjectAApp::GetInstance();
 	testApp->Create(AppWidth, AppHeight, L"Test", L"Engine");

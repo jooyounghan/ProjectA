@@ -52,8 +52,8 @@ public:
 
 #pragma region Particle 그리기 관련 PSO
 public:
-	static std::unique_ptr<D3D11::CVertexShader> GParticleDrawVS;
-	static std::unique_ptr<D3D11::CGeometryShader> GParticleDrawGS;
+	static std::unique_ptr<D3D11::CVertexShader> GParticleDrawVS[EmitterTypeCount];
+	static std::unique_ptr<D3D11::CGeometryShader> GParticleDrawGS[EmitterTypeCount];
 	static std::unique_ptr<D3D11::CPixelShader> GParticleDrawPS[EmitterTypeCount];
 	static std::unique_ptr<D3D11::CGraphicsPSOObject> GDrawParticlePSO[EmitterTypeCount];
 #pragma endregion

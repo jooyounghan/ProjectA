@@ -114,11 +114,11 @@
     <Filter Include="헤더 파일\EmitterSystem\Emitter\Property\Extended">
       <UniqueIdentifier>{c94c447b-7b8d-4670-9b48-18c1fe8a5c04}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shader\Particle\ExecuteEmitter\Initalize\Interpolater">
-      <UniqueIdentifier>{575a8112-5dc0-44d3-8b09-80b5fce09974}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shader\Particle\ExecuteEmitter\Indirect">
       <UniqueIdentifier>{b944a09c-0cbf-4d4e-9945-5306ccecbae9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\Particle\ExecuteEmitter\Initalize\Interpolater">
+      <UniqueIdentifier>{575a8112-5dc0-44d3-8b09-80b5fce09974}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -196,6 +196,9 @@
     </ClCompile>
     <ClCompile Include="SpriteSpawnProperty.cpp">
       <Filter>소스 파일\EmitterSystem\Emitter\Property\Extended</Filter>
+    </ClCompile>
+    <ClCompile Include="stb_implement.cpp">
+      <Filter>소스 파일\Utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

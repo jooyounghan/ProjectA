@@ -17,5 +17,7 @@ struct SSpriteInterpInformation
 	unsigned int colorInterpolaterDegree;
 	unsigned int spriteSizeInterpolaterID;
 	unsigned int spriteSizeInterpolaterDegree;
-	DirectX::XMFLOAT3 spriteInterpDummy;
+	unsigned int spriteIndexInterpolaterID;
+	unsigned int spriteIndexInterpolaterDegree;
+	float spriteInterpDummy;
 };

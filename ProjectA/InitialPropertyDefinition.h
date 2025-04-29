@@ -8,4 +8,5 @@
 #define InitSpeedShapedVector EShapedVector::None
 #define InitOrigin DirectX::XMFLOAT3(0.f, 0.f, 0.f)
 #define InitUpVector DirectX::XMVectorSet(0.f, 1.f, 0.f, 0.f)
-#define InitXYScale DirectX::XMFLOAT2(1.f, 1.f)
+#define InitXYScale DirectX::XMFLOAT2(0.f, 0.f)
+#define InitColor DirectX::XMVectorSet(0.f, 0.f, 0.f, 0.f)

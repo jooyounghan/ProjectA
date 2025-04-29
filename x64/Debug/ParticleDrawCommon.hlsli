@@ -7,11 +7,27 @@ struct ParticleVSOut
     float2 xyScale : SCALE;
 };
 
+struct SpriteVSOut
+{
+    float4 viewPos : POSITION0;
+    float4 color : COLOR;
+    float2 xyScale : SCALE;
+    float spriteIndex : SPRITEINDEX;
+};
+
 struct ParticleGSOut
 {
     float4 viewPos : SV_Position;
     float2 texCoord : TEXCOORD;
     float4 color : COLOR;
+};
+
+struct SpriteGSOut
+{
+    float4 viewPos : SV_Position;
+    float2 texCoord : TEXCOORD;
+    float4 color : COLOR;
+    float spriteIndex : SPRITEINDEX;
 };
 
 float smoothstep(float edge0, float edge1, float x)

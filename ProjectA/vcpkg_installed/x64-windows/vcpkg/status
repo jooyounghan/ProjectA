@@ -17,7 +17,7 @@ Version: 1.91.9
 Depends: vcpkg-cmake, vcpkg-cmake-config
 Architecture: x64-windows
 Multi-Arch: same
-Abi: 1488a36b76d7e9cc5c1870fda798ad43fed4552a4ad6762c6f59bdb17fc6a86a
+Abi: 8735046abfeec494db4e509479d3aa08aadd10f97a2f859009d22b6a035801cc
 Description: Bloat-free Immediate Mode Graphical User interface for C++ with minimal dependencies.
 Status: install ok installed
 
@@ -26,7 +26,16 @@ Version: 0.16
 Depends: imgui, vcpkg-cmake, vcpkg-cmake-config
 Architecture: x64-windows
 Multi-Arch: same
-Abi: 63f4a1ebe6bf9a3d732b36ba08b9b6d7e7223b6d30c8791662eb9e4ea551bfbb
+Abi: 53fbd2ab9323142731dc2c07c91dd3ac4e526fd931f61ae053bb370ae0479b49
 Description: Advanced 2D Plotting for Dear ImGui
+Status: install ok installed
+
+Package: stb
+Version: 2024-07-29
+Port-Version: 1
+Architecture: x64-windows
+Multi-Arch: same
+Abi: 4e97cb07c96796ee39f31719215fe8198d69a1ce5fd77938c22805f69623a49d
+Description: public domain header-only libraries
 Status: install ok installed
 

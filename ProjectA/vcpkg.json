@@ -3,7 +3,8 @@
   "version-semver": "0.0.1",
   "dependencies": [
     "imgui",
-    "implot"
+    "implot",
+    "stb"
   ],
   "builtin-baseline": "13c48e3ed90263797e37d6a320c64aca659d5f53",
   "overrides": [

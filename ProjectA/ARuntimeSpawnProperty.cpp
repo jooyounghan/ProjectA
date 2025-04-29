@@ -16,7 +16,7 @@ ARuntimeSpawnProperty::ARuntimeSpawnProperty(
 )
 	: IProperty(),
 	m_currentLifeTime(0.f),
-	m_isParticleSpawnPropertyChanged(false),
+	m_isRuntimeSpawnPropertyChanged(false),
 	m_positionShapedVector(InitPositionShapedVector),
 	m_positionOrigin(InitOrigin),
 	m_positionUpVector(InitUpVector),
@@ -30,21 +30,22 @@ ARuntimeSpawnProperty::ARuntimeSpawnProperty(
 	m_onGpuColorInterpolaterSelected(gpuColorInterpolaterSelectedHandler),
 	m_onGpuColorInterpolaterUpdated(gpuColorInterpolaterUpdatedHandler)
 {
-	AutoZeroMemory(m_baseParticleSpawnPropertyCPU);
+	AutoZeroMemory(m_runtimeSpawnPropertyCPU);
 
-	m_baseParticleSpawnPropertyCPU.maxLife = InitLife;
-	m_baseParticleSpawnPropertyCPU.xyScale = InitXYScale;
+	m_runtimeSpawnPropertyCPU.color = InitColor;
+	m_runtimeSpawnPropertyCPU.maxLife = InitLife;
+	m_runtimeSpawnPropertyCPU.xyScale = InitXYScale;
 
 	m_positionShapedVectorSelector = make_unique<CShapedVectorSelector>(
 		"생성 위치 벡터", "생성 반지름",
 		m_positionOrigin, m_positionUpVector,
-		m_baseParticleSpawnPropertyCPU.shapedPositionVectorProperty
+		m_runtimeSpawnPropertyCPU.shapedPositionVectorProperty
 	);
 
 	m_speedShapedVectorSelector = make_unique<CShapedVectorSelector>(
 		"생성 속도 벡터", "생성 속도",
 		m_speedOrigin, m_speedUpVector,
-		m_baseParticleSpawnPropertyCPU.shapedSpeedVectorProperty
+		m_runtimeSpawnPropertyCPU.shapedSpeedVectorProperty
 	);
 
 	m_colorControlPointGridView = make_unique<CControlPointGridView<4>>(
@@ -78,7 +79,7 @@ ARuntimeSpawnProperty::ARuntimeSpawnProperty(
 
 void ARuntimeSpawnProperty::AdjustControlPointsFromLife()
 {
-	const float& maxLife = m_baseParticleSpawnPropertyCPU.maxLife;
+	const float& maxLife = m_runtimeSpawnPropertyCPU.maxLife;
 	m_colorFinalControlPoint.x = maxLife;
 	m_colorControlPoints.erase(
 		std::remove_if(m_colorControlPoints.begin(), m_colorControlPoints.end(),
@@ -93,23 +94,23 @@ void ARuntimeSpawnProperty::AdjustControlPointsFromLife()
 	m_colorInterpolationSelectPlotter->ResetXYScale();
 
 	m_onGpuColorInterpolaterUpdated(
-		m_checkGPUColorInterpolater, m_baseParticleSpawnPropertyCPU.maxLife, 
+		m_checkGPUColorInterpolater, m_runtimeSpawnPropertyCPU.maxLife, 
 		m_colorInterpolationMethod, m_colorInterpolater.get()
 	);
-	m_isParticleSpawnPropertyChanged = true;
+	m_isRuntimeSpawnPropertyChanged = true;
 }
 
 
 void ARuntimeSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
-	m_baseParticleSpawnPropertyGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_baseParticleSpawnPropertyCPU));
-	m_baseParticleSpawnPropertyGPU->InitializeBuffer(device);
+	m_runtimeSpawnPropertyGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_runtimeSpawnPropertyCPU));
+	m_runtimeSpawnPropertyGPU->InitializeBuffer(device);
 
 	m_onGpuColorInterpolaterSelected(
 		m_checkGPUColorInterpolater, m_colorInterpolationMethod, m_colorInterpolater.get()
 	);
 	m_onGpuColorInterpolaterUpdated(
-		m_checkGPUColorInterpolater, m_baseParticleSpawnPropertyCPU.maxLife, 
+		m_checkGPUColorInterpolater, m_runtimeSpawnPropertyCPU.maxLife, 
 		m_colorInterpolationMethod, m_colorInterpolater.get()
 	);
 }
@@ -117,7 +118,7 @@ void ARuntimeSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext
 void ARuntimeSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 {
 	m_currentLifeTime += dt;
-	const float& life = m_baseParticleSpawnPropertyCPU.maxLife;
+	const float& life = m_runtimeSpawnPropertyCPU.maxLife;
 	if (m_currentLifeTime > life)
 	{
 		m_currentLifeTime = max(m_currentLifeTime - life, 0.f);
@@ -125,11 +126,11 @@ void ARuntimeSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 
 	UpdateImpl(deviceContext, dt);
 
-	if (m_isParticleSpawnPropertyChanged)
+	if (m_isRuntimeSpawnPropertyChanged)
 	{
-		m_baseParticleSpawnPropertyGPU->Stage(deviceContext);
-		m_baseParticleSpawnPropertyGPU->Upload(deviceContext);
-		m_isParticleSpawnPropertyChanged = false;
+		m_runtimeSpawnPropertyGPU->Stage(deviceContext);
+		m_runtimeSpawnPropertyGPU->Upload(deviceContext);
+		m_isRuntimeSpawnPropertyChanged = false;
 	}
 }
 
@@ -138,8 +139,8 @@ void ARuntimeSpawnProperty::UpdateImpl(ID3D11DeviceContext* deviceContext, float
 	if (!m_checkGPUColorInterpolater)
 	{
 		array<float, 4> interpolatedColor = m_colorInterpolater->GetInterpolated(m_currentLifeTime);
-		m_baseParticleSpawnPropertyCPU.color = XMVectorSet(interpolatedColor[0], interpolatedColor[1], interpolatedColor[2], interpolatedColor[3]);
-		m_isParticleSpawnPropertyChanged = true;
+		m_runtimeSpawnPropertyCPU.color = XMVectorSet(interpolatedColor[0], interpolatedColor[1], interpolatedColor[2], interpolatedColor[3]);
+		m_isRuntimeSpawnPropertyChanged = true;
 	}
 }
 
@@ -157,18 +158,18 @@ void ARuntimeSpawnProperty::DrawPropertyUIImpl()
 	m_positionShapedVectorSelector->SelectEnums(m_positionShapedVector);
 	if (m_positionShapedVectorSelector->SetShapedVectorProperty(m_positionShapedVector))
 	{
-		m_isParticleSpawnPropertyChanged = true;
+		m_isRuntimeSpawnPropertyChanged = true;
 	}
 
 	SeparatorText("파티클 생성 속도 설정");
 	m_speedShapedVectorSelector->SelectEnums(m_speedShapedVector);
 	if (m_speedShapedVectorSelector->SetShapedVectorProperty(m_speedShapedVector))
 	{
-		m_isParticleSpawnPropertyChanged = true;
+		m_isRuntimeSpawnPropertyChanged = true;
 	}
 
 	SeparatorText("파티클 생명 주기 설정");
-	if (DragFloat("파티클 생명 주기", &m_baseParticleSpawnPropertyCPU.maxLife, 0.1f, 0.f, 10.f, "%.1f"))
+	if (DragFloat("파티클 생명 주기", &m_runtimeSpawnPropertyCPU.maxLife, 0.1f, 0.f, 10.f, "%.1f"))
 	{
 		AdjustControlPointsFromLife();
 	}
@@ -185,13 +186,19 @@ void ARuntimeSpawnProperty::DrawPropertyUIImpl()
 		);
 
 		m_onGpuColorInterpolaterUpdated(
-			m_checkGPUColorInterpolater, m_baseParticleSpawnPropertyCPU.maxLife,
+			m_checkGPUColorInterpolater, m_runtimeSpawnPropertyCPU.maxLife,
 			m_colorInterpolationMethod, m_colorInterpolater.get()
 		);
 	}
 
 	if (Checkbox("GPU 기반 색상 보간", &m_checkGPUColorInterpolater))
 	{
+		if (m_checkGPUColorInterpolater)
+		{
+			m_runtimeSpawnPropertyCPU.color = XMVectorSet(0.f, 0.f, 0.f, 0.f);
+			m_isRuntimeSpawnPropertyChanged = true;
+		}
+
 		m_colorInterpolationSelectPlotter->CreateInterpolater(
 			m_colorInterpolationMethod,
 			m_colorInterpolater
@@ -202,7 +209,7 @@ void ARuntimeSpawnProperty::DrawPropertyUIImpl()
 		);
 
 		m_onGpuColorInterpolaterUpdated(
-			m_checkGPUColorInterpolater, m_baseParticleSpawnPropertyCPU.maxLife,
+			m_checkGPUColorInterpolater, m_runtimeSpawnPropertyCPU.maxLife,
 			m_colorInterpolationMethod, m_colorInterpolater.get()
 		);
 	}
@@ -213,7 +220,7 @@ void ARuntimeSpawnProperty::DrawPropertyUIImpl()
 		m_colorInterpolationSelectPlotter->ResetXYScale();
 
 		m_onGpuColorInterpolaterUpdated(
-			m_checkGPUColorInterpolater, m_baseParticleSpawnPropertyCPU.maxLife,
+			m_checkGPUColorInterpolater, m_runtimeSpawnPropertyCPU.maxLife,
 			m_colorInterpolationMethod, m_colorInterpolater.get()
 		);
 	}
@@ -223,7 +230,7 @@ void ARuntimeSpawnProperty::DrawPropertyUIImpl()
 
 void ARuntimeSpawnProperty::Serialize(std::ofstream& ofs)
 {
-	SerializeHelper::SerializeElement<decltype(m_baseParticleSpawnPropertyCPU)>(ofs, m_baseParticleSpawnPropertyCPU);
+	SerializeHelper::SerializeElement<decltype(m_runtimeSpawnPropertyCPU)>(ofs, m_runtimeSpawnPropertyCPU);
 
 	SerializeHelper::SerializeElement<EShapedVector>(ofs, m_positionShapedVector);
 	SerializeHelper::SerializeElement<XMFLOAT3>(ofs, m_positionOrigin);
@@ -243,7 +250,7 @@ void ARuntimeSpawnProperty::Serialize(std::ofstream& ofs)
 
 void ARuntimeSpawnProperty::Deserialize(std::ifstream& ifs)
 {
-	m_baseParticleSpawnPropertyCPU = SerializeHelper::DeserializeElement<decltype(m_baseParticleSpawnPropertyCPU)>(ifs);
+	m_runtimeSpawnPropertyCPU = SerializeHelper::DeserializeElement<decltype(m_runtimeSpawnPropertyCPU)>(ifs);
 
 	m_positionShapedVector = SerializeHelper::DeserializeElement<EShapedVector>(ifs);
 	m_positionOrigin = SerializeHelper::DeserializeElement<XMFLOAT3>(ifs);
@@ -266,13 +273,13 @@ void ARuntimeSpawnProperty::Deserialize(std::ifstream& ifs)
 	);
 	m_colorInterpolationSelectPlotter->ResetXYScale();
 
-	m_isParticleSpawnPropertyChanged = true;
+	m_isRuntimeSpawnPropertyChanged = true;
 
 	m_onGpuColorInterpolaterSelected(
 		m_checkGPUColorInterpolater, m_colorInterpolationMethod, m_colorInterpolater.get()
 	);
 	m_onGpuColorInterpolaterUpdated(
-		m_checkGPUColorInterpolater, m_baseParticleSpawnPropertyCPU.maxLife,
+		m_checkGPUColorInterpolater, m_runtimeSpawnPropertyCPU.maxLife,
 		m_colorInterpolationMethod, m_colorInterpolater.get()
 	);
 }

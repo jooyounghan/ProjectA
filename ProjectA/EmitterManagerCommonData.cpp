@@ -30,8 +30,8 @@ unique_ptr<CComputeShader> CEmitterManagerCommonData::GParticleRuntimeSourceCS =
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GCalcualteIndirectArgCS = make_unique<CComputeShader>();
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GCaculateParticleForceCS = make_unique<CComputeShader>();
 
-unique_ptr<CVertexShader> CEmitterManagerCommonData::GParticleDrawVS = make_unique<CVertexShader>(0);
-unique_ptr<CGeometryShader> CEmitterManagerCommonData::GParticleDrawGS = make_unique<CGeometryShader>();
+unique_ptr<CVertexShader> CEmitterManagerCommonData::GParticleDrawVS[EmitterTypeCount];
+unique_ptr<CGeometryShader> CEmitterManagerCommonData::GParticleDrawGS[EmitterTypeCount];;
 unique_ptr<CPixelShader> CEmitterManagerCommonData::GParticleDrawPS[EmitterTypeCount];
 unique_ptr<CGraphicsPSOObject> CEmitterManagerCommonData::GDrawParticlePSO[EmitterTypeCount];
 
@@ -101,23 +101,24 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 #pragma endregion
 
 #pragma region Particle 그리기 관련 PSO
-	GParticleDrawVS->CreateShader(L"./ParticleDrawVS.hlsl", nullptr, "main", "vs_5_0", device);
-	GParticleDrawGS->CreateShader(L"./ParticleDrawGS.hlsl", nullptr, "main", "gs_5_0", device);
-
 	for (size_t idx = 0; idx < EmitterTypeCount; ++idx)
 	{
+		GParticleDrawVS[idx] = make_unique<CVertexShader>(0);
+		GParticleDrawGS[idx] = make_unique<CGeometryShader>();
 		GParticleDrawPS[idx] = make_unique<CPixelShader>();
 	}
 
 	for (size_t idx = 0; idx < EmitterTypeCount; ++idx)
 	{
+		GParticleDrawVS[idx]->CreateShader(L"./ParticleDrawVS.hlsl", emitterTypeMacros[idx], "main", "vs_5_0", device);
+		GParticleDrawGS[idx]->CreateShader(L"./ParticleDrawGS.hlsl", emitterTypeMacros[idx], "main", "gs_5_0", device);
 		GParticleDrawPS[idx]->CreateShader(L"./ParticleDrawPS.hlsl", emitterTypeMacros[idx], "main", "ps_5_0", device);
 
 		GDrawParticlePSO[idx] = make_unique<CGraphicsPSOObject>(
-			GParticleDrawVS.get(),
+			GParticleDrawVS[idx].get(),
 			nullptr,
 			nullptr,
-			GParticleDrawGS.get(),
+			GParticleDrawGS[idx].get(),
 			GParticleDrawPS[idx].get(),
 			CRasterizerState::GetRSSolidCWSS(),
 			CBlendState::GetBSAlphaBlend(),
