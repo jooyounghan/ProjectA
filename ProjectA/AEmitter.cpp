@@ -1,6 +1,5 @@
 #include "AEmitter.h"
 #include "MacroUtilities.h"
-#include "BufferMacroUtilities.h"
 
 #include "InitialSpawnProperty.h"
 #include "EmitterUpdateProperty.h"

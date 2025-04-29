@@ -55,7 +55,7 @@ ForceUpdateProperty::ForceUpdateProperty(
 	: m_isEmitterForcePropertyChanged(false),
 	m_onEmitterForceUpdated(emitterForceUpdatedHandler)
 {
-	AutoZeroMemory(m_emitterForceProperty);
+	ZeroMem(m_emitterForceProperty);
 }
 
 
@@ -113,7 +113,7 @@ void ForceUpdateProperty::DrawPropertyUIImpl()
 	HandleNForce("Vortex", EForceFlag::Vortex, ENForceKind::Vortex,
 		[&](UINT addIndex) {
 			SVortexForce& vortexForce = m_emitterForceProperty.nVortexForce[addIndex];
-			AutoZeroMemory(vortexForce);
+			ZeroMem(vortexForce);
 		},
 		[&](UINT deleteIndex) {
 			memmove(&m_emitterForceProperty.nVortexForce[deleteIndex],
@@ -136,7 +136,7 @@ void ForceUpdateProperty::DrawPropertyUIImpl()
 	HandleNForce("Á¡ ÀÎ·Â", EForceFlag::PointInteraction, ENForceKind::PointInteraction,
 		[&](UINT addIndex) {
 			SPointInteractionForce& pointInteractionForce = m_emitterForceProperty.nPointInteractionForce[addIndex];
-			AutoZeroMemory(pointInteractionForce);
+			ZeroMem(pointInteractionForce);
 		},
 		[&](UINT deleteIndex) {
 			memmove(&m_emitterForceProperty.nPointInteractionForce[deleteIndex],

@@ -1,6 +1,5 @@
 #include "InitialSpawnProperty.h"
 #include "MacroUtilities.h"
-#include "BufferMacroUtilities.h"
 
 #include "DynamicBuffer.h"
 #include "ShapedVectorSelector.h"
@@ -23,7 +22,7 @@ CInitialSpawnProperty::CInitialSpawnProperty()
 	m_speedUpVector(InitUpVector),
 	m_isImmortal(false)
 {
-	AutoZeroMemory(m_emitterSpawnPropertyCPU);
+	ZeroMem(m_emitterSpawnPropertyCPU);
 	m_emitterSpawnPropertyCPU.initialParticleCount = 0;
 	m_emitterSpawnPropertyCPU.initialParticleLife = InitLife;
 	m_emitterSpawnPropertyCPU.xyScale = InitXYScale;

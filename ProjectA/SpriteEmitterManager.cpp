@@ -24,7 +24,7 @@ SpriteEmitterManager::SpriteEmitterManager(
 	: AEmitterManager("SpriteEmitterManager", static_cast<UINT>(EEmitterType::SpriteEmitter), maxEmitterCount, maxParticleCount)
 {
 	SSpriteInterpInformation spriteInterpInformation;
-	AutoZeroMemory(spriteInterpInformation);
+	ZeroMem(spriteInterpInformation);
 
 	m_emitterInterpInformationCPU.resize(m_maxEmitterCount, spriteInterpInformation);
 	m_forcePropertyChangedEmitterIDs.reserve(m_maxEmitterCount);
@@ -38,7 +38,7 @@ SpriteEmitterManager& SpriteEmitterManager::GetSpriteEmitterManager()
 
 void SpriteEmitterManager::ReclaimEmitterID(UINT emitterID) noexcept
 {
-	AutoZeroMemory(m_emitterInterpInformationCPU[emitterID]);
+	ZeroMem(m_emitterInterpInformationCPU[emitterID]);
 	AddInterpolaterInformChangedEmitterID(emitterID);
 
 	AEmitterManager::ReclaimEmitterID(emitterID);

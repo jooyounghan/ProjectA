@@ -1,7 +1,6 @@
 #include "Camera.h"
 
 #include "TextureUtilities.h"
-#include "BufferMacroUtilities.h"
 #include "MacroUtilities.h"
 #include "GlobalVariable.h"
 
@@ -30,9 +29,9 @@ CCamera::CCamera(
 	m_currentUp(GDirection::GDefaultUp),
 	m_currentRight(GDirection::GDefaultRight)
 {
-	AutoZeroMemory(m_viewport);
-	AutoZeroMemory(m_cameraPropertiesCPU);
-	AutoZeroMemory(m_isMoveKeyPressed);
+	ZeroMem(m_viewport);
+	ZeroMem(m_cameraPropertiesCPU);
+	ZeroMem(m_isMoveKeyPressed);
 
 	m_position = position;
 	m_angle = angle;

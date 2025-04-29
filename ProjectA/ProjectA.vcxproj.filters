@@ -247,9 +247,6 @@
     <ClInclude Include="EmitterSelector.h">
       <Filter>헤더 파일\UI</Filter>
     </ClInclude>
-    <ClInclude Include="MacroUtilities.h">
-      <Filter>헤더 파일\Utilities</Filter>
-    </ClInclude>
     <ClInclude Include="DefineLinkedWithShader.h">
       <Filter>헤더 파일\Utilities</Filter>
     </ClInclude>

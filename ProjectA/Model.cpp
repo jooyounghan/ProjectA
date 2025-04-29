@@ -1,5 +1,5 @@
 #include "Model.h"
-#include "BufferMacroUtilities.h"
+#include "MacroUtilities.h"
 
 using namespace std;
 using namespace DirectX;

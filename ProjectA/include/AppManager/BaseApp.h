@@ -59,10 +59,12 @@ namespace App
 		LRESULT WINAPI AppProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 	public:
-		virtual void Create(UINT width, UINT height, const wchar_t* className, const wchar_t* applicaitonName) noexcept;
-
-	public:
-		virtual void Init() = 0;
+		virtual void Init(
+			UINT width, 
+			UINT height, 
+			const wchar_t* className, 
+			const wchar_t* applicaitonName
+		);
 		virtual void Update(float deltaTime) = 0;
 		virtual void Quit() = 0;
 		virtual void AppProcImpl(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) = 0;

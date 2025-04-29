@@ -30,14 +30,11 @@ public:
 	static CProjectAApp* GetInstance() noexcept;
 
 public:
-	virtual void Create(
-		UINT width, UINT height, 
-		const wchar_t* className, 
+	virtual void Init(
+		UINT width, UINT height,
+		const wchar_t* className,
 		const wchar_t* applicaitonName
-	) noexcept override;
-
-public:
-	virtual void Init() override;
+	) override;
 	virtual void Update(float deltaTime) override;
 	virtual void Quit() override;
 	virtual void AppProcImpl(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) override;

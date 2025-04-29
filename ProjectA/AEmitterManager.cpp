@@ -2,7 +2,6 @@
 #include "EmitterManagerCommonData.h"
 
 #include "DefineLinkedWithShader.h"
-#include "BufferMacroUtilities.h"
 #include "MacroUtilities.h"
 
 #include "ComputeShader.h"
@@ -45,7 +44,7 @@ AEmitterManager::AEmitterManager(
 
 	XMMATRIX zeroMatrix = XMMATRIX(XMVectorZero(), XMVectorZero(), XMVectorZero(), XMVectorZero());
 	SEmitterForceProperty initialForceProperty;
-	AutoZeroMemory(initialForceProperty);
+	ZeroMem(initialForceProperty);
 
 	m_emitters.reserve(m_maxEmitterCount);
 
@@ -107,10 +106,10 @@ UINT AEmitterManager::IssueAvailableEmitterID()
 
 void AEmitterManager::ReclaimEmitterID(UINT emitterID) noexcept
 {
-	AutoZeroMemory(m_worldTransformCPU[emitterID]);
+	ZeroMem(m_worldTransformCPU[emitterID]);
 	AddWorldTransformChangedEmitterID(emitterID);
 
-	AutoZeroMemory(m_forcePropertyCPU[emitterID]);
+	ZeroMem(m_forcePropertyCPU[emitterID]);
 	AddForceChangedEmitterID(emitterID);
 
 	m_emitterIDQueue.push(emitterID);
@@ -271,13 +270,13 @@ void AEmitterManager::AddInterpolaterInformChangedEmitterID(UINT emitterID)
 void AEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 	D3D11_DISPATCH_INDIRECT_ARGS dispatchIndirectArgs;
-	AutoZeroMemory(dispatchIndirectArgs);
+	ZeroMem(dispatchIndirectArgs);
 	dispatchIndirectArgs.threadGroupCountX = 1;
 	dispatchIndirectArgs.threadGroupCountY = 1;
 	dispatchIndirectArgs.threadGroupCountZ = 1;
 
 	D3D11_DRAW_INSTANCED_INDIRECT_ARGS drawIndirectArgs;
-	AutoZeroMemory(drawIndirectArgs);
+	ZeroMem(drawIndirectArgs);
 	drawIndirectArgs.VertexCountPerInstance = 0;
 	drawIndirectArgs.InstanceCount = 1;
 	drawIndirectArgs.StartVertexLocation = NULL;

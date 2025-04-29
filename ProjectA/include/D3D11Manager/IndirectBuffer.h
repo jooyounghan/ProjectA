@@ -1,5 +1,7 @@
 #pragma once
 #include "ABuffer.h"
+#include "MacroUtilities.h"
+
 #include <exception>
 
 namespace D3D11
@@ -25,7 +27,7 @@ namespace D3D11
 		virtual D3D11_BUFFER_DESC CreateBufferDesc() noexcept override
 		{
 			D3D11_BUFFER_DESC bufferDesc;
-			ZeroMemory(&bufferDesc, sizeof(bufferDesc));
+			ZeroMem(bufferDesc);
 
 			bufferDesc.ByteWidth = m_elementSize * m_arrayCount;
 			bufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -37,7 +39,7 @@ namespace D3D11
 		virtual D3D11_UNORDERED_ACCESS_VIEW_DESC CreateUnorderedAccessViewDesc() noexcept
 		{
 			D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
-			ZeroMemory(&uavDesc, sizeof(uavDesc));
+			ZeroMem(uavDesc);
 
 			uavDesc.Format = DXGI_FORMAT_R32_UINT;
 			uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;

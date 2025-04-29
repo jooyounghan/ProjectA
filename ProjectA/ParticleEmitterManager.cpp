@@ -24,7 +24,7 @@ ParticleEmitterManager::ParticleEmitterManager(
 	: AEmitterManager("ParticleEmitterManager", static_cast<UINT>(EEmitterType::ParticleEmitter), maxEmitterCount, maxParticleCount)
 {
 	SParticleInterpInformation particleInterpInformation;
-	AutoZeroMemory(particleInterpInformation);
+	ZeroMem(particleInterpInformation);
 
 	m_emitterInterpInformationCPU.resize(m_maxEmitterCount, particleInterpInformation);
 	m_forcePropertyChangedEmitterIDs.reserve(m_maxEmitterCount);
@@ -38,7 +38,7 @@ ParticleEmitterManager& ParticleEmitterManager::GetParticleEmitterManager()
 
 void ParticleEmitterManager::ReclaimEmitterID(UINT emitterID) noexcept
 {
-	AutoZeroMemory(m_emitterInterpInformationCPU[emitterID]);
+	ZeroMem(m_emitterInterpInformationCPU[emitterID]);
 	AddInterpolaterInformChangedEmitterID(emitterID);
 
 	AEmitterManager::ReclaimEmitterID(emitterID);

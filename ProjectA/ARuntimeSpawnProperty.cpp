@@ -1,6 +1,5 @@
 #include "ARuntimeSpawnProperty.h"
 #include "MacroUtilities.h"
-#include "BufferMacroUtilities.h"
 #include "InitialPropertyDefinition.h"
 
 #include "DynamicBuffer.h"
@@ -30,7 +29,7 @@ ARuntimeSpawnProperty::ARuntimeSpawnProperty(
 	m_onGpuColorInterpolaterSelected(gpuColorInterpolaterSelectedHandler),
 	m_onGpuColorInterpolaterUpdated(gpuColorInterpolaterUpdatedHandler)
 {
-	AutoZeroMemory(m_runtimeSpawnPropertyCPU);
+	ZeroMem(m_runtimeSpawnPropertyCPU);
 
 	m_runtimeSpawnPropertyCPU.color = InitColor;
 	m_runtimeSpawnPropertyCPU.maxLife = InitLife;

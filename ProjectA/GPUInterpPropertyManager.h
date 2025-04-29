@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "IUpdatable.h"
-#include "BufferMacroUtilities.h"
 #include "InterpolaterStructure.h"
 #include "StructuredBuffer.h"
 

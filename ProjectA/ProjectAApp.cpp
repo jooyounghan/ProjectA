@@ -12,7 +12,6 @@
 
 #pragma region Test
 #include "MacroUtilities.h"
-#include "BufferMacroUtilities.h"
 
 #include "DynamicBuffer.h"
 
@@ -65,21 +64,23 @@ CProjectAApp* CProjectAApp::GetInstance() noexcept
 	static CProjectAApp ProjectAApp;
 	return &ProjectAApp;
 }
-
-void CProjectAApp::Create(
-	UINT width, UINT height, 
-	const wchar_t* className, 
+void CProjectAApp::Init(
+	UINT width, UINT height,
+	const wchar_t* className,
 	const wchar_t* applicaitonName
-) noexcept
+)
 {
-	CBaseApp::Create(width, height, className, applicaitonName);
+	CBaseApp::Init(width, height, className, applicaitonName);
 
-}
-
-void CProjectAApp::Init()
-{
 #pragma region App ÃÊ±âÈ­
-	GEngine* engine = GEngine::GetInstance();
+
+	GEngine* engine = D3D11::GEngine::GetInstance();
+	engine->InitEngine(m_width, m_height, 240, 1,
+		DXGI_FORMAT_R8G8B8A8_UNORM, 2,
+		m_mainWindow,
+		DXGI_SWAP_EFFECT_FLIP_DISCARD,
+		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH
+	);
 
 	m_device = engine->GetDevice();
 	m_deviceContext = engine->GetDeviceContext();
