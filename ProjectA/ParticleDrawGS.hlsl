@@ -8,8 +8,8 @@ void main(
 {
     ParticleVSOut inputData = input[0];
     const float2 xyScale = inputData.xyScale;
-    const float4 dx = float4(10.f / appWidth, 0.f, 0.f, 0.f) * xyScale.x;
-    const float4 dy = float4(0.f, 10.f / appHeight, 0.f, 0.f) * xyScale.y;
+    const float4 dx = float4(30.f / appWidth, 0.f, 0.f, 0.f) * xyScale.x;
+    const float4 dy = float4(0.f, 30.f / appHeight, 0.f, 0.f) * xyScale.y;
 
     ParticleGSOut element;
     element.color = inputData.color;
