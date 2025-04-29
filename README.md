@@ -270,8 +270,14 @@ gantt
 - 이미터에 대한 설정 값을 저장하고 불러올 수 있도록 Serialize / Deserialize 구현 진행
 	- fstream을 활용하여 바이너리 데이터를 단순히 쓰고 읽는 방식으로 구현
 
-### 25.04.25
+### 25.04.25 ~ 25. 04.27
 - Serialize / Deserialize 구현 완료
 - Sprite Emitter Manager 구현 시작
 	- 기존의 경우 하나의 EmitterManager에서 모든 파티클을 관리하려고 했으나, 세부적인 Compute Shader 패스가 이미터의 종류마다 다르기 때문에, 각 이미터 타입에 대한 매니저가 존재하고, 이 내부에서 파티클 풀링 등을 활용하여 데이터를 처리하도록 수정
 - 파티클 풀링을 위한 파티클 인덱스를 Prefix Sum과 같은 방법으로 계산하였는데, AppendStructuredBuffer / ConsumedStruturedBuffer를 통하여 간단하게 구하는 방식으로 단순화
+
+### 25.04.28
+- SpriteEmitterManager / SpriteEmitter 구현 진행
+	- Sprite Size에 대한 이미터 시간 / 파티클 생명 기준 보간 구현 완료
+	- 현재 단순히 텍스쳐 좌표계 값을 활용하여 색상값을 결정하도록 설정
+		- 금주 스프라이트 텍스쳐를 활용하여 색상값을 결정하도록 수정 예정
