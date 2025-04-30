@@ -82,7 +82,15 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 	for (size_t idx = 0; idx < EmitterTypeCount; ++idx)
 	{
 		GInitializeParticleSetCS[idx] = make_unique<CComputeShader>();
+		try
+		{
 		GInitializeParticleSetCS[idx]->CreateShader(L"./InitializeParticleSetCS.hlsl", emitterTypeMacros[idx], "main", "cs_5_0", device);
+		}
+		catch(exception e)
+		{
+			string test1 = e.what();
+			bool test = true;
+		}
 	}
 #pragma endregion
 

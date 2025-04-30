@@ -312,6 +312,9 @@ void SpriteEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float 
 
 	m_spriteSizeD1Dim2PorpertyManager->Update(deviceContext, dt);
 	m_spriteSizeD3Dim2PorpertyManager->Update(deviceContext, dt);
+
+	m_spriteIndexD1Dim1PorpertyManager->Update(deviceContext, dt);
+	m_spriteIndexD3Dim1PorpertyManager->Update(deviceContext, dt);
 }
 
 void SpriteEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceContext)
@@ -324,9 +327,11 @@ void SpriteEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceContex
 		m_colorD1Dim4PorpertyManager->GetGPUInterpPropertySRV(),
 		m_colorD3Dim4PorpertyManager->GetGPUInterpPropertySRV(),
 		m_spriteSizeD1Dim2PorpertyManager->GetGPUInterpPropertySRV(),
-		m_spriteSizeD3Dim2PorpertyManager->GetGPUInterpPropertySRV()
+		m_spriteSizeD3Dim2PorpertyManager->GetGPUInterpPropertySRV(),
+		m_spriteIndexD1Dim1PorpertyManager->GetGPUInterpPropertySRV(),
+		m_spriteIndexD3Dim1PorpertyManager->GetGPUInterpPropertySRV()
 	};
-	ID3D11ShaderResourceView* initializeNullSRVs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
+	ID3D11ShaderResourceView* initializeNullSRVs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 
 	ID3D11UnorderedAccessView* initializeUavs[] = {
 		m_totalParticles->GetUAV(),
@@ -341,12 +346,12 @@ void SpriteEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceContex
 	CEmitterManagerCommonData::GInitializeParticleSetCS[emitterTypeIndex]->SetShader(deviceContext);
 
 	deviceContext->CSSetConstantBuffers(2, 1, initializeCBs);
-	deviceContext->CSSetShaderResources(0, 5, initializeSRVs);
+	deviceContext->CSSetShaderResources(0, 7, initializeSRVs);
 	deviceContext->CSSetUnorderedAccessViews(0, 3, initializeUavs, initDeathParticleCount);
 	static const UINT dispatchX = static_cast<UINT>(ceil(m_emitterManagerPropertyCPU.particleMaxCount / LocalThreadCount));
 	deviceContext->Dispatch(dispatchX, 1, 1);
 	deviceContext->CSSetConstantBuffers(2, 1, initializeNullCBs);
-	deviceContext->CSSetShaderResources(0, 5, initializeNullSRVs);
+	deviceContext->CSSetShaderResources(0, 7, initializeNullSRVs);
 	deviceContext->CSSetUnorderedAccessViews(0, 3, initializeNullUavs, initDeathParticleCount);
 }
 

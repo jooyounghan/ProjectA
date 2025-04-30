@@ -97,6 +97,7 @@ void SpriteSpawnProperty::AdjustControlPointsFromLife()
 	ARuntimeSpawnProperty::AdjustControlPointsFromLife();
 
 	const float& maxLife = m_runtimeSpawnPropertyCPU.maxLife;
+	
 	m_spriteSizeFinalControlPoint.x = maxLife;
 	m_spriteSizeControlPoints.erase(
 		std::remove_if(m_spriteSizeControlPoints.begin(), m_spriteSizeControlPoints.end(),
@@ -105,6 +106,16 @@ void SpriteSpawnProperty::AdjustControlPointsFromLife()
 				return p.x > maxLife;
 			}),
 		m_spriteSizeControlPoints.end()
+	);
+
+	m_spriteIndexFinalControlPoint.x = maxLife;
+	m_spriteIndexControlPoints.erase(
+		std::remove_if(m_spriteIndexControlPoints.begin(), m_spriteIndexControlPoints.end(),
+			[&](const SControlPoint<1>& p)
+			{
+				return p.x > maxLife;
+			}),
+		m_spriteIndexControlPoints.end()
 	);
 
 	m_spriteSizeInterpolater->UpdateCoefficient();

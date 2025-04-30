@@ -281,3 +281,6 @@ gantt
 	- Sprite Size에 대한 이미터 시간 / 파티클 생명 기준 보간 구현 완료
 	- 현재 단순히 텍스쳐 좌표계 값을 활용하여 색상값을 결정하도록 설정
 		- 금주 스프라이트 텍스쳐를 활용하여 색상값을 결정하도록 수정 예정
+
+### 25.04.29
+- 스프라이트가 샘플링을 수행할 Index를 보간하기 위한 구조(1차원 데이터 보간에 대한 구조)를 SpriteSpawnProperty / SpriteEmitter / SpriteEmitterManager에 추가
