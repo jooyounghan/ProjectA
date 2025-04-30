@@ -48,6 +48,16 @@ void SpriteEmitterManager::ReclaimEmitterID(UINT emitterID) noexcept
 	AEmitterManager::ReclaimEmitterID(emitterID);
 }
 
+void SpriteEmitterManager::CreateAliveIndexSet(ID3D11Device* device)
+{
+	const UINT particleMaxCount = m_emitterManagerPropertyCPU.particleMaxCount;
+	m_aliveIndexSet = make_unique<CAppendBuffer>(
+		static_cast<UINT>(sizeof(SSpriteAliveIndex)), 
+		particleMaxCount, nullptr
+	);
+	m_aliveIndexSet->InitializeBuffer(device);
+}
+
 UINT SpriteEmitterManager::AddEmitter(DirectX::XMVECTOR position, DirectX::XMVECTOR angle, ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 	UINT spriteEmitterID = IssueAvailableEmitterID();
@@ -412,7 +422,7 @@ void SpriteEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceContex
 	};
 	ID3D11UnorderedAccessView* initializeNullUavs[] = { nullptr, nullptr, nullptr };
 
-	UINT initDeathParticleCount[] = { NULL, NULL, NULL };
+	UINT initDeathParticleCount[] = { NULL, NULL, NULL, NULL };
 
 	UINT emitterTypeIndex = GetEmitterType();
 	CEmitterManagerCommonData::GInitializeParticleSetCS[emitterTypeIndex]->SetShader(deviceContext);
@@ -425,6 +435,10 @@ void SpriteEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceContex
 	deviceContext->CSSetConstantBuffers(2, 1, initializeNullCBs);
 	deviceContext->CSSetShaderResources(0, 7, initializeNullSRVs);
 	deviceContext->CSSetUnorderedAccessViews(0, 3, initializeNullUavs, initDeathParticleCount);
+}
+
+void SpriteEmitterManager::FinalizeParticles(ID3D11DeviceContext* deviceContext)
+{
 }
 
 void SpriteEmitterManager::DrawParticles(ID3D11DeviceContext* deviceContext)

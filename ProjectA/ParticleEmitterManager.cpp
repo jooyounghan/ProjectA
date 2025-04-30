@@ -44,6 +44,13 @@ void ParticleEmitterManager::ReclaimEmitterID(UINT emitterID) noexcept
 	AEmitterManager::ReclaimEmitterID(emitterID);
 }
 
+void ParticleEmitterManager::CreateAliveIndexSet(ID3D11Device* device)
+{
+	const UINT particleMaxCount = m_emitterManagerPropertyCPU.particleMaxCount;
+	m_aliveIndexSet = make_unique<CAppendBuffer>(4, particleMaxCount, nullptr);
+	m_aliveIndexSet->InitializeBuffer(device);
+}
+
 UINT ParticleEmitterManager::AddEmitter(
 	XMVECTOR position,
 	XMVECTOR angle,
@@ -138,6 +145,10 @@ void ParticleEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceCont
 	deviceContext->CSSetConstantBuffers(2, 1, initializeNullCBs);
 	deviceContext->CSSetShaderResources(0, 3, initializeNullSRVs);
 	deviceContext->CSSetUnorderedAccessViews(0, 3, initializeNullUavs, initDeathParticleCount);
+}
+
+void ParticleEmitterManager::FinalizeParticles(ID3D11DeviceContext* deviceContext)
+{
 }
 
 void ParticleEmitterManager::DrawParticles(ID3D11DeviceContext* deviceContext)

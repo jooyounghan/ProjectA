@@ -26,10 +26,10 @@ using namespace DirectX;
 using namespace D3D11;
 
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GInitializeParticleSetCS[EmitterTypeCount];
-unique_ptr<CComputeShader> CEmitterManagerCommonData::GParticleInitialSourceCS = make_unique<CComputeShader>();
-unique_ptr<CComputeShader> CEmitterManagerCommonData::GParticleRuntimeSourceCS = make_unique<CComputeShader>();
+unique_ptr<CComputeShader> CEmitterManagerCommonData::GParticleInitialSourceCS[EmitterTypeCount];
+unique_ptr<CComputeShader> CEmitterManagerCommonData::GParticleRuntimeSourceCS[EmitterTypeCount];
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GCalcualteIndirectArgCS = make_unique<CComputeShader>();
-unique_ptr<CComputeShader> CEmitterManagerCommonData::GCaculateParticleForceCS = make_unique<CComputeShader>();
+unique_ptr<CComputeShader> CEmitterManagerCommonData::GCaculateParticleForceCS[EmitterTypeCount];
 
 unique_ptr<CVertexShader> CEmitterManagerCommonData::GParticleDrawVS[EmitterTypeCount];
 unique_ptr<CGeometryShader> CEmitterManagerCommonData::GParticleDrawGS[EmitterTypeCount];;
@@ -83,22 +83,24 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 	for (size_t idx = 0; idx < EmitterTypeCount; ++idx)
 	{
 		GInitializeParticleSetCS[idx] = make_unique<CComputeShader>();
-		try
-		{
 		GInitializeParticleSetCS[idx]->CreateShader(L"./InitializeParticleSetCS.hlsl", emitterTypeMacros[idx], "main", "cs_5_0", device);
-		}
-		catch(exception e)
-		{
-			string test1 = e.what();
-			bool test = true;
-		}
 	}
 #pragma endregion
 
 #pragma region Particle 소싱 관련 CS
-	GParticleInitialSourceCS->CreateShader(L"./ParticleSourceCS.hlsl", sourceMacro[0], "main", "cs_5_0", device);
+	for (size_t idx = 0; idx < EmitterTypeCount; ++idx)
+	{
+		D3D_SHADER_MACRO emitterSourceMacro[3];
+		memcpy(&emitterSourceMacro[0], emitterTypeMacros[idx], sizeof(D3D_SHADER_MACRO));
+		memcpy(&emitterSourceMacro[1], sourceMacro[0], sizeof(D3D_SHADER_MACRO) * 2);
+		GParticleInitialSourceCS[idx] = make_unique<CComputeShader>();
+		GParticleInitialSourceCS[idx]->CreateShader(L"./ParticleSourceCS.hlsl", emitterSourceMacro, "main", "cs_5_0", device);
 
-	GParticleRuntimeSourceCS->CreateShader(L"./ParticleSourceCS.hlsl", sourceMacro[1], "main", "cs_5_0", device);
+		memcpy(&emitterSourceMacro[1], sourceMacro[1], sizeof(D3D_SHADER_MACRO) * 2);
+		GParticleRuntimeSourceCS[idx] = make_unique<CComputeShader>();
+		GParticleRuntimeSourceCS[idx]->CreateShader(L"./ParticleSourceCS.hlsl", emitterSourceMacro, "main", "cs_5_0", device);
+
+	}
 #pragma endregion
 
 #pragma region Indirect 인자 계산 관련 CS
@@ -106,7 +108,11 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 #pragma endregion
 
 #pragma region Particle 시뮬레이션 관련 CS
-	GCaculateParticleForceCS->CreateShader(L"./CalculateParticleForceCS.hlsl", nullptr, "main", "cs_5_0", device);
+	for (size_t idx = 0; idx < EmitterTypeCount; ++idx)
+	{
+		GCaculateParticleForceCS[idx] = make_unique<CComputeShader>();
+		GCaculateParticleForceCS[idx]->CreateShader(L"./CalculateParticleForceCS.hlsl", nullptr, "main", "cs_5_0", device);
+	}
 #pragma endregion
 
 #pragma region Particle 그리기 관련 PSO

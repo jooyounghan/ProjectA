@@ -73,7 +73,12 @@ StructuredBuffer<matrix> emitterWorldTransforms : register(t0);
 
 RWStructuredBuffer<Particle> totalParticles : register(u0);
 ConsumeStructuredBuffer<uint> deathIndexSet : register(u1);
+
+#ifdef SPRITE_EMITTER
+AppendStructuredBuffer<SpriteAliveIndex> aliveIndexSet : register(u2);
+#else
 AppendStructuredBuffer<uint> aliveIndexSet : register(u2);
+#endif
 
 #ifdef RUNTIME_SOURCE
 [numthreads(1, 1, 1)]
@@ -131,5 +136,14 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 	sourcedParticle.spriteIndex = 0.f;
 #endif
 	totalParticles[revivedIndex] = sourcedParticle;
+	
+	
+#ifdef SPRITE_EMITTER
+	SpriteAliveIndex spriteAliveIndex;
+	spriteAliveIndex.index = revivedIndex;
+	spriteAliveIndex.depth = 1.f;
+	aliveIndexSet.Append(spriteAliveIndex);
+#else
     aliveIndexSet.Append(revivedIndex);
+#endif
 }

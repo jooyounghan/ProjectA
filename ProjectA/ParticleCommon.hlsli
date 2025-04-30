@@ -13,6 +13,12 @@ struct Particle
     uint2 dummy;
 };
 
+struct SpriteAliveIndex
+{
+    uint index;
+    float depth;
+};
+
 cbuffer AppParams : register(b0)
 {
     float dt;

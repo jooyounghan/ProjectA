@@ -97,6 +97,9 @@ protected:
 	std::unique_ptr<D3D11::CAppendBuffer> m_aliveIndexSet;
 
 protected:
+	virtual void CreateAliveIndexSet(ID3D11Device* device) = 0;
+
+protected:
 	std::unique_ptr<D3D11::CDynamicBuffer> m_dispatchIndirectStagingBuffer;
 	std::unique_ptr<D3D11::CStructuredBuffer> m_dispatchIndirectCalculatedBuffer;
 	std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DISPATCH_INDIRECT_ARGS>> m_dispatchIndirectBuffer;
@@ -159,6 +162,7 @@ public:
 	virtual void InitializeAliveFlag(ID3D11DeviceContext* deviceContext) = 0;
 	virtual void SourceParticles(ID3D11DeviceContext* deviceContext);
 	virtual void CalculateForces(ID3D11DeviceContext* deviceContext);
+	virtual void FinalizeParticles(ID3D11DeviceContext* deviceContext) = 0;
 	virtual void DrawEmitters(ID3D11DeviceContext* deviceContext);
 	virtual void DrawParticles(ID3D11DeviceContext* deviceContext) = 0;
 };

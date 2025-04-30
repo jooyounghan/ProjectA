@@ -35,8 +35,8 @@ public:
 
 #pragma region Particle 소싱 관련 CS
 public:
-	static std::unique_ptr<D3D11::CComputeShader> GParticleInitialSourceCS;
-	static std::unique_ptr<D3D11::CComputeShader> GParticleRuntimeSourceCS;
+	static std::unique_ptr<D3D11::CComputeShader> GParticleInitialSourceCS[EmitterTypeCount];
+	static std::unique_ptr<D3D11::CComputeShader> GParticleRuntimeSourceCS[EmitterTypeCount];
 #pragma endregion
 
 #pragma region Indirect 인자 계산 관련 CS
@@ -47,7 +47,7 @@ public:
 
 #pragma region Particle 시뮬레이션 관련 CS
 public:
-	static std::unique_ptr<D3D11::CComputeShader> GCaculateParticleForceCS;
+	static std::unique_ptr<D3D11::CComputeShader> GCaculateParticleForceCS[EmitterTypeCount];
 #pragma endregion
 
 #pragma region Particle 그리기 관련 PSO

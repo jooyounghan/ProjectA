@@ -24,6 +24,9 @@ protected:
 	virtual void ReclaimEmitterID(UINT emitterID) noexcept override;
 
 protected:
+	virtual void CreateAliveIndexSet(ID3D11Device* device) override;
+
+protected:
 	std::vector<SParticleInterpInformation> m_emitterInterpInformationCPU;
 
 public:
@@ -49,6 +52,7 @@ protected:
 
 public:
 	virtual void InitializeAliveFlag(ID3D11DeviceContext* deviceContext) override;
+	virtual void FinalizeParticles(ID3D11DeviceContext* deviceContext);
 	virtual void DrawParticles(ID3D11DeviceContext* deviceContext) override;
 };
 

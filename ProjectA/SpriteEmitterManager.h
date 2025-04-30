@@ -7,6 +7,12 @@
 #define MaxSpriteTextureWidth 500
 #define MaxSpriteTextureHeight 100
 
+struct SSpriteAliveIndex
+{
+	UINT index;
+	float depth;
+};
+
 class SpriteEmitterManager : public AEmitterManager
 {
 private:
@@ -27,6 +33,9 @@ protected:
 
 protected:
 	virtual void ReclaimEmitterID(UINT emitterID) noexcept override;
+
+protected:
+	virtual void CreateAliveIndexSet(ID3D11Device* device) override;
 
 protected:
 	std::vector<SSpriteInterpInformation> m_emitterInterpInformationCPU;
@@ -118,5 +127,6 @@ protected:
 
 public:
 	virtual void InitializeAliveFlag(ID3D11DeviceContext* deviceContext) override;
+	virtual void FinalizeParticles(ID3D11DeviceContext* deviceContext);
 	virtual void DrawParticles(ID3D11DeviceContext* deviceContext) override;
 };

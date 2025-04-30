@@ -12,7 +12,12 @@ StructuredBuffer<matrix> emitterWorldTransforms : register(t0);
 StructuredBuffer<ForceProperty> emitterForces : register(t1);
 
 RWStructuredBuffer<Particle> totalParticles : register(u0);
+
+#ifdef SPRITE_EMITTER
+ConsumeStructuredBuffer<SpriteAliveIndex> aliveIndexSet : register(u1);
+#else
 ConsumeStructuredBuffer<uint> aliveIndexSet : register(u1);
+#endif
 
 [numthreads(LocalThreadCount, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
@@ -29,8 +34,13 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		const uint NForceVortexKind = 0;
 		const uint NForcePointInteraction = 1;
 
+        #ifdef SPRITE_EMITTER
+        SpriteAliveIndex aliveIndex = aliveIndexSet.Consume();
+        uint index = aliveIndex.index;
+        #else
         uint index = aliveIndexSet.Consume();
-       
+        #endif
+        
         Particle currentParticle = totalParticles[index];
 
 		const uint emitterID = currentParticle.emitterID;
