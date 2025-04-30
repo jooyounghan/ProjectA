@@ -79,15 +79,15 @@ void ForceUpdateProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 	}
 }
 
-void ForceUpdateProperty::DrawPropertyUI()
+void ForceUpdateProperty::DrawUI()
 {
 	if (!CollapsingHeader("파티클 업데이트 프로퍼티"))
 		return;
 
-	DrawPropertyUIImpl();
+	DrawUIImpl();
 }
 
-void ForceUpdateProperty::DrawPropertyUIImpl()
+void ForceUpdateProperty::DrawUIImpl()
 {
 	HandleSingleForce("중력", EForceFlag::Gravity, [&]()
 		{

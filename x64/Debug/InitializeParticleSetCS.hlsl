@@ -83,6 +83,10 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
                     float2(timeSpent, timeSpent), maxLife,
                     d1Dim2Props, d3Dim2Props
                 );
+            }
+
+            if (spriteIndexInterpolaterID != colorInterpolaterNotSelected)
+            {
                 currentParticle.spriteIndex = GetInterpolatedDim1(
                     spriteIndexDegree, spriteIndexInterpolaterID, 
                     timeSpent, maxLife,

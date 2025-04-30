@@ -16,7 +16,7 @@ public:
 	);
 	~ParticleEmitter() override = default;
 
-protected:
+public:
 	virtual void CreateProperty() override;
 };
 

@@ -14,6 +14,6 @@ public:
 	~ParticleSpawnProperty() override = default;
 
 protected:
-	virtual void DrawPropertyUIImpl() override;
+	virtual void DrawUIImpl() override;
 };
 

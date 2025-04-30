@@ -289,7 +289,7 @@
     <ClInclude Include="IUpdatable.h">
       <Filter>헤더 파일\Interface</Filter>
     </ClInclude>
-    <ClInclude Include="IProperty.h">
+    <ClInclude Include="IDrawable.h">
       <Filter>헤더 파일\Interface</Filter>
     </ClInclude>
     <ClInclude Include="ISerializable.h">

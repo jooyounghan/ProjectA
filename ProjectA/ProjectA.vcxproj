@@ -197,7 +197,7 @@
     <ClInclude Include="Interpolater.h" />
     <ClInclude Include="InterpolaterStructure.h" />
     <ClInclude Include="InterpolaterSelector.h" />
-    <ClInclude Include="IProperty.h" />
+    <ClInclude Include="IDrawable.h" />
     <ClInclude Include="External\imgui_impl_dx11.h" />
     <ClInclude Include="External\imgui_impl_win32.h" />
     <ClInclude Include="GlobalVariable.h" />
@@ -245,7 +245,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
     </FxCompile>
     <FxCompile Include="EmitterDrawPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

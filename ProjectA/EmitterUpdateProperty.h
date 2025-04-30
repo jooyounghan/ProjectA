@@ -1,5 +1,6 @@
 #pragma once
-#include "IProperty.h"
+#include "IDrawable.h"
+#include "IUpdatable.h"
 #include "ISerializable.h"
 #include "InterpolaterStructure.h"
 
@@ -17,7 +18,7 @@ class CInterpolaterSelectPlotter;
 
 typedef std::function<void(class CEmitterUpdateProperty*)> OnEmitterDispose;
 
-class CEmitterUpdateProperty : public IProperty, public ISerializable
+class CEmitterUpdateProperty : public IDrawable, public IUpdatable, public ISerializable
 {
 public:
 	CEmitterUpdateProperty();
@@ -68,10 +69,10 @@ public:
 	virtual void Update(ID3D11DeviceContext* deviceContext, float dt) override;
 
 public:
-	virtual void DrawPropertyUI() override;
+	virtual void DrawUI() override;
 
 protected:
-	virtual void DrawPropertyUIImpl() override;
+	virtual void DrawUIImpl() override;
 
 public:
 	virtual void Serialize(std::ofstream& ofs) override;

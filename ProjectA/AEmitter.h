@@ -1,4 +1,5 @@
 #pragma once
+#include "IDrawable.h"
 #include "IUpdatable.h"
 #include "ISerializable.h"
 #include "EmitterForceProperty.h"
@@ -14,7 +15,7 @@ class CEmitterUpdateProperty;
 class ARuntimeSpawnProperty;
 class ForceUpdateProperty;
 
-class AEmitter : public IUpdatable, public ISerializable
+class AEmitter : public IDrawable, public IUpdatable, public ISerializable
 {
 public:
 	AEmitter(
@@ -74,7 +75,7 @@ protected:
 	std::function<void(UINT, UINT, bool, EInterpolationMethod, IInterpolater<4>*)> m_onGpuColorInterpolaterSelected;
 	std::function<void(UINT, UINT, bool, float, EInterpolationMethod, IInterpolater<4>*)> m_onGpuColorInterpolaterUpdated;
 
-protected:
+public:
 	virtual void CreateProperty() = 0;
 
 protected:
@@ -102,6 +103,12 @@ public:
 public:
 	virtual void Serialize(std::ofstream& ofs) override;
 	virtual void Deserialize(std::ifstream& ifs) override;
+
+public:
+	virtual void DrawUI() override;
+
+protected:
+	virtual void DrawUIImpl() override;
 };
 
 

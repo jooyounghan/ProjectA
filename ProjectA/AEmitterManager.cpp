@@ -90,6 +90,7 @@ void AEmitterManager::LoadManager(ID3D11Device* device, ID3D11DeviceContext* dev
 
 			AEmitter* emitter = GetEmitter(emitterID);
 			emitter->Deserialize(ifs);
+			emitter->Initialize(device, deviceContext);
 		}
 	}
 }

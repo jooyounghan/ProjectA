@@ -3,13 +3,15 @@
 #include "EmitterUpdateProperty.h"
 #include "SpriteSpawnProperty.h"
 #include "ForceUpdateProperty.h"
-
 #include "EmitterTypeDefinition.h"
+
+#include "stb_image.h"
+#include "stb_image_resize2.h"
 
 using namespace std;
 using namespace DirectX;
-
-
+using namespace D3D11;
+using namespace ImGui;
 
 SpriteEmitter::SpriteEmitter(
 	UINT emitterID, 
@@ -22,7 +24,8 @@ SpriteEmitter::SpriteEmitter(
 	const std::function<void(UINT, UINT, bool, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterSelectedHandler,
 	const std::function<void(UINT, UINT, bool, float, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterUpdatedHandler,
 	const std::function<void(UINT, UINT, bool, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterSelectedHandler,
-	const std::function<void(UINT, UINT, bool, float, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterUpdatedHandler
+	const std::function<void(UINT, UINT, bool, float, UINT, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterUpdatedHandler,
+	const std::function<void(UINT, unsigned char*, UINT, UINT, UINT)>& spriteTextureLoadedHandler
 )
 	: AEmitter(
 		static_cast<UINT>(EEmitterType::SpriteEmitter),
@@ -37,10 +40,31 @@ SpriteEmitter::SpriteEmitter(
 	m_onSpriteSizeInterpolaterUpdated(gpuSpriteSizeInterpolaterUpdatedHandler),
 	m_spriteIndexInterpolaterID(InterpPropertyNotSelect),
 	m_onSpriteIndexInterpolaterSelected(gpuSpriteIndexInterpolaterSelectedHandler),
-	m_onSpriteIndexInterpolaterUpdated(gpuSpriteIndexInterpolaterUpdatedHandler)
+	m_onSpriteIndexInterpolaterUpdated(gpuSpriteIndexInterpolaterUpdatedHandler),
+	m_spriteTextureAspectRatio(1.f),
+	m_onSpriteTextureLoaded(spriteTextureLoadedHandler)
 {
 }
 
+
+void SpriteEmitter::LoadSpriteTexture(const string& spriteTextureDirectory)
+{
+	if (!spriteTextureDirectory.empty())
+	{
+		m_spriteTextureDirectory = spriteTextureDirectory;
+
+		int width, height, channel;
+		stbi_uc* spriteTextureBuffer = stbi_load(m_spriteTextureDirectory.c_str(), &width, &height, &channel, 4);
+		m_spriteTextureAspectRatio = width / float(height);
+		m_onSpriteTextureLoaded(GetEmitterID(), spriteTextureBuffer, width, height, channel);
+		stbi_image_free(spriteTextureBuffer);
+	}
+}
+
+void SpriteEmitter::SetSpriteTextureSRV(Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>&& spriteTextureSRV)
+{
+	m_spriteTextureSRV = move(spriteTextureSRV);
+}
 
 void SpriteEmitter::CreateProperty()
 {
@@ -67,13 +91,46 @@ void SpriteEmitter::CreateProperty()
 		{
 			m_onSpriteIndexInterpolaterSelected(GetEmitterID(), m_spriteIndexInterpolaterID, isSpriteIndexGPUInterpolaterOn, spriteIndexIntperpolationMethod, spriteIndexInterpolater);
 		},
-			[this](bool isSpriteIndexGPUInterpolaterOn, float maxLife, EInterpolationMethod spriteIndexIntperpolationMethod, IInterpolater<1>* spriteIndexInterpolater)
+			[this](bool isSpriteIndexGPUInterpolaterOn, float maxLife, UINT spriteTextureCount, EInterpolationMethod spriteIndexIntperpolationMethod, IInterpolater<1>* spriteIndexInterpolater)
 		{
-			m_onSpriteIndexInterpolaterUpdated(GetEmitterID(), m_spriteIndexInterpolaterID, isSpriteIndexGPUInterpolaterOn, maxLife, spriteIndexIntperpolationMethod, spriteIndexInterpolater);
+			m_onSpriteIndexInterpolaterUpdated(GetEmitterID(), m_spriteIndexInterpolaterID, isSpriteIndexGPUInterpolaterOn, maxLife, spriteTextureCount, spriteIndexIntperpolationMethod, spriteIndexInterpolater);
 		}
 	);
 	m_forceUpdateProperty = make_unique<ForceUpdateProperty>(
 		[this](const SEmitterForceProperty& forceProperty) { m_onForcePropertyChanged(GetEmitterID(), forceProperty); }
 	);
+}
 
+void SpriteEmitter::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
+{
+	AEmitter::Initialize(device, deviceContext);
+	LoadSpriteTexture(m_spriteTextureDirectory);
+}
+
+void SpriteEmitter::DrawUIImpl()
+{
+	AEmitter::DrawUIImpl();
+
+	SeparatorText("스프라이트 텍스쳐");
+	ImVec2 regionAvailSize = GetContentRegionAvail();
+	if (!m_spriteTextureSRV)
+	{
+
+	}
+	else
+	{
+		Image((ImTextureID)m_spriteTextureSRV.Get(), ImVec2(regionAvailSize.x, regionAvailSize.x / m_spriteTextureAspectRatio));
+	}
+}
+
+void SpriteEmitter::Serialize(std::ofstream& ofs)
+{
+	AEmitter::Serialize(ofs);
+	SerializeHelper::SerializeString(ofs, m_spriteTextureDirectory);
+}
+
+void SpriteEmitter::Deserialize(std::ifstream& ifs)
+{
+	AEmitter::Deserialize(ifs);
+	m_spriteTextureDirectory = SerializeHelper::DeserializeString(ifs);
 }

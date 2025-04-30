@@ -293,13 +293,15 @@ void CProjectAApp::DrawEmitterHandler()
 			case EEmitterType::ParticleEmitter:
 			{
 				ParticleEmitterManager& particleEmitterManager = ParticleEmitterManager::GetParticleEmitterManager();
-				particleEmitterManager.AddEmitter(XMVectorZero(), XMVectorZero(), m_device, m_deviceContext);
+				UINT particleEmitterID = particleEmitterManager.AddEmitter(XMVectorZero(), XMVectorZero(), m_device, m_deviceContext);
+				particleEmitterManager.GetEmitter(particleEmitterID)->Initialize(m_device, m_deviceContext);
 				break;
 			}
 			case EEmitterType::SpriteEmitter:
 			{
 				SpriteEmitterManager& spriteEmitterManager = SpriteEmitterManager::GetSpriteEmitterManager();
-				spriteEmitterManager.AddEmitter(XMVectorZero(), XMVectorZero(), m_device, m_deviceContext);
+				UINT spriteEmitterID = spriteEmitterManager.AddEmitter(XMVectorZero(), XMVectorZero(), m_device, m_deviceContext);
+				spriteEmitterManager.GetEmitter(spriteEmitterID)->Initialize(m_device, m_deviceContext);
 				break;
 			}
 			default:
@@ -370,24 +372,7 @@ void CProjectAApp::DrawEmitterSelector(const std::string& emitterName, int& emit
 
 	if (emitter)
 	{
-		XMVECTOR emitterPos = emitter->GetPosition();
-		if (DragFloat3(format("{} 위치", emitterName).c_str(), emitterPos.m128_f32, 0.1f, -1000.f, 1000.f, "%.1f"))
-		{
-			emitter->SetPosition(emitterPos);
-		}
-
-		XMVECTOR emitterAngle = emitter->GetAngle();
-		emitterAngle = XMVectorScale(emitterAngle, 180.f / XM_PI);
-		if (DragFloat3(format("{} 각도", emitterName).c_str(), emitterAngle.m128_f32, 0.1f, -360, 360.f, "%.1f"))
-		{
-			emitterAngle = XMVectorScale(emitterAngle, XM_PI / 180.f);
-			emitter->SetAngle(emitterAngle);
-		}
-
-		emitter->GetInitialSpawnProperty()->DrawPropertyUI();
-		emitter->GetEmitterUpdateProperty()->DrawPropertyUI();
-		emitter->GetRuntimeSpawnProperty()->DrawPropertyUI();
-		emitter->GetForceUpdateProperty()->DrawPropertyUI();
+		emitter->DrawUI();
 	}
 	PopID();
 }

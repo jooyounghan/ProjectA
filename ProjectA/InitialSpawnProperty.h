@@ -1,5 +1,6 @@
 #pragma once
-#include "IProperty.h"
+#include "IDrawable.h"
+#include "IUpdatable.h"
 #include "ISerializable.h"
 #include "ShapedVectorProperty.h"
 
@@ -11,7 +12,7 @@ namespace D3D11
 }
 class CShapedVectorSelector;
 
-class CInitialSpawnProperty : public IProperty, public ISerializable
+class CInitialSpawnProperty : public IDrawable, public IUpdatable, public ISerializable
 {
 public:
 	CInitialSpawnProperty();
@@ -68,10 +69,10 @@ public:
 	virtual void Update(ID3D11DeviceContext* deviceContext, float dt) override;
 
 public:
-	virtual void DrawPropertyUI() override;
+	virtual void DrawUI() override;
 
 protected:
-	virtual void DrawPropertyUIImpl() override;
+	virtual void DrawUIImpl() override;
 
 public:
 	virtual void Serialize(std::ofstream& ofs) override;

@@ -14,6 +14,7 @@
 #include "RasterizerState.h"
 #include "BlendState.h"
 #include "DepthStencilState.h"
+#include "SamplerState.h"
 
 #include "ModelFactory.h"
 
@@ -116,6 +117,8 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 		GParticleDrawPS[idx] = make_unique<CPixelShader>();
 	}
 
+	static ID3D11SamplerState* samplerStates[] = { CSamplerState::GetSSWrap() };
+
 	for (size_t idx = 0; idx < EmitterTypeCount; ++idx)
 	{
 		GParticleDrawVS[idx]->CreateShader(L"./ParticleDrawVS.hlsl", emitterTypeMacros[idx], "main", "vs_5_0", device);
@@ -131,8 +134,8 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 			CRasterizerState::GetRSSolidCWSS(),
 			CBlendState::GetBSAlphaBlend(),
 			CDepthStencilState::GetDSDraw(),
-			nullptr,
-			0
+			samplerStates,
+			1
 		);
 	}
 #pragma endregion

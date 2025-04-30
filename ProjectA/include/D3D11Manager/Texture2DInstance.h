@@ -36,7 +36,7 @@ protected:
 
 public:
 	virtual ID3D11Texture2D* const GetTexture2D() const { return m_texture2D.Get(); }
-	virtual D3D11_TEXTURE2D_DESC* const GetTexture2DDesc() const { &m_texture2DDesc; }
+	virtual D3D11_TEXTURE2D_DESC* const GetTexture2DDesc() { return &m_texture2DDesc; }
 
 public:
 	virtual void InitializeByOption(
@@ -109,7 +109,7 @@ inline void Texture2DInstance<IsTextureOption...>::InitializeByOption(
 {
 	HRESULT hResult = device->CreateTexture2D(
 		&m_texture2DDesc, 
-		m_subresourceData.pSysMem ? NULL : &m_subresourceData, 
+		m_subresourceData.pSysMem ? &m_subresourceData : nullptr, 
 		m_texture2D.GetAddressOf()
 	);
 	if (FAILED(hResult)) { throw std::exception("CreateTexture2D Failed"); }

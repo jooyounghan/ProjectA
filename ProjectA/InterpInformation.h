@@ -19,5 +19,5 @@ struct SSpriteInterpInformation
 	unsigned int spriteSizeInterpolaterDegree;
 	unsigned int spriteIndexInterpolaterID;
 	unsigned int spriteIndexInterpolaterDegree;
-	float spriteInterpDummy;
+	unsigned int spriteTextureCount;
 };

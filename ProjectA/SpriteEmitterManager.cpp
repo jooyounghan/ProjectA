@@ -13,6 +13,8 @@
 #include "GPUInterpPropertyManager.h"
 #include "MacroUtilities.h"
 
+#include "stb_image_resize2.h"
+
 using namespace std;
 using namespace DirectX;
 using namespace D3D11;
@@ -21,7 +23,9 @@ SpriteEmitterManager::SpriteEmitterManager(
 	UINT maxEmitterCount,
 	UINT maxParticleCount
 )
-	: AEmitterManager("SpriteEmitterManager", static_cast<UINT>(EEmitterType::SpriteEmitter), maxEmitterCount, maxParticleCount)
+	: AEmitterManager("SpriteEmitterManager", static_cast<UINT>(EEmitterType::SpriteEmitter), maxEmitterCount, maxParticleCount),
+	m_spriteTextureWidth(MaxSpriteTextureWidth),
+	m_spriteTextureHeight(MaxSpriteTextureHeight)
 {
 	SSpriteInterpInformation spriteInterpInformation;
 	ZeroMem(spriteInterpInformation);
@@ -79,15 +83,18 @@ UINT SpriteEmitterManager::AddEmitter(DirectX::XMVECTOR position, DirectX::XMVEC
 		{
 			SelectSpriteIndexGPUInterpolater(emitterID, spriteIndexInterpolaterID, isSpriteIndexGPUInterpolaterOn, spriteIndexInterpolationMethod, spriteIndexInterpolater);
 		},
-		[this](UINT emitterID, UINT spriteIndexInterpolaterID, bool isSpriteIndexGPUInterpolaterOn, float maxLife, EInterpolationMethod spriteIndexInterpolationMethod, IInterpolater<1>* spriteIndexInterpolater)
+		[this](UINT emitterID, UINT spriteIndexInterpolaterID, bool isSpriteIndexGPUInterpolaterOn, float maxLife, UINT spriteTextureCount, EInterpolationMethod spriteIndexInterpolationMethod, IInterpolater<1>* spriteIndexInterpolater)
 		{
-			UpdateSpriteIndexGPUInterpolater(emitterID, spriteIndexInterpolaterID, isSpriteIndexGPUInterpolaterOn, maxLife, spriteIndexInterpolationMethod, spriteIndexInterpolater);
+			UpdateSpriteIndexGPUInterpolater(emitterID, spriteIndexInterpolaterID, isSpriteIndexGPUInterpolaterOn, maxLife, spriteTextureCount, spriteIndexInterpolationMethod, spriteIndexInterpolater);
+		},
+		[device, deviceContext, this](UINT emitterID, uint8_t* loadedBuffer, UINT width, UINT height, UINT channel)
+		{
+			UpdateSpriteTexture(emitterID, loadedBuffer, width, height, channel, device, deviceContext);
 		}
 	);
 
-	SpriteEmitter* emitter = spriteEmitter.get();
+	spriteEmitter->CreateProperty();
 	m_emitters.emplace_back(std::move(spriteEmitter));
-	emitter->Initialize(device, deviceContext);
 	return spriteEmitterID;
 
 }
@@ -244,6 +251,7 @@ void SpriteEmitterManager::UpdateSpriteIndexGPUInterpolater(
 	UINT spriteIndexInterpolaterID, 
 	bool isSpriteIndexGPUInterpolaterOn, 
 	float maxLife,
+	UINT spriteTextureCount,
 	EInterpolationMethod spriteIndexInterpolationMethod, 
 	IInterpolater<1>* spriteIndexInterpolater
 )
@@ -277,9 +285,66 @@ void SpriteEmitterManager::UpdateSpriteIndexGPUInterpolater(
 	}
 
 	m_emitterInterpInformationCPU[emitterID].maxLife = maxLife;
+	m_emitterInterpInformationCPU[emitterID].spriteTextureCount = spriteTextureCount;
 	m_emitterInterpInformationCPU[emitterID].spriteIndexInterpolaterID = spriteIndexInterpolaterID;
 	m_emitterInterpInformationCPU[emitterID].spriteIndexInterpolaterDegree = spriteIndexInterpolater->GetDegree();
 	AddInterpolaterInformChangedEmitterID(emitterID);
+}
+
+void SpriteEmitterManager::UpdateSpriteTexture(
+	UINT emitterID, 
+	uint8_t* loadedBuffer, 
+	UINT width, 
+	UINT height, 
+	UINT channel, 
+	ID3D11Device* device,
+	ID3D11DeviceContext* deviceContext
+)
+{
+	uint8_t* rescaledBuffer = new uint8_t[width * height * channel];
+
+	stbir_resize_uint8_linear(
+		loadedBuffer, width, height, width * channel,
+		rescaledBuffer,
+		static_cast<int>(m_spriteTextureWidth),
+		static_cast<int>(m_spriteTextureHeight),
+		m_spriteTextureWidth * 4,
+		stbir_pixel_layout::STBIR_RGBA
+	);
+
+	const UINT rowPitch = m_spriteTextureWidth * channel;
+	const UINT mipLevel = 0;
+	const UINT subresourceIndex = D3D11CalcSubresource(mipLevel, emitterID, 1);
+
+	D3D11_BOX box = { 0, 0, 0, m_spriteTextureWidth, m_spriteTextureHeight, 1 };
+
+	deviceContext->UpdateSubresource(
+		m_spriteTextureArray->GetTexture2D(),
+		subresourceIndex,
+		&box,
+		rescaledBuffer,
+		rowPitch,
+		0
+	);
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> updatedSpriteTextureSRV;
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+	ZeroMem(srvDesc);
+	srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+
+	srvDesc.Texture2DArray.MostDetailedMip = 0;
+	srvDesc.Texture2DArray.MipLevels = 1;
+	srvDesc.Texture2DArray.FirstArraySlice = emitterID;
+	srvDesc.Texture2DArray.ArraySize = 1;
+
+	HRESULT hr = device->CreateShaderResourceView(m_spriteTextureArray->GetTexture2D(), &srvDesc, updatedSpriteTextureSRV.GetAddressOf());
+	if (FAILED(hr)) { throw exception("CreateShaderResourceView For Sprite Texture Failed"); }
+
+	SpriteEmitter* spriteEmitter = reinterpret_cast<SpriteEmitter*>(GetEmitter(emitterID));
+	spriteEmitter->SetSpriteTextureSRV(move(updatedSpriteTextureSRV));
+
+	delete[] rescaledBuffer;
 }
 
 void SpriteEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
@@ -304,6 +369,13 @@ void SpriteEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceCont
 
 	m_spriteIndexD1Dim1PorpertyManager->Initialize(device, deviceContext);
 	m_spriteIndexD3Dim1PorpertyManager->Initialize(device, deviceContext);
+
+	m_spriteTextureArray = make_unique<Texture2DInstance<SRVOption>>(
+		m_spriteTextureWidth, m_spriteTextureHeight, 
+		m_maxEmitterCount, 1, NULL, NULL, 
+		D3D11_USAGE_DEFAULT, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, 1, 4
+	);
+	m_spriteTextureArray->InitializeByOption(device, deviceContext);
 }
 
 void SpriteEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
@@ -357,21 +429,25 @@ void SpriteEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceContex
 
 void SpriteEmitterManager::DrawParticles(ID3D11DeviceContext* deviceContext)
 {
-	ID3D11ShaderResourceView* patriclesSrvs[] = {
+	ID3D11ShaderResourceView* vertexSrvs[] = {
 		m_totalParticles->GetSRV(),
 		m_aliveIndexSet->GetSRV()
 	};
-	ID3D11ShaderResourceView* patriclesNullSrvs[] = { nullptr, nullptr };
+	ID3D11ShaderResourceView* vertexNullSrvs[] = { nullptr, nullptr };
+	ID3D11ShaderResourceView* pixelSrvs[] = { m_emitterInterpInformationGPU->GetSRV(), m_spriteTextureArray->GetSRV() };
+	ID3D11ShaderResourceView* pixelNullSrvs[] = { nullptr, nullptr };
 
 	UINT emitterTypeIndex = GetEmitterType();
 
 	const float blendColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	CEmitterManagerCommonData::GDrawParticlePSO[emitterTypeIndex]->ApplyPSO(deviceContext, blendColor, 0xFFFFFFFF);
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-	deviceContext->VSSetShaderResources(0, 2, patriclesSrvs);
+	deviceContext->VSSetShaderResources(0, 2, vertexSrvs);
+	deviceContext->PSSetShaderResources(0, 2, pixelSrvs);
 
 	deviceContext->DrawInstancedIndirect(m_drawIndirectBuffer->GetBuffer(), NULL);
 
-	deviceContext->VSSetShaderResources(0, 2, patriclesNullSrvs);
+	deviceContext->VSSetShaderResources(0, 2, vertexNullSrvs);
+	deviceContext->PSSetShaderResources(0, 2, pixelNullSrvs);
 	CEmitterManagerCommonData::GDrawParticlePSO[emitterTypeIndex]->RemovePSO(deviceContext);
 }

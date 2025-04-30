@@ -13,7 +13,7 @@ public:
 		const std::function<void(bool, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterSelectedHandler,
 		const std::function<void(bool, float, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterUpdatedHandler,
 		const std::function<void(bool, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterSelectedHandler,
-		const std::function<void(bool, float, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterUpdatedHandler
+		const std::function<void(bool, float, UINT, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterUpdatedHandler
 	);
 	~SpriteSpawnProperty() override = default;
 
@@ -23,7 +23,7 @@ protected:
 
 protected:
 	std::function<void(bool, EInterpolationMethod, IInterpolater<1>*)> m_onGpuSpriteIndexInterpolaterSelected;
-	std::function<void(bool, float, EInterpolationMethod, IInterpolater<1>*)> m_onGpuSpriteIndexInterpolaterUpdated;
+	std::function<void(bool, float, UINT, EInterpolationMethod, IInterpolater<1>*)> m_onGpuSpriteIndexInterpolaterUpdated;
 
 protected:
 	SControlPoint<2> m_spriteSizeInitControlPoint;
@@ -38,6 +38,9 @@ protected:
 protected:
 	std::unique_ptr<CControlPointGridView<2>> m_spriteSizeControlPointGridView;
 	std::unique_ptr<CInterpolaterSelectPlotter<2>> m_spriteSizeInterpolationSelectPlotter;
+
+protected:
+	UINT m_spriteTextureCount;
 
 protected:
 	SControlPoint<1> m_spriteIndexInitControlPoint;
@@ -59,7 +62,7 @@ private:
 
 protected:
 	virtual void AdjustControlPointsFromLife() override;
-
+	void AdjustControlPointsFromTextureCount();
 
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
@@ -68,7 +71,7 @@ protected:
 	virtual void UpdateImpl(ID3D11DeviceContext* deviceContext, float dt);
 
 protected:
-	virtual void DrawPropertyUIImpl() override;
+	virtual void DrawUIImpl() override;
 
 private:
 	void DrawSpriteSizeSetting();

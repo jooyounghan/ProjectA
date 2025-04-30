@@ -1,5 +1,6 @@
 #pragma once
-#include "IProperty.h"
+#include "IDrawable.h"
+#include "IUpdatable.h"
 #include "ISerializable.h"
 #include "EmitterForceProperty.h"
 
@@ -42,7 +43,7 @@ constexpr void SetNForceCount(UINT& nForceCount, ENForceKind forceKind, UINT new
 constexpr void IncrementNForceCount(UINT& nForceCount, ENForceKind forceKind);
 constexpr void DecrementNForceCount(UINT& nForceCount, ENForceKind forceKind);
 
-class ForceUpdateProperty : public IProperty, public ISerializable
+class ForceUpdateProperty : public IDrawable, public IUpdatable, public ISerializable
 {
 public:
 	ForceUpdateProperty(
@@ -64,10 +65,10 @@ public:
 	virtual void Update(ID3D11DeviceContext* deviceContext, float dt) override;
 
 public:
-	virtual void DrawPropertyUI() override;
+	virtual void DrawUI() override;
 
 protected:
-	virtual void DrawPropertyUIImpl() override;
+	virtual void DrawUIImpl() override;
 
 private:
 	void HandleSingleForce(

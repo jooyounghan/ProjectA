@@ -14,9 +14,9 @@ ParticleSpawnProperty::ParticleSpawnProperty(
 
 }
 
-void ParticleSpawnProperty::DrawPropertyUIImpl()
+void ParticleSpawnProperty::DrawUIImpl()
 {
-	ARuntimeSpawnProperty::DrawPropertyUIImpl();
+	ARuntimeSpawnProperty::DrawUIImpl();
 
 	SeparatorText("파티클 크기");
 	if (DragFloat2("파티클 X-Y 크기", &m_runtimeSpawnPropertyCPU.xyScale.x, 0.01f, 0.f, 10.f, "%.2f"))

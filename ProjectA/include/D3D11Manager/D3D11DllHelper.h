@@ -21,6 +21,7 @@ template class D3D11MANAGER_API Microsoft::WRL::ComPtr<ID3D11Texture2D>;
 template class D3D11MANAGER_API Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>;
 template class D3D11MANAGER_API Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>;
 template class D3D11MANAGER_API Microsoft::WRL::ComPtr<ID3D11RenderTargetView>;
+template class D3D11MANAGER_API Microsoft::WRL::ComPtr<ID3D11DepthStencilView>;
 
 template class D3D11MANAGER_API Microsoft::WRL::ComPtr<ID3DBlob>;
 template class D3D11MANAGER_API Microsoft::WRL::ComPtr<ID3D11ComputeShader>;

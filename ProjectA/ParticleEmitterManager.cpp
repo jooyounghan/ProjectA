@@ -74,9 +74,8 @@ UINT ParticleEmitterManager::AddEmitter(
 		}
 	);
 
-	ParticleEmitter* emitter = particleEmitter.get();
+	particleEmitter->CreateProperty();
 	m_emitters.emplace_back(std::move(particleEmitter));
-	emitter->Initialize(device, deviceContext);
 	return particleEmitterID;
 }
 

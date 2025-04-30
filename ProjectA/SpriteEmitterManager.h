@@ -1,7 +1,11 @@
 #pragma once
 #include "AEmitterManager.h"
+#include "Texture2DInstance.h"
+#include "SRVOption.h"
 
 #define MaxSpriteEmitterCount 250
+#define MaxSpriteTextureWidth 500
+#define MaxSpriteTextureHeight 100
 
 class SpriteEmitterManager : public AEmitterManager
 {
@@ -42,7 +46,7 @@ protected:
 protected:
 	std::unique_ptr<CGPUInterpPropertyManager<1, 2>> m_spriteIndexD1Dim1PorpertyManager;
 	std::unique_ptr<CGPUInterpPropertyManager<1, 4>> m_spriteIndexD3Dim1PorpertyManager;
-
+	
 protected:
 	virtual void UpdateColorGPUInterpolaterImpl(
 		UINT emitterID,
@@ -87,9 +91,26 @@ protected:
 		UINT spriteIndexInterpolaterID,
 		bool isSpriteIndexGPUInterpolaterOn,
 		float maxLife,
+		UINT spriteTextureCount,
 		EInterpolationMethod spriteIndexInterpolationMethod,
 		IInterpolater<1>* spriteIndexInterpolater
 	);
+
+protected:
+	void UpdateSpriteTexture(
+		UINT emitterID, 
+		uint8_t* loadedBuffer, 
+		UINT width, 
+		UINT height, 
+		UINT channel, 
+		ID3D11Device* device,
+		ID3D11DeviceContext* deviceContext
+	);
+
+protected:
+	UINT m_spriteTextureWidth;
+	UINT m_spriteTextureHeight;
+	std::unique_ptr<Texture2DInstance<D3D11::SRVOption>> m_spriteTextureArray;
 
 protected:
 	virtual void InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;

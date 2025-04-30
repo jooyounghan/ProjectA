@@ -1,5 +1,5 @@
 #pragma once
-#include "IProperty.h"
+#include "IDrawable.h"
 #include "ISerializable.h"
 #include "ShapedVectorProperty.h"
 
@@ -18,7 +18,7 @@ namespace D3D11
 	class CDynamicBuffer;
 }
 
-class ARuntimeSpawnProperty : public IProperty, public ISerializable
+class ARuntimeSpawnProperty : public IDrawable, public IUpdatable, public ISerializable
 {
 public:
 	ARuntimeSpawnProperty(
@@ -105,10 +105,10 @@ protected:
 	virtual void UpdateImpl(ID3D11DeviceContext* deviceContext, float dt);
 
 public:
-	virtual void DrawPropertyUI() override final;
+	virtual void DrawUI() override final;
 
 protected:
-	virtual void DrawPropertyUIImpl() override;
+	virtual void DrawUIImpl() override;
 
 public:
 	virtual void Serialize(std::ofstream& ofs) override;

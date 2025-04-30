@@ -9,7 +9,7 @@ using namespace DirectX;
 using namespace ImGui;
 
 CEmitterUpdateProperty::CEmitterUpdateProperty()
-	: IProperty(),
+	: IDrawable(),
 	m_currentTime(0.f),
 	m_loopTime(InitLife),
 	m_spawnCount(0.f),
@@ -104,15 +104,15 @@ void CEmitterUpdateProperty::Update(ID3D11DeviceContext* deviceContext, float dt
 	}
 }
 
-void CEmitterUpdateProperty::DrawPropertyUI()
+void CEmitterUpdateProperty::DrawUI()
 {
 	if (!ImGui::CollapsingHeader("이미터 업데이트 프로퍼티"))
 		return;
 
-	DrawPropertyUIImpl();
+	DrawUIImpl();
 }
 
-void CEmitterUpdateProperty::DrawPropertyUIImpl()
+void CEmitterUpdateProperty::DrawUIImpl()
 {
 	SeparatorText("이미터 루프 설정");
 	BeginDisabled(m_isLoopInfinity);

@@ -19,7 +19,7 @@ struct SpriteEmitterInterpInform
     uint spriteSizeInterpolaterDegree;
     uint spriteIndexInterpolaterID;
     uint spriteIndexInterpolaterDegree;
-    float spriteEmitterInterpInformDummy;
+    uint spriteTextureCount;
 };
 
 struct InterpPropertyHeader

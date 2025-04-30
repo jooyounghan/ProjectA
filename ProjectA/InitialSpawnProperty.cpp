@@ -58,15 +58,15 @@ void CInitialSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 
 ID3D11Buffer* CInitialSpawnProperty::GetInitialSpawnPropertyBuffer() const noexcept { return m_emitterSpawnPropertyGPU->GetBuffer(); }
 
-void CInitialSpawnProperty::DrawPropertyUI()
+void CInitialSpawnProperty::DrawUI()
 {
 	if (!ImGui::CollapsingHeader("이미터 생성 프로퍼티"))
 		return;
 
-	DrawPropertyUIImpl();
+	DrawUIImpl();
 }
 
-void CInitialSpawnProperty::DrawPropertyUIImpl()
+void CInitialSpawnProperty::DrawUIImpl()
 {
 	SeparatorText("파티클 정보 설정");
 	if (DragInt("초기 파티클 개수", (int*)&m_emitterSpawnPropertyCPU.initialParticleCount, 1.f, 0, 100000))

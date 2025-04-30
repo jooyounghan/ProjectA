@@ -1,5 +1,8 @@
 #include "ParticleDrawCommon.hlsli"
 
+StructuredBuffer<Particle> particles : register(t0);
+StructuredBuffer<uint> currentIndices : register(t1);
+
 #ifdef SPRITE_EMITTER
 SpriteVSOut main(uint vertexID : SV_VertexID)
 #else
@@ -20,6 +23,7 @@ ParticleVSOut main(uint vertexID : SV_VertexID)
 
 	#ifdef SPRITE_EMITTER
 	result.spriteIndex = currentPoint.spriteIndex;
+	result.emitterID = currentPoint.emitterID;
 	#endif
 
 	return result;

@@ -8,13 +8,44 @@ using namespace std;
 using namespace DirectX;
 using namespace ImGui;
 
+#define SelectedGPUSpriteSizeInterp()		\
+m_onGpuSpriteSizeInterpolaterSelected(		\
+	m_checkGPUSpriteSizeInterpolater, 		\
+	m_spriteSizeInterpolationMethod, 		\
+	m_spriteSizeInterpolater.get()			\
+)											\
+
+#define UpdateGPUSpriteSizeInterp()			\
+m_onGpuSpriteSizeInterpolaterUpdated(		\
+	m_checkGPUSpriteSizeInterpolater,		\
+	m_runtimeSpawnPropertyCPU.maxLife,		\
+	m_spriteSizeInterpolationMethod,		\
+	m_spriteSizeInterpolater.get()			\
+)											\
+
+#define SelectedGpuSpriteIndexInterp()		\
+m_onGpuSpriteIndexInterpolaterSelected(		\
+	m_checkGPUSpriteIndexInterpolater, 		\
+	m_spriteIndexInterpolationMethod, 		\
+	m_spriteIndexInterpolater.get()			\
+)											\
+
+#define UpdateGPUSpriteIndexInterp()		\
+m_onGpuSpriteIndexInterpolaterUpdated(		\
+m_checkGPUSpriteIndexInterpolater,			\
+m_runtimeSpawnPropertyCPU.maxLife,			\
+m_spriteTextureCount,						\
+m_spriteIndexInterpolationMethod,			\
+m_spriteIndexInterpolater.get()				\
+)											\
+
 SpriteSpawnProperty::SpriteSpawnProperty(
 	const std::function<void(bool, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterSelectedHandler,
 	const std::function<void(bool, float, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler,
 	const std::function<void(bool, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterSelectedHandler,
 	const std::function<void(bool, float, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterUpdatedHandler,
 	const std::function<void(bool, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterSelectedHandler,
-	const std::function<void(bool, float, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterUpdatedHandler
+	const std::function<void(bool, float, UINT, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterUpdatedHandler
 )
 	: 
 	ARuntimeSpawnProperty(gpuColorInterpolaterSelectedHandler, gpuColorInterpolaterUpdatedHandler),
@@ -26,6 +57,7 @@ SpriteSpawnProperty::SpriteSpawnProperty(
 	m_spriteSizeInitControlPoint{ 0.f, MakeArray(0.f, 0.f) },
 	m_spriteSizeFinalControlPoint{ InitLife, MakeArray(10.f, 10.f) },
 	m_spriteSizeInterpolationMethod(EInterpolationMethod::Linear),
+	m_spriteTextureCount(1),
 	m_checkGPUSpriteIndexInterpolater(false),
 	m_spriteIndexInitControlPoint{ 0.f, 0.f },
 	m_spriteIndexFinalControlPoint{ InitLife, 10.f },
@@ -34,6 +66,7 @@ SpriteSpawnProperty::SpriteSpawnProperty(
 	CreateSpriteSizeInterpolaterUI();
 	CreateSpriteIndexInterpolaterUI();
 	AdjustControlPointsFromLife();
+	AdjustControlPointsFromTextureCount();
 }
 
 void SpriteSpawnProperty::CreateSpriteSizeInterpolaterUI()
@@ -124,38 +157,48 @@ void SpriteSpawnProperty::AdjustControlPointsFromLife()
 	m_spriteIndexInterpolater->UpdateCoefficient();
 	m_spriteIndexInterpolationSelectPlotter->ResetXYScale();
 
-	m_onGpuSpriteSizeInterpolaterUpdated(
-		m_checkGPUSpriteSizeInterpolater, m_runtimeSpawnPropertyCPU.maxLife,
-		m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater.get()
-	);
-	m_onGpuSpriteIndexInterpolaterUpdated(
-		m_checkGPUSpriteIndexInterpolater, m_runtimeSpawnPropertyCPU.maxLife,
-		m_spriteIndexInterpolationMethod, m_spriteIndexInterpolater.get()
-	);
+	UpdateGPUSpriteSizeInterp();
+	UpdateGPUSpriteIndexInterp();
 }
 
+
+void SpriteSpawnProperty::AdjustControlPointsFromTextureCount()
+{
+	float maxSpriteTextureIndex = (m_spriteTextureCount - 1.f);
+	m_spriteIndexInitControlPoint.y[0] = min(m_spriteIndexInitControlPoint.y[0], float(maxSpriteTextureIndex));
+	m_spriteIndexFinalControlPoint.y[0] = min(m_spriteIndexFinalControlPoint.y[0], float(maxSpriteTextureIndex));
+	for (auto& spriteIndexControlPoint : m_spriteIndexControlPoints)
+	{
+		spriteIndexControlPoint.y[0] = min(spriteIndexControlPoint.y[0], float(maxSpriteTextureIndex));
+	}
+
+	m_spriteIndexInterpolater->UpdateCoefficient();
+	m_spriteIndexInterpolationSelectPlotter->ResetXYScale();
+
+	UpdateGPUSpriteIndexInterp();
+}
 
 void SpriteSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 	ARuntimeSpawnProperty::Initialize(device, deviceContext);
 
-	m_onGpuSpriteSizeInterpolaterSelected(
-		m_checkGPUSpriteSizeInterpolater, m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater.get()
+	m_spriteSizeInterpolationSelectPlotter->CreateInterpolater(
+		m_spriteSizeInterpolationMethod,
+		m_spriteSizeInterpolater
 	);
+	m_spriteSizeInterpolationSelectPlotter->ResetXYScale();
 
-	m_onGpuSpriteSizeInterpolaterUpdated(
-		m_checkGPUSpriteSizeInterpolater, m_runtimeSpawnPropertyCPU.maxLife, 
-		m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater.get()
-	);
+	SelectedGPUSpriteSizeInterp();
+	UpdateGPUSpriteSizeInterp();
 
-	m_onGpuSpriteIndexInterpolaterSelected(
-		m_checkGPUSpriteIndexInterpolater, m_spriteIndexInterpolationMethod, m_spriteIndexInterpolater.get()
+	m_spriteIndexInterpolationSelectPlotter->CreateInterpolater(
+		m_spriteIndexInterpolationMethod,
+		m_spriteIndexInterpolater
 	);
+	m_spriteIndexInterpolationSelectPlotter->ResetXYScale();
 
-	m_onGpuSpriteIndexInterpolaterUpdated(
-		m_checkGPUSpriteIndexInterpolater, m_runtimeSpawnPropertyCPU.maxLife,
-		m_spriteIndexInterpolationMethod, m_spriteIndexInterpolater.get()
-	);
+	SelectedGpuSpriteIndexInterp();
+	UpdateGPUSpriteIndexInterp();
 }
 
 void SpriteSpawnProperty::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
@@ -177,9 +220,9 @@ void SpriteSpawnProperty::UpdateImpl(ID3D11DeviceContext* deviceContext, float d
 	}
 }
 
-void SpriteSpawnProperty::DrawPropertyUIImpl()
+void SpriteSpawnProperty::DrawUIImpl()
 {
-	ARuntimeSpawnProperty::DrawPropertyUIImpl();
+	ARuntimeSpawnProperty::DrawUIImpl();
 	DrawSpriteSizeSetting();
 	DrawSpriteIndexSetting();
 }
@@ -197,10 +240,7 @@ void SpriteSpawnProperty::DrawSpriteSizeSetting()
 			m_spriteSizeInterpolater
 		);
 
-		m_onGpuSpriteSizeInterpolaterUpdated(
-			m_checkGPUSpriteSizeInterpolater, m_runtimeSpawnPropertyCPU.maxLife,
-			m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater.get()
-		);
+		UpdateGPUSpriteSizeInterp();
 	}
 
 	if (Checkbox("GPU 기반 스프라이트 크기 보간", &m_checkGPUSpriteSizeInterpolater))
@@ -210,14 +250,8 @@ void SpriteSpawnProperty::DrawSpriteSizeSetting()
 			m_spriteSizeInterpolater
 		);
 
-		m_onGpuSpriteSizeInterpolaterSelected(
-			m_checkGPUSpriteSizeInterpolater, m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater.get()
-		);
-
-		m_onGpuSpriteSizeInterpolaterUpdated(
-			m_checkGPUSpriteSizeInterpolater, m_runtimeSpawnPropertyCPU.maxLife,
-			m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater.get()
-		);
+		SelectedGPUSpriteSizeInterp();
+		UpdateGPUSpriteSizeInterp();
 	}
 
 	if (m_spriteSizeControlPointGridView->DrawControlPointGridView())
@@ -225,10 +259,7 @@ void SpriteSpawnProperty::DrawSpriteSizeSetting()
 		m_spriteSizeInterpolater->UpdateCoefficient();
 		m_spriteSizeInterpolationSelectPlotter->ResetXYScale();
 
-		m_onGpuSpriteSizeInterpolaterUpdated(
-			m_checkGPUSpriteSizeInterpolater, m_runtimeSpawnPropertyCPU.maxLife,
-			m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater.get()
-		);
+		UpdateGPUSpriteSizeInterp();
 	}
 
 	m_spriteSizeInterpolationSelectPlotter->ViewInterpolatedPlots();
@@ -237,6 +268,12 @@ void SpriteSpawnProperty::DrawSpriteSizeSetting()
 void SpriteSpawnProperty::DrawSpriteIndexSetting()
 {
 	SeparatorText("스프라이트 텍스쳐 설정");
+	if (DragInt("텍스쳐 개수", (int*)&m_spriteTextureCount, 1.f, 0, 100, "%d"))
+	{
+		AdjustControlPointsFromTextureCount();
+		UpdateGPUSpriteIndexInterp();
+	}
+
 	EInterpolationMethod currnetSpriteIndexInterpolateKind = m_spriteIndexInterpolationMethod;
 	m_spriteIndexInterpolationSelectPlotter->SelectEnums(currnetSpriteIndexInterpolateKind);
 	if (m_spriteIndexInterpolationMethod != currnetSpriteIndexInterpolateKind)
@@ -247,10 +284,7 @@ void SpriteSpawnProperty::DrawSpriteIndexSetting()
 			m_spriteIndexInterpolater
 		);
 
-		m_onGpuSpriteIndexInterpolaterUpdated(
-			m_checkGPUSpriteIndexInterpolater, m_runtimeSpawnPropertyCPU.maxLife,
-			m_spriteIndexInterpolationMethod, m_spriteIndexInterpolater.get()
-		);
+		UpdateGPUSpriteIndexInterp();
 	}
 
 	if (Checkbox("GPU 기반 스프라이트 텍스쳐 인덱스 보간", &m_checkGPUSpriteIndexInterpolater))
@@ -260,14 +294,8 @@ void SpriteSpawnProperty::DrawSpriteIndexSetting()
 			m_spriteIndexInterpolater
 		);
 
-		m_onGpuSpriteIndexInterpolaterSelected(
-			m_checkGPUSpriteIndexInterpolater, m_spriteIndexInterpolationMethod, m_spriteIndexInterpolater.get()
-		);
-
-		m_onGpuSpriteIndexInterpolaterUpdated(
-			m_checkGPUSpriteIndexInterpolater, m_runtimeSpawnPropertyCPU.maxLife,
-			m_spriteIndexInterpolationMethod, m_spriteIndexInterpolater.get()
-		);
+		SelectedGpuSpriteIndexInterp();
+		UpdateGPUSpriteIndexInterp();
 	}
 
 	if (m_spriteIndexControlPointGridView->DrawControlPointGridView())
@@ -275,10 +303,7 @@ void SpriteSpawnProperty::DrawSpriteIndexSetting()
 		m_spriteIndexInterpolater->UpdateCoefficient();
 		m_spriteIndexInterpolationSelectPlotter->ResetXYScale();
 
-		m_onGpuSpriteIndexInterpolaterUpdated(
-			m_checkGPUSpriteIndexInterpolater, m_runtimeSpawnPropertyCPU.maxLife,
-			m_spriteIndexInterpolationMethod, m_spriteIndexInterpolater.get()
-		);
+		UpdateGPUSpriteIndexInterp();
 	}
 
 	m_spriteIndexInterpolationSelectPlotter->ViewInterpolatedPlots();
@@ -294,6 +319,7 @@ void SpriteSpawnProperty::Serialize(std::ofstream& ofs)
 	SerializeHelper::SerializeElement<EInterpolationMethod>(ofs, m_spriteSizeInterpolationMethod);
 	SerializeHelper::SerializeElement<bool>(ofs, m_checkGPUSpriteSizeInterpolater);
 
+	SerializeHelper::SerializeElement<UINT>(ofs, m_spriteTextureCount);
 	SerializeHelper::SerializeElement<SControlPoint<1>>(ofs, m_spriteIndexInitControlPoint);
 	SerializeHelper::SerializeElement<SControlPoint<1>>(ofs, m_spriteIndexFinalControlPoint);
 	SerializeHelper::SerializeVector<SControlPoint<1>>(ofs, m_spriteIndexControlPoints);
@@ -311,39 +337,12 @@ void SpriteSpawnProperty::Deserialize(std::ifstream& ifs)
 	m_spriteSizeInterpolationMethod = SerializeHelper::DeserializeElement<EInterpolationMethod>(ifs);
 	m_checkGPUSpriteSizeInterpolater = SerializeHelper::DeserializeElement<bool>(ifs);
 
+	m_spriteTextureCount = SerializeHelper::DeserializeElement<UINT>(ifs);
 	m_spriteIndexInitControlPoint = SerializeHelper::DeserializeElement<SControlPoint<1>>(ifs);
 	m_spriteIndexFinalControlPoint = SerializeHelper::DeserializeElement<SControlPoint<1>>(ifs);
 	m_spriteIndexControlPoints = SerializeHelper::DeserializeVector<SControlPoint<1>>(ifs);
 	m_spriteIndexInterpolationMethod = SerializeHelper::DeserializeElement<EInterpolationMethod>(ifs);
 	m_checkGPUSpriteIndexInterpolater = SerializeHelper::DeserializeElement<bool>(ifs);
 
-	m_spriteSizeInterpolationSelectPlotter->CreateInterpolater(
-		m_spriteSizeInterpolationMethod,
-		m_spriteSizeInterpolater
-	);
-	m_spriteSizeInterpolationSelectPlotter->ResetXYScale();
 
-	m_onGpuSpriteSizeInterpolaterSelected(
-		m_checkGPUSpriteSizeInterpolater, m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater.get()
-	);
-
-	m_onGpuSpriteSizeInterpolaterUpdated(
-		m_checkGPUSpriteSizeInterpolater, m_runtimeSpawnPropertyCPU.maxLife,
-		m_spriteSizeInterpolationMethod, m_spriteSizeInterpolater.get()
-	);
-
-	m_spriteIndexInterpolationSelectPlotter->CreateInterpolater(
-		m_spriteIndexInterpolationMethod,
-		m_spriteIndexInterpolater
-	);
-	m_spriteIndexInterpolationSelectPlotter->ResetXYScale();
-
-	m_onGpuSpriteIndexInterpolaterSelected(
-		m_checkGPUSpriteIndexInterpolater, m_spriteIndexInterpolationMethod, m_spriteIndexInterpolater.get()
-	);
-
-	m_onGpuSpriteIndexInterpolaterUpdated(
-		m_checkGPUSpriteIndexInterpolater, m_runtimeSpawnPropertyCPU.maxLife,
-		m_spriteIndexInterpolationMethod, m_spriteIndexInterpolater.get()
-	);
 }

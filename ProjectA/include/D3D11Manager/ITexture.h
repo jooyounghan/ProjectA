@@ -15,7 +15,7 @@ class ITexture2D
 {
 public:
 	virtual ID3D11Texture2D* const GetTexture2D() const = 0;
-	virtual D3D11_TEXTURE2D_DESC* const GetTexture2DDesc() const = 0;
+	virtual D3D11_TEXTURE2D_DESC* const GetTexture2DDesc() = 0;
 };
 
 class ITextureOption

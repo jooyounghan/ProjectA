@@ -11,6 +11,7 @@
 using namespace std;
 using namespace DirectX;
 using namespace D3D11;
+using namespace ImGui;
 
 AEmitter::AEmitter(
 	UINT emitterType,
@@ -51,8 +52,6 @@ void AEmitter::SetAngle(const XMVECTOR& angle) noexcept
 
 void AEmitter::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
-	CreateProperty();
-
 	m_emitterPropertyGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_emitterPropertyCPU));
 	m_emitterPropertyGPU->InitializeBuffer(device);
 
@@ -102,4 +101,32 @@ void AEmitter::Deserialize(std::ifstream& ifs)
 	m_forceUpdateProperty->Deserialize(ifs);
 
 	m_isEmitterWorldTransformChanged = true;
+}
+
+void AEmitter::DrawUI()
+{
+	DrawUIImpl();
+
+	m_initialSpawnProperty->DrawUI();
+	m_emitterUpdateProperty->DrawUI();
+	m_runtimeSpawnProperty->DrawUI();
+	m_forceUpdateProperty->DrawUI();
+}
+
+void AEmitter::DrawUIImpl()
+{
+	XMVECTOR position = m_position;
+	XMVECTOR angle = m_angle;
+
+	if (DragFloat3("위치", position.m128_f32, 0.1f, -1000.f, 1000.f, "%.1f"))
+	{
+		SetPosition(position);
+	}
+
+	angle = XMVectorScale(angle, 180.f / XM_PI);
+	if (DragFloat3("각도", angle.m128_f32, 0.1f, -360, 360.f, " % .1f"))
+	{
+		angle = XMVectorScale(angle, XM_PI / 180.f);
+		SetAngle(angle);
+	}
 }

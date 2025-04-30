@@ -11,6 +11,7 @@ void main(point ParticleVSOut input[1], uint primID : SV_PrimitiveID, inout Tria
     SpriteVSOut inputData = input[0];
     SpriteGSOut element;
     element.spriteIndex = inputData.spriteIndex;
+	element.emitterID = inputData.emitterID;
 #else
     ParticleVSOut inputData = input[0];
     ParticleGSOut element;

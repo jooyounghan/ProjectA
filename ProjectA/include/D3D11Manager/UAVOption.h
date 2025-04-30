@@ -1,27 +1,35 @@
 #pragma once
+#ifndef UAVOPTION_H
+#define UAVOPTION_H
+
+#include "D3D11DllHelper.h"
 #include "ITexture.h"
 
-class UAVOption : public ITextureOption
+namespace D3D11
 {
-public:
-	UAVOption() = default;
-
-protected:
-	constexpr static D3D11_BIND_FLAG GetBindFlag()
+	class D3D11MANAGER_API UAVOption : public ITextureOption
 	{
-		return D3D11_BIND_UNORDERED_ACCESS;
-	}
+	public:
+		UAVOption() = default;
 
-protected:
-	virtual void InitializeByOption(
-		ID3D11Device* device, 
-		ID3D11DeviceContext* deviceContext,
-		ID3D11Resource* resource
-	) override;
+	protected:
+		constexpr static D3D11_BIND_FLAG GetBindFlag()
+		{
+			return D3D11_BIND_UNORDERED_ACCESS;
+		}
 
-protected:
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> m_uav;
+	protected:
+		virtual void InitializeByOption(
+			ID3D11Device* device,
+			ID3D11DeviceContext* deviceContext,
+			ID3D11Resource* resource
+		) override;
 
-public:
-	ID3D11UnorderedAccessView* GetUAV() const { return m_uav.Get(); }
-};
+	protected:
+		Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> m_uav;
+
+	public:
+		ID3D11UnorderedAccessView* GetUAV() const { return m_uav.Get(); }
+	};
+}
+#endif
