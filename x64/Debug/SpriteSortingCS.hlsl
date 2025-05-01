@@ -2,13 +2,6 @@
 
 #define RadixBinCount (1 << RadixBitCount)
 
-struct PrefixSumStatus
-{
-    uint aggregate;
-    uint statusFlag; /* X : 0, A : 1, P : 2*/
-    uint exclusivePrefix;
-    uint inclusivePrefix;
-};
 
 cbuffer EmitterManagerProperties : register(b2)
 {
@@ -23,14 +16,14 @@ cbuffer indirectStagingBuffer : register(b3)
     uint3 indirectStagingDummy;
 };
 
+
 RWStructuredBuffer<SpriteAliveIndex> aliveIndexSet : register(u0);
 RWStructuredBuffer<SpriteAliveIndex> sortedAliveIndexSet : register(u1);
 RWStructuredBuffer<PrefixSumStatus> prefixSumStatus : register(u2);
 
 groupshared uint localHistogram[RadixBinCount];
-groupshared uint localPrefixSum[RadixBinCount];
 
-
+// LocalThreadCount (128)로 RadixBinCount( 2^8 - 1개) 를 관리하도록
 void LocalUpSweep(uint groupID, uint groupThreadID)
 {
     for (uint stride = 1; stride < RadixBinCount; stride *= 2)
@@ -38,14 +31,14 @@ void LocalUpSweep(uint groupID, uint groupThreadID)
         uint index = (groupThreadID + 1) * stride * 2 - 1;
         if (index < RadixBinCount)
         {
-            localPrefixSum[index] += localHistogram[index - stride];
+            localHistogram[index] += localHistogram[index - stride];
         }
         GroupMemoryBarrierWithGroupSync();
     }
 
     if (groupThreadID == 0)
     {
-        int aggregate = localPrefixSum[RadixBinCount - 1];
+        int aggregate = localHistogram[RadixBinCount - 1];
 
         prefixSumStatus[groupID].aggregate = aggregate;
 
@@ -99,7 +92,7 @@ void LocalDownSweep(uint groupID, uint groupThreadID)
 {
     if (groupThreadID == (RadixBinCount - 1))
     {
-        localPrefixSum[RadixBinCount - 1] = 0;
+        localHistogram[RadixBinCount - 1] = 0;
     }
     GroupMemoryBarrierWithGroupSync();
 
@@ -108,20 +101,20 @@ void LocalDownSweep(uint groupID, uint groupThreadID)
         uint index = (groupThreadID + 1) * stride * 2 - 1;
         if (index < RadixBinCount)
         {
-            uint t = localPrefixSum[index - stride];
-            localPrefixSum[index - stride] = localPrefixSum[index];
-            localPrefixSum[index] += t;
+            uint t = localHistogram[index - stride];
+            localHistogram[index - stride] = localHistogram[index];
+            localHistogram[index] += t;
         }
         GroupMemoryBarrierWithGroupSync();
     }
 
     if (groupThreadID < (RadixBinCount - 1))
     {
-        localPrefixSum[groupThreadID] = localPrefixSum[groupThreadID] + prefixSumStatus[groupID].exclusivePrefix;
+        localHistogram[groupThreadID] = localHistogram[groupThreadID] + prefixSumStatus[groupID].exclusivePrefix;
     }
     else
     {
-        localPrefixSum[groupThreadID] = prefixSumStatus[groupID].inclusivePrefix;
+        localHistogram[groupThreadID] = prefixSumStatus[groupID].inclusivePrefix;
     }
 }
 
@@ -130,13 +123,17 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
 {
     uint groupID = Gid.x;
     uint groupThreadID = GTid.x;
-    uint threadID = DTid.x;
-
-    bool isValid = (threadID < emitterTotalParticleCount);
-
+    uint threadID = DTid.x;    
+    
+    if (threadID < RadixBinCount)
+    {
+        localHistogram[threadID] = 0;
+    }
+    GroupMemoryBarrierWithGroupSync();
+    
     uint depthRadix = 0;
     SpriteAliveIndex spriteAliveIndex;
-
+    bool isValid = (threadID < emitterTotalParticleCount);
     if (isValid)
     {
         // Set Histogram
@@ -154,8 +151,7 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
     if (isValid)
     {
         uint scatterIdx;
-        InterlockedAdd(localPrefixSum[depthRadix], 1, scatterIdx);
+        InterlockedAdd(localHistogram[depthRadix], 1, scatterIdx);
         sortedAliveIndexSet[scatterIdx] = spriteAliveIndex;
     }
-
 }

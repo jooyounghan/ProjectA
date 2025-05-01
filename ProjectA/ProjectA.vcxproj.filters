@@ -120,6 +120,9 @@
     <Filter Include="Shader\Particle\ExecuteEmitter\Initalize\Interpolater">
       <UniqueIdentifier>{575a8112-5dc0-44d3-8b09-80b5fce09974}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader\Particle\ExecuteEmitter\Sorting">
+      <UniqueIdentifier>{9f884f2d-8368-4330-8173-1369bf548dd3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -377,6 +380,9 @@
     </FxCompile>
     <FxCompile Include="ComputeIndirectArgsCS.hlsl">
       <Filter>Shader\Particle\ExecuteEmitter\Indirect</Filter>
+    </FxCompile>
+    <FxCompile Include="SpriteSortingCS.hlsl">
+      <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

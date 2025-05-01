@@ -142,7 +142,6 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 	SpriteAliveIndex spriteAliveIndex;
 	spriteAliveIndex.index = revivedIndex;
 	spriteAliveIndex.depth = asuint(1);
-	spriteAliveIndex.dummy = uint2(0, 0);
 	aliveIndexSet.Append(spriteAliveIndex);
 #else
     aliveIndexSet.Append(revivedIndex);
