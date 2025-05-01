@@ -10,7 +10,17 @@
 struct SSpriteAliveIndex
 {
 	UINT index;
-	float depth;
+	UINT depth;
+	UINT dummy1;
+	UINT dummy2;
+};
+
+struct SPrefixDesciptor
+{
+	UINT aggregate;
+	UINT statusFlag; /* X : 0, A : 1, P : 2*/
+	UINT exclusivePrefix;
+	UINT inclusivePrefix;
 };
 
 class SpriteEmitterManager : public AEmitterManager
@@ -33,6 +43,11 @@ protected:
 
 protected:
 	virtual void ReclaimEmitterID(UINT emitterID) noexcept override;
+
+protected:
+	UINT& m_sortBitOffset;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_prefixSumStatus;
+	std::unique_ptr<D3D11::CAppendBuffer> m_sortedAliveIndexSet;
 
 protected:
 	virtual void CreateAliveIndexSet(ID3D11Device* device) override;

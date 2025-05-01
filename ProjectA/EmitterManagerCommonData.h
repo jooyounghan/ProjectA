@@ -28,12 +28,12 @@ class CEmitterManagerCommonData
 public:
 	static void Intialize(ID3D11Device* device);
 
-#pragma region Particle Initialize 관련 CS
+#pragma region 입자 초기화 관련 CS
 public:
 	static std::unique_ptr<D3D11::CComputeShader> GInitializeParticleSetCS[EmitterTypeCount];
 #pragma endregion
 
-#pragma region Particle 소싱 관련 CS
+#pragma region 입자 방출 관련 CS
 public:
 	static std::unique_ptr<D3D11::CComputeShader> GParticleInitialSourceCS[EmitterTypeCount];
 	static std::unique_ptr<D3D11::CComputeShader> GParticleRuntimeSourceCS[EmitterTypeCount];
@@ -45,12 +45,17 @@ public:
 #pragma endregion
 
 
-#pragma region Particle 시뮬레이션 관련 CS
+#pragma region 입자 시뮬레이션 관련 CS
 public:
 	static std::unique_ptr<D3D11::CComputeShader> GCaculateParticleForceCS[EmitterTypeCount];
 #pragma endregion
 
-#pragma region Particle 그리기 관련 PSO
+#pragma region 스프라이트 소팅 관련 CS
+public:
+	static std::unique_ptr<D3D11::CComputeShader> GSpriteSortingCS;
+#pragma endregion
+
+#pragma region 입자 그리기 관련 PSO
 public:
 	static std::unique_ptr<D3D11::CVertexShader> GParticleDrawVS[EmitterTypeCount];
 	static std::unique_ptr<D3D11::CGeometryShader> GParticleDrawGS[EmitterTypeCount];
@@ -58,7 +63,7 @@ public:
 	static std::unique_ptr<D3D11::CGraphicsPSOObject> GDrawParticlePSO[EmitterTypeCount];
 #pragma endregion
 
-#pragma region Emitter 그리기 PSO
+#pragma region 이미터 그리기 PSO
 public:
 	static const std::vector<DirectX::XMFLOAT3> GEmitterBoxPositions;
 	static const std::vector<UINT> GEmitterBoxIndices;

@@ -30,6 +30,8 @@ unique_ptr<CComputeShader> CEmitterManagerCommonData::GParticleInitialSourceCS[E
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GParticleRuntimeSourceCS[EmitterTypeCount];
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GCalcualteIndirectArgCS = make_unique<CComputeShader>();
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GCaculateParticleForceCS[EmitterTypeCount];
+unique_ptr<CComputeShader> CEmitterManagerCommonData::GSpriteSortingCS;
+
 
 unique_ptr<CVertexShader> CEmitterManagerCommonData::GParticleDrawVS[EmitterTypeCount];
 unique_ptr<CGeometryShader> CEmitterManagerCommonData::GParticleDrawGS[EmitterTypeCount];;
@@ -79,15 +81,22 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 	};
 #pragma endregion
 
-#pragma region Particle Initialize 관련 CS
+#pragma region 입자 초기화 관련 CS
 	for (size_t idx = 0; idx < EmitterTypeCount; ++idx)
 	{
 		GInitializeParticleSetCS[idx] = make_unique<CComputeShader>();
-		GInitializeParticleSetCS[idx]->CreateShader(L"./InitializeParticleSetCS.hlsl", emitterTypeMacros[idx], "main", "cs_5_0", device);
+		try
+		{
+			GInitializeParticleSetCS[idx]->CreateShader(L"./InitializeParticleSetCS.hlsl", emitterTypeMacros[idx], "main", "cs_5_0", device);
+		}
+		catch (exception e)
+		{
+			bool test = true;
+		}
 	}
 #pragma endregion
 
-#pragma region Particle 소싱 관련 CS
+#pragma region 입자 방출 관련 CS
 	for (size_t idx = 0; idx < EmitterTypeCount; ++idx)
 	{
 		D3D_SHADER_MACRO emitterSourceMacro[3];
@@ -107,15 +116,20 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 	GCalcualteIndirectArgCS->CreateShader(L"./ComputeIndirectArgsCS.hlsl", nullptr, "main", "cs_5_0", device);
 #pragma endregion
 
-#pragma region Particle 시뮬레이션 관련 CS
+#pragma region 입자 시뮬레이션 관련 CS
 	for (size_t idx = 0; idx < EmitterTypeCount; ++idx)
 	{
 		GCaculateParticleForceCS[idx] = make_unique<CComputeShader>();
-		GCaculateParticleForceCS[idx]->CreateShader(L"./CalculateParticleForceCS.hlsl", nullptr, "main", "cs_5_0", device);
+		GCaculateParticleForceCS[idx]->CreateShader(L"./CalculateParticleForceCS.hlsl", emitterTypeMacros[idx], "main", "cs_5_0", device);
 	}
 #pragma endregion
 
-#pragma region Particle 그리기 관련 PSO
+#pragma region 스프라이트 소팅 관련 CS
+	GSpriteSortingCS = make_unique<CComputeShader>();
+	GSpriteSortingCS->CreateShader(L"./SpriteSortingCS.hlsl", nullptr, "main", "cs_5_0", device);
+#pragma endregion
+
+#pragma region 입자 그리기 관련 PSO
 	for (size_t idx = 0; idx < EmitterTypeCount; ++idx)
 	{
 		GParticleDrawVS[idx] = make_unique<CVertexShader>(0);
@@ -146,7 +160,7 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 	}
 #pragma endregion
 
-#pragma region Emitter 그리기 PSO
+#pragma region 이미터 그리기 PSO
 	GEmitterDrawVS = make_unique<CVertexShader>(5);
 
 	for (size_t idx = 0; idx < EmitterTypeCount; ++idx)

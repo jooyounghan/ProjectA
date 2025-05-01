@@ -1,3 +1,4 @@
+#include "ParticleCommon.hlsli"
 #include "ParticleDrawCommon.hlsli"
 
 StructuredBuffer<Particle> particles : register(t0);

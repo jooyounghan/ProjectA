@@ -107,10 +107,11 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
             
             #ifdef SPRITE_EMITTER
             float4 viewProjPos = mul(float4(currentParticle.worldPos, 1.f), viewProjMatrix);
-            float depth = (viewProjPos.z / viewProjPos.w);
+            float depth = 1.f - (viewProjPos.z / viewProjPos.w);
             SpriteAliveIndex spriteAliveIndex;
             spriteAliveIndex.index = threadID;
-            spriteAliveIndex.depth = depth;
+            spriteAliveIndex.depth = asuint(depth);
+            spriteAliveIndex.dummy = uint2(0, 0);
             aliveIndexSet.Append(spriteAliveIndex);
             #else
             aliveIndexSet.Append(threadID);

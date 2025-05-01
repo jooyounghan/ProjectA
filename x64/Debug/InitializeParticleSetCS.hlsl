@@ -16,7 +16,12 @@ StructuredBuffer<D3Dim1Prop> d3Dim1Props : register(t6);
 
 RWStructuredBuffer<Particle> totalParticles : register(u0);
 AppendStructuredBuffer<uint> deathIndexSet : register(u1);
+
+#ifdef SPRITE_EMITTER
+AppendStructuredBuffer<SpriteAliveIndex> aliveIndexSet : register(u2);
+#else
 AppendStructuredBuffer<uint> aliveIndexSet : register(u2);
+#endif
 
 cbuffer EmitterManagerProperties : register(b2)
 {
@@ -42,9 +47,7 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
             deathIndexSet.Append(threadID);
         }
 		else
-		{
-            aliveIndexSet.Append(threadID);
-            
+		{            
             // N차 이상 보간 일 경우, 색상에 대한 보간 ======================================================================
             const uint emitterID = currentParticle.emitterID;
 
@@ -101,7 +104,18 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
             currentParticle.velocity += currentParticle.accelerate * dt;
             currentParticle.worldPos += currentParticle.velocity * dt;
             // ==============================================================================================================
-
+            
+            #ifdef SPRITE_EMITTER
+            float4 viewProjPos = mul(float4(currentParticle.worldPos, 1.f), viewProjMatrix);
+            float depth = 1.f - (viewProjPos.z / viewProjPos.w);
+            SpriteAliveIndex spriteAliveIndex;
+            spriteAliveIndex.index = threadID;
+            spriteAliveIndex.depth = asuint(depth);
+            aliveIndexSet.Append(spriteAliveIndex);
+            #else
+            aliveIndexSet.Append(threadID);
+            #endif
+            
             totalParticles[threadID] = currentParticle;
         }		
     }

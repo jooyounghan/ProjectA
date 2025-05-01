@@ -1,7 +1,15 @@
+#include "ParticleCommon.hlsli"
 #include "ParticleDrawCommon.hlsli"
 
 StructuredBuffer<Particle> particles : register(t0);
+
+#ifdef SPRITE_EMITTER
+StructuredBuffer<SpriteAliveIndex> currentIndices : register(t1);
+#else
 StructuredBuffer<uint> currentIndices : register(t1);
+#endif
+
+
 
 #ifdef SPRITE_EMITTER
 SpriteVSOut main(uint vertexID : SV_VertexID)
@@ -15,8 +23,13 @@ ParticleVSOut main(uint vertexID : SV_VertexID)
 	ParticleVSOut result;
 	#endif
 
-    uint particleIndex = currentIndices[vertexID];
-    Particle currentPoint = particles[particleIndex];
+#ifdef SPRITE_EMITTER
+    SpriteAliveIndex spriteAliveIndex = currentIndices[vertexID];
+	uint index = spriteAliveIndex.index;
+#else
+    uint index = currentIndices[vertexID];
+#endif
+    Particle currentPoint = particles[index];
     result.viewPos = mul(float4(currentPoint.worldPos, 1.f), viewProjMatrix);
 	result.color = currentPoint.color;
 	result.xyScale = float2(currentPoint.xyScale);

@@ -1,6 +1,5 @@
+#include "ParticleCommon.hlsli"
 #include "CaculateForceCommon.hlsli"
-
-#define EPSILON 1e-3f
 
 cbuffer indirectStagingBuffer : register(b2)
 {

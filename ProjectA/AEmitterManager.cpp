@@ -29,13 +29,13 @@ using namespace DirectX;
 using namespace D3D11;
 
 AEmitterManager::AEmitterManager(
-	const string& managerName, 
-	UINT emitterType,
+	const string& managerName,
 	UINT maxEmitterCount,
 	UINT maxParticleCount
 )
 	: m_managerName(managerName), m_maxEmitterCount(maxEmitterCount),
-	m_emitterManagerPropertyCPU{ maxParticleCount, emitterType, 0, 0 }
+	m_emitterManagerPropertyCPU{ maxParticleCount, 0, 0, 0 },
+	m_isEmitterManagerPropertyChanged(false)
 {
 	for (UINT idx = 0; idx < m_maxEmitterCount; ++idx)
 	{
@@ -341,6 +341,13 @@ void AEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* 
 
 void AEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
 {
+	if (m_isEmitterManagerPropertyChanged)
+	{
+		m_emitterManagerPropertyGPU->Stage(deviceContext);
+		m_emitterManagerPropertyGPU->Upload(deviceContext);
+		m_isEmitterManagerPropertyChanged = false;
+	}
+
 	UINT worldTransformChangedCount = static_cast<UINT>(m_worldTransformChangedEmitterIDs.size());
 	if (worldTransformChangedCount > 0)
 	{

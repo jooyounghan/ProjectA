@@ -1,10 +1,10 @@
+#include "ParticleCommon.hlsli"
 #include "SourceCommon.hlsli"
 
 cbuffer EmitterManagerProperties : register(b2)
 {
     uint particleMaxCount;
-    uint emitterType;
-    uint2 emitterPropertyDummy;
+    uint3 emitterPropertyDummy;
 };
 
 cbuffer EmitterProperties : register(b3)
@@ -141,7 +141,8 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 #ifdef SPRITE_EMITTER
 	SpriteAliveIndex spriteAliveIndex;
 	spriteAliveIndex.index = revivedIndex;
-	spriteAliveIndex.depth = 1.f;
+	spriteAliveIndex.depth = asuint(1);
+	spriteAliveIndex.dummy = uint2(0, 0);
 	aliveIndexSet.Append(spriteAliveIndex);
 #else
     aliveIndexSet.Append(revivedIndex);

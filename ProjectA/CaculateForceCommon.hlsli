@@ -1,4 +1,6 @@
-#include "ParticleCommon.hlsli"
+#include "DefineLinkedWithCpp.hlsli"
+
+#define EPSILON 1e-3f
 
 struct VortexForceProperty
 {

@@ -21,7 +21,7 @@ ParticleEmitterManager::ParticleEmitterManager(
 	UINT maxEmitterCount,
 	UINT maxParticleCount
 )
-	: AEmitterManager("ParticleEmitterManager", static_cast<UINT>(EEmitterType::ParticleEmitter), maxEmitterCount, maxParticleCount)
+	: AEmitterManager("ParticleEmitterManager", maxEmitterCount, maxParticleCount)
 {
 	SParticleInterpInformation particleInterpInformation;
 	ZeroMem(particleInterpInformation);

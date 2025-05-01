@@ -1,5 +1,3 @@
-#include "ParticleCommon.hlsli"
-
 struct ParticleVSOut
 {
     float4 viewPos : POSITION0;

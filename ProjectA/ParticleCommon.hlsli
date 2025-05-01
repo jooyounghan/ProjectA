@@ -16,7 +16,8 @@ struct Particle
 struct SpriteAliveIndex
 {
     uint index;
-    float depth;
+    uint depth;
+    uint2 dummy;
 };
 
 cbuffer AppParams : register(b0)

@@ -1,3 +1,4 @@
+#include "ParticleCommon.hlsli"
 #include "ParticleDrawCommon.hlsli"
 
 [maxvertexcount(4)]
