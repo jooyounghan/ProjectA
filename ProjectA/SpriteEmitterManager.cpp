@@ -79,6 +79,11 @@ void SpriteEmitterManager::CreateAliveIndexSet(ID3D11Device* device)
 	device->CreateUnorderedAccessView(m_sortedAliveIndexSet->GetBuffer(), &uavDesc, m_sortedAliveIndexRWSet.GetAddressOf());
 
 
+	m_histogramSet = make_unique<CStructuredBuffer>(
+		static_cast<UINT>(sizeof(SPrefixDesciptor)),
+		static_cast<UINT>(ceil(particleMaxCount / LocalThreadCount)) * (1 << RadixBitCount), nullptr
+	);
+	m_histogramSet->InitializeBuffer(device);
 }
 
 UINT SpriteEmitterManager::AddEmitter(DirectX::XMVECTOR position, DirectX::XMVECTOR angle, ID3D11Device* device, ID3D11DeviceContext* deviceContext)
@@ -466,8 +471,8 @@ void SpriteEmitterManager::FinalizeParticles(ID3D11DeviceContext* deviceContext)
 	ID3D11Buffer* finalizeCBs[] = { m_emitterManagerPropertyGPU->GetBuffer(), m_dispatchIndirectStagingBuffer->GetBuffer() };
 	ID3D11Buffer* finalizeNullCBs[] = { nullptr, nullptr };
 
-	ID3D11UnorderedAccessView* finalizeNullUavs[] = { nullptr, nullptr, nullptr };
-	UINT finalizeInitUavCount[] = { NULL, NULL, NULL };
+	ID3D11UnorderedAccessView* finalizeNullUavs[] = { nullptr, nullptr, nullptr, nullptr };
+	UINT finalizeInitUavCount[] = { NULL, NULL, NULL, NULL };
 
 	CEmitterManagerCommonData::GSpriteSortingCS->SetShader(deviceContext);
 
@@ -485,12 +490,13 @@ void SpriteEmitterManager::FinalizeParticles(ID3D11DeviceContext* deviceContext)
 			
 			m_aliveIndexRWSet.Get(),
 			m_sortedAliveIndexRWSet.Get(),
-			m_prefixSumStatus->GetUAV()
+			m_prefixSumStatus->GetUAV(),
+			m_histogramSet->GetUAV()	
 		};
 
-		deviceContext->CSSetUnorderedAccessViews(0, 3, finalizeUavs, finalizeInitUavCount);
+		deviceContext->CSSetUnorderedAccessViews(0, 4, finalizeUavs, finalizeInitUavCount);
 		deviceContext->DispatchIndirect(m_dispatchIndirectBuffer->GetBuffer(), NULL);
-		deviceContext->CSSetUnorderedAccessViews(0, 3, finalizeNullUavs, finalizeInitUavCount);
+		deviceContext->CSSetUnorderedAccessViews(0, 4, finalizeNullUavs, finalizeInitUavCount);
 
 		if (idx != (radixPathCount - 1))
 		{

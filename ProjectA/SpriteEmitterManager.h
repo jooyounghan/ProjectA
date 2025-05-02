@@ -48,6 +48,8 @@ protected:
 	std::unique_ptr<D3D11::CAppendBuffer> m_sortedAliveIndexSet;
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> m_aliveIndexRWSet;
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> m_sortedAliveIndexRWSet;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_histogramSet;
+
 
 protected:
 	virtual void CreateAliveIndexSet(ID3D11Device* device) override;

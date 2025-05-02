@@ -2,6 +2,19 @@
 
 #define RadixBinCount (1 << RadixBitCount)
 
+struct SpriteAliveIndex
+{
+    uint index;
+    uint depth;
+};
+
+struct PrefixSumStatus
+{
+    uint aggregate;
+    uint statusFlag; /* X : 0, A : 1, P : 2*/
+    uint exclusivePrefix;
+    uint inclusivePrefix;
+};
 
 cbuffer EmitterManagerProperties : register(b2)
 {
@@ -23,15 +36,20 @@ RWStructuredBuffer<PrefixSumStatus> prefixSumStatus : register(u2);
 
 groupshared uint localHistogram[RadixBinCount];
 
-// LocalThreadCount (128)로 RadixBinCount( 2^8 - 1개) 를 관리하도록
+static const uint countPerGroupThread = (RadixBinCount + LocalThreadCount - 1) / LocalThreadCount;
+
 void LocalUpSweep(uint groupID, uint groupThreadID)
 {
     for (uint stride = 1; stride < RadixBinCount; stride *= 2)
     {
-        uint index = (groupThreadID + 1) * stride * 2 - 1;
-        if (index < RadixBinCount)
+        for (uint idx = 0; idx < countPerGroupThread; ++idx)
         {
-            localHistogram[index] += localHistogram[index - stride];
+            uint currentRadixIdx = groupThreadID + LocalThreadCount * idx;
+            uint radixIdx = (currentRadixIdx + 1) * stride * 2 - 1;
+            if (radixIdx < RadixBinCount)
+            {
+                localHistogram[radixIdx] += localHistogram[radixIdx - stride];
+            }
         }
         GroupMemoryBarrierWithGroupSync();
     }
@@ -90,7 +108,7 @@ void DecoupledLookBack(uint groupID, uint groupThreadID)
 
 void LocalDownSweep(uint groupID, uint groupThreadID)
 {
-    if (groupThreadID == (RadixBinCount - 1))
+    if (groupThreadID == 0)
     {
         localHistogram[RadixBinCount - 1] = 0;
     }
@@ -98,23 +116,36 @@ void LocalDownSweep(uint groupID, uint groupThreadID)
 
     for (uint stride = RadixBinCount / 2; stride > 0; stride /= 2)
     {
-        uint index = (groupThreadID + 1) * stride * 2 - 1;
-        if (index < RadixBinCount)
+        for (uint idx = 0; idx < countPerGroupThread; ++idx)
         {
-            uint t = localHistogram[index - stride];
-            localHistogram[index - stride] = localHistogram[index];
-            localHistogram[index] += t;
+            uint currentRadixIdx = groupThreadID + LocalThreadCount * idx;
+            uint radixIdx = (currentRadixIdx + 1) * stride * 2 - 1;
+
+            if (radixIdx < RadixBinCount)
+            {
+                uint left = radixIdx - stride;
+                if (left < RadixBinCount)
+                {
+                    uint t = localHistogram[left];
+                    localHistogram[left] = localHistogram[radixIdx];
+                    localHistogram[radixIdx] += t;
+                }
+            }
         }
         GroupMemoryBarrierWithGroupSync();
     }
 
-    if (groupThreadID < (RadixBinCount - 1))
+    for (uint idx = 0; idx < countPerGroupThread; ++idx)
     {
-        localHistogram[groupThreadID] = localHistogram[groupThreadID] + prefixSumStatus[groupID].exclusivePrefix;
-    }
-    else
-    {
-        localHistogram[groupThreadID] = prefixSumStatus[groupID].inclusivePrefix;
+        uint currentRadixIdx = groupThreadID + LocalThreadCount * idx;
+        if (currentRadixIdx < (RadixBinCount - 1))
+        {
+            localHistogram[currentRadixIdx] = localHistogram[currentRadixIdx] + prefixSumStatus[groupID].exclusivePrefix;
+        }
+        else
+        {
+            localHistogram[currentRadixIdx] = prefixSumStatus[groupID].inclusivePrefix;
+        }
     }
 }
 
@@ -125,18 +156,23 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
     uint groupThreadID = GTid.x;
     uint threadID = DTid.x;    
     
-    if (threadID < RadixBinCount)
+    [unroll]
+    for (uint idx = 0; idx < countPerGroupThread; ++idx)
     {
-        localHistogram[threadID] = 0;
+        uint currentRadixIdx = groupThreadID + LocalThreadCount * idx;
+        if (currentRadixIdx < RadixBinCount)
+        {
+            localHistogram[currentRadixIdx] = 0;
+        }
     }
     GroupMemoryBarrierWithGroupSync();
     
+    // Set Histogram
     uint depthRadix = 0;
     SpriteAliveIndex spriteAliveIndex;
     bool isValid = (threadID < emitterTotalParticleCount);
     if (isValid)
     {
-        // Set Histogram
         spriteAliveIndex = aliveIndexSet[threadID];
         depthRadix = (spriteAliveIndex.depth >> sortBitOffset) & (RadixBinCount - 1);
         InterlockedAdd(localHistogram[depthRadix], 1);
