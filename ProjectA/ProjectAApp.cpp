@@ -102,9 +102,6 @@ void CProjectAApp::Init(
 	m_appParamsGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_appParamsCPU));
 	m_appParamsGPU->InitializeBuffer(m_device);
 
-	sizeof(SInterpProperty<4, 2>);
-	sizeof(SInterpProperty<4, 4>);
-
 	CRasterizerState::InitializeDefaultRasterizerStates(m_device);
 	CBlendState::InitializeDefaultBlendStates(m_device);
 	CDepthStencilState::InitializeDefaultDepthStencilState(m_device);

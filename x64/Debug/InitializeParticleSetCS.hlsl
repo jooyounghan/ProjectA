@@ -19,7 +19,6 @@ AppendStructuredBuffer<uint> deathIndexSet : register(u1);
 
 #ifdef SPRITE_EMITTER
 AppendStructuredBuffer<SpriteAliveIndex> aliveIndexSet : register(u2);
-RWStructuredBuffer<PrefixSumStatus> prefixSumStatus : register(u3);
 #else
 AppendStructuredBuffer<uint> aliveIndexSet : register(u2);
 #endif
@@ -113,16 +112,6 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
             spriteAliveIndex.index = threadID;
             spriteAliveIndex.depth = asuint(depth);
             aliveIndexSet.Append(spriteAliveIndex);
-            
-            if (groupThreadID == 0)
-            {
-                PrefixSumStatus currentPrefixSumStatus = prefixSumStatus[groupID];
-                currentPrefixSumStatus.aggregate = 0;
-                currentPrefixSumStatus.statusFlag = 0;
-                currentPrefixSumStatus.exclusivePrefix = 0;
-                currentPrefixSumStatus.inclusivePrefix = 0;
-                prefixSumStatus[groupID] = currentPrefixSumStatus;           
-            }
             #else
             aliveIndexSet.Append(threadID);
             #endif

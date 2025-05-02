@@ -37,7 +37,7 @@ SpriteEmitterManager::SpriteEmitterManager(
 
 SpriteEmitterManager& SpriteEmitterManager::GetSpriteEmitterManager()
 {
-	static SpriteEmitterManager spriteEmitterManager(MaxSpriteEmitterCount, MaxParticleCount);
+	static SpriteEmitterManager spriteEmitterManager(MaxSpriteEmitterCount, 1024);
 	return spriteEmitterManager;
 }
 
@@ -70,6 +70,9 @@ void SpriteEmitterManager::CreateAliveIndexSet(ID3D11Device* device)
 	);
 	m_prefixSumStatus->InitializeBuffer(device);
 
+	m_globalHistogramSet = make_unique<CStructuredBuffer>(4, (1 << RadixBitCount), nullptr);
+	m_globalHistogramSet->InitializeBuffer(device);
+
 	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
 	ZeroMem(uavDesc);
 	uavDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -77,9 +80,6 @@ void SpriteEmitterManager::CreateAliveIndexSet(ID3D11Device* device)
 	uavDesc.Buffer.NumElements = particleMaxCount;
 	device->CreateUnorderedAccessView(m_aliveIndexSet->GetBuffer(), &uavDesc, m_aliveIndexRWSet.GetAddressOf());
 	device->CreateUnorderedAccessView(m_sortedAliveIndexSet->GetBuffer(), &uavDesc, m_sortedAliveIndexRWSet.GetAddressOf());
-
-	m_globalHistogramSet = make_unique<CStructuredBuffer>(4, (1 << RadixBitCount), nullptr);
-	m_globalHistogramSet->InitializeBuffer(device);
 }
 
 UINT SpriteEmitterManager::AddEmitter(DirectX::XMVECTOR position, DirectX::XMVECTOR angle, ID3D11Device* device, ID3D11DeviceContext* deviceContext)

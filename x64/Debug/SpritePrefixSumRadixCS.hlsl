@@ -116,7 +116,6 @@ void main( uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID,  uint3 DTid : 
     DecoupledLookBack(groupID, groupThreadID);
     LocalDownSweep(groupID, groupThreadID, threadID);
     
-// 여기 수정 필요
     if (isValid)
     {
         globalHistogram[threadID] = localHistogram[groupThreadID] + prefixSumStatus[groupID].exclusivePrefix;
