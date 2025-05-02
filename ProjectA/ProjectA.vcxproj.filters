@@ -352,6 +352,9 @@
     <None Include="InterpolaterHelper.hlsli">
       <Filter>Shader\Particle\ExecuteEmitter\Initalize\Interpolater</Filter>
     </None>
+    <None Include="SpriteSortingCommon.hlsli">
+      <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="EmitterDrawPS.hlsl">
@@ -381,7 +384,13 @@
     <FxCompile Include="ComputeIndirectArgsCS.hlsl">
       <Filter>Shader\Particle\ExecuteEmitter\Indirect</Filter>
     </FxCompile>
+    <FxCompile Include="SpriteSetRadixHistogramCS.hlsl">
+      <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
+    </FxCompile>
     <FxCompile Include="SpriteSortingCS.hlsl">
+      <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
+    </FxCompile>
+    <FxCompile Include="SpritePrefixSumRadixCS.hlsl">
       <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
     </FxCompile>
   </ItemGroup>

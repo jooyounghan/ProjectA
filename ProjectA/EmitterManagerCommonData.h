@@ -52,6 +52,8 @@ public:
 
 #pragma region 스프라이트 소팅 관련 CS
 public:
+	static std::unique_ptr<D3D11::CComputeShader> GSpriteSetRadixHistogramCS;
+	static std::unique_ptr<D3D11::CComputeShader> GSpritePrefixSumRadixCS;
 	static std::unique_ptr<D3D11::CComputeShader> GSpriteSortingCS;
 #pragma endregion
 

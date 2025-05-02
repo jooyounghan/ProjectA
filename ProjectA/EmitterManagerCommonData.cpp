@@ -30,11 +30,13 @@ unique_ptr<CComputeShader> CEmitterManagerCommonData::GParticleInitialSourceCS[E
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GParticleRuntimeSourceCS[EmitterTypeCount];
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GCalcualteIndirectArgCS = make_unique<CComputeShader>();
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GCaculateParticleForceCS[EmitterTypeCount];
-unique_ptr<CComputeShader> CEmitterManagerCommonData::GSpriteSortingCS;
+unique_ptr<CComputeShader> CEmitterManagerCommonData::GSpriteSetRadixHistogramCS = make_unique<CComputeShader>();
+unique_ptr<CComputeShader> CEmitterManagerCommonData::GSpritePrefixSumRadixCS = make_unique<CComputeShader>();
+unique_ptr<CComputeShader> CEmitterManagerCommonData::GSpriteSortingCS = make_unique<CComputeShader>();
 
 
 unique_ptr<CVertexShader> CEmitterManagerCommonData::GParticleDrawVS[EmitterTypeCount];
-unique_ptr<CGeometryShader> CEmitterManagerCommonData::GParticleDrawGS[EmitterTypeCount];;
+unique_ptr<CGeometryShader> CEmitterManagerCommonData::GParticleDrawGS[EmitterTypeCount];
 unique_ptr<CPixelShader> CEmitterManagerCommonData::GParticleDrawPS[EmitterTypeCount];
 unique_ptr<CGraphicsPSOObject> CEmitterManagerCommonData::GDrawParticlePSO[EmitterTypeCount];
 
@@ -125,7 +127,8 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 #pragma endregion
 
 #pragma region 스프라이트 소팅 관련 CS
-	GSpriteSortingCS = make_unique<CComputeShader>();
+	GSpriteSetRadixHistogramCS->CreateShader(L"./SpriteSetRadixHistogramCS.hlsl", nullptr, "main", "cs_5_0", device);
+	GSpritePrefixSumRadixCS->CreateShader(L"./SpritePrefixSumRadixCS.hlsl", nullptr, "main", "cs_5_0", device);
 	GSpriteSortingCS->CreateShader(L"./SpriteSortingCS.hlsl", nullptr, "main", "cs_5_0", device);
 #pragma endregion
 
