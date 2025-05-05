@@ -22,6 +22,7 @@ CShapedVectorSelector::CShapedVectorSelector(
 	const std::string& radiusName,
 	DirectX::XMFLOAT3& origin,
 	DirectX::XMVECTOR& upVector,
+	float& centerAngle,
 	SShapedVectorProperty& shapedVectorProperty
 )
 	: CBaseSelector<EShapedVector>(selectorName, GShapedVectorStringMaps),
@@ -30,7 +31,7 @@ CShapedVectorSelector::CShapedVectorSelector(
 	m_origin(origin),
 	m_upVector(upVector),
 	m_shapedVectorProperty(shapedVectorProperty),
-	m_centerAngle(15.f)
+	m_centerAngle(centerAngle)
 {
 
 }

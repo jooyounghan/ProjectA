@@ -54,13 +54,13 @@ ARuntimeSpawnProperty::ARuntimeSpawnProperty(
 
 	m_positionShapedVectorSelector = make_unique<CShapedVectorSelector>(
 		"积己 困摹 氦磐", "积己 馆瘤抚",
-		m_positionOrigin, m_positionUpVector,
+		m_positionOrigin, m_positionUpVector, m_positionCenterAngle,
 		m_runtimeSpawnPropertyCPU.shapedPositionVectorProperty
 	);
 
 	m_speedShapedVectorSelector = make_unique<CShapedVectorSelector>(
 		"积己 加档 氦磐", "积己 加档",
-		m_speedOrigin, m_speedUpVector,
+		m_speedOrigin, m_speedUpVector, m_speedCenterAngle,
 		m_runtimeSpawnPropertyCPU.shapedSpeedVectorProperty
 	);
 
@@ -231,10 +231,12 @@ void ARuntimeSpawnProperty::Serialize(std::ofstream& ofs)
 	SerializeHelper::SerializeElement<EShapedVector>(ofs, m_positionShapedVector);
 	SerializeHelper::SerializeElement<XMFLOAT3>(ofs, m_positionOrigin);
 	SerializeHelper::SerializeElement<XMVECTOR>(ofs, m_positionUpVector);
+	SerializeHelper::SerializeElement<float>(ofs, m_positionCenterAngle);
 
 	SerializeHelper::SerializeElement<EShapedVector>(ofs, m_speedShapedVector);
 	SerializeHelper::SerializeElement<XMFLOAT3>(ofs, m_speedOrigin);
 	SerializeHelper::SerializeElement<XMVECTOR>(ofs, m_speedUpVector);
+	SerializeHelper::SerializeElement<float>(ofs, m_speedCenterAngle);
 
 	SerializeHelper::SerializeElement<SControlPoint<4>>(ofs, m_colorInitControlPoint);
 	SerializeHelper::SerializeElement<SControlPoint<4>>(ofs, m_colorFinalControlPoint);
@@ -251,10 +253,12 @@ void ARuntimeSpawnProperty::Deserialize(std::ifstream& ifs)
 	m_positionShapedVector = SerializeHelper::DeserializeElement<EShapedVector>(ifs);
 	m_positionOrigin = SerializeHelper::DeserializeElement<XMFLOAT3>(ifs);
 	m_positionUpVector = SerializeHelper::DeserializeElement<XMVECTOR>(ifs);
+	m_positionCenterAngle = SerializeHelper::DeserializeElement<float>(ifs);
 
 	m_speedShapedVector = SerializeHelper::DeserializeElement<EShapedVector>(ifs);
 	m_speedOrigin = SerializeHelper::DeserializeElement<XMFLOAT3>(ifs);
 	m_speedUpVector = SerializeHelper::DeserializeElement<XMVECTOR>(ifs);
+	m_speedCenterAngle = SerializeHelper::DeserializeElement<float>(ifs);
 
 	m_colorInitControlPoint = SerializeHelper::DeserializeElement<SControlPoint<4>>(ifs);
 	m_colorFinalControlPoint = SerializeHelper::DeserializeElement<SControlPoint<4>>(ifs);

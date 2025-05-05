@@ -10,6 +10,7 @@ public:
 		const std::string& radiusName,
 		DirectX::XMFLOAT3& origin,
 		DirectX::XMVECTOR& upVector,
+		float& centerAngle,
 		SShapedVectorProperty& shapedVectorProperty
 	);
 	~CShapedVectorSelector() override = default;
@@ -24,10 +25,8 @@ protected:
 protected:
 	DirectX::XMFLOAT3& m_origin;
 	DirectX::XMVECTOR& m_upVector;
+	float& m_centerAngle;
 	SShapedVectorProperty& m_shapedVectorProperty;
-
-protected:
-	float m_centerAngle;
 
 public:
 	bool SetShapedVectorProperty(EShapedVector selectedShapedVector);

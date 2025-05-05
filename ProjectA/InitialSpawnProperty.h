@@ -53,12 +53,14 @@ protected:
 	std::unique_ptr<CShapedVectorSelector> m_positionShapedVectorSelector;
 	DirectX::XMFLOAT3 m_positionOrigin; 
 	DirectX::XMVECTOR m_positionUpVector; 
+	float m_positionCenterAngle;
 
 protected:
 	EShapedVector m_speedShapedVector;
 	std::unique_ptr<CShapedVectorSelector> m_speedShapedVectorSelector;
 	DirectX::XMFLOAT3 m_speedOrigin;
 	DirectX::XMVECTOR m_speedUpVector;
+	float m_speedCenterAngle;
 
 public:
 	ID3D11Buffer* GetInitialSpawnPropertyBuffer() const noexcept;

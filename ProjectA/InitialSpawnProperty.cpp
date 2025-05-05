@@ -29,13 +29,13 @@ CInitialSpawnProperty::CInitialSpawnProperty()
 
 	m_positionShapedVectorSelector = make_unique<CShapedVectorSelector>(
 		"초기 위치 벡터", "초기 반지름",
-		m_positionOrigin, m_positionUpVector,
+		m_positionOrigin, m_positionUpVector, m_positionCenterAngle,
 		m_emitterSpawnPropertyCPU.shapedPositionVectorProperty
 	);
 
 	m_speedShapedVectorSelector = make_unique<CShapedVectorSelector>(
 		"초기 속도 벡터", "초기 속도",
-		m_speedOrigin, m_speedUpVector,
+		m_speedOrigin, m_speedUpVector, m_speedCenterAngle,
 		m_emitterSpawnPropertyCPU.shapedSpeedVectorProperty
 	);
 }
@@ -122,10 +122,12 @@ void CInitialSpawnProperty::Serialize(std::ofstream& ofs)
 	SerializeHelper::SerializeElement<EShapedVector>(ofs, m_positionShapedVector);
 	SerializeHelper::SerializeElement<XMFLOAT3>(ofs, m_positionOrigin);
 	SerializeHelper::SerializeElement<XMVECTOR>(ofs, m_positionUpVector);
+	SerializeHelper::SerializeElement<float>(ofs, m_positionCenterAngle);
 
 	SerializeHelper::SerializeElement<EShapedVector>(ofs, m_speedShapedVector);
 	SerializeHelper::SerializeElement<XMFLOAT3>(ofs, m_speedOrigin);
 	SerializeHelper::SerializeElement<XMVECTOR>(ofs, m_speedUpVector);
+	SerializeHelper::SerializeElement<float>(ofs, m_speedCenterAngle);
 
 	SerializeHelper::SerializeElement <bool>(ofs, m_isImmortal);
 }
@@ -137,10 +139,12 @@ void CInitialSpawnProperty::Deserialize(std::ifstream& ifs)
 	m_positionShapedVector = SerializeHelper::DeserializeElement<EShapedVector>(ifs);
 	m_positionOrigin = SerializeHelper::DeserializeElement<XMFLOAT3>(ifs);
 	m_positionUpVector = SerializeHelper::DeserializeElement<XMVECTOR>(ifs);
+	m_positionCenterAngle = SerializeHelper::DeserializeElement<float>(ifs);
 
 	m_speedShapedVector = SerializeHelper::DeserializeElement<EShapedVector>(ifs);
 	m_speedOrigin = SerializeHelper::DeserializeElement<XMFLOAT3>(ifs);
 	m_speedUpVector = SerializeHelper::DeserializeElement<XMVECTOR>(ifs);
+	m_speedCenterAngle = SerializeHelper::DeserializeElement<float>(ifs);
 
 	m_isImmortal = SerializeHelper::DeserializeElement <bool>(ifs);
 	m_isEmitterSpawnPropertyChanged = true;
