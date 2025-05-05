@@ -21,6 +21,11 @@ struct SPrefixDesciptor
 	UINT inclusivePrefix;
 };
 
+struct SRadixHistogram
+{
+	UINT histogram[1 << RadixBitCount];
+};
+
 class SpriteEmitterManager : public AEmitterManager
 {
 private:
@@ -49,8 +54,12 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> m_sortedAliveIndexRWSet;
 
 protected:
+	std::unique_ptr<D3D11::CStructuredBuffer> m_localHistogramSet;
 	std::unique_ptr<D3D11::CStructuredBuffer> m_globalHistogramSet;
 	std::unique_ptr<D3D11::CStructuredBuffer> m_prefixSumStatus;
+
+protected:
+	std::unique_ptr<D3D11::CStructuredBuffer> m_globalOffsets;
 
 protected:
 	virtual void CreateAliveIndexSet(ID3D11Device* device) override;

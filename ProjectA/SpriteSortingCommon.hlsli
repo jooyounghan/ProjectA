@@ -11,3 +11,8 @@ struct PrefixSumStatus
     uint exclusivePrefix;
     uint inclusivePrefix;
 };
+
+struct RadixHistogram
+{
+    uint histogram[RadixBinCount];
+};

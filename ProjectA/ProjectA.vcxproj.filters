@@ -393,5 +393,8 @@
     <FxCompile Include="SpritePrefixSumRadixCS.hlsl">
       <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
     </FxCompile>
+    <FxCompile Include="SpriteSetGlobalOffset.hlsl">
+      <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

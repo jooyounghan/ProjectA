@@ -14,9 +14,10 @@ cbuffer indirectStagingBuffer : register(b3)
 };
 
 RWStructuredBuffer<SpriteAliveIndex> aliveIndexSet : register(u0);
-RWStructuredBuffer<uint> globalHistogram : register(u1);
+RWStructuredBuffer<RadixHistogram> localHistogram : register(u1);
+RWStructuredBuffer<uint> globalHistogram : register(u2);
 
-groupshared uint localHistogram[RadixBinCount];
+groupshared RadixHistogram groupHistogram;
 
 [numthreads(LocalThreadCount, 1, 1)]
 void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID)
@@ -31,26 +32,31 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
         uint currentRadixIdx = groupThreadID + LocalThreadCount * localIdx;
         if (currentRadixIdx < RadixBinCount)
         {
-            localHistogram[currentRadixIdx] = 0;
+            groupHistogram.histogram[currentRadixIdx] = 0;
         }
     }
     GroupMemoryBarrierWithGroupSync();
     
+    
     if (threadID < emitterTotalParticleCount)
-    {
+    {   
         SpriteAliveIndex spriteAliveIndex = aliveIndexSet[threadID];
-        uint depthRadix = (spriteAliveIndex.depth >> sortBitOffset) & (RadixBinCount - 1);
-        InterlockedAdd(localHistogram[depthRadix], 1);
+        uint maskedDepth = (spriteAliveIndex.depth >> sortBitOffset) & (RadixBinCount - 1);
+       
+        InterlockedAdd(groupHistogram.histogram[maskedDepth], 1);
     }
     GroupMemoryBarrierWithGroupSync();
 
+
+    
     [unroll]
     for (uint globalIdx = 0; globalIdx < countPerGroupThread; ++globalIdx)
     {
         uint currentRadixIdx = groupThreadID + LocalThreadCount * globalIdx;
         if (currentRadixIdx < RadixBinCount)
         {
-            InterlockedAdd(globalHistogram[currentRadixIdx], localHistogram[currentRadixIdx]);
+            localHistogram[groupID].histogram[currentRadixIdx] = groupHistogram.histogram[currentRadixIdx];
+            InterlockedAdd(globalHistogram[currentRadixIdx], groupHistogram.histogram[currentRadixIdx]);
         }
     }
     GroupMemoryBarrierWithGroupSync();

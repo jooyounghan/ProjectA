@@ -15,34 +15,20 @@ cbuffer indirectStagingBuffer : register(b3)
 
 RWStructuredBuffer<SpriteAliveIndex> aliveIndexSet : register(u0);
 RWStructuredBuffer<SpriteAliveIndex> sortedAliveIndexSet : register(u1);
-RWStructuredBuffer<uint> prefixSum : register(u2);
+RWStructuredBuffer<uint> globalHistogram : register(u2);
+RWStructuredBuffer<uint> globalOffset : register(u3);
 
 [numthreads(LocalThreadCount, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
 {
     uint threadID = DTid.x;    
 
-    // 디버깅을 위한 직렬처리
-    if (threadID == 0)
-    {
-        for (uint idx = 0; idx < emitterTotalParticleCount; ++idx)
-        {
-            SpriteAliveIndex spriteAliveIndex = aliveIndexSet[idx];
-            uint depthRadix = (spriteAliveIndex.depth >> sortBitOffset) & (RadixBinCount - 1);
-            uint scatterIdx;
-            InterlockedAdd(prefixSum[depthRadix], 1, scatterIdx);
-            sortedAliveIndexSet[scatterIdx] = spriteAliveIndex;
-        }
-    }
-    return;
-
     if (threadID < emitterTotalParticleCount)
     {
         SpriteAliveIndex spriteAliveIndex = aliveIndexSet[threadID];
-        uint depthRadix = (spriteAliveIndex.depth >> sortBitOffset) & (RadixBinCount - 1);
+        uint maskedDepth = (spriteAliveIndex.depth >> sortBitOffset) & (RadixBinCount - 1);
 
-        uint scatterIdx;
-        InterlockedAdd(prefixSum[depthRadix], 1, scatterIdx);
+        uint scatterIdx = globalHistogram[maskedDepth] + globalOffset[threadID];
         sortedAliveIndexSet[scatterIdx] = spriteAliveIndex;
     }
 }

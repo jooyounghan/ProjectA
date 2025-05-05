@@ -31,6 +31,7 @@ unique_ptr<CComputeShader> CEmitterManagerCommonData::GParticleRuntimeSourceCS[E
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GCalcualteIndirectArgCS = make_unique<CComputeShader>();
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GCaculateParticleForceCS[EmitterTypeCount];
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GSpriteSetRadixHistogramCS = make_unique<CComputeShader>();
+unique_ptr<CComputeShader> CEmitterManagerCommonData::GSpriteSetGlobalOffsetCS = make_unique<CComputeShader>();
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GSpritePrefixSumRadixCS = make_unique<CComputeShader>();
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GSpriteSortingCS = make_unique<CComputeShader>();
 
@@ -87,14 +88,7 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 	for (size_t idx = 0; idx < EmitterTypeCount; ++idx)
 	{
 		GInitializeParticleSetCS[idx] = make_unique<CComputeShader>();
-		try
-		{
-			GInitializeParticleSetCS[idx]->CreateShader(L"./InitializeParticleSetCS.hlsl", emitterTypeMacros[idx], "main", "cs_5_0", device);
-		}
-		catch (exception e)
-		{
-			bool test = true;
-		}
+		GInitializeParticleSetCS[idx]->CreateShader(L"./InitializeParticleSetCS.hlsl", emitterTypeMacros[idx], "main", "cs_5_0", device);
 	}
 #pragma endregion
 
@@ -128,6 +122,7 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 
 #pragma region 스프라이트 소팅 관련 CS
 	GSpriteSetRadixHistogramCS->CreateShader(L"./SpriteSetRadixHistogramCS.hlsl", nullptr, "main", "cs_5_0", device);
+	GSpriteSetGlobalOffsetCS->CreateShader(L"./SpriteSetGlobalOffset.hlsl", nullptr, "main", "cs_5_0", device);
 	GSpritePrefixSumRadixCS->CreateShader(L"./SpritePrefixSumRadixCS.hlsl", nullptr, "main", "cs_5_0", device);
 	GSpriteSortingCS->CreateShader(L"./SpriteSortingCS.hlsl", nullptr, "main", "cs_5_0", device);
 #pragma endregion
