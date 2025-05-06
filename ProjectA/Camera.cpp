@@ -4,7 +4,11 @@
 #include "MacroUtilities.h"
 #include "GlobalVariable.h"
 
+#include "ConstantBuffer.h"
 #include "DynamicBuffer.h"
+
+#include "FilterCommonData.h"
+#include "GraphicsPSOObject.h"
 
 #include <algorithm>
 #include <unordered_map>
@@ -13,6 +17,7 @@ using namespace std;
 using namespace DirectX;
 using namespace D3D11;
 
+
 CCamera::CCamera(
 	const XMVECTOR& position, 
 	const XMVECTOR& angle, 
@@ -20,9 +25,14 @@ CCamera::CCamera(
 	UINT viewportHeight, 
 	float fovAngle, 
 	float nearZ, 
-	float farZ
+	float farZ,
+	UINT blurCount
 ) noexcept
-	: m_isPropertiesChanged(false),
+	: 
+	m_width(viewportWidth),
+	m_height(viewportHeight),
+	m_blurCount(blurCount),
+	m_isPropertiesChanged(false),
 	m_cameraSpeed(10.f),
 	m_mouseNdcX(0.f), m_mouseNdcY(0.f), 
 	m_currentForward(GDirection::GDefaultForward),
@@ -51,6 +61,15 @@ CCamera::CCamera(
 
 ID3D11Buffer* CCamera::GetPropertiesBuffer() const noexcept { return m_propertiesGPU->GetBuffer(); }
 
+ID3D11Texture2D* CCamera::GetRenderTargetTexture() const noexcept { return m_renderTargetTexture->GetTexture2D(); }
+ID3D11RenderTargetView* CCamera::GetRenderTargetRTV() const noexcept { return m_renderTargetTexture->GetRTV(); }
+ID3D11ShaderResourceView* CCamera::GetRenderTargetSRV() const noexcept { return m_renderTargetTexture->GetSRV(); }
+ID3D11Texture2D* CCamera::GetFilteredTexture() const noexcept { return m_filteredTexture->GetTexture2D(); }
+ID3D11RenderTargetView* CCamera::GetFilteredRTV() const noexcept { return m_filteredTexture->GetRTV(); }
+ID3D11ShaderResourceView* CCamera::GetFilteredSRV() const noexcept { return m_filteredTexture->GetSRV(); }
+ID3D11Texture2D* CCamera::GetDepthStencilTexture() const noexcept { return m_depthStencil->GetTexture2D(); }
+ID3D11DepthStencilView* CCamera::GetDSV() const noexcept { return m_depthStencil->GetDSV(); }
+
 void CCamera::HandleInput(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
@@ -73,36 +92,67 @@ void CCamera::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContex
 	m_propertiesGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_cameraPropertiesCPU));
 	m_propertiesGPU->InitializeBuffer(device);
 
-	TextureUtilities::CreateTexture2D(
-		static_cast<UINT>(m_viewport.Width),
-		static_cast<UINT>(m_viewport.Height), 
-		1, 1, NULL, NULL, D3D11_USAGE_DEFAULT, 
-		DXGI_FORMAT_R8G8B8A8_UNORM, 
-		D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE, 
-		device, m_renderTarget.GetAddressOf()
+	m_renderTargetTexture = make_unique<Texture2DInstance<RTVOption, SRVOption>>(
+		m_width, m_height,
+		1, 1, NULL, NULL,
+		D3D11_USAGE_DEFAULT,
+		DXGI_FORMAT_R8G8B8A8_UNORM,
+		1, 4
 	);
+	m_renderTargetTexture->InitializeByOption(device, deviceContext);
 
-	TextureUtilities::CreateTexture2D(
-		static_cast<UINT>(m_viewport.Width),
-		static_cast<UINT>(m_viewport.Height), 
-		1, 1, NULL, NULL, D3D11_USAGE_DEFAULT, 
+	m_filteredTexture = make_unique<Texture2DInstance<RTVOption, SRVOption>>(
+		m_width, m_height,
+		1, 1, NULL, NULL,
+		D3D11_USAGE_DEFAULT,
+		DXGI_FORMAT_R8G8B8A8_UNORM,
+		1, 4
+	);
+	m_filteredTexture->InitializeByOption(device, deviceContext);
+
+	m_depthStencil = make_unique<Texture2DInstance<DSVOption>>(
+		m_width, m_height,
+		1, 1, NULL, NULL,
+		D3D11_USAGE_DEFAULT,
 		DXGI_FORMAT_D24_UNORM_S8_UINT,
-		D3D11_BIND_DEPTH_STENCIL,
-		device, m_depthStencil.GetAddressOf()
+		1, 4
 	);
+	m_depthStencil->InitializeByOption(device, deviceContext);
+	UINT blurWidth = m_width;
+	UINT blurHeight = m_height;
 
-	TextureUtilities::CreateRenderTargetView(
-		device, m_renderTarget.Get(), m_renderTargetRTV.GetAddressOf()
-	);
-	TextureUtilities::CreateShaderResourceView(
-		device, deviceContext, m_renderTarget.Get(), m_renderTargetSRV.GetAddressOf()
-	);
-	TextureUtilities::CreateUnorderedAccessView(
-		device, m_renderTarget.Get(), m_renderTargetUAV.GetAddressOf()
-	);
-	TextureUtilities::CreateDepthStencilView(
-		device, m_depthStencil.Get(), m_depthStencilView.GetAddressOf()
-	);
+	D3D11_VIEWPORT blurredViewport;
+	blurredViewport.TopLeftX = 0.f;
+	blurredViewport.TopLeftY = 0.f;
+	blurredViewport.MinDepth = 0.f;
+	blurredViewport.MaxDepth = 1.f;
+
+	m_blurredViewports.emplace_back(m_viewport);
+	for (UINT idx = 0; idx < m_blurCount; ++idx)
+	{
+		blurWidth /= 2;
+		blurHeight /= 2;
+
+		blurredViewport.Width = static_cast<FLOAT>(blurWidth);
+		blurredViewport.Height = static_cast<FLOAT>(blurHeight);
+
+		m_blurredTextures.emplace_back(
+			make_unique<Texture2DInstance<RTVOption, SRVOption>>(
+				blurWidth, blurHeight,
+				1, 1, NULL, NULL,
+				D3D11_USAGE_DEFAULT,
+				DXGI_FORMAT_R8G8B8A8_UNORM,
+
+				1, 4
+			)
+		);
+		m_blurredViewports.emplace_back(blurredViewport);
+	}
+	for (UINT idx = 0; idx < m_blurCount; ++idx)
+	{
+		m_blurredTextures[idx]->InitializeByOption(device, deviceContext);
+	}
+
 }
 
 void CCamera::Update(ID3D11DeviceContext* deviceContext, float dt)
@@ -184,4 +234,118 @@ void CCamera::UpdateKeyStatus(WPARAM keyInformation, bool isDown)
 	{
 		// Do Nothing
 	}
+}
+
+void CCamera::ClearCamera(ID3D11DeviceContext* deviceContext)
+{
+	constexpr FLOAT clearColor[4] = { 0.f, 0.f, 0.f, 1.f };
+
+	vector<ID3D11RenderTargetView*> cameraRTVs = { m_renderTargetTexture->GetRTV(), m_filteredTexture->GetRTV() };
+	for (auto& mainRTV : cameraRTVs)
+	{
+		deviceContext->ClearRenderTargetView(mainRTV, clearColor);
+	}
+	ID3D11DepthStencilView* cameraDSV = m_depthStencil->GetDSV();
+	deviceContext->ClearDepthStencilView(cameraDSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0x00);
+
+	for (auto& blurredTexture : m_blurredTextures)
+	{
+		deviceContext->ClearRenderTargetView(blurredTexture->GetRTV(), clearColor);
+	}
+}
+
+void CCamera::Blur(ID3D11DeviceContext* deviceContext)
+{
+	vector<ID3D11RenderTargetView*> blurFilteredRTVs;
+	vector<ID3D11ShaderResourceView*> blurFilteredSRVs;
+
+
+	blurFilteredRTVs.reserve(m_blurCount + 1);
+	blurFilteredSRVs.reserve(m_blurCount + 1);
+
+	blurFilteredRTVs.emplace_back(m_filteredTexture->GetRTV());
+	blurFilteredSRVs.emplace_back(m_renderTargetTexture->GetSRV());
+
+	for (auto& blurredTexture : m_blurredTextures)
+	{
+		blurFilteredRTVs.emplace_back(blurredTexture->GetRTV());
+		blurFilteredSRVs.emplace_back(blurredTexture->GetSRV());
+	}
+
+	ID3D11Buffer* vertexBuffers[] = {
+		CFilterCommonData::GFilterQuadPositionBuffer->GetBuffer(),
+		CFilterCommonData::GFilterQuadUVCoordBuffer->GetBuffer()
+	};
+	ID3D11Buffer* vertexNullBuffers[] = { nullptr, nullptr };
+	ID3D11Buffer* indexBuffer = CFilterCommonData::GFilterQuadIndexBuffer->GetBuffer();
+
+	UINT strides[] = { static_cast<UINT>(sizeof(XMFLOAT3)), static_cast<UINT>(sizeof(XMFLOAT2)) };
+	UINT nullStrides[] = { NULL, NULL };
+	UINT offsets[] = { 0, 0 };
+	UINT nullOffsets[] = { NULL, NULL };
+
+	// Blur =========================================================================
+	CFilterCommonData::GFilterBlurPSO->ApplyPSO(deviceContext);
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	deviceContext->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
+	deviceContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, NULL);
+
+	ID3D11ShaderResourceView* nullSRV = nullptr;
+	ID3D11RenderTargetView* nunllRTV = nullptr;
+
+	for (UINT downIdx = 0; downIdx < m_blurCount; ++downIdx)
+	{
+		deviceContext->OMSetRenderTargets(1, &blurFilteredRTVs[downIdx + 1], nullptr);
+		deviceContext->RSSetViewports(1, &m_blurredViewports[downIdx + 1]);
+
+		deviceContext->PSSetShaderResources(0, 1, &blurFilteredSRVs[downIdx]);
+
+		deviceContext->DrawIndexedInstanced(
+			static_cast<UINT>(CFilterCommonData::GFilterQuadIndices.size()),
+			1, NULL, NULL, NULL
+		);
+
+		deviceContext->PSSetShaderResources(0, 1, &nullSRV);
+		deviceContext->OMSetRenderTargets(1, &nunllRTV, nullptr);
+	}
+
+	for (UINT upIdx = 0; upIdx < m_blurCount; ++upIdx)
+	{
+		deviceContext->OMSetRenderTargets(1, &blurFilteredRTVs[blurFilteredRTVs.size() - 2 - upIdx], nullptr);
+		deviceContext->RSSetViewports(1, &m_blurredViewports[m_blurredViewports.size() - 2 - upIdx]);
+
+		deviceContext->PSSetShaderResources(0, 1, &blurFilteredSRVs[blurFilteredSRVs.size() - 1 - upIdx]);
+
+		deviceContext->DrawIndexedInstanced(
+			static_cast<UINT>(CFilterCommonData::GFilterQuadIndices.size()),
+			1, NULL, NULL, NULL
+		);
+
+		deviceContext->PSSetShaderResources(0, 1, &nullSRV);
+		deviceContext->OMSetRenderTargets(1, &nunllRTV, nullptr);
+	}
+
+	CFilterCommonData::GFilterBlurPSO->RemovePSO(deviceContext);
+	// ======================================================================================
+
+	// Scene + Blur =========================================================================
+	constexpr float blendColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	ID3D11RenderTargetView* cameraRTV[] = { m_renderTargetTexture->GetRTV() };
+	ID3D11ShaderResourceView* cameraSRV[] = { m_filteredTexture->GetSRV() };
+
+	CFilterCommonData::GFilterAdditivePSO->ApplyPSO(deviceContext, blendColor, 0xFFFFFFFF);
+	deviceContext->OMSetRenderTargets(1, cameraRTV, nullptr);
+	deviceContext->RSSetViewports(1, &m_viewport);
+	deviceContext->PSSetShaderResources(0, 1, cameraSRV);
+	deviceContext->DrawIndexedInstanced(
+		static_cast<UINT>(CFilterCommonData::GFilterQuadIndices.size()),
+		1, NULL, NULL, NULL
+	);
+	deviceContext->PSSetShaderResources(0, 1, &nullSRV);
+	deviceContext->OMSetRenderTargets(1, &nunllRTV, nullptr);
+	CFilterCommonData::GFilterAdditivePSO->RemovePSO(deviceContext);
+	// ======================================================================================
+
+	deviceContext->IASetVertexBuffers(0, 2, vertexNullBuffers, nullStrides, nullOffsets);
+	deviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, NULL);
 }

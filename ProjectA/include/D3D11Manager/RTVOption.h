@@ -12,13 +12,13 @@ namespace D3D11
 	public:
 		RTVOption() = default;
 
-	protected:
+	public:
 		constexpr static D3D11_BIND_FLAG GetBindFlag()
 		{
 			return D3D11_BIND_RENDER_TARGET;
 		}
 
-	protected:
+	public:
 		virtual void InitializeByOption(
 			ID3D11Device* device,
 			ID3D11DeviceContext* deviceContext,
@@ -30,6 +30,9 @@ namespace D3D11
 
 	public:
 		ID3D11RenderTargetView* const GetRTV() const { return m_rtv.Get(); }
+
+	public:
+		void Swap(RTVOption& rtvOptionIn);
 	};
 }
 #endif

@@ -512,15 +512,15 @@ void AEmitterManager::CalculateForces(ID3D11DeviceContext* deviceContext)
 
 void AEmitterManager::DrawEmitters(ID3D11DeviceContext* deviceContext)
 {
-	ID3D11Buffer* vertexBuffer[] = {
-	CEmitterManagerCommonData::GEmitterPositionBuffer->GetBuffer(),
-	m_instancedWorldTransformGPU->GetBuffer()
+	ID3D11Buffer* vertexBuffers[] = {
+		CEmitterManagerCommonData::GEmitterPositionBuffer->GetBuffer(),
+		m_instancedWorldTransformGPU->GetBuffer()
 	};
-	ID3D11Buffer* vertexNullBuffer[] = { nullptr, nullptr };
+	ID3D11Buffer* vertexNullBuffers[] = { nullptr, nullptr };
 	ID3D11Buffer* indexBuffer = CEmitterManagerCommonData::GEmitterIndexBuffer->GetBuffer();
 
 	UINT strides[] = { static_cast<UINT>(sizeof(XMFLOAT3)), static_cast<UINT>(sizeof(XMMATRIX)) };
-	UINT nullStrides[] = { NULL, NULL, NULL };
+	UINT nullStrides[] = { NULL, NULL };
 	UINT offsets[] = { 0, 0 };
 	UINT nullOffsets[] = { NULL, NULL };
 
@@ -530,14 +530,14 @@ void AEmitterManager::DrawEmitters(ID3D11DeviceContext* deviceContext)
 
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	deviceContext->IASetVertexBuffers(0, 2, vertexBuffer, strides, offsets);
+	deviceContext->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
 	deviceContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, NULL);
 	deviceContext->DrawIndexedInstanced(
 		static_cast<UINT>(CEmitterManagerCommonData::GEmitterBoxIndices.size()),
 		m_maxEmitterCount,
 		NULL, NULL, NULL
 	);
-	deviceContext->IASetVertexBuffers(0, 2, vertexNullBuffer, nullStrides, nullOffsets);
+	deviceContext->IASetVertexBuffers(0, 2, vertexNullBuffers, nullStrides, nullOffsets);
 	deviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, NULL);
 
 	CEmitterManagerCommonData::GDrawEmitterPSO[emitterTypeIndex]->RemovePSO(deviceContext);

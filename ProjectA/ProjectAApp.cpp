@@ -26,7 +26,9 @@
 
 #include "ParticleEmitterManager.h"
 #include "SpriteEmitterManager.h"
+
 #include "EmitterManagerCommonData.h"
+#include "FilterCommonData.h"
 
 #include "AEmitter.h"
 #include "InitialSpawnProperty.h"
@@ -136,13 +138,15 @@ void CProjectAApp::Init(
 
 #pragma region 글로벌 변수 초기화
 	CEmitterManagerCommonData::Intialize(m_device);
+	CFilterCommonData::Intialize(m_device);
 #pragma endregion
 
 #pragma region 인스턴스 초기화
 	m_camera = make_unique<CCamera>(
-		XMVectorSet(0.f, 0.f, -20.f, 1.f),
+		XMVectorSet(0.f, 30.f, -100.f, 1.f),
 		XMVectorSet(0.1f, 0.f, 0.f, 1.f),
-		m_width, m_height, 90.f, 0.01f, 100000.000f
+		m_width, m_height, 120.f, 0.01f, 100000.000f,
+		4
 	);
 	m_camera->Initialize(m_device, m_deviceContext);
 
@@ -161,8 +165,6 @@ void CProjectAApp::Init(
 
 #pragma endregion
 }
-
-constexpr FLOAT clearColor[4] = { 0.f, 0.f, 0.f, 1.f };
 
 void CProjectAApp::Update(float deltaTime)
 {
@@ -190,25 +192,15 @@ void CProjectAApp::Update(float deltaTime)
 #pragma endregion
 
 #pragma region 카메라 초기화 및 설정
-	static vector<ID3D11RenderTargetView*> mainRTVs = { m_camera->GetRTV() };
-	for (auto& mainRTV : mainRTVs)
-	{
-		m_deviceContext->ClearRenderTargetView(mainRTV, clearColor);
-	}
-	m_deviceContext->ClearDepthStencilView(m_camera->GetDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0x00);
-	m_deviceContext->OMSetRenderTargets(static_cast<UINT>(mainRTVs.size()), mainRTVs.data(), m_camera->GetDSV());
+	m_camera->ClearCamera(m_deviceContext);
+	ID3D11RenderTargetView* mainRTV[] = { m_camera->GetRenderTargetRTV() };
+	m_deviceContext->OMSetRenderTargets(1, mainRTV, m_camera->GetDSV());
 	m_deviceContext->RSSetViewports(1, &m_camera->GetViewport());
 #pragma endregion
 
-#pragma region ParticleManager 메인 로직
+#pragma region 입자 그리기
 	ID3D11Buffer* cameraCb = m_camera->GetPropertiesBuffer();
 	ID3D11Buffer* singleNullCb = nullptr;
-	m_deviceContext->VSSetConstantBuffers(0, 1, &cameraCb);
-	for (auto& emitterManager : emitterManagers)
-	{
-		emitterManager->DrawEmitters(m_deviceContext);
-	}
-	m_deviceContext->VSSetConstantBuffers(0, 1, &singleNullCb);
 
 	ID3D11Buffer* commonCbs[] = { m_appParamsGPU->GetBuffer(), m_camera->GetPropertiesBuffer() };
 	ID3D11Buffer* commonNullCbs[] = { nullptr, nullptr };
@@ -228,7 +220,21 @@ void CProjectAApp::Update(float deltaTime)
 	m_deviceContext->VSSetConstantBuffers(0, 2, commonNullCbs);
 	m_deviceContext->GSSetConstantBuffers(0, 2, commonNullCbs);
 	m_deviceContext->PSSetConstantBuffers(0, 2, commonNullCbs);
+#pragma endregion
 
+#pragma region 방출기 그리기
+	m_deviceContext->VSSetConstantBuffers(0, 1, &cameraCb);
+	for (auto& emitterManager : emitterManagers)
+	{
+		emitterManager->DrawEmitters(m_deviceContext);
+	}
+	m_deviceContext->VSSetConstantBuffers(0, 1, &singleNullCb);
+#pragma endregion
+
+#pragma region 전체 화면에 대한 후처리 수행
+	m_deviceContext->PSSetConstantBuffers(0, 2, commonCbs);
+	m_camera->Blur(m_deviceContext);
+	m_deviceContext->PSSetConstantBuffers(0, 2, commonNullCbs);
 #pragma endregion
 
 #pragma region 카메라 -> 백버퍼 복사 및 UI 그리기

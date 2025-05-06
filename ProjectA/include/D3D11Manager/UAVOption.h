@@ -12,13 +12,13 @@ namespace D3D11
 	public:
 		UAVOption() = default;
 
-	protected:
+	public:
 		constexpr static D3D11_BIND_FLAG GetBindFlag()
 		{
 			return D3D11_BIND_UNORDERED_ACCESS;
 		}
 
-	protected:
+	public:
 		virtual void InitializeByOption(
 			ID3D11Device* device,
 			ID3D11DeviceContext* deviceContext,
@@ -30,6 +30,9 @@ namespace D3D11
 
 	public:
 		ID3D11UnorderedAccessView* GetUAV() const { return m_uav.Get(); }
+
+	public:
+		void Swap(UAVOption& uavOptionIn);
 	};
 }
 #endif

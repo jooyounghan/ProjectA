@@ -2,9 +2,6 @@
 #include "EmitterTypeDefinition.h"
 #include "DispatchIndirectStructure.h"
 
-#include "IndirectBuffer.h"
-#include "AppendBuffer.h"
-
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <memory>

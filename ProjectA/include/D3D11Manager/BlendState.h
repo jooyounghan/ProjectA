@@ -28,14 +28,24 @@ namespace D3D11
 		static void InitializeDefaultBlendStates(ID3D11Device* device);
 
 	private:
-		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAccumulate;
-		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAccumulateWithAlpha;
-		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAlphaBlend;
+		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAdditiveSS;
+		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAdditiveMS;
+		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAlphaSS;
+		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAlphaMS;
+		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSPreMultipliedAlphaSS;
+		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSPreMultipliedAlphaMS;
+		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSMultiplicativeAlphaSS;
+		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSMultiplicativeAlphaMS;
 
 	public:
-		static inline ID3D11BlendState* GetBSAccumulate() { return gBSAccumulate.Get(); }
-		static inline ID3D11BlendState* GetBSAccumulateWithAlpha() { return gBSAccumulateWithAlpha.Get(); }
-		static inline ID3D11BlendState* GetBSAlphaBlend() { return gBSAlphaBlend.Get(); }
+		static inline ID3D11BlendState* GetBSAdditiveSS() { return gBSAdditiveSS.Get(); }
+		static inline ID3D11BlendState* GetBSAdditiveMS() { return gBSAdditiveMS.Get(); }
+		static inline ID3D11BlendState* GetBSAlphaSS() { return gBSAlphaSS.Get(); }
+		static inline ID3D11BlendState* GetBSAlphaMS() { return gBSAlphaMS.Get(); }
+		static inline ID3D11BlendState* GetBSPreMultipliedAlphaSS() { return gBSPreMultipliedAlphaSS.Get(); }
+		static inline ID3D11BlendState* GetBSPreMultipliedAlphaMS() { return gBSPreMultipliedAlphaMS.Get(); }
+		static inline ID3D11BlendState* GetBSMultiplicativeAlphaSS() { return gBSMultiplicativeAlphaSS.Get(); }
+		static inline ID3D11BlendState* GetBSMultiplicativeAlphaMS() { return gBSMultiplicativeAlphaMS.Get(); }
 	};
 }
 #endif

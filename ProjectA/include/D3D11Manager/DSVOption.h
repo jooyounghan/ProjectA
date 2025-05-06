@@ -1,6 +1,6 @@
 #pragma once
-#ifndef RTVOPTION_H
-#define RTVOPTION_H
+#ifndef DSVOPTION_H
+#define DSVOPTION_H
 
 #include "D3D11DllHelper.h"
 #include "ITexture.h"
@@ -12,13 +12,13 @@ namespace D3D11
 	public:
 		DSVOption() = default;
 
-	protected:
+	public:
 		constexpr static D3D11_BIND_FLAG GetBindFlag()
 		{
 			return D3D11_BIND_DEPTH_STENCIL;
 		}
 
-	protected:
+	public:
 		virtual void InitializeByOption(
 			ID3D11Device* device,
 			ID3D11DeviceContext* deviceContext,
@@ -30,6 +30,9 @@ namespace D3D11
 
 	public:
 		ID3D11DepthStencilView* GetDSV() const { return m_dsv.Get(); }
+
+	public:
+		void Swap(DSVOption& dsvOptionIn);
 
 	private:
 		static D3D11_DEPTH_STENCIL_VIEW_DESC GetDepthStencilViewDesc(const D3D11_TEXTURE2D_DESC& texture2dDesc);

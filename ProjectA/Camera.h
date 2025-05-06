@@ -1,9 +1,16 @@
 #pragma once
 #include "IUpdatable.h"
+
+#include "Texture2DInstance.h"
+#include "RTVOption.h"
+#include "SRVOption.h"
+#include "DSVOption.h"
+
 #include <d3d11.h>
 #include <wrl/client.h>
 #include <DirectXMath.h>
 #include <memory>
+#include <vector>
 
 namespace D3D11
 {
@@ -29,7 +36,8 @@ public:
 		UINT viewportHeight,
 		float fovAngle,
 		float nearZ,
-		float farZ
+		float farZ,
+		UINT blurCount
 	) noexcept;
 	~CCamera() override = default;
 
@@ -38,6 +46,11 @@ protected:
 
 public:
 	inline const D3D11_VIEWPORT& GetViewport() const noexcept { return m_viewport; }
+
+protected:
+	UINT m_width;
+	UINT m_height;
+	UINT m_blurCount;
 
 protected:
 	DirectX::XMVECTOR m_position;
@@ -56,24 +69,29 @@ protected:
 	bool m_isPropertiesChanged;
 
 public:
-	inline bool GetPropertiesChanged() const noexcept { return m_isPropertiesChanged; }
 	ID3D11Buffer* GetPropertiesBuffer() const noexcept;
 
 protected:
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_renderTarget;
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_depthStencil;
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetRTV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_renderTargetSRV;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> m_renderTargetUAV;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
+	std::unique_ptr<Texture2DInstance<D3D11::RTVOption, D3D11::SRVOption>> m_renderTargetTexture;
+	std::unique_ptr<Texture2DInstance<D3D11::RTVOption, D3D11::SRVOption>> m_filteredTexture;
+	std::unique_ptr<Texture2DInstance<D3D11::DSVOption>> m_depthStencil;
+
+protected:
+	std::vector<std::unique_ptr<Texture2DInstance<D3D11::RTVOption, D3D11::SRVOption>>> m_blurredTextures;
+	std::vector<D3D11_VIEWPORT> m_blurredViewports;
 
 public:
-	inline ID3D11Texture2D* GetRenderTargetTexture() const noexcept { return m_renderTarget.Get(); }
-	inline ID3D11Texture2D* GetDepthStencilTexture() const noexcept { return m_depthStencil.Get(); }
-	inline ID3D11RenderTargetView* GetRTV() const noexcept { return m_renderTargetRTV.Get(); }
-	inline ID3D11ShaderResourceView* GetSRV() const noexcept { return m_renderTargetSRV.Get(); }
-	inline ID3D11UnorderedAccessView* GetUAV() const noexcept { return m_renderTargetUAV.Get(); }
-	inline ID3D11DepthStencilView* GetDSV() const noexcept { return m_depthStencilView.Get(); }
+	ID3D11Texture2D* GetRenderTargetTexture() const noexcept;
+	ID3D11RenderTargetView* GetRenderTargetRTV() const noexcept;
+	ID3D11ShaderResourceView* GetRenderTargetSRV() const noexcept;
+public:
+	ID3D11Texture2D* GetFilteredTexture() const noexcept;
+	ID3D11RenderTargetView* GetFilteredRTV() const noexcept;
+	ID3D11ShaderResourceView* GetFilteredSRV() const noexcept;
+
+public:
+	ID3D11Texture2D* GetDepthStencilTexture() const noexcept;
+	ID3D11DepthStencilView* GetDSV() const noexcept;
 
 protected:
 	float m_cameraSpeed;
@@ -97,5 +115,9 @@ protected:
 	void UpdateAngle(int mouseX, int mouseY);
 	void UpdateKeyStatus(WPARAM keyInformation, bool isDown);
 
+
+public:
+	void ClearCamera(ID3D11DeviceContext* deviceContext);
+	void Blur(ID3D11DeviceContext* deviceContext);
 };
 

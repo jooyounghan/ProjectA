@@ -5,10 +5,11 @@
 #include <type_traits>
 
 template <class T>
-concept IsTextureOption = requires (T option, ID3D11Resource * resource, ID3D11Device * device)
+concept IsTextureOption = requires (T option, ID3D11Device * device, ID3D11DeviceContext * deviceContext, ID3D11Resource * resource)
 {
 	T::GetBindFlag();
-	option.InitializeByOption(resource, device);
+	option.InitializeByOption(device, deviceContext, resource);
+	option.Swap(option);
 };
 
 class ITexture2D
@@ -20,7 +21,7 @@ public:
 
 class ITextureOption
 {
-protected:
+public:
 	virtual void InitializeByOption(
 		ID3D11Device* device,
 		ID3D11DeviceContext* deviceContext,

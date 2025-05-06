@@ -12,13 +12,13 @@ namespace D3D11
 	public:
 		SRVOption() = default;
 
-	protected:
+	public:
 		constexpr static D3D11_BIND_FLAG GetBindFlag()
 		{
 			return D3D11_BIND_SHADER_RESOURCE;
 		}
 
-	protected:
+	public:
 		virtual void InitializeByOption(
 			ID3D11Device* device,
 			ID3D11DeviceContext* deviceContext,
@@ -31,9 +31,13 @@ namespace D3D11
 	public:
 		inline ID3D11ShaderResourceView* const GetSRV() const { return m_srv.Get(); }
 
+	public:
+		void Swap(SRVOption& srvOptionIn);
+
 	private:
 		static D3D11_SHADER_RESOURCE_VIEW_DESC GetShaderResourceViewDesc(const D3D11_TEXTURE2D_DESC& texture2dDesc);
 		static DXGI_FORMAT GetShaderResourceViewFormatFromTextureFormat(const DXGI_FORMAT& textureFormat);
+
 	};
 }
 

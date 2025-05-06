@@ -158,7 +158,7 @@ vector<XMFLOAT3> ModelFactory::CreateBoxNormals()
 	return result;
 }
 
-vector<UINT> ModelFactory::CreateIndices()
+vector<UINT> ModelFactory::CreateBoxIndices()
 {
 	return {
 		0,  1,  2,  0,  2,  3,  // À­¸é
@@ -167,5 +167,37 @@ vector<UINT> ModelFactory::CreateIndices()
 		12, 13, 14, 12, 14, 15, // µÞ¸é
 		16, 17, 18, 16, 18, 19, // ¿ÞÂÊ
 		20, 21, 22, 20, 22, 23  // ¿À¸¥ÂÊ
+	};
+}
+
+std::vector<DirectX::XMFLOAT3> ModelFactory::CreateQuadPositions()
+{
+	vector<XMFLOAT3> result;
+
+	result.emplace_back(-1.0f, -1.0f, 0.0f);
+	result.emplace_back(-1.0f, 1.0f, 0.0f);
+	result.emplace_back(1.0f, -1.0f, 0.0f);
+	result.emplace_back(1.0f, 1.0f, 0.0f);
+
+	return result;
+}
+
+std::vector<DirectX::XMFLOAT2> ModelFactory::CreateQuadUVCoords()
+{
+	vector<XMFLOAT2> result;
+
+	result.emplace_back(0.0f, 1.0f);
+	result.emplace_back(0.0f, 0.0f);
+	result.emplace_back(1.0f, 1.0f);
+	result.emplace_back(1.0f, 0.0f);
+
+	return result;
+}
+
+std::vector<UINT> ModelFactory::CreateQuadIndices()
+{
+	return {
+			0,  1,  2, 
+			2,  1,  3
 	};
 }

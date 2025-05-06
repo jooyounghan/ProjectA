@@ -9,6 +9,8 @@
 #include "GraphicsPSOObject.h"
 
 #include "ConstantBuffer.h"
+#include "IndirectBuffer.h"
+#include "AppendBuffer.h"
 #include "StructuredBuffer.h"
 
 #include "RasterizerState.h"
@@ -42,7 +44,7 @@ unique_ptr<CPixelShader> CEmitterManagerCommonData::GParticleDrawPS[EmitterTypeC
 unique_ptr<CGraphicsPSOObject> CEmitterManagerCommonData::GDrawParticlePSO[EmitterTypeCount];
 
 const vector<XMFLOAT3> CEmitterManagerCommonData::GEmitterBoxPositions = ModelFactory::CreateBoxPositions(XMVectorSet(1.f, 1.f, 1.f, 0.f));
-const vector<UINT> CEmitterManagerCommonData::GEmitterBoxIndices = ModelFactory::CreateIndices();
+const vector<UINT> CEmitterManagerCommonData::GEmitterBoxIndices = ModelFactory::CreateBoxIndices();
 unique_ptr<CVertexShader> CEmitterManagerCommonData::GEmitterDrawVS;
 unique_ptr<CPixelShader> CEmitterManagerCommonData::GEmitterDrawPS[EmitterTypeCount];
 unique_ptr<CGraphicsPSOObject> CEmitterManagerCommonData::GDrawEmitterPSO[EmitterTypeCount];
@@ -150,8 +152,8 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 			GParticleDrawGS[idx].get(),
 			GParticleDrawPS[idx].get(),
 			CRasterizerState::GetRSSolidCWSS(),
-			CBlendState::GetBSAlphaBlend(),
-			CDepthStencilState::GetDSDraw(),
+			CBlendState::GetBSAlphaMS(),
+			CDepthStencilState::GetDSSDraw(),
 			samplerStates,
 			1
 		);
@@ -205,7 +207,7 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 			GEmitterDrawPS[idx].get(),
 			CRasterizerState::GetRSWireframeCWSS(),
 			nullptr,
-			CDepthStencilState::GetDSDraw(),
+			CDepthStencilState::GetDSSDraw(),
 			nullptr,
 			0
 		);

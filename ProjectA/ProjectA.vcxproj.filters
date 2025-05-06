@@ -123,6 +123,15 @@
     <Filter Include="Shader\Particle\ExecuteEmitter\Sorting">
       <UniqueIdentifier>{9f884f2d-8368-4330-8173-1369bf548dd3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="헤더 파일\EmitterSystem\Camera">
+      <UniqueIdentifier>{da6524b1-7473-446f-a905-75826094d212}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\EmitterSystem\Camera">
+      <UniqueIdentifier>{7771f975-a17b-45ef-bb85-f7c90695f812}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\Filter">
+      <UniqueIdentifier>{38f10aaf-32b9-4f6c-8a82-1ce2a5cc5673}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -142,9 +151,6 @@
     </ClCompile>
     <ClCompile Include="Model.cpp">
       <Filter>소스 파일\EmitterSystem\Model</Filter>
-    </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>소스 파일\EmitterSystem</Filter>
     </ClCompile>
     <ClCompile Include="AEmitter.cpp">
       <Filter>소스 파일\EmitterSystem\Emitter</Filter>
@@ -203,6 +209,12 @@
     <ClCompile Include="stb_implement.cpp">
       <Filter>소스 파일\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>소스 파일\EmitterSystem\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="FilterCommonData.cpp">
+      <Filter>소스 파일\EmitterSystem\Camera</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ProjectAApp.h">
@@ -219,9 +231,6 @@
     </ClInclude>
     <ClInclude Include="Model.h">
       <Filter>헤더 파일\EmitterSystem\Model</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>헤더 파일\EmitterSystem</Filter>
     </ClInclude>
     <ClInclude Include="AEmitter.h">
       <Filter>헤더 파일\EmitterSystem\Emitter</Filter>
@@ -328,6 +337,12 @@
     <ClInclude Include="InitialPropertyDefinition.h">
       <Filter>헤더 파일\EmitterSystem\Emitter\Property</Filter>
     </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>헤더 파일\EmitterSystem\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="FilterCommonData.h">
+      <Filter>헤더 파일\EmitterSystem\Camera</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
@@ -354,6 +369,9 @@
     </None>
     <None Include="SpriteSortingCommon.hlsli">
       <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
+    </None>
+    <None Include="FilterCommon.hlsli">
+      <Filter>Shader\Filter</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -395,6 +413,15 @@
     </FxCompile>
     <FxCompile Include="SpriteSetGlobalOffset.hlsl">
       <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
+    </FxCompile>
+    <FxCompile Include="FilterBlurPS.hlsl">
+      <Filter>Shader\Filter</Filter>
+    </FxCompile>
+    <FxCompile Include="FilterVS.hlsl">
+      <Filter>Shader\Filter</Filter>
+    </FxCompile>
+    <FxCompile Include="FilterAdditivePS.hlsl">
+      <Filter>Shader\Filter</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
