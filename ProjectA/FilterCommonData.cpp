@@ -27,10 +27,10 @@ unique_ptr<CConstantBuffer> CFilterCommonData::GFilterQuadIndexBuffer = nullptr;
 
 unique_ptr<CVertexShader> CFilterCommonData::GFilterVS;
 unique_ptr<CPixelShader> CFilterCommonData::GFilterBlurPS;
-unique_ptr<CPixelShader> CFilterCommonData::GFilterAdditivePS;
+unique_ptr<CPixelShader> CFilterCommonData::GFilterGammaCorrectionPS;
 
 unique_ptr<CGraphicsPSOObject> CFilterCommonData::GFilterBlurPSO;
-unique_ptr<CGraphicsPSOObject> CFilterCommonData::GFilterAdditivePSO;
+unique_ptr<CGraphicsPSOObject> CFilterCommonData::GFilterGammaCorrectionPSO;
 
 void CFilterCommonData::Intialize(ID3D11Device* device)
 {
@@ -71,8 +71,8 @@ void CFilterCommonData::Intialize(ID3D11Device* device)
 	GFilterBlurPS->CreateShader(L"./FilterBlurPS.hlsl", nullptr, "main", "ps_5_0", device);
 
 	
-	GFilterAdditivePS = make_unique<CPixelShader>();
-	GFilterAdditivePS->CreateShader(L"./FilterAdditivePS.hlsl", nullptr, "main", "ps_5_0", device);
+	GFilterGammaCorrectionPS = make_unique<CPixelShader>();
+	GFilterGammaCorrectionPS->CreateShader(L"./FilterGammaCorrectionPS.hlsl", nullptr, "main", "ps_5_0", device);
 
 	static ID3D11SamplerState* samplerStates[] = { CSamplerState::GetSSClamp() };
 
@@ -83,20 +83,20 @@ void CFilterCommonData::Intialize(ID3D11Device* device)
 		nullptr,
 		GFilterBlurPS.get(),
 		CRasterizerState::GetRSSolidCWSS(),
-		nullptr,
+		CBlendState::GetBSAdditiveMS(),
 		CDepthStencilState::GetDSSDisabled(),
 		samplerStates,
 		1
 	);
 
-	GFilterAdditivePSO = make_unique<CGraphicsPSOObject>(
+	GFilterGammaCorrectionPSO = make_unique<CGraphicsPSOObject>(
 		GFilterVS.get(),
 		nullptr,
 		nullptr,
 		nullptr,
-		GFilterAdditivePS.get(),
+		GFilterGammaCorrectionPS.get(),
 		CRasterizerState::GetRSSolidCWSS(),
-		CBlendState::GetBSAdditiveMS(),
+		nullptr,
 		CDepthStencilState::GetDSSDisabled(),
 		samplerStates,
 		1

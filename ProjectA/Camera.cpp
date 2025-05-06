@@ -19,6 +19,7 @@ using namespace D3D11;
 
 
 CCamera::CCamera(
+	ID3D11RenderTargetView* backBufferRTV,
 	const XMVECTOR& position, 
 	const XMVECTOR& angle, 
 	UINT viewportWidth, 
@@ -29,6 +30,7 @@ CCamera::CCamera(
 	UINT blurCount
 ) noexcept
 	: 
+	m_backBufferRTV(backBufferRTV),
 	m_width(viewportWidth),
 	m_height(viewportHeight),
 	m_blurCount(blurCount),
@@ -263,7 +265,7 @@ void CCamera::Blur(ID3D11DeviceContext* deviceContext)
 	blurFilteredRTVs.reserve(m_blurCount + 1);
 	blurFilteredSRVs.reserve(m_blurCount + 1);
 
-	blurFilteredRTVs.emplace_back(m_filteredTexture->GetRTV());
+	blurFilteredRTVs.emplace_back(m_renderTargetTexture->GetRTV());
 	blurFilteredSRVs.emplace_back(m_renderTargetTexture->GetSRV());
 
 	for (auto& blurredTexture : m_blurredTextures)
@@ -285,7 +287,9 @@ void CCamera::Blur(ID3D11DeviceContext* deviceContext)
 	UINT nullOffsets[] = { NULL, NULL };
 
 	// Blur =========================================================================
-	CFilterCommonData::GFilterBlurPSO->ApplyPSO(deviceContext);
+	constexpr float blendColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	CFilterCommonData::GFilterBlurPSO->ApplyPSO(deviceContext, blendColor, 0xFFFFFFFF);
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	deviceContext->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
 	deviceContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, NULL);
@@ -328,24 +332,10 @@ void CCamera::Blur(ID3D11DeviceContext* deviceContext)
 	CFilterCommonData::GFilterBlurPSO->RemovePSO(deviceContext);
 	// ======================================================================================
 
-	// Scene + Blur =========================================================================
-	constexpr float blendColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	ID3D11RenderTargetView* cameraRTV[] = { m_renderTargetTexture->GetRTV() };
-	ID3D11ShaderResourceView* cameraSRV[] = { m_filteredTexture->GetSRV() };
-
-	CFilterCommonData::GFilterAdditivePSO->ApplyPSO(deviceContext, blendColor, 0xFFFFFFFF);
-	deviceContext->OMSetRenderTargets(1, cameraRTV, nullptr);
-	deviceContext->RSSetViewports(1, &m_viewport);
-	deviceContext->PSSetShaderResources(0, 1, cameraSRV);
-	deviceContext->DrawIndexedInstanced(
-		static_cast<UINT>(CFilterCommonData::GFilterQuadIndices.size()),
-		1, NULL, NULL, NULL
-	);
-	deviceContext->PSSetShaderResources(0, 1, &nullSRV);
-	deviceContext->OMSetRenderTargets(1, &nunllRTV, nullptr);
-	CFilterCommonData::GFilterAdditivePSO->RemovePSO(deviceContext);
-	// ======================================================================================
-
 	deviceContext->IASetVertexBuffers(0, 2, vertexNullBuffers, nullStrides, nullOffsets);
 	deviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, NULL);
+}
+
+void CCamera::GammaCorrection(ID3D11DeviceContext* deviceContext)
+{
 }

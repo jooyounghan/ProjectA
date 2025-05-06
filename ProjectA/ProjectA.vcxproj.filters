@@ -420,7 +420,7 @@
     <FxCompile Include="FilterVS.hlsl">
       <Filter>Shader\Filter</Filter>
     </FxCompile>
-    <FxCompile Include="FilterAdditivePS.hlsl">
+    <FxCompile Include="FilterGammaCorrectionPS.hlsl">
       <Filter>Shader\Filter</Filter>
     </FxCompile>
   </ItemGroup>

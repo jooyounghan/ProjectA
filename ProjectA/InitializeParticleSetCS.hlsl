@@ -103,6 +103,7 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
             // 가속도를 통한 적분 ===========================================================================================
             currentParticle.velocity += currentParticle.accelerate * dt;
             currentParticle.worldPos += currentParticle.velocity * dt;
+            
             // ==============================================================================================================
             
             #ifdef SPRITE_EMITTER

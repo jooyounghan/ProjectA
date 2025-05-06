@@ -27,11 +27,11 @@ float4 main(ParticleGSOut input) : SV_TARGET
 	float2 upperTexCoord = float2(upperIndex / spriteTextureCount + originTexCoord.x / spriteTextureCount , originTexCoord.y);
 
 	// 최종에 들어가기 전에 미리 gamma correction
-	float4 lowerSampled = pow(spriteImage.Sample(wrapSampler, float3(lowerTexCoord, emitterID)), 1.0 / 2.2);
-	float4 upperSampled = pow(spriteImage.Sample(wrapSampler, float3(upperTexCoord, emitterID)), 1.0 / 2.2);
+	float4 lowerSampled = spriteImage.Sample(wrapSampler, float3(lowerTexCoord, emitterID));
+	float4 upperSampled = spriteImage.Sample(wrapSampler, float3(upperTexCoord, emitterID));
 	float4 spriteSampled = (1.f - t) * lowerSampled + t * upperSampled;
-
-	return input.color * spriteSampled;
+	
+	return input.color * pow(spriteSampled, 1.0 / 2.2);
 #else
 
 	float dist = length(0.5f - input.texCoord) * 2.f;

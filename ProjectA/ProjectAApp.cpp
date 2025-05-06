@@ -143,6 +143,7 @@ void CProjectAApp::Init(
 
 #pragma region 인스턴스 초기화
 	m_camera = make_unique<CCamera>(
+		m_backBufferRTV,
 		XMVectorSet(0.f, 30.f, -100.f, 1.f),
 		XMVectorSet(0.1f, 0.f, 0.f, 1.f),
 		m_width, m_height, 120.f, 0.01f, 100000.000f,
@@ -234,6 +235,7 @@ void CProjectAApp::Update(float deltaTime)
 #pragma region 전체 화면에 대한 후처리 수행
 	m_deviceContext->PSSetConstantBuffers(0, 2, commonCbs);
 	m_camera->Blur(m_deviceContext);
+	m_camera->GammaCorrection(m_deviceContext);
 	m_deviceContext->PSSetConstantBuffers(0, 2, commonNullCbs);
 #pragma endregion
 

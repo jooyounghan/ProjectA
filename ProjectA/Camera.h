@@ -30,6 +30,7 @@ class CCamera : public IUpdatable
 {
 public:
 	CCamera(
+		ID3D11RenderTargetView* backBufferRTV,
 		const DirectX::XMVECTOR& position,
 		const DirectX::XMVECTOR& angle,
 		UINT viewportWidth,
@@ -42,6 +43,7 @@ public:
 	~CCamera() override = default;
 
 protected:
+	ID3D11RenderTargetView* m_backBufferRTV;
 	D3D11_VIEWPORT m_viewport;
 
 public:
@@ -119,5 +121,6 @@ protected:
 public:
 	void ClearCamera(ID3D11DeviceContext* deviceContext);
 	void Blur(ID3D11DeviceContext* deviceContext);
+	void GammaCorrection(ID3D11DeviceContext* deviceContext);
 };
 

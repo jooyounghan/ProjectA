@@ -31,8 +31,8 @@ public:
 
 	static std::unique_ptr<D3D11::CVertexShader> GFilterVS;
 	static std::unique_ptr<D3D11::CPixelShader> GFilterBlurPS;
-	static std::unique_ptr<D3D11::CPixelShader> GFilterAdditivePS;
+	static std::unique_ptr<D3D11::CPixelShader> GFilterGammaCorrectionPS;
 	static std::unique_ptr<D3D11::CGraphicsPSOObject> GFilterBlurPSO;
-	static std::unique_ptr<D3D11::CGraphicsPSOObject> GFilterAdditivePSO;
+	static std::unique_ptr<D3D11::CGraphicsPSOObject> GFilterGammaCorrectionPSO;
 };
 
