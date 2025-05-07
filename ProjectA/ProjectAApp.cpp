@@ -144,9 +144,9 @@ void CProjectAApp::Init(
 #pragma region 인스턴스 초기화
 	m_camera = make_unique<CCamera>(
 		m_backBufferRTV,
-		XMVectorSet(0.f, 30.f, -100.f, 1.f),
+		XMVectorSet(0.f, 5.f, -30.f, 1.f),
 		XMVectorSet(0.1f, 0.f, 0.f, 1.f),
-		m_width, m_height, 120.f, 0.01f, 100000.000f,
+		m_width, m_height, 120.f, 0.01f, 100000.f,
 		4
 	);
 	m_camera->Initialize(m_device, m_deviceContext);

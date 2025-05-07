@@ -104,14 +104,26 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
             currentParticle.velocity += currentParticle.accelerate * dt;
             currentParticle.worldPos += currentParticle.velocity * dt;
             
+            if (currentParticle.worldPos.y < 0.f)
+            {
+                currentParticle.worldPos.y = 1E-3;
+                currentParticle.velocity.x = currentParticle.velocity.x * 0.2f;
+                currentParticle.velocity.y = currentParticle.velocity.y * -0.2f;
+                currentParticle.velocity.z = currentParticle.velocity.z * 0.2f;
+            }
+
             // ==============================================================================================================
             
             #ifdef SPRITE_EMITTER
             float4 viewProjPos = mul(float4(currentParticle.worldPos, 1.f), viewProjMatrix);
-            float depth = 1.f - (viewProjPos.z / viewProjPos.w);
+            float z = viewProjPos.z;
+            float wInv = 1.f / viewProjPos.w;
+            float depth = 1.f - (z  * wInv);
+            depth = saturate(depth);
+
             SpriteAliveIndex spriteAliveIndex;
             spriteAliveIndex.index = threadID;
-            spriteAliveIndex.depth = asuint(depth);
+            spriteAliveIndex.depth = FloatToSortableUint(depth);
             aliveIndexSet.Append(spriteAliveIndex);
             #else
             aliveIndexSet.Append(threadID);

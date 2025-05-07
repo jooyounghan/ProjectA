@@ -32,3 +32,12 @@ cbuffer CameraViewProj : register(b1)
     matrix viewProjMatrix;
     matrix invTransposeViewMatrix;
 };
+
+uint FloatToSortableUint(float f)
+{
+    uint u = asuint(f);    
+    return u << 1;
+
+    uint mask = (u & 0x80000000) != 0 ? 0xFFFFFFFF : 0x80000000;
+    return u ^ mask;
+}
