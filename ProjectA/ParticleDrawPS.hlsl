@@ -26,16 +26,20 @@ float4 main(ParticleGSOut input) : SV_TARGET
 	float2 lowerTexCoord = float2(lowerIndex / spriteTextureCount +  originTexCoord.x / spriteTextureCount, originTexCoord.y);
 	float2 upperTexCoord = float2(upperIndex / spriteTextureCount + originTexCoord.x / spriteTextureCount , originTexCoord.y);
 
-	// 최종에 들어가기 전에 미리 gamma correction
 	float4 lowerSampled = spriteImage.Sample(wrapSampler, float3(lowerTexCoord, emitterID));
 	float4 upperSampled = spriteImage.Sample(wrapSampler, float3(upperTexCoord, emitterID));
 	float4 spriteSampled = (1.f - t) * lowerSampled + t * upperSampled;
 	
-	return input.color * pow(spriteSampled, 1.0 / 2.2);
+	return input.color * spriteSampled;
 #else
 
-	float dist = length(0.5f - input.texCoord) * 2.f;
-	float scale = smoothstep(0.f, 1.f, 1.f - dist);
+    float3 offsetTexCoord = float3((input.texCoord - 0.5f) * 2.f, 0.f);
+    offsetTexCoord.y *= -1.f;
+
+	float dist = length(offsetTexCoord);
+    float alignment = clamp(dot(-input.negativeViewVelocityDir, normalize(offsetTexCoord)), 0.f, 1.f);
+
+	float scale = alignment * smoothstep(0.f, 1.f, 1.f - dist);
 	float4 color = input.color;
 	return color * scale;
 #endif	

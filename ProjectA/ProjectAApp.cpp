@@ -144,7 +144,7 @@ void CProjectAApp::Init(
 #pragma region 인스턴스 초기화
 	m_camera = make_unique<CCamera>(
 		m_backBufferRTV,
-		XMVectorSet(0.f, 5.f, -30.f, 1.f),
+		XMVectorSet(0.f, 10.f, 0.f, 1.f),
 		XMVectorSet(0.1f, 0.f, 0.f, 1.f),
 		m_width, m_height, 120.f, 0.01f, 100000.f,
 		4
@@ -239,9 +239,7 @@ void CProjectAApp::Update(float deltaTime)
 	m_deviceContext->PSSetConstantBuffers(0, 2, commonNullCbs);
 #pragma endregion
 
-#pragma region 카메라 -> 백버퍼 복사 및 UI 그리기
-	m_deviceContext->CopyResource(m_backBuffer, m_camera->GetRenderTargetTexture());
-
+#pragma region UI 그리기
 	DrawUI();
 #pragma endregion
 
@@ -255,8 +253,10 @@ void CProjectAApp::Quit()
 
 void CProjectAApp::DrawUI()
 {
-	static vector<ID3D11RenderTargetView*> rtvs{ m_backBufferRTV };
-	m_deviceContext->OMSetRenderTargets(1, rtvs.data(), nullptr);
+	ID3D11RenderTargetView* uiRTV = m_backBufferRTV;
+	ID3D11RenderTargetView* uiNullRTV = nullptr;
+
+	m_deviceContext->OMSetRenderTargets(1, &uiRTV, nullptr);
 
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -277,6 +277,8 @@ void CProjectAApp::DrawUI()
 	EndFrame();
 
 	ImGui_ImplDX11_RenderDrawData(GetDrawData());
+
+	m_deviceContext->OMSetRenderTargets(1, &uiNullRTV, nullptr);
 }
 
 void CProjectAApp::DrawEmitterHandler()

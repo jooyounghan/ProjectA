@@ -138,6 +138,12 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 	}
 
 	static ID3D11SamplerState* samplerStates[] = { CSamplerState::GetSSWrap() };
+	ID3D11BlendState* blendStates[EmitterTypeCount] = {
+		CBlendState::GetBSAdditiveMS(),
+		CBlendState::GetBSAlphaSS(),
+		CBlendState::GetBSAlphaSS(),
+		CBlendState::GetBSAlphaSS()
+	};
 
 	for (size_t idx = 0; idx < EmitterTypeCount; ++idx)
 	{
@@ -152,7 +158,7 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 			GParticleDrawGS[idx].get(),
 			GParticleDrawPS[idx].get(),
 			CRasterizerState::GetRSSolidCWSS(),
-			CBlendState::GetBSAlphaMS(),
+			blendStates[idx],
 			CDepthStencilState::GetDSSDraw(),
 			samplerStates,
 			1

@@ -295,7 +295,7 @@ void CCamera::Blur(ID3D11DeviceContext* deviceContext)
 	deviceContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, NULL);
 
 	ID3D11ShaderResourceView* nullSRV = nullptr;
-	ID3D11RenderTargetView* nunllRTV = nullptr;
+	ID3D11RenderTargetView* nullRTV = nullptr;
 
 	for (UINT downIdx = 0; downIdx < m_blurCount; ++downIdx)
 	{
@@ -310,7 +310,7 @@ void CCamera::Blur(ID3D11DeviceContext* deviceContext)
 		);
 
 		deviceContext->PSSetShaderResources(0, 1, &nullSRV);
-		deviceContext->OMSetRenderTargets(1, &nunllRTV, nullptr);
+		deviceContext->OMSetRenderTargets(1, &nullRTV, nullptr);
 	}
 
 	for (UINT upIdx = 0; upIdx < m_blurCount; ++upIdx)
@@ -326,7 +326,7 @@ void CCamera::Blur(ID3D11DeviceContext* deviceContext)
 		);
 
 		deviceContext->PSSetShaderResources(0, 1, &nullSRV);
-		deviceContext->OMSetRenderTargets(1, &nunllRTV, nullptr);
+		deviceContext->OMSetRenderTargets(1, &nullRTV, nullptr);
 	}
 
 	CFilterCommonData::GFilterBlurPSO->RemovePSO(deviceContext);
@@ -338,4 +338,43 @@ void CCamera::Blur(ID3D11DeviceContext* deviceContext)
 
 void CCamera::GammaCorrection(ID3D11DeviceContext* deviceContext)
 {
+	ID3D11Buffer* vertexBuffers[] = {
+		CFilterCommonData::GFilterQuadPositionBuffer->GetBuffer(),
+		CFilterCommonData::GFilterQuadUVCoordBuffer->GetBuffer()
+	};
+	ID3D11Buffer* vertexNullBuffers[] = { nullptr, nullptr };
+	ID3D11Buffer* indexBuffer = CFilterCommonData::GFilterQuadIndexBuffer->GetBuffer();
+
+	UINT strides[] = { static_cast<UINT>(sizeof(XMFLOAT3)), static_cast<UINT>(sizeof(XMFLOAT2)) };
+	UINT nullStrides[] = { NULL, NULL };
+	UINT offsets[] = { 0, 0 };
+	UINT nullOffsets[] = { NULL, NULL };
+
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	deviceContext->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
+	deviceContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, NULL);
+
+	CFilterCommonData::GFilterGammaCorrectionPSO->ApplyPSO(deviceContext);
+
+	ID3D11ShaderResourceView* gammaCorrectionSRV = m_renderTargetTexture->GetSRV();
+	ID3D11ShaderResourceView* gammaCorrectionNullSRV = nullptr;
+	ID3D11RenderTargetView* gammaCorrectionNullRTV = nullptr;
+
+	deviceContext->OMSetRenderTargets(1, &m_backBufferRTV, nullptr);
+	deviceContext->RSSetViewports(1, &m_viewport);
+	deviceContext->PSSetShaderResources(0, 1, &gammaCorrectionSRV);
+
+	deviceContext->DrawIndexedInstanced(
+		static_cast<UINT>(CFilterCommonData::GFilterQuadIndices.size()),
+		1, NULL, NULL, NULL
+	);
+
+	deviceContext->PSSetShaderResources(0, 1, &gammaCorrectionNullSRV);
+	deviceContext->OMSetRenderTargets(1, &gammaCorrectionNullRTV, nullptr);
+
+	CFilterCommonData::GFilterGammaCorrectionPSO->RemovePSO(deviceContext);
+
+	deviceContext->IASetVertexBuffers(0, 2, vertexNullBuffers, nullStrides, nullOffsets);
+	deviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, NULL);
+
 }

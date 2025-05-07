@@ -16,29 +16,43 @@ void main(point ParticleVSOut input[1], uint primID : SV_PrimitiveID, inout Tria
 #else
     ParticleVSOut inputData = input[0];
     ParticleGSOut element;
+    float4 negativeViewVelocity = float4(-inputData.viewVelocity, 0.f);
+    float4 negativeViewVelocityDir = normalize(negativeViewVelocity);
+    element.negativeViewVelocityDir = negativeViewVelocityDir;
 #endif
 
     const float2 xyScale = inputData.xyScale;
     const float4 dx = float4(10.f / appWidth, 0.f, 0.f, 0.f) * xyScale.x;
     const float4 dy = float4(0.f, 10.f / appHeight, 0.f, 0.f) * xyScale.y;
-
     element.color = inputData.color;
 
-    element.viewPos = inputData.viewPos - dx - dy;
-    element.texCoord = float2(0.f, 1.f);
-    output.Append(element);
+    float4 offsets[4] = 
+    {
+        -dx - dy,
+        -dx + dy,
+         dx - dy,
+         dx + dy
+    };
 
-    element.viewPos = inputData.viewPos - dx + dy;
-    element.texCoord = float2(0.f, 0.f);
-    output.Append(element);
-    
-    element.viewPos = inputData.viewPos + dx - dy;
-    element.texCoord = float2(1.f, 1.f);
-    output.Append(element);
-    
-    element.viewPos = inputData.viewPos + dx + dy;
-    element.texCoord = float2(1.f, 0.f);
-    output.Append(element);
+    float2 texCoords[4] = 
+    {
+        float2(0.f, 1.f),
+        float2(0.f, 0.f),
+        float2(1.f, 1.f),
+        float2(1.f, 0.f)
+    };
+
+
+    [unroll]
+    for (int i = 0; i < 4; ++i) 
+    {
+    #if !defined(SPRITE_EMITTER)
+        offsets[i] += negativeViewVelocityDir * dot(offsets[i], negativeViewVelocity);
+    #endif
+        element.viewPos = inputData.viewPos + offsets[i];
+        element.texCoord = texCoords[i];
+        output.Append(element);
+    }
     
     output.RestartStrip();
 
