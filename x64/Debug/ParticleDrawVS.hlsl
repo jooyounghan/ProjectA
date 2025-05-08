@@ -34,10 +34,12 @@ ParticleVSOut main(uint vertexID : SV_VertexID)
 	result.color = currentPoint.color;
 	result.xyScale = float2(currentPoint.xyScale);
 
-	#ifdef SPRITE_EMITTER
+#ifdef SPRITE_EMITTER
 	result.spriteIndex = currentPoint.spriteIndex;
 	result.emitterID = currentPoint.emitterID;
-	#endif
+#else
+	result.viewVelocity = mul(float4(currentPoint.velocity, 0.f), viewProjMatrix).xyz;
+#endif
 
 	return result;
 }

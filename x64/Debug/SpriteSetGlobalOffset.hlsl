@@ -51,7 +51,7 @@ void main(uint3 Gid: SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_
     }
     GroupMemoryBarrierWithGroupSync();
     
-    
+    // 병목 구간 ===================
     if (threadID < emitterTotalParticleCount)
     {
         uint offset = 0;

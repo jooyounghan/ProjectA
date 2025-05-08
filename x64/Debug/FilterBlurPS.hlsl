@@ -1,4 +1,3 @@
-#include "ParticleCommon.hlsli"
 #include "FilterCommon.hlsli"
 
 Texture2D filterSource : register(t0);

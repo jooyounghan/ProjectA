@@ -32,7 +32,6 @@ float4 main(ParticleGSOut input) : SV_TARGET
 	
 	return input.color * spriteSampled;
 #else
-
     float3 offsetTexCoord = float3((input.texCoord - 0.5f) * 2.f, 0.f);
     offsetTexCoord.y *= -1.f;
 
