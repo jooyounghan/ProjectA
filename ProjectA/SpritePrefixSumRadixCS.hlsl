@@ -3,7 +3,7 @@
 RWStructuredBuffer<uint> globalHistogram : register(u0);
 RWStructuredBuffer<PrefixSumStatus> globalPrefixSumStatus : register(u1);
 
-groupshared uint localHistogram[LocalThreadCount];
+groupshared uint groupHistogram[LocalThreadCount];
 
 void LocalUpSweep(uint groupID, uint groupThreadID)
 {
@@ -13,29 +13,23 @@ void LocalUpSweep(uint groupID, uint groupThreadID)
         uint index = (groupThreadID + 1) * stride * 2 - 1;
         if (index < LocalThreadCount)
         {
-            localHistogram[index] += localHistogram[index - stride];
+            groupHistogram[index] += groupHistogram[index - stride];
         }
         GroupMemoryBarrierWithGroupSync();
     }
 
-
     if (groupThreadID == 0)
     {
-        int aggregate = localHistogram[LocalThreadCount - 1];
+        int aggregate = groupHistogram[LocalThreadCount - 1];
 
         globalPrefixSumStatus[groupID].aggregate = aggregate;
 
         if (groupID == 0)
         {
             globalPrefixSumStatus[groupID].inclusivePrefix = globalPrefixSumStatus[groupID].aggregate;
-            globalPrefixSumStatus[groupID].statusFlag = 2;
         }
-        else
-        {
-            globalPrefixSumStatus[groupID].statusFlag = 1;
-        }
+        globalPrefixSumStatus[groupID].statusFlag = (groupID == 0) ?  2 : 1;
     }
-
 }
 
 void DecoupledLookBack(uint groupID, uint groupThreadID)
@@ -43,8 +37,9 @@ void DecoupledLookBack(uint groupID, uint groupThreadID)
     if (groupThreadID == 0 && groupID > 0)
     {
         uint exclusivePrefix = 0;
+        bool loopExit = false;
 
-        for (int lookbackID = (groupID - 1); lookbackID >= 0; --lookbackID)
+        for (int lookbackID = (groupID - 1); lookbackID >= 0 && !loopExit; --lookbackID)
         {
             uint currentStatus = 0;
 
@@ -53,17 +48,13 @@ void DecoupledLookBack(uint groupID, uint groupThreadID)
                 InterlockedCompareExchange(globalPrefixSumStatus[lookbackID].statusFlag, 0xFFFFFFFF, 0xFFFFFFFF, currentStatus);
             } while (currentStatus == 0);
 
+            uint aggregate  = globalPrefixSumStatus[lookbackID].aggregate;
+            uint inclusive = globalPrefixSumStatus[lookbackID].inclusivePrefix;
 
-            if (currentStatus == 1)
-            {
-                exclusivePrefix += globalPrefixSumStatus[lookbackID].aggregate;
-                continue;
-            }
-            else if (currentStatus == 2)
-            {
-                exclusivePrefix += globalPrefixSumStatus[lookbackID].inclusivePrefix;
-                break;
-            }
+           bool isPartial = (currentStatus == 1);
+            exclusivePrefix += isPartial ? aggregate : inclusive;
+
+            loopExit = !isPartial;
         }
 
         globalPrefixSumStatus[groupID].exclusivePrefix = exclusivePrefix;
@@ -72,11 +63,11 @@ void DecoupledLookBack(uint groupID, uint groupThreadID)
     }
 }
 
-void LocalDownSweep(uint groupID, uint groupThreadID, uint threadID)
+void LocalDownSweep(uint groupThreadID)
 {
    if (groupThreadID == 0)
     {
-        localHistogram[LocalThreadCount - 1] = 0;
+        groupHistogram[LocalThreadCount - 1] = 0;
     }
     GroupMemoryBarrierWithGroupSync();
 
@@ -85,9 +76,9 @@ void LocalDownSweep(uint groupID, uint groupThreadID, uint threadID)
         uint index = (groupThreadID + 1) * stride * 2 - 1;
         if (index < LocalThreadCount)
         {
-            uint t = localHistogram[index - stride];
-            localHistogram[index - stride] = localHistogram[index];
-            localHistogram[index] += t;
+            uint t = groupHistogram[index - stride];
+            groupHistogram[index - stride] = groupHistogram[index];
+            groupHistogram[index] += t;
         }
         GroupMemoryBarrierWithGroupSync();
     }
@@ -101,23 +92,17 @@ void main( uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID,  uint3 DTid : 
     uint threadID = DTid.x;    
 
     bool isValid = threadID < RadixBinCount;
-    if (isValid)
-    {
-        localHistogram[groupThreadID] = globalHistogram[threadID];
-    }
-    else
-    {
-        localHistogram[groupThreadID] = 0;
-    }
+    
+     groupHistogram[groupThreadID] = isValid ? globalHistogram[threadID] : 0;
 
     GroupMemoryBarrierWithGroupSync();
 
     LocalUpSweep(groupID, groupThreadID);
     DecoupledLookBack(groupID, groupThreadID);
-    LocalDownSweep(groupID, groupThreadID, threadID);
+    LocalDownSweep(groupThreadID);
     
     if (isValid)
     {
-        globalHistogram[threadID] = localHistogram[groupThreadID] + globalPrefixSumStatus[groupID].exclusivePrefix;
+        globalHistogram[threadID] = groupHistogram[groupThreadID] + globalPrefixSumStatus[groupID].exclusivePrefix;
     }
 }

@@ -117,15 +117,8 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 		{ "RADIX_INDIRECT", nullptr },
 		{ nullptr, nullptr }
 	};
-	try
-	{
-		GCalcualteIndirectArgCS->CreateShader(L"./ComputeIndirectArgsCS.hlsl", nullptr, "main", "cs_5_0", device);
-		GCalcualteRadixIndirectArgCS->CreateShader(L"./ComputeIndirectArgsCS.hlsl", radixIndirectArgsMacro, "main", "cs_5_0", device);
-	}
-	catch (exception& e)
-	{
-		bool test = true;
-	}
+	GCalcualteIndirectArgCS->CreateShader(L"./ComputeIndirectArgsCS.hlsl", nullptr, "main", "cs_5_0", device);
+	GCalcualteRadixIndirectArgCS->CreateShader(L"./ComputeIndirectArgsCS.hlsl", radixIndirectArgsMacro, "main", "cs_5_0", device);
 #pragma endregion
 
 #pragma region 입자 시뮬레이션 관련 CS

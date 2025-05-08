@@ -66,9 +66,6 @@ protected:
 	std::unique_ptr<D3D11::CStructuredBuffer> m_globalPrefixSumStatus;
 
 protected:
-	std::unique_ptr<D3D11::CStructuredBuffer> m_globalOffsets;
-
-protected:
 	virtual void CreateAliveIndexSet(ID3D11Device* device) override;
 
 protected:

@@ -16,49 +16,107 @@ cbuffer indirectStagingBuffer : register(b3)
 RWStructuredBuffer<SpriteAliveIndex> aliveIndexSet : register(u0);
 RWStructuredBuffer<RadixHistogram> localHistogram : register(u1);
 RWStructuredBuffer<PrefixSumStatus> localPrefixSumStatus : register(u2);
-RWStructuredBuffer<uint> globalOffset : register(u3);
 
-groupshared uint localOffset[LocalThreadCount];
-groupshared uint localMaskedDepth[LocalThreadCount];
+groupshared uint groupHistogram[LocalThreadCount];
+
+void LocalUpSweep(uint groupScanID, uint statusID, uint groupThreadID)
+{
+    [unroll]
+    for (uint stride = 1; stride < LocalThreadCount; stride *= 2)
+    {
+        uint index = (groupThreadID + 1) * stride * 2 - 1;
+        if (index < LocalThreadCount)
+        {
+            groupHistogram[index] += groupHistogram[index - stride];
+        }
+        GroupMemoryBarrierWithGroupSync();
+    }
+
+    if (groupThreadID == 0)
+    {
+        int aggregate = groupHistogram[LocalThreadCount - 1];
+
+        localPrefixSumStatus[statusID].aggregate = aggregate;
+
+        if (groupScanID == 0)
+        {
+            localPrefixSumStatus[statusID].inclusivePrefix = localPrefixSumStatus[statusID].aggregate;
+        }
+        localPrefixSumStatus[statusID].statusFlag = (groupScanID == 0) ?  2 : 1;
+    }
+}
+
+void DecoupledLookBack(uint groupScanID, uint radixID, uint statusID, uint groupThreadID)
+{
+    if (groupThreadID == 0 && groupScanID > 0)
+    {
+        uint exclusivePrefix = 0;
+        bool loopExit = false;
+
+        for (int lookbackID = (groupScanID - 1); lookbackID >= 0 && !loopExit; --lookbackID)
+        {
+            uint lookBackStatusID = lookbackID * RadixBinCount + radixID;
+            uint currentStatus = 0;
+
+            do
+            {
+                InterlockedCompareExchange(localPrefixSumStatus[lookBackStatusID].statusFlag, 0xFFFFFFFF, 0xFFFFFFFF, currentStatus);
+            } while (currentStatus == 0);
+
+            uint aggregate  = localPrefixSumStatus[lookBackStatusID].aggregate;
+            uint inclusive = localPrefixSumStatus[lookBackStatusID].inclusivePrefix;
+
+           bool isPartial = (currentStatus == 1);
+            exclusivePrefix += isPartial ? aggregate : inclusive;
+
+            loopExit = !isPartial;
+        }
+
+        localPrefixSumStatus[statusID].exclusivePrefix = exclusivePrefix;
+        localPrefixSumStatus[statusID].inclusivePrefix = localPrefixSumStatus[statusID].aggregate + exclusivePrefix;
+        InterlockedCompareStore(localPrefixSumStatus[statusID].statusFlag, 1, 2);
+    }
+}
+
+void LocalDownSweep(uint groupThreadID)
+{
+   if (groupThreadID == 0)
+    {
+        groupHistogram[LocalThreadCount - 1] = 0;
+    }
+    GroupMemoryBarrierWithGroupSync();
+
+    for (uint stride = LocalThreadCount / 2; stride > 0; stride /= 2)
+    {
+        uint index = (groupThreadID + 1) * stride * 2 - 1;
+        if (index < LocalThreadCount)
+        {
+            uint t = groupHistogram[index - stride];
+            groupHistogram[index - stride] = groupHistogram[index];
+            groupHistogram[index] += t;
+        }
+        GroupMemoryBarrierWithGroupSync();
+    }
+}
 
 [numthreads(LocalThreadCount, 1, 1)]
-void main(uint3 Gid: SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID)
+void main(uint3 Gid: SV_GroupID, uint3 GTid : SV_GroupThreadID)
 {
-    uint groupID = Gid.x;
+    uint groupScanID = Gid.x;
+    uint radixID = Gid.y;
     uint groupThreadID = GTid.x;
-    uint threadID = DTid.x;
-    
-    localOffset[groupThreadID] = 0;
-    localMaskedDepth[groupThreadID] = 0;
-    
-    SpriteAliveIndex spriteAliveIndex = aliveIndexSet[threadID];
-    uint maskedDepth = (spriteAliveIndex.depth >> sortBitOffset) & (RadixBinCount - 1);
-    
-    if (threadID < emitterTotalParticleCount)
-    {
-        localMaskedDepth[groupThreadID] = maskedDepth;
-    }
+
+    uint groupID = groupScanID * LocalThreadCount + groupThreadID;
+    uint statusID = groupScanID * RadixBinCount + radixID;
+
+    groupHistogram[groupThreadID] = 0;
+    groupHistogram[groupThreadID] = localHistogram[groupID].histogram[radixID];
+
     GroupMemoryBarrierWithGroupSync();
-    
-    if (threadID < emitterTotalParticleCount)
-    {
-        for (uint groupThreadIdx = 0; groupThreadIdx < groupThreadID; ++groupThreadIdx)
-        {
-            if (localMaskedDepth[groupThreadIdx] == maskedDepth)
-            {
-                localOffset[groupThreadID]++;
-            }
-        }
-    }
-    GroupMemoryBarrierWithGroupSync();
-       
-    if (threadID < emitterTotalParticleCount)
-    {
-        uint offset = 0;
-        for (uint groupIdx = 0; groupIdx < groupID; ++groupIdx)
-        {
-            offset += localHistogram[groupIdx].histogram[maskedDepth];
-        }
-        globalOffset[threadID] = offset + localOffset[groupThreadID];
-    }
+
+    LocalUpSweep(groupScanID, statusID, groupThreadID);
+    DecoupledLookBack(groupScanID, radixID, statusID, groupThreadID);
+    LocalDownSweep(groupThreadID);
+
+    localHistogram[groupID].histogram[radixID] = groupHistogram[groupThreadID] + localPrefixSumStatus[statusID].exclusivePrefix;
 }

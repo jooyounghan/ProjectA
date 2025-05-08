@@ -15,20 +15,37 @@ cbuffer indirectStagingBuffer : register(b3)
 
 RWStructuredBuffer<SpriteAliveIndex> aliveIndexSet : register(u0);
 RWStructuredBuffer<SpriteAliveIndex> sortedAliveIndexSet : register(u1);
-RWStructuredBuffer<uint> globalHistogram : register(u2);
-RWStructuredBuffer<uint> globalOffset : register(u3);
+RWStructuredBuffer<RadixHistogram> localHistogram : register(u2);
+RWStructuredBuffer<uint> globalHistogram : register(u3);
+
+groupshared uint localOffset[LocalThreadCount];
+groupshared uint localMaskedDepth[LocalThreadCount];
 
 [numthreads(LocalThreadCount, 1, 1)]
-void main( uint3 DTid : SV_DispatchThreadID )
+void main( uint3 Gid: SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID )
 {
-    uint threadID = DTid.x;    
+    uint groupID = Gid.x;
+    uint groupThreadID = GTid.x;
+    uint threadID = DTid.x;
+    bool isValid = threadID < emitterTotalParticleCount;
 
-    if (threadID < emitterTotalParticleCount)
+    localOffset[groupThreadID] = 0;
+    SpriteAliveIndex spriteAliveIndex = aliveIndexSet[threadID];
+    uint maskedDepth = (spriteAliveIndex.depth >> sortBitOffset) & (RadixBinCount - 1);
+    
+    localMaskedDepth[groupThreadID] = isValid ? maskedDepth : 0;
+    GroupMemoryBarrierWithGroupSync();
+
+    if (isValid)
     {
-        SpriteAliveIndex spriteAliveIndex = aliveIndexSet[threadID];
-        uint maskedDepth = (spriteAliveIndex.depth >> sortBitOffset) & (RadixBinCount - 1);
+        uint offset = 0;
+        for (uint groupThreadIdx = 0; groupThreadIdx < groupThreadID; ++groupThreadIdx)
+        {
+            offset += (localMaskedDepth[groupThreadIdx] == maskedDepth) ? 1 : 0;
+        }
+        localOffset[groupThreadID] = offset;
 
-        uint scatterIdx = globalHistogram[maskedDepth] + globalOffset[threadID];
+        uint scatterIdx = globalHistogram[maskedDepth] + localHistogram[groupID].histogram[maskedDepth] + localOffset[groupThreadID];
         sortedAliveIndexSet[scatterIdx] = spriteAliveIndex;
     }
 }
