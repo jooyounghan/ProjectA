@@ -88,31 +88,35 @@ void CInitialSpawnProperty::DrawUIImpl()
 		m_emitterSpawnPropertyCPU.initialParticleLife = m_isImmortal ? numeric_limits<float>::max() : InitLife;
 	}
 
-	SeparatorText("파티클 초기 위치 설정");
+	SeparatorText("초기 파티클 위치 설정");
 	m_positionShapedVectorSelector->SelectEnums(m_positionShapedVector);
 	if (m_positionShapedVectorSelector->SetShapedVectorProperty(m_positionShapedVector))
 	{
 		m_isEmitterSpawnPropertyChanged = true;
 	}
 
-	SeparatorText("파티클 초기 속도 설정");
+	SeparatorText("초기 파티클 속도 설정");
 	m_speedShapedVectorSelector->SelectEnums(m_speedShapedVector);
 	if (m_speedShapedVectorSelector->SetShapedVectorProperty(m_speedShapedVector))
 	{
 		m_isEmitterSpawnPropertyChanged = true;
 	}
 
-	SeparatorText("파티클 초기 색상 설정");
-	if (ColorEdit4("파티클 초기 색상", m_emitterSpawnPropertyCPU.color.m128_f32))
+	BeginDisabled(!m_useInitialColor);
+	SeparatorText("초기 파티클 색상 설정");
+	if (ColorEdit4("초기 파티클 색상", m_emitterSpawnPropertyCPU.color.m128_f32))
 	{
 		m_isEmitterSpawnPropertyChanged = true;
 	}
+	EndDisabled();
 
-	SeparatorText("파티클 크기");
-	if (DragFloat2("파티클 X-Y 크기", &m_emitterSpawnPropertyCPU.xyScale.x, 0.01f, 0.f, 10.f, "%.2f"))
+	BeginDisabled(!m_useInitialSize);
+	SeparatorText("초기 파티클 크기");
+	if (DragFloat2("초기 파티클 X-Y 크기", &m_emitterSpawnPropertyCPU.xyScale.x, 0.01f, 0.f, 10.f, "%.2f"))
 	{
 		m_isEmitterSpawnPropertyChanged = true;
 	}
+	EndDisabled();
 }
 
 void CInitialSpawnProperty::Serialize(std::ofstream& ofs)

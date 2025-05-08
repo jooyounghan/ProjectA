@@ -1,4 +1,4 @@
-#include "ARuntimeSpawnProperty.h"
+#include "RuntimeSpawnProperty.h"
 #include "MacroUtilities.h"
 #include "InitialPropertyDefinition.h"
 
@@ -26,7 +26,7 @@ m_onGpuColorInterpolaterUpdated(		\
 )										\
 
 
-ARuntimeSpawnProperty::ARuntimeSpawnProperty(
+CRuntimeSpawnProperty::CRuntimeSpawnProperty(
 	const function<void(bool, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterSelectedHandler,
 	const function<void(bool, float, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler
 )
@@ -93,7 +93,7 @@ ARuntimeSpawnProperty::ARuntimeSpawnProperty(
 }
 
 
-void ARuntimeSpawnProperty::AdjustControlPointsFromLife()
+void CRuntimeSpawnProperty::AdjustControlPointsFromLife()
 {
 	const float& maxLife = m_runtimeSpawnPropertyCPU.maxLife;
 	m_colorFinalControlPoint.x = maxLife;
@@ -114,7 +114,7 @@ void ARuntimeSpawnProperty::AdjustControlPointsFromLife()
 }
 
 
-void ARuntimeSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
+void CRuntimeSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 	m_runtimeSpawnPropertyGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_runtimeSpawnPropertyCPU));
 	m_runtimeSpawnPropertyGPU->InitializeBuffer(device);
@@ -123,7 +123,7 @@ void ARuntimeSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext
 	UpdatedGPUColorInterp();
 }
 
-void ARuntimeSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
+void CRuntimeSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 {
 	m_currentLifeTime += dt;
 	const float& life = m_runtimeSpawnPropertyCPU.maxLife;
@@ -142,7 +142,7 @@ void ARuntimeSpawnProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 	}
 }
 
-void ARuntimeSpawnProperty::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
+void CRuntimeSpawnProperty::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
 {
 	if (!m_checkGPUColorInterpolater)
 	{
@@ -152,7 +152,7 @@ void ARuntimeSpawnProperty::UpdateImpl(ID3D11DeviceContext* deviceContext, float
 	}
 }
 
-void ARuntimeSpawnProperty::DrawUI()
+void CRuntimeSpawnProperty::DrawUI()
 {
 	if (!ImGui::CollapsingHeader("파티클 생성 프로퍼티"))
 		return;
@@ -160,7 +160,7 @@ void ARuntimeSpawnProperty::DrawUI()
 	DrawUIImpl();
 }
 
-void ARuntimeSpawnProperty::DrawUIImpl()
+void CRuntimeSpawnProperty::DrawUIImpl()
 {
 	SeparatorText("파티클 생성 위치 설정");
 	m_positionShapedVectorSelector->SelectEnums(m_positionShapedVector);
@@ -224,7 +224,7 @@ void ARuntimeSpawnProperty::DrawUIImpl()
 	m_colorInterpolationSelectPlotter->ViewInterpolatedPlots();
 }
 
-void ARuntimeSpawnProperty::Serialize(std::ofstream& ofs)
+void CRuntimeSpawnProperty::Serialize(std::ofstream& ofs)
 {
 	SerializeHelper::SerializeElement<decltype(m_runtimeSpawnPropertyCPU)>(ofs, m_runtimeSpawnPropertyCPU);
 
@@ -246,7 +246,7 @@ void ARuntimeSpawnProperty::Serialize(std::ofstream& ofs)
 	SerializeHelper::SerializeElement<bool>(ofs, m_checkGPUColorInterpolater);
 }
 
-void ARuntimeSpawnProperty::Deserialize(std::ifstream& ifs)
+void CRuntimeSpawnProperty::Deserialize(std::ifstream& ifs)
 {
 	m_runtimeSpawnPropertyCPU = SerializeHelper::DeserializeElement<decltype(m_runtimeSpawnPropertyCPU)>(ifs);
 

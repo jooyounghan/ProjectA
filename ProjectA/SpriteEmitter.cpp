@@ -1,7 +1,7 @@
 #include "SpriteEmitter.h"
 #include "InitialSpawnProperty.h"
 #include "EmitterUpdateProperty.h"
-#include "SpriteSpawnProperty.h"
+#include "SpriteRuntimeSpawnProperty.h"
 #include "ForceUpdateProperty.h"
 #include "EmitterTypeDefinition.h"
 
@@ -70,9 +70,10 @@ void SpriteEmitter::CreateProperty()
 {
 	m_initialSpawnProperty = make_unique<CInitialSpawnProperty>();
 	m_emitterUpdateProperty = make_unique<CEmitterUpdateProperty>();
-	m_runtimeSpawnProperty = make_unique<SpriteSpawnProperty>(
+	m_runtimeSpawnProperty = make_unique<CSpriteRuntimeSpawnProperty>(
 		[this](bool isColorGPUInterpolaterOn, EInterpolationMethod colorIntperpolationMethod, IInterpolater<4>* colorInterpolater) 
 		{ 
+			m_initialSpawnProperty->SetUseInitialColor(!isColorGPUInterpolaterOn);
 			m_onGpuColorInterpolaterSelected(GetEmitterID(), m_colorInterpolaterID, isColorGPUInterpolaterOn, colorIntperpolationMethod, colorInterpolater);
 		},
 		[this](bool isColorGPUInterpolaterOn, float maxLife, EInterpolationMethod colorIntperpolationMethod, IInterpolater<4>* colorInterpolater)
@@ -81,6 +82,7 @@ void SpriteEmitter::CreateProperty()
 		},
 		[this](bool isSpriteSizeGPUInterpolaterOn, EInterpolationMethod spriteSizeIntperpolationMethod, IInterpolater<2>* spriteSizeInterpolater)
 		{
+			m_initialSpawnProperty->SetUseInitialSize(!isSpriteSizeGPUInterpolaterOn);
 			m_onSpriteSizeInterpolaterSelected(GetEmitterID(), m_spriteSizeInterpolaterID, isSpriteSizeGPUInterpolaterOn, spriteSizeIntperpolationMethod, spriteSizeInterpolater);
 		},
 		[this](bool isSpriteSizeGPUInterpolaterOn, float maxLife, EInterpolationMethod spriteSizeIntperpolationMethod, IInterpolater<2>* spriteSizeInterpolater) 

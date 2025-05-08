@@ -1,13 +1,13 @@
 #pragma once
-#include "ARuntimeSpawnProperty.h"
+#include "RuntimeSpawnProperty.h"
 #include "InterpInformation.h"
 
 #include <functional>
 
-class SpriteSpawnProperty : public ARuntimeSpawnProperty
+class CSpriteRuntimeSpawnProperty : public CRuntimeSpawnProperty
 {
 public:
-	SpriteSpawnProperty(
+	CSpriteRuntimeSpawnProperty(
 		const std::function<void(bool, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterSelectedHandler,
 		const std::function<void(bool, float, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler,
 		const std::function<void(bool, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterSelectedHandler,
@@ -15,7 +15,7 @@ public:
 		const std::function<void(bool, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterSelectedHandler,
 		const std::function<void(bool, float, UINT, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterUpdatedHandler
 	);
-	~SpriteSpawnProperty() override = default;
+	~CSpriteRuntimeSpawnProperty() override = default;
 
 protected:
 	std::function<void(bool, EInterpolationMethod, IInterpolater<2>*)> m_onGpuSpriteSizeInterpolaterSelected;

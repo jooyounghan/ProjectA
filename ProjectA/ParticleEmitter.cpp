@@ -1,7 +1,7 @@
 #include "ParticleEmitter.h"
 #include "InitialSpawnProperty.h"
 #include "EmitterUpdateProperty.h"
-#include "ParticleSpawnProperty.h"
+#include "ParticleRuntimeSpawnProperty.h"
 #include "ForceUpdateProperty.h"
 
 #include "EmitterTypeDefinition.h"
@@ -34,9 +34,10 @@ void ParticleEmitter::CreateProperty()
 {
 	m_initialSpawnProperty = make_unique<CInitialSpawnProperty>();
 	m_emitterUpdateProperty = make_unique<CEmitterUpdateProperty>();
-	m_runtimeSpawnProperty = make_unique<ParticleSpawnProperty>(
+	m_runtimeSpawnProperty = make_unique<CParticleRuntimeSpawnProperty>(
 		[this](bool isColorGPUInterpolaterOn, EInterpolationMethod colorIntperpolationMethod, IInterpolater<4>* colorInterpolater)
 		{
+			m_initialSpawnProperty->SetUseInitialColor(!isColorGPUInterpolaterOn);
 			m_onGpuColorInterpolaterSelected(GetEmitterID(), m_colorInterpolaterID, isColorGPUInterpolaterOn, colorIntperpolationMethod, colorInterpolater);
 		},
 		[this](bool isColorGPUInterpolaterOn,  float maxLife, EInterpolationMethod colorIntperpolationMethod, IInterpolater<4>* colorInterpolater)

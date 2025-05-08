@@ -18,14 +18,14 @@ namespace D3D11
 	class CDynamicBuffer;
 }
 
-class ARuntimeSpawnProperty : public IDrawable, public IUpdatable, public ISerializable
+class CRuntimeSpawnProperty : public IDrawable, public IUpdatable, public ISerializable
 {
 public:
-	ARuntimeSpawnProperty(
+	CRuntimeSpawnProperty(
 		const std::function<void(bool, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterSelectedHandler,
 		const std::function<void(bool, float, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler
 	);
-	~ARuntimeSpawnProperty() override = default;
+	~CRuntimeSpawnProperty() override = default;
 
 protected:
 	float m_currentLifeTime;

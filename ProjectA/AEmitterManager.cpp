@@ -17,7 +17,7 @@
 #include "EmitterSelector.h"
 #include "InitialSpawnProperty.h"
 #include "EmitterUpdateProperty.h"
-#include "ARuntimeSpawnProperty.h"
+#include "RuntimeSpawnProperty.h"
 #include "ForceUpdateProperty.h"
 
 #include "GPUInterpPropertyManager.h"
@@ -433,7 +433,7 @@ void AEmitterManager::SourceParticles(ID3D11DeviceContext* deviceContext)
 	for (auto& emitter : m_emitters)
 	{
 		CEmitterUpdateProperty* emitterUpdateProperty = emitter->GetEmitterUpdateProperty();
-		ARuntimeSpawnProperty* runtimeSpawnProperty = emitter->GetRuntimeSpawnProperty();
+		CRuntimeSpawnProperty* runtimeSpawnProperty = emitter->GetRuntimeSpawnProperty();
 
 		ID3D11Buffer* emitterRuntimeSourceBuffers[] = {
 			m_emitterManagerPropertyGPU->GetBuffer(),

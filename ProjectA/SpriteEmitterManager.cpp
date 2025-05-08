@@ -3,7 +3,7 @@
 #include "EmitterManagerCommonData.h"
 #include "InitialSpawnProperty.h"
 #include "EmitterUpdateProperty.h"
-#include "ARuntimeSpawnProperty.h"
+#include "RuntimeSpawnProperty.h"
 
 #include "ComputeShader.h"
 #include "GraphicsPSOObject.h"

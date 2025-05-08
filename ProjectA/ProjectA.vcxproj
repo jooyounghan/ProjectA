@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -153,7 +153,7 @@
     <ClCompile Include="FilterCommonData.cpp" />
     <ClCompile Include="InitialSpawnProperty.cpp" />
     <ClCompile Include="EmitterUpdateProperty.cpp" />
-    <ClCompile Include="ARuntimeSpawnProperty.cpp" />
+    <ClCompile Include="RuntimeSpawnProperty.cpp" />
     <ClCompile Include="ForceUpdateProperty.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="EmitterManagerCommonData.cpp" />
@@ -169,12 +169,12 @@
     <ClCompile Include="AEmitterManager.cpp" />
     <ClCompile Include="ParticleEmitter.cpp" />
     <ClCompile Include="ParticleEmitterManager.cpp" />
-    <ClCompile Include="ParticleSpawnProperty.cpp" />
+    <ClCompile Include="ParticleRuntimeSpawnProperty.cpp" />
     <ClCompile Include="ProjectAApp.cpp" />
     <ClCompile Include="ShapedVectorSelector.cpp" />
     <ClCompile Include="SpriteEmitter.cpp" />
     <ClCompile Include="SpriteEmitterManager.cpp" />
-    <ClCompile Include="SpriteSpawnProperty.cpp" />
+    <ClCompile Include="SpriteRuntimeSpawnProperty.cpp" />
     <ClCompile Include="stb_implement.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -183,7 +183,7 @@
     <ClInclude Include="InitialPropertyDefinition.h" />
     <ClInclude Include="InitialSpawnProperty.h" />
     <ClInclude Include="EmitterUpdateProperty.h" />
-    <ClInclude Include="ARuntimeSpawnProperty.h" />
+    <ClInclude Include="RuntimeSpawnProperty.h" />
     <ClInclude Include="ForceUpdateProperty.h" />
     <ClInclude Include="BaseSelector.h" />
     <ClInclude Include="Camera.h" />
@@ -211,7 +211,7 @@
     <ClInclude Include="ParticleEmitter.h" />
     <ClInclude Include="ParticleEmitterManager.h" />
     <ClInclude Include="InterpInformation.h" />
-    <ClInclude Include="ParticleSpawnProperty.h" />
+    <ClInclude Include="ParticleRuntimeSpawnProperty.h" />
     <ClInclude Include="ParticleStructure.h" />
     <ClInclude Include="ProjectAApp.h" />
     <ClInclude Include="ShapedVectorProperty.h" />
@@ -219,7 +219,7 @@
     <ClInclude Include="IUpdatable.h" />
     <ClInclude Include="SpriteEmitter.h" />
     <ClInclude Include="SpriteEmitterManager.h" />
-    <ClInclude Include="SpriteSpawnProperty.h" />
+    <ClInclude Include="SpriteRuntimeSpawnProperty.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DefineLinkedWithCpp.hlsli" />

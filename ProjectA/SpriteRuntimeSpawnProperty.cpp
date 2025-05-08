@@ -1,4 +1,4 @@
-#include "SpriteSpawnProperty.h"
+#include "SpriteRuntimeSpawnProperty.h"
 #include "MacroUtilities.h"
 #include "InitialPropertyDefinition.h"
 
@@ -39,7 +39,7 @@ m_spriteIndexInterpolationMethod,			\
 m_spriteIndexInterpolater.get()				\
 )											\
 
-SpriteSpawnProperty::SpriteSpawnProperty(
+CSpriteRuntimeSpawnProperty::CSpriteRuntimeSpawnProperty(
 	const std::function<void(bool, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterSelectedHandler,
 	const std::function<void(bool, float, EInterpolationMethod, IInterpolater<4>*)>& gpuColorInterpolaterUpdatedHandler,
 	const std::function<void(bool, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterSelectedHandler,
@@ -48,7 +48,7 @@ SpriteSpawnProperty::SpriteSpawnProperty(
 	const std::function<void(bool, float, UINT, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterUpdatedHandler
 )
 	: 
-	ARuntimeSpawnProperty(gpuColorInterpolaterSelectedHandler, gpuColorInterpolaterUpdatedHandler),
+	CRuntimeSpawnProperty(gpuColorInterpolaterSelectedHandler, gpuColorInterpolaterUpdatedHandler),
 	m_onGpuSpriteSizeInterpolaterSelected(gpuSpriteSizeInterpolaterSelectedHandler),
 	m_onGpuSpriteSizeInterpolaterUpdated(gpuSpriteSizeInterpolaterUpdatedHandler),
 	m_onGpuSpriteIndexInterpolaterSelected(gpuSpriteIndexInterpolaterSelectedHandler),
@@ -69,7 +69,7 @@ SpriteSpawnProperty::SpriteSpawnProperty(
 	AdjustControlPointsFromTextureCount();
 }
 
-void SpriteSpawnProperty::CreateSpriteSizeInterpolaterUI()
+void CSpriteRuntimeSpawnProperty::CreateSpriteSizeInterpolaterUI()
 {
 	m_spriteSizeControlPointGridView = make_unique<CControlPointGridView<2>>(
 		"시간",
@@ -97,7 +97,7 @@ void SpriteSpawnProperty::CreateSpriteSizeInterpolaterUI()
 	m_spriteSizeInterpolationSelectPlotter->ResetXYScale();
 }
 
-void SpriteSpawnProperty::CreateSpriteIndexInterpolaterUI()
+void CSpriteRuntimeSpawnProperty::CreateSpriteIndexInterpolaterUI()
 {
 	m_spriteIndexControlPointGridView = make_unique<CControlPointGridView<1>>(
 		"시간",
@@ -125,9 +125,9 @@ void SpriteSpawnProperty::CreateSpriteIndexInterpolaterUI()
 	m_spriteIndexInterpolationSelectPlotter->ResetXYScale();
 }
 
-void SpriteSpawnProperty::AdjustControlPointsFromLife()
+void CSpriteRuntimeSpawnProperty::AdjustControlPointsFromLife()
 {
-	ARuntimeSpawnProperty::AdjustControlPointsFromLife();
+	CRuntimeSpawnProperty::AdjustControlPointsFromLife();
 
 	const float& maxLife = m_runtimeSpawnPropertyCPU.maxLife;
 	
@@ -162,7 +162,7 @@ void SpriteSpawnProperty::AdjustControlPointsFromLife()
 }
 
 
-void SpriteSpawnProperty::AdjustControlPointsFromTextureCount()
+void CSpriteRuntimeSpawnProperty::AdjustControlPointsFromTextureCount()
 {
 	float maxSpriteTextureIndex = (m_spriteTextureCount - 1.f);
 	m_spriteIndexInitControlPoint.y[0] = min(m_spriteIndexInitControlPoint.y[0], float(maxSpriteTextureIndex));
@@ -178,9 +178,9 @@ void SpriteSpawnProperty::AdjustControlPointsFromTextureCount()
 	UpdateGPUSpriteIndexInterp();
 }
 
-void SpriteSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
+void CSpriteRuntimeSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
-	ARuntimeSpawnProperty::Initialize(device, deviceContext);
+	CRuntimeSpawnProperty::Initialize(device, deviceContext);
 
 	m_spriteSizeInterpolationSelectPlotter->CreateInterpolater(
 		m_spriteSizeInterpolationMethod,
@@ -201,9 +201,9 @@ void SpriteSpawnProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* 
 	UpdateGPUSpriteIndexInterp();
 }
 
-void SpriteSpawnProperty::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
+void CSpriteRuntimeSpawnProperty::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
 {
-	ARuntimeSpawnProperty::UpdateImpl(deviceContext, dt);
+	CRuntimeSpawnProperty::UpdateImpl(deviceContext, dt);
 
 	if (!m_checkGPUSpriteSizeInterpolater)
 	{
@@ -220,14 +220,14 @@ void SpriteSpawnProperty::UpdateImpl(ID3D11DeviceContext* deviceContext, float d
 	}
 }
 
-void SpriteSpawnProperty::DrawUIImpl()
+void CSpriteRuntimeSpawnProperty::DrawUIImpl()
 {
-	ARuntimeSpawnProperty::DrawUIImpl();
+	CRuntimeSpawnProperty::DrawUIImpl();
 	DrawSpriteSizeSetting();
 	DrawSpriteIndexSetting();
 }
 
-void SpriteSpawnProperty::DrawSpriteSizeSetting()
+void CSpriteRuntimeSpawnProperty::DrawSpriteSizeSetting()
 {
 	SeparatorText("스프라이트 크기 설정");
 	EInterpolationMethod currnetSpriteSizeInterpolateKind = m_spriteSizeInterpolationMethod;
@@ -265,7 +265,7 @@ void SpriteSpawnProperty::DrawSpriteSizeSetting()
 	m_spriteSizeInterpolationSelectPlotter->ViewInterpolatedPlots();
 }
 
-void SpriteSpawnProperty::DrawSpriteIndexSetting()
+void CSpriteRuntimeSpawnProperty::DrawSpriteIndexSetting()
 {
 	SeparatorText("스프라이트 텍스쳐 설정");
 	if (DragInt("텍스쳐 개수", (int*)&m_spriteTextureCount, 1.f, 0, 100, "%d"))
@@ -309,9 +309,9 @@ void SpriteSpawnProperty::DrawSpriteIndexSetting()
 	m_spriteIndexInterpolationSelectPlotter->ViewInterpolatedPlots();
 }
 
-void SpriteSpawnProperty::Serialize(std::ofstream& ofs)
+void CSpriteRuntimeSpawnProperty::Serialize(std::ofstream& ofs)
 {
-	ARuntimeSpawnProperty::Serialize(ofs);
+	CRuntimeSpawnProperty::Serialize(ofs);
 
 	SerializeHelper::SerializeElement<SControlPoint<2>>(ofs, m_spriteSizeInitControlPoint);
 	SerializeHelper::SerializeElement<SControlPoint<2>>(ofs, m_spriteSizeFinalControlPoint);
@@ -327,9 +327,9 @@ void SpriteSpawnProperty::Serialize(std::ofstream& ofs)
 	SerializeHelper::SerializeElement<bool>(ofs, m_checkGPUSpriteIndexInterpolater);
 }
 
-void SpriteSpawnProperty::Deserialize(std::ifstream& ifs)
+void CSpriteRuntimeSpawnProperty::Deserialize(std::ifstream& ifs)
 {
-	ARuntimeSpawnProperty::Deserialize(ifs);
+	CRuntimeSpawnProperty::Deserialize(ifs);
 
 	m_spriteSizeInitControlPoint = SerializeHelper::DeserializeElement<SControlPoint<2>>(ifs);
 	m_spriteSizeFinalControlPoint = SerializeHelper::DeserializeElement<SControlPoint<2>>(ifs);

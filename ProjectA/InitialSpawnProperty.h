@@ -47,6 +47,12 @@ protected:
 
 protected:
 	bool m_isImmortal = false;
+	bool m_useInitialColor = true;
+	bool m_useInitialSize = true;
+
+public:
+	inline void SetUseInitialColor(bool isOn) { m_useInitialColor = isOn;}
+	inline void SetUseInitialSize(bool isOn) { m_useInitialSize = isOn;}
 
 protected:
 	EShapedVector m_positionShapedVector;

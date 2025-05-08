@@ -5,7 +5,7 @@
 
 #include "InitialSpawnProperty.h"
 #include "EmitterUpdateProperty.h"
-#include "ARuntimeSpawnProperty.h"
+#include "RuntimeSpawnProperty.h"
 #include "ForceUpdateProperty.h"
 
 
