@@ -3,8 +3,9 @@
 cbuffer EmitterManagerProperties : register(b2)
 {
     uint particleMaxCount;
+    uint aliveParticleCount;
     uint sortBitOffset;
-    uint2 emitterPropertyDummy;
+    uint emitterPropertyDummy;
 };
 
 cbuffer indirectStagingBuffer : register(b3)
@@ -27,32 +28,24 @@ void main( uint3 Gid: SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
     uint groupID = Gid.x;
     uint groupThreadID = GTid.x;
     uint threadID = DTid.x;
+    bool isValid = threadID < emitterTotalParticleCount;
 
     localOffset[groupThreadID] = 0;
-    localMaskedDepth[groupThreadID] = 0;
-
     SpriteAliveIndex spriteAliveIndex = aliveIndexSet[threadID];
     uint maskedDepth = (spriteAliveIndex.depth >> sortBitOffset) & (RadixBinCount - 1);
     
-    if (threadID < emitterTotalParticleCount)
-    {
-        localMaskedDepth[groupThreadID] = maskedDepth;
-    }
+    localMaskedDepth[groupThreadID] = isValid ? maskedDepth : 0;
     GroupMemoryBarrierWithGroupSync();
 
-    uint offset = 0;
-    if (threadID < emitterTotalParticleCount)
+    if (isValid)
     {
+        uint offset = 0;
         for (uint groupThreadIdx = 0; groupThreadIdx < groupThreadID; ++groupThreadIdx)
         {
             offset += (localMaskedDepth[groupThreadIdx] == maskedDepth) ? 1 : 0;
         }
         localOffset[groupThreadID] = offset;
-    }
-    GroupMemoryBarrierWithGroupSync();
 
-    if (threadID < emitterTotalParticleCount)
-    {
         uint scatterIdx = globalHistogram[maskedDepth] + localHistogram[groupID].histogram[maskedDepth] + localOffset[groupThreadID];
         sortedAliveIndexSet[scatterIdx] = spriteAliveIndex;
     }

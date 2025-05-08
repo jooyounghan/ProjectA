@@ -92,14 +92,8 @@ void main( uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID,  uint3 DTid : 
     uint threadID = DTid.x;    
 
     bool isValid = threadID < RadixBinCount;
-    if (isValid)
-    {
-        groupHistogram[groupThreadID] = globalHistogram[threadID];
-    }
-    else
-    {
-        groupHistogram[groupThreadID] = 0;
-    }
+    
+     groupHistogram[groupThreadID] = isValid ? globalHistogram[threadID] : 0;
 
     GroupMemoryBarrierWithGroupSync();
 

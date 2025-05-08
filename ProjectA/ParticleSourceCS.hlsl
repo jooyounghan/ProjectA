@@ -4,7 +4,8 @@
 cbuffer EmitterManagerProperties : register(b2)
 {
     uint particleMaxCount;
-    uint3 emitterPropertyDummy;
+    uint aliveParticleCount;
+    uint2 emitterPropertyDummy;
 };
 
 cbuffer EmitterProperties : register(b3)
@@ -92,6 +93,8 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 
 #ifdef INITIAL_SOURCE
 	if (threadID >= initialParticleCount) return;
+#else
+	if (threadID + aliveParticleCount >= particleMaxCount) return;
 #endif
 
 	uint revivedIndex = deathIndexSet.Consume();

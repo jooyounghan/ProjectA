@@ -46,9 +46,9 @@ protected:
 	struct alignas(16)
 	{
 		const UINT particleMaxCount;
+		UINT aliveParticleCount;
 		UINT padding1;
 		UINT padding2;
-		UINT padding3;
 	} m_emitterManagerPropertyCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_emitterManagerPropertyGPU;
 	bool m_isEmitterManagerPropertyChanged;

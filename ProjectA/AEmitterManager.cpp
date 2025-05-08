@@ -427,6 +427,8 @@ void AEmitterManager::SourceParticles(ID3D11DeviceContext* deviceContext)
 #pragma endregion
 
 #pragma region ·±Å¸ÀÓ ¼Ò½Ì
+	deviceContext->CopyStructureCount(m_emitterManagerPropertyGPU->GetBuffer(), 4, m_aliveIndexSet->GetUAV());
+
 	CEmitterManagerCommonData::GParticleRuntimeSourceCS[emitterType]->SetShader(deviceContext);
 	for (auto& emitter : m_emitters)
 	{

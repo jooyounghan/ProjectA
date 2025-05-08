@@ -3,8 +3,9 @@
 cbuffer EmitterManagerProperties : register(b2)
 {
     uint particleMaxCount;
+    uint aliveParticleCount;
     uint sortBitOffset;
-    uint2 emitterPropertyDummy;
+    uint emitterPropertyDummy;
 };
 
 cbuffer indirectStagingBuffer : register(b3)

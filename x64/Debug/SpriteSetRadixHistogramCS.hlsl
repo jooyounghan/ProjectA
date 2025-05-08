@@ -3,8 +3,9 @@
 cbuffer EmitterManagerProperties : register(b2)
 {
     uint particleMaxCount;
+    uint aliveParticleCount;
     uint sortBitOffset;
-    uint2 emitterPropertyDummy;
+    uint emitterPropertyDummy;
 };
 
 cbuffer indirectStagingBuffer : register(b3)
@@ -26,19 +27,16 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
     uint groupThreadID = GTid.x;
     uint radixIdx = GTid.y;
     uint threadID = DTid.x;    
-    
     uint currentRadixIdx = groupThreadID + LocalThreadCount * radixIdx;
-    if (currentRadixIdx < RadixBinCount)
-    {
-        groupHistogram.histogram[currentRadixIdx] = 0;
-    }
+    
+    groupHistogram.histogram[currentRadixIdx] = 0;
     GroupMemoryBarrierWithGroupSync();
+    
+    SpriteAliveIndex spriteAliveIndex = aliveIndexSet[threadID];
+    uint maskedDepth = (spriteAliveIndex.depth >> sortBitOffset) & (RadixBinCount - 1);
     
     if (threadID < emitterTotalParticleCount)
     {   
-        SpriteAliveIndex spriteAliveIndex = aliveIndexSet[threadID];
-        uint maskedDepth = (spriteAliveIndex.depth >> sortBitOffset) & (RadixBinCount - 1);
-       
         InterlockedAdd(groupHistogram.histogram[maskedDepth], 1);
     }
     GroupMemoryBarrierWithGroupSync();
@@ -48,5 +46,4 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
         localHistogram[groupID].histogram[currentRadixIdx] = groupHistogram.histogram[currentRadixIdx];
         InterlockedAdd(globalHistogram[currentRadixIdx], groupHistogram.histogram[currentRadixIdx]);
     }
-    GroupMemoryBarrierWithGroupSync();
 }
