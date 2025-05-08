@@ -15,7 +15,8 @@ cbuffer indirectStagingBuffer : register(b3)
 
 RWStructuredBuffer<SpriteAliveIndex> aliveIndexSet : register(u0);
 RWStructuredBuffer<RadixHistogram> localHistogram : register(u1);
-RWStructuredBuffer<uint> globalOffset : register(u2);
+RWStructuredBuffer<PrefixSumStatus> localPrefixSumStatus : register(u2);
+RWStructuredBuffer<uint> globalOffset : register(u3);
 
 groupshared uint localOffset[LocalThreadCount];
 groupshared uint localMaskedDepth[LocalThreadCount];
@@ -50,8 +51,7 @@ void main(uint3 Gid: SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_
         }
     }
     GroupMemoryBarrierWithGroupSync();
-    
-    // 병목 구간 ===================
+       
     if (threadID < emitterTotalParticleCount)
     {
         uint offset = 0;

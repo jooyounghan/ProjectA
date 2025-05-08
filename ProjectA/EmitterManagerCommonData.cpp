@@ -31,6 +31,7 @@ unique_ptr<CComputeShader> CEmitterManagerCommonData::GInitializeParticleSetCS[E
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GParticleInitialSourceCS[EmitterTypeCount];
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GParticleRuntimeSourceCS[EmitterTypeCount];
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GCalcualteIndirectArgCS = make_unique<CComputeShader>();
+unique_ptr<CComputeShader> CEmitterManagerCommonData::GCalcualteRadixIndirectArgCS = make_unique<CComputeShader>();
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GCaculateParticleForceCS[EmitterTypeCount];
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GSpriteSetRadixHistogramCS = make_unique<CComputeShader>();
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GSpriteSetGlobalOffsetCS = make_unique<CComputeShader>();
@@ -111,7 +112,20 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 #pragma endregion
 
 #pragma region Indirect 인자 계산 관련 CS
-	GCalcualteIndirectArgCS->CreateShader(L"./ComputeIndirectArgsCS.hlsl", nullptr, "main", "cs_5_0", device);
+	const D3D_SHADER_MACRO radixIndirectArgsMacro[2] = 
+	{
+		{ "RADIX_INDIRECT", nullptr },
+		{ nullptr, nullptr }
+	};
+	try
+	{
+		GCalcualteIndirectArgCS->CreateShader(L"./ComputeIndirectArgsCS.hlsl", nullptr, "main", "cs_5_0", device);
+		GCalcualteRadixIndirectArgCS->CreateShader(L"./ComputeIndirectArgsCS.hlsl", radixIndirectArgsMacro, "main", "cs_5_0", device);
+	}
+	catch (exception& e)
+	{
+		bool test = true;
+	}
 #pragma endregion
 
 #pragma region 입자 시뮬레이션 관련 CS

@@ -19,24 +19,20 @@ RWStructuredBuffer<uint> globalHistogram : register(u2);
 
 groupshared RadixHistogram groupHistogram;
 
-[numthreads(LocalThreadCount, 1, 1)]
+[numthreads(LocalThreadCount, RadixCountPerGroupThread, 1)]
 void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID)
 {
     uint groupID = Gid.x;
     uint groupThreadID = GTid.x;
+    uint radixIdx = GTid.y;
     uint threadID = DTid.x;    
     
-    [unroll]
-    for (uint localIdx = 0; localIdx < countPerGroupThread; ++localIdx)
+    uint currentRadixIdx = groupThreadID + LocalThreadCount * radixIdx;
+    if (currentRadixIdx < RadixBinCount)
     {
-        uint currentRadixIdx = groupThreadID + LocalThreadCount * localIdx;
-        if (currentRadixIdx < RadixBinCount)
-        {
-            groupHistogram.histogram[currentRadixIdx] = 0;
-        }
+        groupHistogram.histogram[currentRadixIdx] = 0;
     }
     GroupMemoryBarrierWithGroupSync();
-    
     
     if (threadID < emitterTotalParticleCount)
     {   
@@ -47,17 +43,10 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
     }
     GroupMemoryBarrierWithGroupSync();
 
-
-    
-    [unroll]
-    for (uint globalIdx = 0; globalIdx < countPerGroupThread; ++globalIdx)
+    if (currentRadixIdx < RadixBinCount)
     {
-        uint currentRadixIdx = groupThreadID + LocalThreadCount * globalIdx;
-        if (currentRadixIdx < RadixBinCount)
-        {
-            localHistogram[groupID].histogram[currentRadixIdx] = groupHistogram.histogram[currentRadixIdx];
-            InterlockedAdd(globalHistogram[currentRadixIdx], groupHistogram.histogram[currentRadixIdx]);
-        }
+        localHistogram[groupID].histogram[currentRadixIdx] = groupHistogram.histogram[currentRadixIdx];
+        InterlockedAdd(globalHistogram[currentRadixIdx], groupHistogram.histogram[currentRadixIdx]);
     }
     GroupMemoryBarrierWithGroupSync();
 }

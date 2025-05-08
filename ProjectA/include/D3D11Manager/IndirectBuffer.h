@@ -50,22 +50,15 @@ namespace D3D11
 	public:
 		virtual void InitializeBuffer(ID3D11Device* const device) override
 		{
-			if (m_cpuData)
-			{
-				D3D11_SUBRESOURCE_DATA initialData = GetSubResourceData();
-				D3D11_BUFFER_DESC bufferDesc = CreateBufferDesc();
+			D3D11_SUBRESOURCE_DATA initialData = GetSubResourceData();
+			D3D11_BUFFER_DESC bufferDesc = CreateBufferDesc();
+			HRESULT hResult = device->CreateBuffer(&bufferDesc, m_cpuData ? &initialData : nullptr, m_buffer.GetAddressOf());
+			if (FAILED(hResult)) throw std::exception("CreateBuffer With InitializeBuffer Failed");
 
-				HRESULT hResult = device->CreateBuffer(&bufferDesc, &initialData, m_buffer.GetAddressOf());
-				if (FAILED(hResult)) throw std::exception("CreateBuffer With InitializeBuffer Failed");
-
-				D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = CreateUnorderedAccessViewDesc();
-				hResult = device->CreateUnorderedAccessView(m_buffer.Get(), &uavDesc, m_indirectUAV.GetAddressOf());
-				if (FAILED(hResult)) throw std::exception("CreateUnorderedAccessView For InitializeBuffer Failed");
-			}
-			else
-			{
-				throw std::exception("CPU Data Link For IndirectBuffer Failed");
-			}
+			D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = CreateUnorderedAccessViewDesc();
+			hResult = device->CreateUnorderedAccessView(m_buffer.Get(), &uavDesc, m_indirectUAV.GetAddressOf());
+			if (FAILED(hResult)) throw std::exception("CreateUnorderedAccessView For InitializeBuffer Failed");
 		}
 	};
 }
+

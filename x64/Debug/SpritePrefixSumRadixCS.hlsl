@@ -1,7 +1,7 @@
 #include "SpriteSortingCommon.hlsli"
 
-RWStructuredBuffer<PrefixSumStatus> prefixSumStatus : register(u0);
-RWStructuredBuffer<uint> globalHistogram : register(u1);
+RWStructuredBuffer<uint> globalHistogram : register(u0);
+RWStructuredBuffer<PrefixSumStatus> globalPrefixSumStatus : register(u1);
 
 groupshared uint localHistogram[LocalThreadCount];
 
@@ -23,16 +23,16 @@ void LocalUpSweep(uint groupID, uint groupThreadID)
     {
         int aggregate = localHistogram[LocalThreadCount - 1];
 
-        prefixSumStatus[groupID].aggregate = aggregate;
+        globalPrefixSumStatus[groupID].aggregate = aggregate;
 
         if (groupID == 0)
         {
-            prefixSumStatus[groupID].inclusivePrefix = prefixSumStatus[groupID].aggregate;
-            prefixSumStatus[groupID].statusFlag = 2;
+            globalPrefixSumStatus[groupID].inclusivePrefix = globalPrefixSumStatus[groupID].aggregate;
+            globalPrefixSumStatus[groupID].statusFlag = 2;
         }
         else
         {
-            prefixSumStatus[groupID].statusFlag = 1;
+            globalPrefixSumStatus[groupID].statusFlag = 1;
         }
     }
 
@@ -50,25 +50,25 @@ void DecoupledLookBack(uint groupID, uint groupThreadID)
 
             do
             {
-                InterlockedCompareExchange(prefixSumStatus[lookbackID].statusFlag, 0xFFFFFFFF, 0xFFFFFFFF, currentStatus);
+                InterlockedCompareExchange(globalPrefixSumStatus[lookbackID].statusFlag, 0xFFFFFFFF, 0xFFFFFFFF, currentStatus);
             } while (currentStatus == 0);
 
 
             if (currentStatus == 1)
             {
-                exclusivePrefix += prefixSumStatus[lookbackID].aggregate;
+                exclusivePrefix += globalPrefixSumStatus[lookbackID].aggregate;
                 continue;
             }
             else if (currentStatus == 2)
             {
-                exclusivePrefix += prefixSumStatus[lookbackID].inclusivePrefix;
+                exclusivePrefix += globalPrefixSumStatus[lookbackID].inclusivePrefix;
                 break;
             }
         }
 
-        prefixSumStatus[groupID].exclusivePrefix = exclusivePrefix;
-        prefixSumStatus[groupID].inclusivePrefix = prefixSumStatus[groupID].aggregate + exclusivePrefix;
-        InterlockedCompareStore(prefixSumStatus[groupID].statusFlag, 1, 2);
+        globalPrefixSumStatus[groupID].exclusivePrefix = exclusivePrefix;
+        globalPrefixSumStatus[groupID].inclusivePrefix = globalPrefixSumStatus[groupID].aggregate + exclusivePrefix;
+        InterlockedCompareStore(globalPrefixSumStatus[groupID].statusFlag, 1, 2);
     }
 }
 
@@ -118,6 +118,6 @@ void main( uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID,  uint3 DTid : 
     
     if (isValid)
     {
-        globalHistogram[threadID] = localHistogram[groupThreadID] + prefixSumStatus[groupID].exclusivePrefix;
+        globalHistogram[threadID] = localHistogram[groupThreadID] + globalPrefixSumStatus[groupID].exclusivePrefix;
     }
 }

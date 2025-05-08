@@ -213,6 +213,7 @@ void CProjectAApp::Update(float deltaTime)
 	{
 		emitterManager->InitializeAliveFlag(m_deviceContext);
 		emitterManager->SourceParticles(m_deviceContext);
+		emitterManager->CalculateIndirectArgs(m_deviceContext);
 		emitterManager->CalculateForces(m_deviceContext);
 		emitterManager->FinalizeParticles(m_deviceContext);
 		emitterManager->DrawParticles(m_deviceContext);

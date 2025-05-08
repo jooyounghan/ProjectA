@@ -1,8 +1,6 @@
 #include "ParticleCommon.hlsli"
 
-#define RadixBinCount (1 << RadixBitCount)
-
-static const uint countPerGroupThread = (RadixBinCount + LocalThreadCount - 1) / LocalThreadCount;
+static const uint RadixCountPerGroupThread = (RadixBinCount + LocalThreadCount - 1) / LocalThreadCount;
 
 struct PrefixSumStatus
 {

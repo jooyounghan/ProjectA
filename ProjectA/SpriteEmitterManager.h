@@ -54,9 +54,16 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> m_sortedAliveIndexRWSet;
 
 protected:
+	std::unique_ptr<D3D11::CStructuredBuffer> m_dispatchRadixIndirectCalculatedBuffer;
+	std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DISPATCH_INDIRECT_ARGS>> m_dispatchRadixIndirectBuffer;
+
+protected:
 	std::unique_ptr<D3D11::CStructuredBuffer> m_localHistogramSet;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_localPrefixSumStatus;
+
+protected:
 	std::unique_ptr<D3D11::CStructuredBuffer> m_globalHistogramSet;
-	std::unique_ptr<D3D11::CStructuredBuffer> m_prefixSumStatus;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_globalPrefixSumStatus;
 
 protected:
 	std::unique_ptr<D3D11::CStructuredBuffer> m_globalOffsets;
@@ -154,6 +161,7 @@ protected:
 
 public:
 	virtual void InitializeAliveFlag(ID3D11DeviceContext* deviceContext) override;
+	virtual void CalculateIndirectArgs(ID3D11DeviceContext* deviceContext) override;
 	virtual void FinalizeParticles(ID3D11DeviceContext* deviceContext);
 	virtual void DrawParticles(ID3D11DeviceContext* deviceContext) override;
 };

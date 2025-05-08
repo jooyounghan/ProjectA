@@ -270,12 +270,6 @@ void AEmitterManager::AddInterpolaterInformChangedEmitterID(UINT emitterID)
 
 void AEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
-	D3D11_DISPATCH_INDIRECT_ARGS dispatchIndirectArgs;
-	ZeroMem(dispatchIndirectArgs);
-	dispatchIndirectArgs.threadGroupCountX = 1;
-	dispatchIndirectArgs.threadGroupCountY = 1;
-	dispatchIndirectArgs.threadGroupCountZ = 1;
-
 	D3D11_DRAW_INSTANCED_INDIRECT_ARGS drawIndirectArgs;
 	ZeroMem(drawIndirectArgs);
 	drawIndirectArgs.VertexCountPerInstance = 0;
@@ -305,7 +299,7 @@ void AEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* 
 	m_dispatchIndirectCalculatedBuffer = make_unique<CStructuredBuffer>(4, 4, nullptr);
 	m_dispatchIndirectCalculatedBuffer->InitializeBuffer(device);
 
-	m_dispatchIndirectBuffer = make_unique<CIndirectBuffer<D3D11_DISPATCH_INDIRECT_ARGS>>(1, &dispatchIndirectArgs);
+	m_dispatchIndirectBuffer = make_unique<CIndirectBuffer<D3D11_DISPATCH_INDIRECT_ARGS>>(1, nullptr);
 	m_dispatchIndirectBuffer->InitializeBuffer(device);
 
 	m_instancedWorldTransformGPU = make_unique<CDynamicBuffer>(
@@ -457,9 +451,10 @@ void AEmitterManager::SourceParticles(ID3D11DeviceContext* deviceContext)
 
 	deviceContext->CSSetUnorderedAccessViews(0, 3, sourceNullUavs, nullptr);
 	deviceContext->CSSetShaderResources(0, 1, sourceNullSrvs);
+}
 
-
-#pragma region Caculate Indirect Args
+void AEmitterManager::CalculateIndirectArgs(ID3D11DeviceContext* deviceContext)
+{
 	deviceContext->CopyStructureCount(m_dispatchIndirectStagingBuffer->GetBuffer(), NULL, m_aliveIndexSet->GetUAV());
 
 	CEmitterManagerCommonData::GCalcualteIndirectArgCS->SetShader(deviceContext);
@@ -478,7 +473,6 @@ void AEmitterManager::SourceParticles(ID3D11DeviceContext* deviceContext)
 
 	deviceContext->CopyResource(m_dispatchIndirectBuffer->GetBuffer(), m_dispatchIndirectCalculatedBuffer->GetBuffer());
 	deviceContext->CopyStructureCount(m_drawIndirectBuffer->GetBuffer(), NULL, m_aliveIndexSet->GetUAV());
-#pragma endregion
 }
 
 void AEmitterManager::CalculateForces(ID3D11DeviceContext* deviceContext)

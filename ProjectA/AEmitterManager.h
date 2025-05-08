@@ -160,6 +160,7 @@ protected:
 public:
 	virtual void InitializeAliveFlag(ID3D11DeviceContext* deviceContext) = 0;
 	virtual void SourceParticles(ID3D11DeviceContext* deviceContext);
+	virtual void CalculateIndirectArgs(ID3D11DeviceContext* deviceContext);
 	virtual void CalculateForces(ID3D11DeviceContext* deviceContext);
 	virtual void FinalizeParticles(ID3D11DeviceContext* deviceContext) = 0;
 	virtual void DrawEmitters(ID3D11DeviceContext* deviceContext);
