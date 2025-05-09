@@ -13,27 +13,26 @@
 #include "GPUInterpPropertyManager.h"
 #include "MacroUtilities.h"
 
+#include "BlurFilm.h"
+
 using namespace std;
 using namespace DirectX;
 using namespace D3D11;
 
 ParticleEmitterManager::ParticleEmitterManager(
+	UINT particleEffectWidth,
+	UINT particleEffectHeight,
 	UINT maxEmitterCount,
 	UINT maxParticleCount
 )
-	: AEmitterManager("ParticleEmitterManager", maxEmitterCount, maxParticleCount)
+	: AEmitterManager("ParticleEmitterManager", maxEmitterCount, maxParticleCount),
+	m_blurFilm(make_unique<BlurFilm>(4, particleEffectWidth, particleEffectHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 1, 4))
 {
 	SParticleInterpInformation particleInterpInformation;
 	ZeroMem(particleInterpInformation);
 
 	m_emitterInterpInformationCPU.resize(m_maxEmitterCount, particleInterpInformation);
 	m_forcePropertyChangedEmitterIDs.reserve(m_maxEmitterCount);
-}
-
-ParticleEmitterManager& ParticleEmitterManager::GetParticleEmitterManager()
-{
-	static ParticleEmitterManager particleEmitterManager(MaxParticleEmitterCount, MaxParticleCount);
-	return particleEmitterManager;
 }
 
 void ParticleEmitterManager::ReclaimEmitterID(UINT emitterID) noexcept
@@ -112,6 +111,13 @@ void ParticleEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceCo
 		m_emitterInterpInformationCPU.data()
 	);
 	m_emitterInterpInformationGPU->InitializeBuffer(device);
+
+	m_blurFilm->Initialize(device, deviceContext);
+}
+
+vector<AFilm*> ParticleEmitterManager::GetFilmsForParticleEffects()
+{
+	return std::vector<AFilm*>{ m_blurFilm.get() };
 }
 
 void ParticleEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceContext)

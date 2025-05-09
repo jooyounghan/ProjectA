@@ -32,6 +32,13 @@ struct SpriteGSOut
     uint emitterID : EMITTERID;
 };
 
+struct ParticlePSOut
+{
+    float4 f4ShotFilm : SV_Target0;
+    float4 f4BlurFilm : SV_Target1;
+};
+
+
 float smoothstep(float edge0, float edge1, float x)
 {
     x = clamp((x - edge0) / (edge1 - edge0), 0, 1);

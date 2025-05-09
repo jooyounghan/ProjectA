@@ -62,11 +62,11 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 			{ nullptr, nullptr }
 		},
 		{
-			{ "RIBBON_EMITTER", nullptr },
+			{ "SPRITE_EMITTER", nullptr },
 			{ nullptr, nullptr }
 		},
 		{
-			{ "SPRITE_EMITTER", nullptr },
+			{ "RIBBON_EMITTER", nullptr },
 			{ nullptr, nullptr }
 		},
 		{

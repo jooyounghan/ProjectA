@@ -150,9 +150,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AEmitter.cpp" />
+    <ClCompile Include="AFilm.cpp" />
+    <ClCompile Include="BlurFilm.cpp" />
     <ClCompile Include="FilterCommonData.cpp" />
     <ClCompile Include="InitialSpawnProperty.cpp" />
     <ClCompile Include="EmitterUpdateProperty.cpp" />
+    <ClCompile Include="MotionVectorFilm.cpp" />
     <ClCompile Include="RuntimeSpawnProperty.cpp" />
     <ClCompile Include="ForceUpdateProperty.cpp" />
     <ClCompile Include="Camera.cpp" />
@@ -172,6 +175,7 @@
     <ClCompile Include="ParticleRuntimeSpawnProperty.cpp" />
     <ClCompile Include="ProjectAApp.cpp" />
     <ClCompile Include="ShapedVectorSelector.cpp" />
+    <ClCompile Include="ShotFilm.cpp" />
     <ClCompile Include="SpriteEmitter.cpp" />
     <ClCompile Include="SpriteEmitterManager.cpp" />
     <ClCompile Include="SpriteRuntimeSpawnProperty.cpp" />
@@ -179,10 +183,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AEmitter.h" />
+    <ClInclude Include="BlurFilm.h" />
     <ClInclude Include="FilterCommonData.h" />
+    <ClInclude Include="AFilm.h" />
     <ClInclude Include="InitialPropertyDefinition.h" />
     <ClInclude Include="InitialSpawnProperty.h" />
     <ClInclude Include="EmitterUpdateProperty.h" />
+    <ClInclude Include="MotionVectorFilm.h" />
     <ClInclude Include="RuntimeSpawnProperty.h" />
     <ClInclude Include="ForceUpdateProperty.h" />
     <ClInclude Include="BaseSelector.h" />
@@ -217,6 +224,7 @@
     <ClInclude Include="ShapedVectorProperty.h" />
     <ClInclude Include="ShapedVectorSelector.h" />
     <ClInclude Include="IUpdatable.h" />
+    <ClInclude Include="ShotFilm.h" />
     <ClInclude Include="SpriteEmitter.h" />
     <ClInclude Include="SpriteEmitterManager.h" />
     <ClInclude Include="SpriteRuntimeSpawnProperty.h" />
@@ -239,6 +247,13 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="FilterBlurPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="FilterTracePS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>

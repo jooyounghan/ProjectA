@@ -1,10 +1,6 @@
 #pragma once
 #include "IUpdatable.h"
-
-#include "Texture2DInstance.h"
-#include "RTVOption.h"
-#include "SRVOption.h"
-#include "DSVOption.h"
+#include "ShotFilm.h"
 
 #include <d3d11.h>
 #include <wrl/client.h>
@@ -33,8 +29,8 @@ public:
 		ID3D11RenderTargetView* backBufferRTV,
 		const DirectX::XMVECTOR& position,
 		const DirectX::XMVECTOR& angle,
-		UINT viewportWidth,
-		UINT viewportHeight,
+		UINT filmWidth,
+		UINT filmHeight,
 		float fovAngle,
 		float nearZ,
 		float farZ,
@@ -43,16 +39,11 @@ public:
 	~CCamera() override = default;
 
 protected:
-	ID3D11RenderTargetView* m_backBufferRTV;
-	D3D11_VIEWPORT m_viewport;
-
-public:
-	inline const D3D11_VIEWPORT& GetViewport() const noexcept { return m_viewport; }
+	ShotFilm m_shotFilm;
+	UINT m_blurCount;
 
 protected:
-	UINT m_width;
-	UINT m_height;
-	UINT m_blurCount;
+	std::vector<AFilm*> m_attachedFilms;
 
 protected:
 	DirectX::XMVECTOR m_position;
@@ -72,28 +63,6 @@ protected:
 
 public:
 	ID3D11Buffer* GetPropertiesBuffer() const noexcept;
-
-protected:
-	std::unique_ptr<Texture2DInstance<D3D11::RTVOption, D3D11::SRVOption>> m_renderTargetTexture;
-	std::unique_ptr<Texture2DInstance<D3D11::RTVOption, D3D11::SRVOption>> m_filteredTexture;
-	std::unique_ptr<Texture2DInstance<D3D11::DSVOption>> m_depthStencil;
-
-protected:
-	std::vector<std::unique_ptr<Texture2DInstance<D3D11::RTVOption, D3D11::SRVOption>>> m_blurredTextures;
-	std::vector<D3D11_VIEWPORT> m_blurredViewports;
-
-public:
-	ID3D11Texture2D* GetRenderTargetTexture() const noexcept;
-	ID3D11RenderTargetView* GetRenderTargetRTV() const noexcept;
-	ID3D11ShaderResourceView* GetRenderTargetSRV() const noexcept;
-public:
-	ID3D11Texture2D* GetFilteredTexture() const noexcept;
-	ID3D11RenderTargetView* GetFilteredRTV() const noexcept;
-	ID3D11ShaderResourceView* GetFilteredSRV() const noexcept;
-
-public:
-	ID3D11Texture2D* GetDepthStencilTexture() const noexcept;
-	ID3D11DepthStencilView* GetDSV() const noexcept;
 
 protected:
 	float m_cameraSpeed;
@@ -117,10 +86,15 @@ protected:
 	void UpdateAngle(int mouseX, int mouseY);
 	void UpdateKeyStatus(WPARAM keyInformation, bool isDown);
 
+public:
+	void AttachFilm(const std::vector<AFilm*>& films) { m_attachedFilms.insert(m_attachedFilms.end(), films.begin(), films.end()); }
+	void ClearFilm(ID3D11DeviceContext* deviceContext) noexcept;
+	void DevelopFilm(ID3D11DeviceContext* deviceContext);
+	void BlendFilm(ID3D11DeviceContext* deviceContext);
 
 public:
+	void ApplyCamera(ID3D11DeviceContext* deviceContext);
 	void ClearCamera(ID3D11DeviceContext* deviceContext);
-	void Blur(ID3D11DeviceContext* deviceContext);
-	void GammaCorrection(ID3D11DeviceContext* deviceContext);
+	void Print(ID3D11DeviceContext* deviceContext);
 };
 

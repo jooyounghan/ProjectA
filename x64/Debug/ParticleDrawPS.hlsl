@@ -11,7 +11,7 @@ SamplerState wrapSampler : register(s0);
 #ifdef SPRITE_EMITTER
 float4 main(SpriteGSOut input) : SV_TARGET
 #else
-float4 main(ParticleGSOut input) : SV_TARGET
+ParticlePSOut main(ParticleGSOut input) : SV_TARGET
 #endif
 {
 #ifdef SPRITE_EMITTER
@@ -39,7 +39,12 @@ float4 main(ParticleGSOut input) : SV_TARGET
     float alignment = clamp(dot(-input.negativeViewVelocityDir, normalize(offsetTexCoord)), 0.f, 1.f);
 
 	float scale = alignment * smoothstep(0.f, 1.f, 1.f - dist);
-	float4 color = input.color;
-	return color * scale;
+	float4 color = input.color * scale;
+
+	ParticlePSOut result;
+	result.f4ShotFilm = color;
+	result.f4BlurFilm = color;
+	return result;
+
 #endif	
 }

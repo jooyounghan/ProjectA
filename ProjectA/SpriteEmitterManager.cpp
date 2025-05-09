@@ -37,12 +37,6 @@ SpriteEmitterManager::SpriteEmitterManager(
 	m_forcePropertyChangedEmitterIDs.reserve(m_maxEmitterCount);
 }
 
-SpriteEmitterManager& SpriteEmitterManager::GetSpriteEmitterManager()
-{
-	static SpriteEmitterManager spriteEmitterManager(MaxSpriteEmitterCount, 1024 * 1024);
-	return spriteEmitterManager;
-}
-
 void SpriteEmitterManager::ReclaimEmitterID(UINT emitterID) noexcept
 {
 	ZeroMem(m_emitterInterpInformationCPU[emitterID]);
@@ -442,6 +436,11 @@ void SpriteEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float 
 
 	m_spriteIndexD1Dim1PorpertyManager->Update(deviceContext, dt);
 	m_spriteIndexD3Dim1PorpertyManager->Update(deviceContext, dt);
+}
+
+vector<AFilm*> SpriteEmitterManager::GetFilmsForParticleEffects()
+{
+	return std::vector<AFilm*>();
 }
 
 void SpriteEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceContext)

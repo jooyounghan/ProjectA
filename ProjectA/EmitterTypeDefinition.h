@@ -3,8 +3,8 @@
 enum class EEmitterType : size_t
 {
 	ParticleEmitter,
-	RibbonEmitter,
 	SpriteEmitter,
+	RibbonEmitter,
 	MeshEmitter,
 	EmitterTypeCount
 };

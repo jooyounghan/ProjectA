@@ -1,30 +1,26 @@
 #pragma once
 #include "AEmitterManager.h"
 
-#define MaxParticleEmitterCount 250
+class BlurFilm;
 
 class ParticleEmitterManager : public AEmitterManager
 {
-private:
+public:
 	ParticleEmitterManager(
+		UINT particleEffectWidth,
+		UINT particleEffectHeight,
 		UINT maxEmitterCount,
 		UINT maxParticleCount
 	);
-	ParticleEmitterManager(const ParticleEmitterManager&) = delete;
-	ParticleEmitterManager& operator=(const ParticleEmitterManager&) = delete;
 	~ParticleEmitterManager() override = default;
-
-public:
-	static ParticleEmitterManager& GetParticleEmitterManager();
 
 protected:
 	virtual UINT GetEmitterType() const noexcept override { return static_cast<UINT>(EEmitterType::ParticleEmitter); }
-
-protected:
 	virtual void ReclaimEmitterID(UINT emitterID) noexcept override;
+	virtual void CreateAliveIndexSet(ID3D11Device* device) override;
 
 protected:
-	virtual void CreateAliveIndexSet(ID3D11Device* device) override;
+	std::unique_ptr<BlurFilm> m_blurFilm;
 
 protected:
 	std::vector<SParticleInterpInformation> m_emitterInterpInformationCPU;
@@ -49,6 +45,9 @@ protected:
 
 protected:
 	virtual void InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
+
+public:
+	virtual std::vector<AFilm*> GetFilmsForParticleEffects() override;
 
 public:
 	virtual void InitializeAliveFlag(ID3D11DeviceContext* deviceContext) override;

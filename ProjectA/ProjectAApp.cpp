@@ -49,6 +49,8 @@ using namespace ImGui;
 
 
 #define CurrentEmitterTypeCount 2
+#define MaxParticleEmitterCount 250
+#define MaxSpriteEmitterCount 250
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
 	HWND hWnd,
@@ -147,17 +149,18 @@ void CProjectAApp::Init(
 		XMVectorSet(0.f, 10.f, 0.f, 1.f),
 		XMVectorSet(0.1f, 0.f, 0.f, 1.f),
 		m_width, m_height, 120.f, 0.01f, 100000.f,
-		4
+		5
 	);
 	m_camera->Initialize(m_device, m_deviceContext);
 
+	m_emitterManagers.emplace_back(make_unique<ParticleEmitterManager>(
+			m_width, m_height, MaxParticleEmitterCount, MaxParticleCount
+	));
+	m_emitterManagers.emplace_back(make_unique<SpriteEmitterManager>(
+		MaxSpriteEmitterCount, MaxParticleCount
+	));
 
-	AEmitterManager* emitterManagers[] = {
-		&ParticleEmitterManager::GetParticleEmitterManager(),
-		&SpriteEmitterManager::GetSpriteEmitterManager()
-	};
-
-	for (auto& emitterManager : emitterManagers)
+	for (auto& emitterManager : m_emitterManagers)
 	{
 		emitterManager->Initialize(m_device, m_deviceContext);
 	}
@@ -181,12 +184,7 @@ void CProjectAApp::Update(float deltaTime)
 #pragma region 인스턴스 업데이트
 	m_camera->Update(m_deviceContext, deltaTime);
 
-	AEmitterManager* emitterManagers[] = {
-		&ParticleEmitterManager::GetParticleEmitterManager(),
-		&SpriteEmitterManager::GetSpriteEmitterManager()
-	};
-
-	for (auto& emitterManager : emitterManagers)
+	for (auto& emitterManager : m_emitterManagers)
 	{
 		emitterManager->Update(m_deviceContext, deltaTime);
 	}
@@ -194,9 +192,6 @@ void CProjectAApp::Update(float deltaTime)
 
 #pragma region 카메라 초기화 및 설정
 	m_camera->ClearCamera(m_deviceContext);
-	ID3D11RenderTargetView* mainRTV[] = { m_camera->GetRenderTargetRTV() };
-	m_deviceContext->OMSetRenderTargets(1, mainRTV, m_camera->GetDSV());
-	m_deviceContext->RSSetViewports(1, &m_camera->GetViewport());
 #pragma endregion
 
 #pragma region 입자 그리기
@@ -209,14 +204,21 @@ void CProjectAApp::Update(float deltaTime)
 	m_deviceContext->VSSetConstantBuffers(0, 2, commonCbs);
 	m_deviceContext->GSSetConstantBuffers(0, 2, commonCbs);
 	m_deviceContext->PSSetConstantBuffers(0, 2, commonCbs);
-	for (auto& emitterManager : emitterManagers)
+	for (auto& emitterManager : m_emitterManagers)
 	{
+		m_camera->ClearFilm(m_deviceContext);
+		m_camera->AttachFilm(emitterManager->GetFilmsForParticleEffects());
+		m_camera->ApplyCamera(m_deviceContext);
+
 		emitterManager->InitializeAliveFlag(m_deviceContext);
 		emitterManager->SourceParticles(m_deviceContext);
 		emitterManager->CalculateIndirectArgs(m_deviceContext);
 		emitterManager->CalculateForces(m_deviceContext);
 		emitterManager->FinalizeParticles(m_deviceContext);
 		emitterManager->DrawParticles(m_deviceContext);
+
+		m_camera->DevelopFilm(m_deviceContext);
+		m_camera->BlendFilm(m_deviceContext);
 	}
 	m_deviceContext->CSSetConstantBuffers(0, 2, commonNullCbs);
 	m_deviceContext->VSSetConstantBuffers(0, 2, commonNullCbs);
@@ -226,7 +228,7 @@ void CProjectAApp::Update(float deltaTime)
 
 #pragma region 방출기 그리기
 	m_deviceContext->VSSetConstantBuffers(0, 1, &cameraCb);
-	for (auto& emitterManager : emitterManagers)
+	for (auto& emitterManager : m_emitterManagers)
 	{
 		emitterManager->DrawEmitters(m_deviceContext);
 	}
@@ -234,10 +236,7 @@ void CProjectAApp::Update(float deltaTime)
 #pragma endregion
 
 #pragma region 전체 화면에 대한 후처리 수행
-	m_deviceContext->PSSetConstantBuffers(0, 2, commonCbs);
-	m_camera->Blur(m_deviceContext);
-	m_camera->GammaCorrection(m_deviceContext);
-	m_deviceContext->PSSetConstantBuffers(0, 2, commonNullCbs);
+	m_camera->Print(m_deviceContext);
 #pragma endregion
 
 #pragma region UI 그리기
@@ -301,16 +300,16 @@ void CProjectAApp::DrawEmitterHandler()
 			{
 			case EEmitterType::ParticleEmitter:
 			{
-				ParticleEmitterManager& particleEmitterManager = ParticleEmitterManager::GetParticleEmitterManager();
-				UINT particleEmitterID = particleEmitterManager.AddEmitter(XMVectorZero(), XMVectorZero(), m_device, m_deviceContext);
-				particleEmitterManager.GetEmitter(particleEmitterID)->Initialize(m_device, m_deviceContext);
+				AEmitterManager* particleEmitterManager = m_emitterManagers[static_cast<size_t>(EEmitterType::ParticleEmitter)].get();
+				UINT particleEmitterID = particleEmitterManager->AddEmitter(XMVectorZero(), XMVectorZero(), m_device, m_deviceContext);
+				particleEmitterManager->GetEmitter(particleEmitterID)->Initialize(m_device, m_deviceContext);
 				break;
 			}
 			case EEmitterType::SpriteEmitter:
 			{
-				SpriteEmitterManager& spriteEmitterManager = SpriteEmitterManager::GetSpriteEmitterManager();
-				UINT spriteEmitterID = spriteEmitterManager.AddEmitter(XMVectorZero(), XMVectorZero(), m_device, m_deviceContext);
-				spriteEmitterManager.GetEmitter(spriteEmitterID)->Initialize(m_device, m_deviceContext);
+				AEmitterManager* spriteEmitterManager = m_emitterManagers[static_cast<size_t>(EEmitterType::SpriteEmitter)].get();
+				UINT spriteEmitterID = spriteEmitterManager->AddEmitter(XMVectorZero(), XMVectorZero(), m_device, m_deviceContext);
+				spriteEmitterManager->GetEmitter(spriteEmitterID)->Initialize(m_device, m_deviceContext);
 				break;
 			}
 			default:
@@ -329,14 +328,10 @@ void CProjectAApp::DrawEmitterHandler()
 
 	static int emitterSelectIndex[CurrentEmitterTypeCount] = { -1 , -1 } ;
 	static string emitterNames[CurrentEmitterTypeCount] = { "파티클 이미터", "스프라이트 이미터" };
-	AEmitterManager* emitterManagers[CurrentEmitterTypeCount] = {
-		&ParticleEmitterManager::GetParticleEmitterManager(),
-		&SpriteEmitterManager::GetSpriteEmitterManager()
-	};
 
 	for (size_t idx = 0; idx < CurrentEmitterTypeCount; ++idx)
 	{
-		DrawEmitterSelector(emitterNames[idx], emitterSelectIndex[idx], emitterManagers[idx]);
+		DrawEmitterSelector(emitterNames[idx], emitterSelectIndex[idx], m_emitterManagers[idx].get());
 	}
 }
 void CProjectAApp::DrawEmitterSelector(const std::string& emitterName, int& emitterSelectIndex, AEmitterManager* emitterManager)

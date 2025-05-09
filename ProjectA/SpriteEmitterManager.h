@@ -3,7 +3,6 @@
 #include "Texture2DInstance.h"
 #include "SRVOption.h"
 
-#define MaxSpriteEmitterCount 250
 #define MaxSpriteTextureWidth 500
 #define MaxSpriteTextureHeight 100
 
@@ -28,18 +27,13 @@ struct SRadixHistogram
 
 class SpriteEmitterManager : public AEmitterManager
 {
-private:
+public:
 	SpriteEmitterManager(
 		UINT maxEmitterCount,
 		UINT maxParticleCount
 	);
-	SpriteEmitterManager(const SpriteEmitterManager&) = delete;
-	SpriteEmitterManager& operator=(const SpriteEmitterManager&) = delete;
 	~SpriteEmitterManager() override = default;
 
-
-public:
-	static SpriteEmitterManager& GetSpriteEmitterManager();
 
 protected:
 	virtual UINT GetEmitterType() const noexcept override { return static_cast<UINT>(EEmitterType::SpriteEmitter); }
@@ -155,6 +149,9 @@ protected:
 protected:
 	virtual void InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
 	virtual void UpdateImpl(ID3D11DeviceContext* deviceContext, float dt) override;
+
+public:
+	virtual std::vector<AFilm*> GetFilmsForParticleEffects() override;
 
 public:
 	virtual void InitializeAliveFlag(ID3D11DeviceContext* deviceContext) override;

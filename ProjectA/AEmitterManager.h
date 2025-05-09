@@ -19,6 +19,7 @@
 #include <string>
 
 class AEmitter;
+class AFilm;
 
 template<uint32_t Dim, uint32_t CoefficientCount>
 class CGPUInterpPropertyManager;
@@ -156,6 +157,9 @@ public:
 protected:
 	virtual void InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* deviceContext);
 	virtual void UpdateImpl(ID3D11DeviceContext* deviceContext, float dt);
+
+public:
+	virtual std::vector<AFilm*> GetFilmsForParticleEffects() = 0;
 
 public:
 	virtual void InitializeAliveFlag(ID3D11DeviceContext* deviceContext) = 0;
