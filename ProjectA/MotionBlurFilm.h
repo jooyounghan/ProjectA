@@ -5,10 +5,10 @@
 
 #include <memory>
 
-class MotionBlurFilm : public AFilm
+class CMotionBlurFilm : public AFilm
 {
 public:
-	MotionBlurFilm(
+	CMotionBlurFilm(
 		UINT samplingCount,
 		float dissipationFactor,
 		UINT width,
@@ -17,7 +17,7 @@ public:
 		UINT bitLevel,
 		UINT channelCount
 	);
-	virtual ~MotionBlurFilm() override = default;
+	virtual ~CMotionBlurFilm() override = default;
 
 protected:
 	Texture2DInstance<D3D11::RTVOption, D3D11::SRVOption, D3D11::UAVOption> m_motionBlurredFilm;
@@ -38,8 +38,7 @@ public:
 public:
 	virtual void Blend(
 		ID3D11DeviceContext* deviceContext,
-		AFilm* blendTargetFilm,
-		const D3D11_VIEWPORT & blendTargetViewport
+		AFilm* blendTargetFilm
 	) override;
 };
 

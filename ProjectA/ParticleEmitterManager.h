@@ -1,8 +1,8 @@
 #pragma once
 #include "AEmitterManager.h"
 
-class BlurFilm;
-class MotionBlurFilm;
+class CBloomFilm;
+class CMotionBlurFilm;
 
 class ParticleEmitterManager : public AEmitterManager
 {
@@ -21,8 +21,8 @@ protected:
 	virtual void CreateAliveIndexSet(ID3D11Device* device) override;
 
 protected:
-	std::unique_ptr<BlurFilm> m_blurFilm;
-	std::unique_ptr<MotionBlurFilm> m_motionBlurFilm;
+	std::unique_ptr<CBloomFilm> m_bloomFilm;
+	std::unique_ptr<CMotionBlurFilm> m_motionBlurFilm;
 
 protected:
 	std::vector<SParticleInterpInformation> m_emitterInterpInformationCPU;
@@ -49,11 +49,8 @@ protected:
 	virtual void InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
 
 public:
-	virtual std::vector<AFilm*> GetFilmsForParticleEffects() override;
-
-public:
 	virtual void InitializeAliveFlag(ID3D11DeviceContext* deviceContext) override;
 	virtual void FinalizeParticles(ID3D11DeviceContext* deviceContext);
-	virtual void DrawParticles(ID3D11DeviceContext* deviceContext) override;
+	virtual void DrawParticles(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext) override;
 };
 

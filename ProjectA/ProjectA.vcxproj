@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -151,7 +151,7 @@
   <ItemGroup>
     <ClCompile Include="AEmitter.cpp" />
     <ClCompile Include="AFilm.cpp" />
-    <ClCompile Include="BlurFilm.cpp" />
+    <ClCompile Include="BloomFilm.cpp" />
     <ClCompile Include="FilterCommonData.cpp" />
     <ClCompile Include="InitialSpawnProperty.cpp" />
     <ClCompile Include="EmitterUpdateProperty.cpp" />
@@ -183,7 +183,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AEmitter.h" />
-    <ClInclude Include="BlurFilm.h" />
+    <ClInclude Include="BloomFilm.h" />
     <ClInclude Include="FilterCommonData.h" />
     <ClInclude Include="AFilm.h" />
     <ClInclude Include="InitialPropertyDefinition.h" />

@@ -25,7 +25,7 @@ struct SRadixHistogram
 	UINT histogram[1 << RadixBitCount];
 };
 
-class BlurFilm;
+class CBloomFilm;
 
 class SpriteEmitterManager : public AEmitterManager
 {
@@ -39,7 +39,7 @@ public:
 	~SpriteEmitterManager() override = default;
 
 protected:
-	std::unique_ptr<BlurFilm> m_blurFilm;
+	std::unique_ptr<CBloomFilm> m_bloomFilm;
 
 protected:
 	virtual UINT GetEmitterType() const noexcept override { return static_cast<UINT>(EEmitterType::SpriteEmitter); }
@@ -157,11 +157,8 @@ protected:
 	virtual void UpdateImpl(ID3D11DeviceContext* deviceContext, float dt) override;
 
 public:
-	virtual std::vector<AFilm*> GetFilmsForParticleEffects() override;
-
-public:
 	virtual void InitializeAliveFlag(ID3D11DeviceContext* deviceContext) override;
 	virtual void CalculateIndirectArgs(ID3D11DeviceContext* deviceContext) override;
 	virtual void FinalizeParticles(ID3D11DeviceContext* deviceContext);
-	virtual void DrawParticles(ID3D11DeviceContext* deviceContext) override;
+	virtual void DrawParticles(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext) override;
 };

@@ -2,10 +2,10 @@
 #include "AFilm.h"
 #include "DSVOption.h"
 
-class ShotFilm : public AFilm
+class CShotFilm : public AFilm
 {
 public:
-	ShotFilm(
+	CShotFilm(
 		UINT width, 
 		UINT height, 
 		DXGI_FORMAT sceneFormat,
@@ -14,7 +14,7 @@ public:
 		UINT channelCount,
 		ID3D11RenderTargetView* backBufferRTV = nullptr
 	);
-	virtual ~ShotFilm() override = default;
+	virtual ~CShotFilm() override = default;
 
 protected:
 	Texture2DInstance<D3D11::DSVOption> m_depthStencil;

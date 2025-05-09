@@ -14,7 +14,7 @@ using namespace std;
 using namespace DirectX;
 using namespace D3D11;
 
-MotionBlurFilm::MotionBlurFilm(
+CMotionBlurFilm::CMotionBlurFilm(
 	UINT samplingCount,
 	float dissipationFactor,
 	UINT width, 
@@ -31,7 +31,7 @@ MotionBlurFilm::MotionBlurFilm(
 	m_motionBlurFilmPropertiesCPU.m_dissipationFactor = dissipationFactor;
 }
 
-void MotionBlurFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
+void CMotionBlurFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 	AFilm::Initialize(device, deviceContext);
 	
@@ -41,7 +41,7 @@ void MotionBlurFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* devic
 	m_motionBlurredFilm.InitializeByOption(device, deviceContext);
 }
 
-void MotionBlurFilm::ClearFilm(ID3D11DeviceContext* deviceContext)
+void CMotionBlurFilm::ClearFilm(ID3D11DeviceContext* deviceContext)
 {
 	AFilm::ClearFilm(deviceContext);
 	constexpr FLOAT clearColor[4] = { 0.f, 0.f, 0.f, 0.f };
@@ -49,7 +49,7 @@ void MotionBlurFilm::ClearFilm(ID3D11DeviceContext* deviceContext)
 }
 
 
-void MotionBlurFilm::Blend(ID3D11DeviceContext* deviceContext, AFilm* blendTargetFilm, const D3D11_VIEWPORT& blendTargetViewport)
+void CMotionBlurFilm::Blend(ID3D11DeviceContext* deviceContext, AFilm* blendTargetFilm)
 {
 	CFilterCommonData::GFilterMotionBlurCS->SetShader(deviceContext);
 	{
@@ -87,6 +87,7 @@ void MotionBlurFilm::Blend(ID3D11DeviceContext* deviceContext, AFilm* blendTarge
 
 	CFilterCommonData::GFilterAdditivePSO->ApplyPSO(deviceContext);
 	{
+		const D3D11_VIEWPORT& viewport = blendTargetFilm->GetFilmViewPort();
 		deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		deviceContext->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
 		deviceContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, NULL);
@@ -97,7 +98,7 @@ void MotionBlurFilm::Blend(ID3D11DeviceContext* deviceContext, AFilm* blendTarge
 		ID3D11RenderTargetView* blendNullRTV = nullptr;
 
 		deviceContext->OMSetRenderTargets(1, &blendRTV, nullptr);
-		deviceContext->RSSetViewports(1, &blendTargetViewport);
+		deviceContext->RSSetViewports(1, &viewport);
 		deviceContext->PSSetShaderResources(0, 1, &traceSRV);
 
 		deviceContext->DrawIndexedInstanced(

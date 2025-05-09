@@ -19,7 +19,7 @@
 #include <string>
 
 class AEmitter;
-class AFilm;
+class CShotFilm;
 
 template<uint32_t Dim, uint32_t CoefficientCount>
 class CGPUInterpPropertyManager;
@@ -159,14 +159,11 @@ protected:
 	virtual void UpdateImpl(ID3D11DeviceContext* deviceContext, float dt);
 
 public:
-	virtual std::vector<AFilm*> GetFilmsForParticleEffects() = 0;
-
-public:
 	virtual void InitializeAliveFlag(ID3D11DeviceContext* deviceContext) = 0;
 	virtual void SourceParticles(ID3D11DeviceContext* deviceContext);
 	virtual void CalculateIndirectArgs(ID3D11DeviceContext* deviceContext);
 	virtual void CalculateForces(ID3D11DeviceContext* deviceContext);
 	virtual void FinalizeParticles(ID3D11DeviceContext* deviceContext) = 0;
 	virtual void DrawEmitters(ID3D11DeviceContext* deviceContext);
-	virtual void DrawParticles(ID3D11DeviceContext* deviceContext) = 0;
+	virtual void DrawParticles(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext) = 0;
 };

@@ -8,7 +8,7 @@
 
 using namespace DirectX;
 
-ShotFilm::ShotFilm(
+CShotFilm::CShotFilm(
 	UINT width, 
 	UINT height,
 	DXGI_FORMAT sceneFormat,
@@ -25,7 +25,7 @@ ShotFilm::ShotFilm(
 
 }
 
-void ShotFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
+void CShotFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 	AFilm::Initialize(device, deviceContext);
 	m_depthStencil.InitializeByOption(device, deviceContext);
@@ -35,7 +35,7 @@ void ShotFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceConte
 	}
 }
 
-void ShotFilm::ClearFilm(ID3D11DeviceContext* deviceContext)
+void CShotFilm::ClearFilm(ID3D11DeviceContext* deviceContext)
 {
 	AFilm::ClearFilm(deviceContext);
 	deviceContext->ClearDepthStencilView(
@@ -45,7 +45,7 @@ void ShotFilm::ClearFilm(ID3D11DeviceContext* deviceContext)
 	);
 }
 
-void ShotFilm::Develop(ID3D11DeviceContext* deviceContext)
+void CShotFilm::Develop(ID3D11DeviceContext* deviceContext)
 {
 	ID3D11Buffer* vertexBuffers[] = {
 		CFilterCommonData::GFilterQuadPositionBuffer->GetBuffer(),

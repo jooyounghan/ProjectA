@@ -1,4 +1,4 @@
-#include "BlurFilm.h"
+#include "BloomFilm.h"
 #include "FilterCommonData.h"
 
 #include "ConstantBuffer.h"
@@ -12,7 +12,7 @@ using namespace std;
 using namespace D3D11;
 using namespace DirectX;
 
-BlurFilm::BlurFilm(
+CBloomFilm::CBloomFilm(
 	size_t blurCount,
 	float blurRadius,
 	UINT width, 
@@ -24,8 +24,8 @@ BlurFilm::BlurFilm(
 	: AFilm(width, height, sceneFormat, bitLevel, channelCount),
 	m_blurCount(blurCount)
 {
-	ZeroMem(m_blurFilmPropertiesCPU);
-	m_blurFilmPropertiesCPU.m_blurRadius = blurRadius;
+	ZeroMem(m_bloomFilmPropertiesCPU);
+	m_bloomFilmPropertiesCPU.m_blurRadius = blurRadius;
 
 	UINT blurWidth = width;
 	UINT blurHeight = height;
@@ -44,12 +44,12 @@ BlurFilm::BlurFilm(
 	}
 }
 
-void BlurFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
+void CBloomFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 	AFilm::Initialize(device, deviceContext);
 
-	m_blurFilmPropertiesGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_blurFilmPropertiesCPU));
-	m_blurFilmPropertiesGPU->InitializeBuffer(device);
+	m_bloomFilmPropertiesGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_bloomFilmPropertiesCPU));
+	m_bloomFilmPropertiesGPU->InitializeBuffer(device);
 
 	for (UINT blurIdx = 0; blurIdx < m_blurCount; ++blurIdx)
 	{
@@ -69,7 +69,7 @@ void BlurFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceConte
 	}
 }
 
-void BlurFilm::ClearFilm(ID3D11DeviceContext* deviceContext)
+void CBloomFilm::ClearFilm(ID3D11DeviceContext* deviceContext)
 {
 	AFilm::ClearFilm(deviceContext);
 
@@ -80,10 +80,9 @@ void BlurFilm::ClearFilm(ID3D11DeviceContext* deviceContext)
 	}
 }
 
-void BlurFilm::Blend(
+void CBloomFilm::Blend(
 	ID3D11DeviceContext* deviceContext,
-	AFilm* blendTargetFilm,
-	const D3D11_VIEWPORT& blendTargetViewport
+	AFilm* blendTargetFilm
 )
 {
 	ID3D11Buffer* vertexBuffers[] = {
@@ -108,9 +107,10 @@ void BlurFilm::Blend(
 		ID3D11ShaderResourceView* traceNullSRV = nullptr;
 		ID3D11RenderTargetView* blendRTV = blendTargetFilm->GetFilmRTV();
 		ID3D11RenderTargetView* blendNullRTV = nullptr;
+		const D3D11_VIEWPORT& viewport = blendTargetFilm->GetFilmViewPort();
 
 		deviceContext->OMSetRenderTargets(1, &blendRTV, nullptr);
-		deviceContext->RSSetViewports(1, &blendTargetViewport);
+		deviceContext->RSSetViewports(1, &viewport);
 		deviceContext->PSSetShaderResources(0, 1, &traceSRV);
 
 		deviceContext->DrawIndexedInstanced(
@@ -128,7 +128,7 @@ void BlurFilm::Blend(
 	CFilterCommonData::GFilterAdditivePSO->RemovePSO(deviceContext);
 }
 
-void BlurFilm::Develop(ID3D11DeviceContext* deviceContext)
+void CBloomFilm::Develop(ID3D11DeviceContext* deviceContext)
 {
 	ID3D11Buffer* vertexBuffers[] = {
 		CFilterCommonData::GFilterQuadPositionBuffer->GetBuffer(),
@@ -153,7 +153,7 @@ void BlurFilm::Develop(ID3D11DeviceContext* deviceContext)
 		ID3D11ShaderResourceView* nullSRV = nullptr;
 		ID3D11RenderTargetView* nullRTV = nullptr;
 
-		ID3D11Buffer* blurFilterBuffer = m_blurFilmPropertiesGPU->GetBuffer();
+		ID3D11Buffer* blurFilterBuffer = m_bloomFilmPropertiesGPU->GetBuffer();
 		ID3D11Buffer* blurFilterNullBuffer = nullptr;
 
 		deviceContext->PSSetConstantBuffers(2, 1, &blurFilterBuffer);

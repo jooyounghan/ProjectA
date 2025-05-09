@@ -6,10 +6,10 @@
 #include <memory>
 
 
-class BlurFilm : public AFilm
+class CBloomFilm : public AFilm
 {
 public:
-	BlurFilm(
+	CBloomFilm(
 		size_t blurCount,
 		float blurRadius,
 		UINT width,
@@ -18,7 +18,7 @@ public:
 		UINT bitLevel,
 		UINT channelCount
 	);
-	virtual ~BlurFilm() override = default;
+	virtual ~CBloomFilm() override = default;
 
 protected:
 	size_t m_blurCount;
@@ -29,8 +29,8 @@ protected:
 	{
 		float m_blurRadius;
 		float dummy[3];
-	} m_blurFilmPropertiesCPU;
-	std::unique_ptr<D3D11::CDynamicBuffer> m_blurFilmPropertiesGPU;
+	} m_bloomFilmPropertiesCPU;
+	std::unique_ptr<D3D11::CDynamicBuffer> m_bloomFilmPropertiesGPU;
 
 
 protected:
@@ -45,8 +45,7 @@ public:
 public:
 	virtual void Blend(
 		ID3D11DeviceContext* deviceContext, 
-		AFilm* blendTargetFilm,
-		const D3D11_VIEWPORT& blendTargetViewport
+		AFilm* blendTargetFilm
 	) override;
 	virtual void Develop(ID3D11DeviceContext* deviceContext) override;
 };

@@ -13,7 +13,8 @@
 #include "GPUInterpPropertyManager.h"
 #include "MacroUtilities.h"
 
-#include "BlurFilm.h"
+#include "ShotFilm.h"
+#include "BloomFilm.h"
 #include "MotionBlurFilm.h"
 
 using namespace std;
@@ -27,8 +28,8 @@ ParticleEmitterManager::ParticleEmitterManager(
 	UINT maxParticleCount
 )
 	: AEmitterManager("ParticleEmitterManager", maxEmitterCount, maxParticleCount),
-	m_blurFilm(make_unique<BlurFilm>(5, 1.f, effectWidth, effectHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 1, 4)),
-	m_motionBlurFilm(make_unique<MotionBlurFilm>(10, 0.8f, effectWidth, effectHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 1, 4))
+	m_bloomFilm(make_unique<CBloomFilm>(3, 0.5f, effectWidth, effectHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 1, 4)),
+	m_motionBlurFilm(make_unique<CMotionBlurFilm>(10, 0.8f, effectWidth, effectHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 1, 4))
 {
 	SParticleInterpInformation particleInterpInformation;
 	ZeroMem(particleInterpInformation);
@@ -114,13 +115,8 @@ void ParticleEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceCo
 	);
 	m_emitterInterpInformationGPU->InitializeBuffer(device);
 
-	m_blurFilm->Initialize(device, deviceContext);
+	m_bloomFilm->Initialize(device, deviceContext);
 	m_motionBlurFilm->Initialize(device, deviceContext);
-}
-
-vector<AFilm*> ParticleEmitterManager::GetFilmsForParticleEffects()
-{
-	return std::vector<AFilm*>{ m_blurFilm.get(), m_motionBlurFilm.get() };
 }
 
 void ParticleEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceContext)
@@ -160,8 +156,18 @@ void ParticleEmitterManager::FinalizeParticles(ID3D11DeviceContext* deviceContex
 {
 }
 
-void ParticleEmitterManager::DrawParticles(ID3D11DeviceContext* deviceContext)
+void ParticleEmitterManager::DrawParticles(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext)
 {
+	m_bloomFilm->ClearFilm(deviceContext);
+	m_motionBlurFilm->ClearFilm(deviceContext);
+
+	ID3D11RenderTargetView* rtvs[] = { shotFilm->GetFilmRTV(), m_bloomFilm->GetFilmRTV(), m_motionBlurFilm->GetFilmRTV() };
+	ID3D11DepthStencilView* dsv = shotFilm->GetFilmDSV();
+	D3D11_VIEWPORT viewports[] = { shotFilm->GetFilmViewPort(), m_bloomFilm->GetFilmViewPort(), m_motionBlurFilm->GetFilmViewPort() };
+
+	deviceContext->OMSetRenderTargets(3, rtvs, dsv);
+	deviceContext->RSSetViewports(3, viewports);
+
 	ID3D11ShaderResourceView* patriclesSrvs[] = {
 		m_totalParticles->GetSRV(),
 		m_aliveIndexSet->GetSRV()
@@ -179,4 +185,10 @@ void ParticleEmitterManager::DrawParticles(ID3D11DeviceContext* deviceContext)
 
 	deviceContext->VSSetShaderResources(0, 2, patriclesNullSrvs);
 	CEmitterManagerCommonData::GDrawParticlePSO[emitterTypeIndex]->RemovePSO(deviceContext);
+
+	m_bloomFilm->Develop(deviceContext);
+	m_motionBlurFilm->Develop(deviceContext);
+
+	m_bloomFilm->Blend(deviceContext, shotFilm);
+	m_motionBlurFilm->Blend(deviceContext, shotFilm);
 }

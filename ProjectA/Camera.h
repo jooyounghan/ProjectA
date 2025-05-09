@@ -26,24 +26,14 @@ class CCamera : public IUpdatable
 {
 public:
 	CCamera(
-		ID3D11RenderTargetView* backBufferRTV,
 		const DirectX::XMVECTOR& position,
 		const DirectX::XMVECTOR& angle,
-		UINT filmWidth,
-		UINT filmHeight,
 		float fovAngle,
 		float nearZ,
-		float farZ,
-		UINT blurCount
+		float farZ
 	) noexcept;
+
 	~CCamera() override = default;
-
-protected:
-	ShotFilm m_shotFilm;
-	UINT m_blurCount;
-
-protected:
-	std::vector<AFilm*> m_attachedFilms;
 
 protected:
 	DirectX::XMVECTOR m_position;
@@ -75,6 +65,12 @@ protected:
 	DirectX::XMVECTOR m_currentUp;
 	DirectX::XMVECTOR m_currentRight;
 
+protected:
+	D3D11_VIEWPORT m_viewport;
+
+public:
+	void SetViewport(const D3D11_VIEWPORT& viewport) noexcept;
+
 public:
 	void HandleInput(UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -85,16 +81,5 @@ public:
 protected:
 	void UpdateAngle(int mouseX, int mouseY);
 	void UpdateKeyStatus(WPARAM keyInformation, bool isDown);
-
-public:
-	void AttachFilm(const std::vector<AFilm*>& films) { m_attachedFilms.insert(m_attachedFilms.end(), films.begin(), films.end()); }
-	void ClearFilm(ID3D11DeviceContext* deviceContext) noexcept;
-	void DevelopFilm(ID3D11DeviceContext* deviceContext);
-	void BlendFilm(ID3D11DeviceContext* deviceContext);
-
-public:
-	void ApplyCamera(ID3D11DeviceContext* deviceContext);
-	void ClearCamera(ID3D11DeviceContext* deviceContext);
-	void Print(ID3D11DeviceContext* deviceContext);
 };
 
