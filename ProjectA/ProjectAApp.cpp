@@ -154,10 +154,10 @@ void CProjectAApp::Init(
 	m_camera->Initialize(m_device, m_deviceContext);
 
 	m_emitterManagers.emplace_back(make_unique<ParticleEmitterManager>(
-			m_width, m_height, MaxParticleEmitterCount, MaxParticleCount
+		m_width, m_height, MaxParticleEmitterCount, MaxParticleCount
 	));
 	m_emitterManagers.emplace_back(make_unique<SpriteEmitterManager>(
-		MaxSpriteEmitterCount, MaxParticleCount
+		m_width, m_height, MaxSpriteEmitterCount, MaxParticleCount
 	));
 
 	for (auto& emitterManager : m_emitterManagers)
@@ -227,6 +227,8 @@ void CProjectAApp::Update(float deltaTime)
 #pragma endregion
 
 #pragma region 방출기 그리기
+	m_camera->ClearFilm(m_deviceContext);
+	m_camera->ApplyCamera(m_deviceContext);
 	m_deviceContext->VSSetConstantBuffers(0, 1, &cameraCb);
 	for (auto& emitterManager : m_emitterManagers)
 	{

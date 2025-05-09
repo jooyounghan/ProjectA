@@ -245,6 +245,12 @@ void CSpriteRuntimeSpawnProperty::DrawSpriteSizeSetting()
 
 	if (Checkbox("GPU 기반 스프라이트 크기 보간", &m_checkGPUSpriteSizeInterpolater))
 	{
+		if (m_checkGPUColorInterpolater)
+		{
+			m_runtimeSpawnPropertyCPU.xyScale = XMFLOAT2(0.f, 0.f);
+			m_isRuntimeSpawnPropertyChanged = true;
+		}
+
 		m_spriteSizeInterpolationSelectPlotter->CreateInterpolater(
 			m_spriteSizeInterpolationMethod,
 			m_spriteSizeInterpolater
@@ -289,6 +295,12 @@ void CSpriteRuntimeSpawnProperty::DrawSpriteIndexSetting()
 
 	if (Checkbox("GPU 기반 스프라이트 텍스쳐 인덱스 보간", &m_checkGPUSpriteIndexInterpolater))
 	{
+		if (m_checkGPUColorInterpolater)
+		{
+			m_runtimeSpawnPropertyCPU.spriteIndex = 0.f;
+			m_isRuntimeSpawnPropertyChanged = true;
+		}
+
 		m_spriteIndexInterpolationSelectPlotter->CreateInterpolater(
 			m_spriteIndexInterpolationMethod,
 			m_spriteIndexInterpolater

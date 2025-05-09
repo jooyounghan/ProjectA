@@ -93,5 +93,4 @@ void ShotFilm::Develop(ID3D11DeviceContext* deviceContext)
 	{
 		m_film.Swap(m_pingpongFilm);
 	}
-	
 }

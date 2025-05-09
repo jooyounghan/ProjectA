@@ -2,13 +2,14 @@
 #include "AEmitterManager.h"
 
 class BlurFilm;
+class MotionBlurFilm;
 
 class ParticleEmitterManager : public AEmitterManager
 {
 public:
 	ParticleEmitterManager(
-		UINT particleEffectWidth,
-		UINT particleEffectHeight,
+		UINT effectWidth,
+		UINT effectHeight,
 		UINT maxEmitterCount,
 		UINT maxParticleCount
 	);
@@ -21,6 +22,7 @@ protected:
 
 protected:
 	std::unique_ptr<BlurFilm> m_blurFilm;
+	std::unique_ptr<MotionBlurFilm> m_motionBlurFilm;
 
 protected:
 	std::vector<SParticleInterpInformation> m_emitterInterpInformationCPU;

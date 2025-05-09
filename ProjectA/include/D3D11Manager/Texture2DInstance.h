@@ -123,6 +123,6 @@ inline void Texture2DInstance<TextureOption...>::InitializeByOption(
 template<IsTextureOption ...TextureOption>
 inline void Texture2DInstance<TextureOption...>::Swap(Texture2DInstance& texture2DInstanceIn)
 {
-	(..., TextureOption::Swap(static_cast<TextureOption&>(texture2DInstanceIn)));
+	(..., TextureOption::Swap(static_cast<TextureOption&>(*this), static_cast<TextureOption&>(texture2DInstanceIn)));
 }
 

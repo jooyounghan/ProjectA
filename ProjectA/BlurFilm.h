@@ -1,13 +1,17 @@
 #pragma once
 #include "AFilm.h"
+#include "DynamicBuffer.h"
 
 #include <vector>
+#include <memory>
+
 
 class BlurFilm : public AFilm
 {
 public:
 	BlurFilm(
 		size_t blurCount,
+		float blurRadius,
 		UINT width,
 		UINT height,
 		DXGI_FORMAT sceneFormat,
@@ -21,6 +25,15 @@ protected:
 	std::vector<Texture2DInstance<D3D11::RTVOption, D3D11::SRVOption>> m_blurredFilms;
 
 protected:
+	struct
+	{
+		float m_blurRadius;
+		float dummy[3];
+	} m_blurFilmPropertiesCPU;
+	std::unique_ptr<D3D11::CDynamicBuffer> m_blurFilmPropertiesGPU;
+
+
+protected:
 	std::vector<D3D11_VIEWPORT> m_blurredViewports;
 	std::vector<ID3D11RenderTargetView*> m_blurredRTVs;
 	std::vector<ID3D11ShaderResourceView*> m_blurrredSRVs;
@@ -32,7 +45,7 @@ public:
 public:
 	virtual void Blend(
 		ID3D11DeviceContext* deviceContext, 
-		ID3D11RenderTargetView* blendTarget, 
+		AFilm* blendTargetFilm,
 		const D3D11_VIEWPORT& blendTargetViewport
 	) override;
 	virtual void Develop(ID3D11DeviceContext* deviceContext) override;

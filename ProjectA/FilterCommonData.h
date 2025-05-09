@@ -9,6 +9,7 @@ namespace D3D11
 {
 	class CVertexShader;
 	class CPixelShader;
+	class CComputeShader;
 	class CGraphicsPSOObject;
 
 	class CConstantBuffer;
@@ -36,6 +37,9 @@ public:
 	static std::unique_ptr<D3D11::CPixelShader> GFilterTracePS;
 	static std::unique_ptr<D3D11::CPixelShader> GFilterBlurPS;
 	static std::unique_ptr<D3D11::CPixelShader> GFilterGammaCorrectionPS;
+
+public:
+	static std::unique_ptr<D3D11::CComputeShader> GFilterMotionBlurCS;
 
 public:
 	static std::unique_ptr<D3D11::CGraphicsPSOObject> GFilterAdditivePSO;

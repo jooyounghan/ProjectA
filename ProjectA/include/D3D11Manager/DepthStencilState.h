@@ -44,13 +44,15 @@ namespace D3D11
 
     private:
         static Microsoft::WRL::ComPtr<ID3D11DepthStencilState> gDSSDisabled;
-        static Microsoft::WRL::ComPtr<ID3D11DepthStencilState> gDSSDraw;
+        static Microsoft::WRL::ComPtr<ID3D11DepthStencilState> gDSSReadWrite;
+        static Microsoft::WRL::ComPtr<ID3D11DepthStencilState> gDSSReadOnly;
         static Microsoft::WRL::ComPtr<ID3D11DepthStencilState> gDSSMasking;
         static Microsoft::WRL::ComPtr<ID3D11DepthStencilState> gDSSConditionalDraw;
 
     public:
         static inline ID3D11DepthStencilState* GetDSSDisabled() { return gDSSDisabled.Get(); }
-        static inline ID3D11DepthStencilState* GetDSSDraw() { return gDSSDraw.Get(); }
+        static inline ID3D11DepthStencilState* GetDSSReadWrite() { return gDSSReadWrite.Get(); }
+        static inline ID3D11DepthStencilState* GetDSSReadOnly() { return gDSSReadOnly.Get(); }
         static inline ID3D11DepthStencilState* GetDSSMasking() { return gDSSMasking.Get(); }
         static inline ID3D11DepthStencilState* GetDSSConditionalDraw() { return gDSSConditionalDraw.Get(); }
 	};

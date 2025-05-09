@@ -155,7 +155,7 @@
     <ClCompile Include="FilterCommonData.cpp" />
     <ClCompile Include="InitialSpawnProperty.cpp" />
     <ClCompile Include="EmitterUpdateProperty.cpp" />
-    <ClCompile Include="MotionVectorFilm.cpp" />
+    <ClCompile Include="MotionBlurFilm.cpp" />
     <ClCompile Include="RuntimeSpawnProperty.cpp" />
     <ClCompile Include="ForceUpdateProperty.cpp" />
     <ClCompile Include="Camera.cpp" />
@@ -189,7 +189,7 @@
     <ClInclude Include="InitialPropertyDefinition.h" />
     <ClInclude Include="InitialSpawnProperty.h" />
     <ClInclude Include="EmitterUpdateProperty.h" />
-    <ClInclude Include="MotionVectorFilm.h" />
+    <ClInclude Include="MotionBlurFilm.h" />
     <ClInclude Include="RuntimeSpawnProperty.h" />
     <ClInclude Include="ForceUpdateProperty.h" />
     <ClInclude Include="BaseSelector.h" />
@@ -252,6 +252,16 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="FilterMotionBlurCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="FilterTracePS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

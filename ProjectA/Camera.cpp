@@ -187,7 +187,7 @@ void CCamera::BlendFilm(ID3D11DeviceContext* deviceContext)
 	ID3D11RenderTargetView* shotFilmRTV = m_shotFilm.GetFilmRTV();
 	for (auto& attachedFilm : m_attachedFilms)
 	{
-		attachedFilm->Blend(deviceContext, shotFilmRTV, shotFilmViewport);
+		attachedFilm->Blend(deviceContext, &m_shotFilm, shotFilmViewport);
 	}
 }
 

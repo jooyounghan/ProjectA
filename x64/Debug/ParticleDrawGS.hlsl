@@ -16,9 +16,7 @@ void main(point ParticleVSOut input[1], uint primID : SV_PrimitiveID, inout Tria
 #else
     ParticleVSOut inputData = input[0];
     ParticleGSOut element;
-    float4 negativeViewVelocity = float4(-inputData.viewVelocity, 0.f);
-    float4 negativeViewVelocityDir = normalize(negativeViewVelocity);
-    element.negativeViewVelocityDir = negativeViewVelocityDir;
+    element.velocity = inputData.velocity;
 #endif
 
     const float2 xyScale = inputData.xyScale;
@@ -46,9 +44,6 @@ void main(point ParticleVSOut input[1], uint primID : SV_PrimitiveID, inout Tria
     [unroll]
     for (int i = 0; i < 4; ++i) 
     {
-    #if !defined(SPRITE_EMITTER)
-        offsets[i] += negativeViewVelocityDir * dot(offsets[i], negativeViewVelocity);
-    #endif
         element.viewPos = inputData.viewPos + offsets[i];
         element.texCoord = texCoords[i];
         output.Append(element);

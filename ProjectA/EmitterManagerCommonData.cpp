@@ -145,11 +145,20 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 	}
 
 	static ID3D11SamplerState* samplerStates[] = { CSamplerState::GetSSWrap() };
-	ID3D11BlendState* blendStates[EmitterTypeCount] = {
-		CBlendState::GetBSAdditiveMS(),
+	ID3D11BlendState* blendStates[EmitterTypeCount] = 
+	{
+		CBlendState::GetBSAdditiveSS(),
 		CBlendState::GetBSAlphaSS(),
 		CBlendState::GetBSAlphaSS(),
 		CBlendState::GetBSAlphaSS()
+	};
+
+	ID3D11DepthStencilState* depthStencilStates[EmitterTypeCount] = 
+	{
+		CDepthStencilState::GetDSSReadOnly(),
+		CDepthStencilState::GetDSSReadOnly(),
+		CDepthStencilState::GetDSSReadWrite(),
+		CDepthStencilState::GetDSSReadWrite()
 	};
 
 	for (size_t idx = 0; idx < EmitterTypeCount; ++idx)
@@ -166,7 +175,7 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 			GParticleDrawPS[idx].get(),
 			CRasterizerState::GetRSSolidCWSS(),
 			blendStates[idx],
-			CDepthStencilState::GetDSSDraw(),
+			depthStencilStates[idx],
 			samplerStates,
 			1
 		);
@@ -220,7 +229,7 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 			GEmitterDrawPS[idx].get(),
 			CRasterizerState::GetRSWireframeCWSS(),
 			nullptr,
-			CDepthStencilState::GetDSSDraw(),
+			CDepthStencilState::GetDSSReadWrite(),
 			nullptr,
 			0
 		);

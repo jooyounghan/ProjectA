@@ -4,12 +4,17 @@
 #include "ConstantBuffer.h"
 #include "GraphicsPSOObject.h"
 
+#include "MacroUtilities.h"
+
 #include <DirectXMath.h>
 
+using namespace std;
+using namespace D3D11;
 using namespace DirectX;
 
 BlurFilm::BlurFilm(
 	size_t blurCount,
+	float blurRadius,
 	UINT width, 
 	UINT height, 
 	DXGI_FORMAT sceneFormat, 
@@ -19,6 +24,9 @@ BlurFilm::BlurFilm(
 	: AFilm(width, height, sceneFormat, bitLevel, channelCount),
 	m_blurCount(blurCount)
 {
+	ZeroMem(m_blurFilmPropertiesCPU);
+	m_blurFilmPropertiesCPU.m_blurRadius = blurRadius;
+
 	UINT blurWidth = width;
 	UINT blurHeight = height;
 	D3D11_VIEWPORT blurredViewport = m_viewport;
@@ -39,6 +47,10 @@ BlurFilm::BlurFilm(
 void BlurFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 	AFilm::Initialize(device, deviceContext);
+
+	m_blurFilmPropertiesGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_blurFilmPropertiesCPU));
+	m_blurFilmPropertiesGPU->InitializeBuffer(device);
+
 	for (UINT blurIdx = 0; blurIdx < m_blurCount; ++blurIdx)
 	{
 		m_blurredFilms[blurIdx].InitializeByOption(device, deviceContext);
@@ -61,18 +73,66 @@ void BlurFilm::ClearFilm(ID3D11DeviceContext* deviceContext)
 {
 	AFilm::ClearFilm(deviceContext);
 
-	constexpr FLOAT clearColor[4] = { 0.f, 0.f, 0.f, 1.f };
+	constexpr FLOAT clearColor[4] = { 0.f, 0.f, 0.f, 0.f };
 	for (UINT blurIdx = 0; blurIdx < m_blurCount; ++blurIdx)
 	{
 		deviceContext->ClearRenderTargetView(m_blurredFilms[blurIdx].GetRTV(), clearColor);
 	}
 }
 
+void BlurFilm::Blend(
+	ID3D11DeviceContext* deviceContext,
+	AFilm* blendTargetFilm,
+	const D3D11_VIEWPORT& blendTargetViewport
+)
+{
+	ID3D11Buffer* vertexBuffers[] = {
+		CFilterCommonData::GFilterQuadPositionBuffer->GetBuffer(),
+		CFilterCommonData::GFilterQuadUVCoordBuffer->GetBuffer()
+	};
+	ID3D11Buffer* vertexNullBuffers[] = { nullptr, nullptr };
+	ID3D11Buffer* indexBuffer = CFilterCommonData::GFilterQuadIndexBuffer->GetBuffer();
+
+	UINT strides[] = { static_cast<UINT>(sizeof(XMFLOAT3)), static_cast<UINT>(sizeof(XMFLOAT2)) };
+	UINT nullStrides[] = { NULL, NULL };
+	UINT offsets[] = { 0, 0 };
+	UINT nullOffsets[] = { NULL, NULL };
+
+	CFilterCommonData::GFilterAdditivePSO->ApplyPSO(deviceContext);
+	{
+		deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		deviceContext->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
+		deviceContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, NULL);
+
+		ID3D11ShaderResourceView* traceSRV = m_film.GetSRV();
+		ID3D11ShaderResourceView* traceNullSRV = nullptr;
+		ID3D11RenderTargetView* blendRTV = blendTargetFilm->GetFilmRTV();
+		ID3D11RenderTargetView* blendNullRTV = nullptr;
+
+		deviceContext->OMSetRenderTargets(1, &blendRTV, nullptr);
+		deviceContext->RSSetViewports(1, &blendTargetViewport);
+		deviceContext->PSSetShaderResources(0, 1, &traceSRV);
+
+		deviceContext->DrawIndexedInstanced(
+			static_cast<UINT>(CFilterCommonData::GFilterQuadIndices.size()),
+			1, NULL, NULL, NULL
+		);
+
+		deviceContext->PSSetShaderResources(0, 1, &traceNullSRV);
+		deviceContext->OMSetRenderTargets(1, &blendNullRTV, nullptr);
+
+
+		deviceContext->IASetVertexBuffers(0, 2, vertexNullBuffers, nullStrides, nullOffsets);
+		deviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, NULL);
+	}
+	CFilterCommonData::GFilterAdditivePSO->RemovePSO(deviceContext);
+}
+
 void BlurFilm::Develop(ID3D11DeviceContext* deviceContext)
 {
 	ID3D11Buffer* vertexBuffers[] = {
-	CFilterCommonData::GFilterQuadPositionBuffer->GetBuffer(),
-	CFilterCommonData::GFilterQuadUVCoordBuffer->GetBuffer()
+		CFilterCommonData::GFilterQuadPositionBuffer->GetBuffer(),
+		CFilterCommonData::GFilterQuadUVCoordBuffer->GetBuffer()
 	};
 	ID3D11Buffer* vertexNullBuffers[] = { nullptr, nullptr };
 	ID3D11Buffer* indexBuffer = CFilterCommonData::GFilterQuadIndexBuffer->GetBuffer();
@@ -92,6 +152,11 @@ void BlurFilm::Develop(ID3D11DeviceContext* deviceContext)
 
 		ID3D11ShaderResourceView* nullSRV = nullptr;
 		ID3D11RenderTargetView* nullRTV = nullptr;
+
+		ID3D11Buffer* blurFilterBuffer = m_blurFilmPropertiesGPU->GetBuffer();
+		ID3D11Buffer* blurFilterNullBuffer = nullptr;
+
+		deviceContext->PSSetConstantBuffers(2, 1, &blurFilterBuffer);
 
 		for (size_t srvOffset = 0; srvOffset < m_blurCount; ++srvOffset)
 		{
@@ -128,52 +193,10 @@ void BlurFilm::Develop(ID3D11DeviceContext* deviceContext)
 			deviceContext->OMSetRenderTargets(1, &nullRTV, nullptr);
 		}
 
+		deviceContext->PSSetConstantBuffers(2, 1, &blurFilterNullBuffer);
 
 		deviceContext->IASetVertexBuffers(0, 2, vertexNullBuffers, nullStrides, nullOffsets);
 		deviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, NULL);
 	}
 	CFilterCommonData::GFilterBlurPSO->RemovePSO(deviceContext);
-}
-
-void BlurFilm::Blend(ID3D11DeviceContext* deviceContext, ID3D11RenderTargetView* blendTarget, const D3D11_VIEWPORT& blendTargetViewport)
-{
-	ID3D11Buffer* vertexBuffers[] = {
-		CFilterCommonData::GFilterQuadPositionBuffer->GetBuffer(),
-		CFilterCommonData::GFilterQuadUVCoordBuffer->GetBuffer()
-	};
-	ID3D11Buffer* vertexNullBuffers[] = { nullptr, nullptr };
-	ID3D11Buffer* indexBuffer = CFilterCommonData::GFilterQuadIndexBuffer->GetBuffer();
-
-	UINT strides[] = { static_cast<UINT>(sizeof(XMFLOAT3)), static_cast<UINT>(sizeof(XMFLOAT2)) };
-	UINT nullStrides[] = { NULL, NULL };
-	UINT offsets[] = { 0, 0 };
-	UINT nullOffsets[] = { NULL, NULL };
-
-	CFilterCommonData::GFilterAdditivePSO->ApplyPSO(deviceContext);
-	{
-		deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		deviceContext->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
-		deviceContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, NULL);
-
-		ID3D11ShaderResourceView* traceSRV = m_film.GetSRV();
-		ID3D11ShaderResourceView* traceNullSRV = nullptr;
-		ID3D11RenderTargetView* blendNullRTV = nullptr;
-
-		deviceContext->OMSetRenderTargets(1, &blendTarget, nullptr);
-		deviceContext->RSSetViewports(1, &blendTargetViewport);
-		deviceContext->PSSetShaderResources(0, 1, &traceSRV);
-
-		deviceContext->DrawIndexedInstanced(
-			static_cast<UINT>(CFilterCommonData::GFilterQuadIndices.size()),
-			1, NULL, NULL, NULL
-		);
-
-		deviceContext->PSSetShaderResources(0, 1, &traceNullSRV);
-		deviceContext->OMSetRenderTargets(1, &blendNullRTV, nullptr);
-
-
-		deviceContext->IASetVertexBuffers(0, 2, vertexNullBuffers, nullStrides, nullOffsets);
-		deviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, NULL);
-	}
-	CFilterCommonData::GFilterAdditivePSO->RemovePSO(deviceContext);
 }

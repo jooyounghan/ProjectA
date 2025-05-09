@@ -13,6 +13,9 @@
 #include "GPUInterpPropertyManager.h"
 #include "MacroUtilities.h"
 
+#include "BlurFilm.h"
+#include "MotionBlurFilm.h"
+
 #include "stb_image_resize2.h"
 
 #define RadixBinCount (1 << RadixBitCount)
@@ -22,10 +25,13 @@ using namespace DirectX;
 using namespace D3D11;
 
 SpriteEmitterManager::SpriteEmitterManager(
+	UINT effectWidth,
+	UINT effectHeight,
 	UINT maxEmitterCount,
 	UINT maxParticleCount
 )
 	: AEmitterManager("SpriteEmitterManager", maxEmitterCount, maxParticleCount),
+	m_blurFilm(make_unique<BlurFilm>(5, 1.f, effectWidth, effectHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 1, 4)),
 	m_spriteTextureWidth(MaxSpriteTextureWidth),
 	m_spriteTextureHeight(MaxSpriteTextureHeight),
 	m_sortBitOffset(m_emitterManagerPropertyCPU.padding1)
@@ -425,6 +431,8 @@ void SpriteEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceCont
 		D3D11_USAGE_DEFAULT, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, 1, 4
 	);
 	m_spriteTextureArray->InitializeByOption(device, deviceContext);
+
+	m_blurFilm->Initialize(device, deviceContext);
 }
 
 void SpriteEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
@@ -440,7 +448,7 @@ void SpriteEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float 
 
 vector<AFilm*> SpriteEmitterManager::GetFilmsForParticleEffects()
 {
-	return std::vector<AFilm*>();
+	return std::vector<AFilm*>{ m_blurFilm.get() };
 }
 
 void SpriteEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceContext)

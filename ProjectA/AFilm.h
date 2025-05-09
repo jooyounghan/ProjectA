@@ -38,8 +38,8 @@ public:
 public:
 	virtual void Blend(
 		ID3D11DeviceContext* deviceContext, 
-		ID3D11RenderTargetView* blendTarget, 
+		AFilm* blendTargetFilm,
 		const D3D11_VIEWPORT& blendTargetViewport
 	) {};
-	virtual void Develop(ID3D11DeviceContext* deviceContext) = 0;
+	virtual void Develop(ID3D11DeviceContext* deviceContext) {};
 };

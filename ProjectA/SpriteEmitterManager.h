@@ -25,15 +25,21 @@ struct SRadixHistogram
 	UINT histogram[1 << RadixBitCount];
 };
 
+class BlurFilm;
+
 class SpriteEmitterManager : public AEmitterManager
 {
 public:
 	SpriteEmitterManager(
+		UINT effectWidth,
+		UINT effectHeight,
 		UINT maxEmitterCount,
 		UINT maxParticleCount
 	);
 	~SpriteEmitterManager() override = default;
 
+protected:
+	std::unique_ptr<BlurFilm> m_blurFilm;
 
 protected:
 	virtual UINT GetEmitterType() const noexcept override { return static_cast<UINT>(EEmitterType::SpriteEmitter); }

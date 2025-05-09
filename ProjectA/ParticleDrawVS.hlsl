@@ -9,26 +9,21 @@ StructuredBuffer<SpriteAliveIndex> currentIndices : register(t1);
 StructuredBuffer<uint> currentIndices : register(t1);
 #endif
 
-
-
 #ifdef SPRITE_EMITTER
 SpriteVSOut main(uint vertexID : SV_VertexID)
 #else
 ParticleVSOut main(uint vertexID : SV_VertexID)
 #endif
 {
-	#ifdef SPRITE_EMITTER
-	SpriteVSOut result;
-	#else
-	ParticleVSOut result;
-	#endif
-
 #ifdef SPRITE_EMITTER
+	SpriteVSOut result;
     SpriteAliveIndex spriteAliveIndex = currentIndices[vertexID];
 	uint index = spriteAliveIndex.index;
 #else
+	ParticleVSOut result;
     uint index = currentIndices[vertexID];
 #endif
+
     Particle currentPoint = particles[index];
     result.viewPos = mul(float4(currentPoint.worldPos, 1.f), viewProjMatrix);
 	result.color = currentPoint.color;
@@ -38,7 +33,7 @@ ParticleVSOut main(uint vertexID : SV_VertexID)
 	result.spriteIndex = currentPoint.spriteIndex;
 	result.emitterID = currentPoint.emitterID;
 #else
-	result.viewVelocity = mul(float4(currentPoint.velocity, 0.f), viewProjMatrix).xyz;
+	result.velocity = mul(float4(currentPoint.velocity, 0.f), viewProjMatrix).xy;
 #endif
 
 	return result;

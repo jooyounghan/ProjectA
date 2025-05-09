@@ -31,6 +31,6 @@ void AFilm::Update(ID3D11DeviceContext* deviceContext, float dt)
 
 void AFilm::ClearFilm(ID3D11DeviceContext* deviceContext)
 {
-	constexpr FLOAT clearColor[4] = { 0.f, 0.f, 0.f, 1.f };
+	constexpr FLOAT clearColor[4] = { 0.f, 0.f, 0.f, 0.f };
 	deviceContext->ClearRenderTargetView(m_film.GetRTV(), clearColor);
 }
