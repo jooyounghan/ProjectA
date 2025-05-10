@@ -22,7 +22,7 @@ protected:
 	std::unordered_map<T, std::string> m_stringMaps;
 
 public:
-	void SelectEnums(T& enumResult);
+	bool SelectEnums(T& enumResult);
 };
 
 template<IsEnumClass T>
@@ -35,8 +35,9 @@ inline CBaseSelector<T>::CBaseSelector(
 }
 
 template<IsEnumClass T>
-void CBaseSelector<T>::SelectEnums(T& enumResult)
+bool CBaseSelector<T>::SelectEnums(T& enumResult)
 {
+	bool result = false;
 	if (ImGui::BeginCombo(m_selectorName.c_str(), m_stringMaps.at(enumResult).c_str()))
 	{
 		for (auto& stringMap : m_stringMaps)
@@ -46,11 +47,15 @@ void CBaseSelector<T>::SelectEnums(T& enumResult)
 
 			const bool isSelected = (enumResult == enumType);
 			if (ImGui::Selectable(enumString, isSelected))
+			{
 				enumResult = enumType;
+				result = true;
+			}
 
 			if (isSelected)
 				ImGui::SetItemDefaultFocus();
 		}
 		ImGui::EndCombo();
 	}
+	return result;
 }

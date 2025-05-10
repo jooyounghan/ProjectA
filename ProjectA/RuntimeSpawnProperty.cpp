@@ -163,18 +163,14 @@ void CRuntimeSpawnProperty::DrawUI()
 void CRuntimeSpawnProperty::DrawUIImpl()
 {
 	SeparatorText("파티클 생성 위치 설정");
-	m_positionShapedVectorSelector->SelectEnums(m_positionShapedVector);
-	if (m_positionShapedVectorSelector->SetShapedVectorProperty(m_positionShapedVector))
-	{
-		m_isRuntimeSpawnPropertyChanged = true;
-	}
+	m_isRuntimeSpawnPropertyChanged |=
+		m_positionShapedVectorSelector->SelectEnums(m_positionShapedVector) |
+		m_positionShapedVectorSelector->SetShapedVectorProperty(m_positionShapedVector);
 
 	SeparatorText("파티클 생성 속도 설정");
-	m_speedShapedVectorSelector->SelectEnums(m_speedShapedVector);
-	if (m_speedShapedVectorSelector->SetShapedVectorProperty(m_speedShapedVector))
-	{
-		m_isRuntimeSpawnPropertyChanged = true;
-	}
+	m_isRuntimeSpawnPropertyChanged |=
+		m_speedShapedVectorSelector->SelectEnums(m_speedShapedVector) |
+		m_speedShapedVectorSelector->SetShapedVectorProperty(m_speedShapedVector);
 
 	SeparatorText("파티클 생명 주기 설정");
 	if (DragFloat("파티클 생명 주기", &m_runtimeSpawnPropertyCPU.maxLife, 0.1f, 0.f, 10.f, "%.1f"))

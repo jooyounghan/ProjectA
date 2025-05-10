@@ -30,6 +30,8 @@ namespace D3D11
 	private:
 		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAdditiveSS;
 		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAdditiveMS;
+		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAlphaWeightedAdditiveSS;
+		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAlphaWeightedAdditiveMS;
 		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAlphaSS;
 		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSAlphaMS;
 		static Microsoft::WRL::ComPtr<ID3D11BlendState> gBSPreMultipliedAlphaSS;
@@ -40,6 +42,8 @@ namespace D3D11
 	public:
 		static inline ID3D11BlendState* GetBSAdditiveSS() { return gBSAdditiveSS.Get(); }
 		static inline ID3D11BlendState* GetBSAdditiveMS() { return gBSAdditiveMS.Get(); }
+		static inline ID3D11BlendState* GetBSAlphaWeightedAdditiveSS() { return gBSAlphaWeightedAdditiveSS.Get(); }
+		static inline ID3D11BlendState* GetBSAlphaWeightedAdditiveMS() { return gBSAlphaWeightedAdditiveMS.Get(); }
 		static inline ID3D11BlendState* GetBSAlphaSS() { return gBSAlphaSS.Get(); }
 		static inline ID3D11BlendState* GetBSAlphaMS() { return gBSAlphaMS.Get(); }
 		static inline ID3D11BlendState* GetBSPreMultipliedAlphaSS() { return gBSPreMultipliedAlphaSS.Get(); }

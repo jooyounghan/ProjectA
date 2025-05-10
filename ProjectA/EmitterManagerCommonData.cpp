@@ -147,7 +147,7 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 	static ID3D11SamplerState* samplerStates[] = { CSamplerState::GetSSWrap() };
 	ID3D11BlendState* blendStates[EmitterTypeCount] = 
 	{
-		CBlendState::GetBSAdditiveSS(),
+		CBlendState::GetBSAlphaWeightedAdditiveSS(),
 		CBlendState::GetBSAlphaSS(),
 		CBlendState::GetBSAlphaSS(),
 		CBlendState::GetBSAlphaSS()

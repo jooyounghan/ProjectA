@@ -23,7 +23,7 @@ CMotionBlurFilm::CMotionBlurFilm(
 	UINT bitLevel,
 	UINT channelCount
 )
-	: AFilm(width, height, DXGI_FORMAT_R16G16B16A16_FLOAT, 2, 4),
+	: AFilm(width, height, DXGI_FORMAT_R32G32_FLOAT, 4, 2),
 	m_motionBlurredFilm(width, height, 1, 1, NULL, NULL, D3D11_USAGE_DEFAULT, sceneFormat, bitLevel, channelCount)
 {
 	ZeroMem(m_motionBlurFilmPropertiesCPU);

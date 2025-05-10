@@ -36,7 +36,7 @@ struct ParticlePSOut
 {
     float4 f4ShotFilm : SV_Target0;
     float4 f4BlurFilm : SV_Target1;
-    float4 f4MotionVector : SV_Target2;
+    float2 f4MotionVector : SV_Target2;
 };
 
 struct SpritePSOut

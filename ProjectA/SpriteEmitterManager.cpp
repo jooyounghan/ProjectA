@@ -31,7 +31,7 @@ SpriteEmitterManager::SpriteEmitterManager(
 	UINT maxParticleCount
 )
 	: AEmitterManager("SpriteEmitterManager", maxEmitterCount, maxParticleCount),
-	m_bloomFilm(make_unique<CBloomFilm>(5, 1.f, effectWidth, effectHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 1, 4)),
+	m_bloomFilm(make_unique<CBloomFilm>(3, 1.f, effectWidth, effectHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 1, 4)),
 	m_spriteTextureWidth(MaxSpriteTextureWidth),
 	m_spriteTextureHeight(MaxSpriteTextureHeight),
 	m_sortBitOffset(m_emitterManagerPropertyCPU.padding1)

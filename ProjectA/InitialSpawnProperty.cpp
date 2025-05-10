@@ -89,18 +89,15 @@ void CInitialSpawnProperty::DrawUIImpl()
 	}
 
 	SeparatorText("초기 파티클 위치 설정");
-	m_positionShapedVectorSelector->SelectEnums(m_positionShapedVector);
-	if (m_positionShapedVectorSelector->SetShapedVectorProperty(m_positionShapedVector))
-	{
-		m_isEmitterSpawnPropertyChanged = true;
-	}
+	m_isEmitterSpawnPropertyChanged |=
+		m_positionShapedVectorSelector->SelectEnums(m_positionShapedVector) |
+		m_positionShapedVectorSelector->SetShapedVectorProperty(m_positionShapedVector);
 
 	SeparatorText("초기 파티클 속도 설정");
-	m_speedShapedVectorSelector->SelectEnums(m_speedShapedVector);
-	if (m_speedShapedVectorSelector->SetShapedVectorProperty(m_speedShapedVector))
-	{
-		m_isEmitterSpawnPropertyChanged = true;
-	}
+	m_isEmitterSpawnPropertyChanged |=
+		m_speedShapedVectorSelector->SelectEnums(m_speedShapedVector) |
+		m_speedShapedVectorSelector->SetShapedVectorProperty(m_speedShapedVector);
+
 
 	BeginDisabled(!m_useInitialColor);
 	SeparatorText("초기 파티클 색상 설정");
