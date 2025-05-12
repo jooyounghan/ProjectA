@@ -149,8 +149,9 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
             // out 확인 후 위치 조정해줘서 조금 더 정확도 향상
             if (CheckIntersection(depthView, ndcPrevViewProjPos, ndcCurrentViewProjPos))
             {
-                currentParticle.worldPos = prevWorldPos;
                 float3 normalVector = -normalView.SampleLevel(clampSampler, ndcPrevViewProjPos.xy, 0).xyz;
+                prevWorldPos += normalVector * 0.1f;
+                currentParticle.worldPos = prevWorldPos;
                 currentParticle.velocity = -0.5f * reflect(currentParticle.velocity, normalVector);
             }
             // ==============================================================================================================
