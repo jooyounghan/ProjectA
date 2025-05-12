@@ -153,7 +153,7 @@ void CProjectAApp::Init(
 	m_camera->Initialize(m_device, m_deviceContext);
 
 	m_shotFilm = make_unique<CShotFilm>(
-		m_width, m_height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_D24_UNORM_S8_UINT, 1, 4, m_backBufferRTV
+		m_width, m_height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_R24G8_TYPELESS, 1, 4, m_backBufferRTV
 	);
 	m_shotFilm->Initialize(m_device, m_deviceContext);
 
@@ -197,6 +197,7 @@ void CProjectAApp::Update(float deltaTime)
 #pragma endregion
 
 	ID3D11RenderTargetView* shotFilmRTV = m_shotFilm->GetFilmRTV();
+	ID3D11RenderTargetView* shotFilmNullRTV = nullptr;
 	ID3D11DepthStencilView* shotFilmDSV = m_shotFilm->GetFilmDSV();
 	const D3D11_VIEWPORT& shotFilmViewport = m_shotFilm->GetFilmViewPort();
 
@@ -204,41 +205,41 @@ void CProjectAApp::Update(float deltaTime)
 	m_shotFilm->ClearFilm(m_deviceContext);
 #pragma endregion
 
-#pragma region 입자 그리기
 	ID3D11Buffer* cameraCb = m_camera->GetPropertiesBuffer();
 	ID3D11Buffer* singleNullCb = nullptr;
+	CShotFilm* shortFilm = m_shotFilm.get();
 
+#pragma region 방출기 그리기
+	m_deviceContext->VSSetConstantBuffers(0, 1, &cameraCb);
+	for (auto& emitterManager : m_emitterManagers)
+	{
+		emitterManager->DrawEmitters(shortFilm, m_deviceContext);
+	}
+	m_deviceContext->VSSetConstantBuffers(0, 1, &singleNullCb);
+#pragma endregion
+
+#pragma region 입자 그리기
 	ID3D11Buffer* commonCbs[] = { m_appParamsGPU->GetBuffer(), m_camera->GetPropertiesBuffer() };
 	ID3D11Buffer* commonNullCbs[] = { nullptr, nullptr };
 	m_deviceContext->CSSetConstantBuffers(0, 2, commonCbs);
 	m_deviceContext->VSSetConstantBuffers(0, 2, commonCbs);
 	m_deviceContext->GSSetConstantBuffers(0, 2, commonCbs);
 	m_deviceContext->PSSetConstantBuffers(0, 2, commonCbs);
+
+
 	for (auto& emitterManager : m_emitterManagers)
 	{
-		emitterManager->InitializeAliveFlag(m_deviceContext);
+		emitterManager->InitializeAliveFlag(shortFilm, m_deviceContext);
 		emitterManager->SourceParticles(m_deviceContext);
 		emitterManager->CalculateIndirectArgs(m_deviceContext);
 		emitterManager->CalculateForces(m_deviceContext);
 		emitterManager->FinalizeParticles(m_deviceContext);
-		emitterManager->DrawParticles(m_shotFilm.get(), m_deviceContext);
+		emitterManager->DrawParticles(shortFilm, m_deviceContext);
 	}
 	m_deviceContext->CSSetConstantBuffers(0, 2, commonNullCbs);
 	m_deviceContext->VSSetConstantBuffers(0, 2, commonNullCbs);
 	m_deviceContext->GSSetConstantBuffers(0, 2, commonNullCbs);
 	m_deviceContext->PSSetConstantBuffers(0, 2, commonNullCbs);
-#pragma endregion
-
-#pragma region 방출기 그리기
-	m_deviceContext->OMSetRenderTargets(1, &shotFilmRTV, shotFilmDSV);
-	m_deviceContext->RSSetViewports(1, &shotFilmViewport);
-
-	m_deviceContext->VSSetConstantBuffers(0, 1, &cameraCb);
-	for (auto& emitterManager : m_emitterManagers)
-	{
-		emitterManager->DrawEmitters(m_deviceContext);
-	}
-	m_deviceContext->VSSetConstantBuffers(0, 1, &singleNullCb);
 #pragma endregion
 
 #pragma region 전체 화면에 대한 후처리 수행

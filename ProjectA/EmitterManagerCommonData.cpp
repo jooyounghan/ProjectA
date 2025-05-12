@@ -45,11 +45,13 @@ unique_ptr<CPixelShader> CEmitterManagerCommonData::GParticleDrawPS[EmitterTypeC
 unique_ptr<CGraphicsPSOObject> CEmitterManagerCommonData::GDrawParticlePSO[EmitterTypeCount];
 
 const vector<XMFLOAT3> CEmitterManagerCommonData::GEmitterBoxPositions = ModelFactory::CreateBoxPositions(XMVectorSet(1.f, 1.f, 1.f, 0.f));
+const vector<XMFLOAT3> CEmitterManagerCommonData::GEmitterBoxNormals = ModelFactory::CreateBoxNormals();
 const vector<UINT> CEmitterManagerCommonData::GEmitterBoxIndices = ModelFactory::CreateBoxIndices();
 unique_ptr<CVertexShader> CEmitterManagerCommonData::GEmitterDrawVS;
 unique_ptr<CPixelShader> CEmitterManagerCommonData::GEmitterDrawPS[EmitterTypeCount];
 unique_ptr<CGraphicsPSOObject> CEmitterManagerCommonData::GDrawEmitterPSO[EmitterTypeCount];
 unique_ptr<CConstantBuffer> CEmitterManagerCommonData::GEmitterPositionBuffer = nullptr;
+unique_ptr<CConstantBuffer> CEmitterManagerCommonData::GEmitterNormalBuffer = nullptr;
 unique_ptr<CConstantBuffer> CEmitterManagerCommonData::GEmitterIndexBuffer = nullptr;
 
 void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
@@ -147,7 +149,7 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 	static ID3D11SamplerState* samplerStates[] = { CSamplerState::GetSSWrap() };
 	ID3D11BlendState* blendStates[EmitterTypeCount] = 
 	{
-		CBlendState::GetBSAlphaWeightedAdditiveSS(),
+		CBlendState::GetBSAlphaWeightedAdditiveMS(),
 		CBlendState::GetBSAlphaSS(),
 		CBlendState::GetBSAlphaSS(),
 		CBlendState::GetBSAlphaSS()
@@ -155,8 +157,8 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 
 	ID3D11DepthStencilState* depthStencilStates[EmitterTypeCount] = 
 	{
-		CDepthStencilState::GetDSSReadOnly(),
-		CDepthStencilState::GetDSSReadOnly(),
+		CDepthStencilState::GetDSSReadWrite(),
+		CDepthStencilState::GetDSSReadWrite(),
 		CDepthStencilState::GetDSSReadWrite(),
 		CDepthStencilState::GetDSSReadWrite()
 	};
@@ -183,7 +185,7 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 #pragma endregion
 
 #pragma region 이미터 그리기 PSO
-	GEmitterDrawVS = make_unique<CVertexShader>(5);
+	GEmitterDrawVS = make_unique<CVertexShader>(6);
 
 	for (size_t idx = 0; idx < EmitterTypeCount; ++idx)
 	{
@@ -192,8 +194,14 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 
 	GEmitterPositionBuffer = make_unique<CConstantBuffer>(
 		12, static_cast<UINT>(GEmitterBoxPositions.size()), GEmitterBoxPositions.data(), D3D11_BIND_VERTEX_BUFFER
-		);
+	);
 	GEmitterPositionBuffer->InitializeBuffer(device);
+
+	GEmitterNormalBuffer = make_unique<CConstantBuffer>(
+		12, static_cast<UINT>(GEmitterBoxNormals.size()), GEmitterBoxNormals.data(), D3D11_BIND_VERTEX_BUFFER
+	);
+	GEmitterNormalBuffer->InitializeBuffer(device);
+
 
 	GEmitterIndexBuffer = make_unique<CConstantBuffer>(
 		4, static_cast<UINT>(GEmitterBoxIndices.size()), GEmitterBoxIndices.data(), D3D11_BIND_INDEX_BUFFER
@@ -204,16 +212,19 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	);
 	GEmitterDrawVS->AddInputLayoutElement(
-		{ "INSTANCE_WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	);
 	GEmitterDrawVS->AddInputLayoutElement(
-		{ "INSTANCE_WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+		{ "INSTANCE_WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 2, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
 	);
 	GEmitterDrawVS->AddInputLayoutElement(
-		{ "INSTANCE_WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+		{ "INSTANCE_WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 2, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
 	);
 	GEmitterDrawVS->AddInputLayoutElement(
-		{ "INSTANCE_WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+		{ "INSTANCE_WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 2, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+	);
+	GEmitterDrawVS->AddInputLayoutElement(
+		{ "INSTANCE_WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 2, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
 	);
 
 	GEmitterDrawVS->CreateShader(L"./EmitterDrawVS.hlsl", nullptr, "main", "vs_5_0", device);
@@ -227,7 +238,7 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 			nullptr,
 			nullptr,
 			GEmitterDrawPS[idx].get(),
-			CRasterizerState::GetRSWireframeCWSS(),
+			CRasterizerState::GetRSSolidCWSS(),
 			nullptr,
 			CDepthStencilState::GetDSSReadWrite(),
 			nullptr,

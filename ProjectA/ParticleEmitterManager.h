@@ -49,7 +49,7 @@ protected:
 	virtual void InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;
 
 public:
-	virtual void InitializeAliveFlag(ID3D11DeviceContext* deviceContext) override;
+	virtual void InitializeAliveFlag(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext) override;
 	virtual void FinalizeParticles(ID3D11DeviceContext* deviceContext);
 	virtual void DrawParticles(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext) override;
 };

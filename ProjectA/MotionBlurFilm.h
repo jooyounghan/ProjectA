@@ -1,11 +1,11 @@
 #pragma once
-#include "AFilm.h"
+#include "BaseFilm.h"
 #include "DynamicBuffer.h"
 #include "UAVOption.h"
 
 #include <memory>
 
-class CMotionBlurFilm : public AFilm
+class CMotionBlurFilm : public CBaseFilm
 {
 public:
 	CMotionBlurFilm(
@@ -40,7 +40,7 @@ public:
 public:
 	virtual void Blend(
 		ID3D11DeviceContext* deviceContext,
-		AFilm* blendTargetFilm
+		CBaseFilm* blendTargetFilm
 	) override;
 };
 

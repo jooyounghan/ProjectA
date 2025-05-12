@@ -15,6 +15,7 @@
 
 #include "ShotFilm.h"
 #include "BloomFilm.h"
+#include "SamplerState.h"
 
 #include "stb_image_resize2.h"
 
@@ -30,7 +31,7 @@ SpriteEmitterManager::SpriteEmitterManager(
 	UINT maxEmitterCount,
 	UINT maxParticleCount
 )
-	: AEmitterManager("SpriteEmitterManager", maxEmitterCount, maxParticleCount),
+	: AEmitterManager("SpriteEmitterManager", effectWidth, effectHeight, maxEmitterCount, maxParticleCount),
 	m_bloomFilm(make_unique<CBloomFilm>(3, 1.f, effectWidth, effectHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 1, 4)),
 	m_spriteTextureWidth(MaxSpriteTextureWidth),
 	m_spriteTextureHeight(MaxSpriteTextureHeight),
@@ -446,13 +447,18 @@ void SpriteEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float 
 	m_spriteIndexD3Dim1PorpertyManager->Update(deviceContext, dt);
 }
 
-void SpriteEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceContext)
+void SpriteEmitterManager::InitializeAliveFlag(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext)
 {
+	ID3D11SamplerState* samplerStates[] = { CSamplerState::GetSSClamp() };
+	ID3D11SamplerState* samplerNullStates[] = { nullptr };
+
 	ID3D11Buffer* initializeCBs[] = { m_emitterManagerPropertyGPU->GetBuffer() };
 	ID3D11Buffer* initializeNullCBs[] = { nullptr };
 
 	ID3D11ShaderResourceView* initializeSRVs[] = {
 		m_emitterInterpInformationGPU->GetSRV(),
+		shotFilm->GetFilmDepthSRV(),
+		m_normalVectorFilm->GetFilmSRV(),
 		m_colorD1Dim4PorpertyManager->GetGPUInterpPropertySRV(),
 		m_colorD3Dim4PorpertyManager->GetGPUInterpPropertySRV(),
 		m_spriteSizeD1Dim2PorpertyManager->GetGPUInterpPropertySRV(),
@@ -460,7 +466,7 @@ void SpriteEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceContex
 		m_spriteIndexD1Dim1PorpertyManager->GetGPUInterpPropertySRV(),
 		m_spriteIndexD3Dim1PorpertyManager->GetGPUInterpPropertySRV()
 	};
-	ID3D11ShaderResourceView* initializeNullSRVs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+	ID3D11ShaderResourceView* initializeNullSRVs[] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 
 	ID3D11UnorderedAccessView* initializeUavs[] = {
 		m_totalParticles->GetUAV(),
@@ -474,14 +480,16 @@ void SpriteEmitterManager::InitializeAliveFlag(ID3D11DeviceContext* deviceContex
 	UINT emitterTypeIndex = GetEmitterType();
 	CEmitterManagerCommonData::GInitializeParticleSetCS[emitterTypeIndex]->SetShader(deviceContext);
 
+	deviceContext->CSSetSamplers(0, 1, samplerStates);
 	deviceContext->CSSetConstantBuffers(2, 1, initializeCBs);
-	deviceContext->CSSetShaderResources(0, 7, initializeSRVs);
+	deviceContext->CSSetShaderResources(0, 9, initializeSRVs);
 	deviceContext->CSSetUnorderedAccessViews(0, 3, initializeUavs, initDeathParticleCount);
 	static const UINT dispatchX = static_cast<UINT>(ceil(m_emitterManagerPropertyCPU.particleMaxCount / LocalThreadCount));
 	deviceContext->Dispatch(dispatchX, 1, 1);
 	deviceContext->CSSetConstantBuffers(2, 1, initializeNullCBs);
-	deviceContext->CSSetShaderResources(0, 7, initializeNullSRVs);
+	deviceContext->CSSetShaderResources(0, 9, initializeNullSRVs);
 	deviceContext->CSSetUnorderedAccessViews(0, 3, initializeNullUavs, initDeathParticleCount);
+	deviceContext->CSSetSamplers(0, 1, samplerNullStates);
 
 	CEmitterManagerCommonData::GInitializeParticleSetCS[emitterTypeIndex]->ResetShader(deviceContext);
 }

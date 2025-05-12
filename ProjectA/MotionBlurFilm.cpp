@@ -24,7 +24,7 @@ CMotionBlurFilm::CMotionBlurFilm(
 	UINT bitLevel,
 	UINT channelCount
 )
-	: AFilm(width, height, DXGI_FORMAT_R32G32B32A32_FLOAT, 2, 4),
+	: CBaseFilm(width, height, DXGI_FORMAT_R32G32B32A32_FLOAT, 2, 4),
 	m_motionBlurredFilm(width, height, 1, 1, NULL, NULL, D3D11_USAGE_DEFAULT, sceneFormat, bitLevel, channelCount)
 {
 	ZeroMem(m_motionBlurFilmPropertiesCPU);
@@ -35,7 +35,7 @@ CMotionBlurFilm::CMotionBlurFilm(
 
 void CMotionBlurFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
-	AFilm::Initialize(device, deviceContext);
+	CBaseFilm::Initialize(device, deviceContext);
 	
 	m_motionBlurFilmPropertiesGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_motionBlurFilmPropertiesCPU));
 	m_motionBlurFilmPropertiesGPU->InitializeBuffer(device);
@@ -45,13 +45,13 @@ void CMotionBlurFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* devi
 
 void CMotionBlurFilm::ClearFilm(ID3D11DeviceContext* deviceContext)
 {
-	AFilm::ClearFilm(deviceContext);
+	CBaseFilm::ClearFilm(deviceContext);
 	constexpr FLOAT clearColor[4] = { 0.f, 0.f, 0.f, 0.f };
 	deviceContext->ClearRenderTargetView(m_motionBlurredFilm.GetRTV(), clearColor);
 }
 
 
-void CMotionBlurFilm::Blend(ID3D11DeviceContext* deviceContext, AFilm* blendTargetFilm)
+void CMotionBlurFilm::Blend(ID3D11DeviceContext* deviceContext, CBaseFilm* blendTargetFilm)
 {
 	CFilterCommonData::GFilterMotionBlurCS->SetShader(deviceContext);
 	{

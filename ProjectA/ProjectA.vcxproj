@@ -150,7 +150,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AEmitter.cpp" />
-    <ClCompile Include="AFilm.cpp" />
+    <ClCompile Include="BaseFilm.cpp" />
     <ClCompile Include="BloomFilm.cpp" />
     <ClCompile Include="FilterCommonData.cpp" />
     <ClCompile Include="InitialSpawnProperty.cpp" />
@@ -185,7 +185,7 @@
     <ClInclude Include="AEmitter.h" />
     <ClInclude Include="BloomFilm.h" />
     <ClInclude Include="FilterCommonData.h" />
-    <ClInclude Include="AFilm.h" />
+    <ClInclude Include="BaseFilm.h" />
     <ClInclude Include="InitialPropertyDefinition.h" />
     <ClInclude Include="InitialSpawnProperty.h" />
     <ClInclude Include="EmitterUpdateProperty.h" />

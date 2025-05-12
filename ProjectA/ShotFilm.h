@@ -1,8 +1,8 @@
 #pragma once
-#include "AFilm.h"
+#include "BaseFilm.h"
 #include "DSVOption.h"
 
-class CShotFilm : public AFilm
+class CShotFilm : public CBaseFilm
 {
 public:
 	CShotFilm(
@@ -17,10 +17,11 @@ public:
 	virtual ~CShotFilm() override = default;
 
 protected:
-	Texture2DInstance<D3D11::DSVOption> m_depthStencil;
+	Texture2DInstance<D3D11::SRVOption, D3D11::DSVOption> m_depthStencil;
 
 public:
 	inline ID3D11DepthStencilView* GetFilmDSV() { return m_depthStencil.GetDSV(); }
+	inline ID3D11ShaderResourceView* GetFilmDepthSRV() { return m_depthStencil.GetSRV(); }
 
 protected:
 	ID3D11RenderTargetView* m_backBufferRTV;

@@ -17,7 +17,7 @@ CShotFilm::CShotFilm(
 	UINT channelCount,
 	ID3D11RenderTargetView* backBufferRTV
 )
-	: AFilm(width, height, sceneFormat, bitLevel, channelCount),
+	: CBaseFilm(width, height, sceneFormat, bitLevel, channelCount),
 	m_depthStencil(width, height, 1, 1, NULL, NULL, D3D11_USAGE_DEFAULT, depthStencilFormat, 1, 4),
 	m_backBufferRTV(backBufferRTV),
 	m_pingpongFilm(width, height, 1, 1, NULL, NULL, D3D11_USAGE_DEFAULT, sceneFormat, bitLevel, channelCount)
@@ -27,7 +27,7 @@ CShotFilm::CShotFilm(
 
 void CShotFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
-	AFilm::Initialize(device, deviceContext);
+	CBaseFilm::Initialize(device, deviceContext);
 	m_depthStencil.InitializeByOption(device, deviceContext);
 	if (m_backBufferRTV == nullptr)
 	{
@@ -37,7 +37,7 @@ void CShotFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCont
 
 void CShotFilm::ClearFilm(ID3D11DeviceContext* deviceContext)
 {
-	AFilm::ClearFilm(deviceContext);
+	CBaseFilm::ClearFilm(deviceContext);
 	deviceContext->ClearDepthStencilView(
 		m_depthStencil.GetDSV(), 
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,

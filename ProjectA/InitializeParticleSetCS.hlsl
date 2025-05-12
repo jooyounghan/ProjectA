@@ -7,12 +7,19 @@ StructuredBuffer<SpriteEmitterInterpInform> emitterInterpInforms : register(t0);
 StructuredBuffer<ParticleEmitterInterpInform> emitterInterpInforms : register(t0);
 #endif	
 
-StructuredBuffer<D1Dim4Prop> d1Dim4Props : register(t1);
-StructuredBuffer<D3Dim4Prop> d3Dim4Props : register(t2);
-StructuredBuffer<D1Dim2Prop> d1Dim2Props : register(t3);
-StructuredBuffer<D3Dim2Prop> d3Dim2Props : register(t4);
-StructuredBuffer<D1Dim1Prop> d1Dim1Props : register(t5);
-StructuredBuffer<D3Dim1Prop> d3Dim1Props : register(t6);
+Texture2D<float> depthView : register(t1);
+Texture2D<float4> normalView : register(t2);
+
+StructuredBuffer<D1Dim4Prop> d1Dim4Props : register(t3);
+StructuredBuffer<D3Dim4Prop> d3Dim4Props : register(t4);
+
+#ifdef SPRITE_EMITTER
+StructuredBuffer<D1Dim2Prop> d1Dim2Props : register(t5);
+StructuredBuffer<D3Dim2Prop> d3Dim2Props : register(t6);
+StructuredBuffer<D1Dim1Prop> d1Dim1Props : register(t7);
+StructuredBuffer<D3Dim1Prop> d3Dim1Props : register(t8);
+#endif	
+
 
 RWStructuredBuffer<Particle> totalParticles : register(u0);
 AppendStructuredBuffer<uint> deathIndexSet : register(u1);
@@ -23,12 +30,34 @@ AppendStructuredBuffer<SpriteAliveIndex> aliveIndexSet : register(u2);
 AppendStructuredBuffer<uint> aliveIndexSet : register(u2);
 #endif
 
+SamplerState clampSampler : register(s0);
+
 cbuffer EmitterManagerProperties : register(b2)
 {
     uint particleMaxCount;
     uint emitterType;
     uint2 emitterManagerPropertyDummy;
 };
+
+bool CheckIntersection(Texture2D<float> depthTexture, float3 p1, float3 p2)
+{
+    const int steps = 10;
+    for (int i = 0; i <= steps; ++i)
+    {
+        float t = i / (float)steps;
+        float3 p = lerp(p1, p2, t);
+        float2 uv = p.xy;
+
+        if (uv.x < 0 || uv.x > 1 || uv.y < 0 || uv.y > 1)
+            continue;
+
+        float depthAtUV = depthTexture.SampleLevel(clampSampler, uv, 0);
+        if (p.z > depthAtUV)
+            return true;
+    }
+    return false;
+}
+
 
 [numthreads(LocalThreadCount, 1, 1)]
 void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID )
@@ -48,7 +77,6 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
         }
 		else
 		{            
-            // N차 이상 보간 일 경우, 색상에 대한 보간 ======================================================================
             const uint emitterID = currentParticle.emitterID;
 
             #ifdef SPRITE_EMITTER
@@ -98,29 +126,37 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
             }
             #endif	
 
+            // 가속도를 통한 적분 ===========================================================================================
+            float3 prevWorldPos = currentParticle.worldPos;
+            currentParticle.velocity += currentParticle.accelerate * dt;
+            float3 currentPos = prevWorldPos + currentParticle.velocity * dt; 
+            currentParticle.worldPos = currentPos;
             // ==============================================================================================================
 
-            // 가속도를 통한 적분 ===========================================================================================
-            currentParticle.velocity += currentParticle.accelerate * dt;
-            currentParticle.worldPos += currentParticle.velocity * dt;
-            
-            if (currentParticle.worldPos.y < 0.f)
-            {
-                currentParticle.worldPos.y = 1E-3;
-                currentParticle.velocity.x = currentParticle.velocity.x * 0.2f;
-                currentParticle.velocity.y = currentParticle.velocity.y * -0.2f;
-                currentParticle.velocity.z = currentParticle.velocity.z * 0.2f;
-            }
+            // Depth 기반 충돌 처리 =========================================================================================
+            float4 prevViewProjPos = mul(float4(prevWorldPos, 1.f), viewProjMatrix);
+            float prevWInv = 1.f / prevViewProjPos.w;
+            float3 ndcPrevViewProjPos = prevViewProjPos.xyz * prevWInv;
+            ndcPrevViewProjPos.x = (ndcPrevViewProjPos.x + 1.f) / 2.f;
+            ndcPrevViewProjPos.y = (-ndcPrevViewProjPos.y + 1.f) / 2.f;
 
+            float4 currentViewProjPos = mul(float4(currentPos, 1.f), viewProjMatrix);
+            float currentWInv = 1.f / currentViewProjPos.w;
+            float3 ndcCurrentViewProjPos = currentViewProjPos.xyz * currentWInv;
+            ndcCurrentViewProjPos.x = (ndcCurrentViewProjPos.x + 1.f) / 2.f;
+            ndcCurrentViewProjPos.y = (-ndcCurrentViewProjPos.y + 1.f) / 2.f;
+
+            // out 확인 후 위치 조정해줘서 조금 더 정확도 향상
+            if (CheckIntersection(depthView, ndcPrevViewProjPos, ndcCurrentViewProjPos))
+            {
+                currentParticle.worldPos = prevWorldPos;
+                float3 normalVector = -normalView.SampleLevel(clampSampler, ndcPrevViewProjPos.xy, 0).xyz;
+                currentParticle.velocity = -0.5f * reflect(currentParticle.velocity, normalVector);
+            }
             // ==============================================================================================================
             
             #ifdef SPRITE_EMITTER
-            float4 viewProjPos = mul(float4(currentParticle.worldPos, 1.f), viewProjMatrix);
-            float z = viewProjPos.z;
-            float wInv = 1.f / viewProjPos.w;
-            float depth = 1.f - (z  * wInv);
-            depth = saturate(depth);
-
+            float depth = 1.f - ndcCurrentViewProjPos.z;
             SpriteAliveIndex spriteAliveIndex;
             spriteAliveIndex.index = threadID;
             spriteAliveIndex.depth = FloatToSortableUint(depth);

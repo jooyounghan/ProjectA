@@ -22,6 +22,8 @@
 
 #include "GPUInterpPropertyManager.h"
 
+#include "ShotFilm.h"
+
 #include <format>
 
 using namespace std;
@@ -30,12 +32,15 @@ using namespace D3D11;
 
 AEmitterManager::AEmitterManager(
 	const string& managerName,
+	UINT effectWidth,
+	UINT effectHeight,
 	UINT maxEmitterCount,
 	UINT maxParticleCount
 )
 	: m_managerName(managerName), m_maxEmitterCount(maxEmitterCount),
 	m_emitterManagerPropertyCPU{ maxParticleCount, 0, 0, 0 },
-	m_isEmitterManagerPropertyChanged(false)
+	m_isEmitterManagerPropertyChanged(false),
+	m_normalVectorFilm(make_unique<CBaseFilm>(effectWidth, effectHeight, DXGI_FORMAT_R16G16B16A16_FLOAT, 2, 4))
 {
 	for (UINT idx = 0; idx < m_maxEmitterCount; ++idx)
 	{
@@ -331,6 +336,9 @@ void AEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* 
 	m_colorD1Dim4PorpertyManager->Initialize(device, deviceContext);
 	m_colorD3Dim4PorpertyManager->Initialize(device, deviceContext);
 
+
+	m_normalVectorFilm->Initialize(device, deviceContext);
+
 }
 
 void AEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
@@ -506,35 +514,46 @@ void AEmitterManager::CalculateForces(ID3D11DeviceContext* deviceContext)
 	CEmitterManagerCommonData::GCaculateParticleForceCS[emitterType]->ResetShader(deviceContext);
 }
 
-void AEmitterManager::DrawEmitters(ID3D11DeviceContext* deviceContext)
+void AEmitterManager::DrawEmitters(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext)
 {
+	ID3D11RenderTargetView* rtvs[] = { shotFilm->GetFilmRTV(), m_normalVectorFilm->GetFilmRTV() };
+	ID3D11RenderTargetView* nullRtvs[] = { nullptr, nullptr };
+	ID3D11DepthStencilView* dsv = shotFilm->GetFilmDSV();
+	D3D11_VIEWPORT viewports[] = { shotFilm->GetFilmViewPort(), m_normalVectorFilm->GetFilmViewPort() };
+
 	ID3D11Buffer* vertexBuffers[] = {
 		CEmitterManagerCommonData::GEmitterPositionBuffer->GetBuffer(),
+		CEmitterManagerCommonData::GEmitterNormalBuffer->GetBuffer(),
 		m_instancedWorldTransformGPU->GetBuffer()
 	};
-	ID3D11Buffer* vertexNullBuffers[] = { nullptr, nullptr };
+	ID3D11Buffer* vertexNullBuffers[] = { nullptr, nullptr, nullptr };
 	ID3D11Buffer* indexBuffer = CEmitterManagerCommonData::GEmitterIndexBuffer->GetBuffer();
 
-	UINT strides[] = { static_cast<UINT>(sizeof(XMFLOAT3)), static_cast<UINT>(sizeof(XMMATRIX)) };
-	UINT nullStrides[] = { NULL, NULL };
-	UINT offsets[] = { 0, 0 };
-	UINT nullOffsets[] = { NULL, NULL };
+	UINT strides[] = { static_cast<UINT>(sizeof(XMFLOAT3)), static_cast<UINT>(sizeof(XMFLOAT3)), static_cast<UINT>(sizeof(XMMATRIX)) };
+	UINT nullStrides[] = { NULL, NULL, NULL };
+	UINT offsets[] = { 0, 0, 0 };
+	UINT nullOffsets[] = { NULL, NULL, NULL };
 
 	UINT emitterTypeIndex = GetEmitterType();
+
+	deviceContext->OMSetRenderTargets(2, rtvs, dsv);
+	deviceContext->RSSetViewports(2, viewports);
 
 	CEmitterManagerCommonData::GDrawEmitterPSO[emitterTypeIndex]->ApplyPSO(deviceContext);
 
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	deviceContext->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
+	deviceContext->IASetVertexBuffers(0, 3, vertexBuffers, strides, offsets);
 	deviceContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, NULL);
 	deviceContext->DrawIndexedInstanced(
 		static_cast<UINT>(CEmitterManagerCommonData::GEmitterBoxIndices.size()),
 		m_maxEmitterCount,
 		NULL, NULL, NULL
 	);
-	deviceContext->IASetVertexBuffers(0, 2, vertexNullBuffers, nullStrides, nullOffsets);
+	deviceContext->IASetVertexBuffers(0, 3, vertexNullBuffers, nullStrides, nullOffsets);
 	deviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, NULL);
 
 	CEmitterManagerCommonData::GDrawEmitterPSO[emitterTypeIndex]->RemovePSO(deviceContext);
+
+	deviceContext->OMSetRenderTargets(2, nullRtvs, nullptr);
 }

@@ -4,12 +4,12 @@ struct Particle
 {
     float4 color;
     float3 worldPos;
-    float3 velocity;
-    float3 accelerate;
     uint emitterID;
+    float3 velocity;
     float life;
-    float2 xyScale;
+    float3 accelerate;
     float spriteIndex;
+    float2 xyScale;
     uint2 dummy;
 };
 

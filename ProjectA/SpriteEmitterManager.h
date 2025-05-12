@@ -157,7 +157,7 @@ protected:
 	virtual void UpdateImpl(ID3D11DeviceContext* deviceContext, float dt) override;
 
 public:
-	virtual void InitializeAliveFlag(ID3D11DeviceContext* deviceContext) override;
+	virtual void InitializeAliveFlag(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext) override;
 	virtual void CalculateIndirectArgs(ID3D11DeviceContext* deviceContext) override;
 	virtual void FinalizeParticles(ID3D11DeviceContext* deviceContext);
 	virtual void DrawParticles(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext) override;

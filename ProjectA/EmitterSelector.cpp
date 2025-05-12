@@ -16,8 +16,8 @@ using namespace DirectX;
 static unordered_map<EEmitterType, string> GEmitterStringMaps
 {
 	{ EEmitterType::ParticleEmitter, "파티클 이미터" },
-	{ EEmitterType::RibbonEmitter, "리본 이미터" },
 	{ EEmitterType::SpriteEmitter, "스프라이트 이미터" },
+	{ EEmitterType::RibbonEmitter, "리본 이미터" },
 	{ EEmitterType::MeshEmitter, "매시 이미터" }
 };
 

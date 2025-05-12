@@ -6,11 +6,11 @@
 
 #include <d3d11.h>
 
-class AFilm : public IUpdatable
+class CBaseFilm : public IUpdatable
 {
 public:
-	AFilm(UINT width, UINT height, DXGI_FORMAT sceneFormat, UINT bitLevel, UINT channelCount);
-	virtual ~AFilm() = default;
+	CBaseFilm(UINT width, UINT height, DXGI_FORMAT sceneFormat, UINT bitLevel, UINT channelCount);
+	virtual ~CBaseFilm() = default;
 
 protected:
 	Texture2DInstance<D3D11::SRVOption, D3D11::RTVOption> m_film;
@@ -38,7 +38,7 @@ public:
 public:
 	virtual void Blend(
 		ID3D11DeviceContext* deviceContext, 
-		AFilm* blendTargetFilm
+		CBaseFilm* blendTargetFilm
 	) {};
 	virtual void Develop(ID3D11DeviceContext* deviceContext) {};
 };

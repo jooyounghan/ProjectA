@@ -1,6 +1,6 @@
 #include "EmitterDrawCommon.hlsli"
 
-float4 main(EmitterVSInput emitterInput ) : SV_POSITION
+EmitterVSOutput main(EmitterVSInput emitterInput )
 {
     matrix worldTransform =
     {
@@ -10,6 +10,10 @@ float4 main(EmitterVSInput emitterInput ) : SV_POSITION
         emitterInput.world3
     };
 
+    EmitterVSOutput result;
+
 	float4 worldPos = mul(float4(emitterInput.modelPos, 1.f), worldTransform);
-	return mul(worldPos, viewProjMatrix);
+    result.viewProjPos = mul(worldPos, viewProjMatrix);
+    result.normalVec = emitterInput.normalVec;
+	return result;
 }

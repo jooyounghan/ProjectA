@@ -1,12 +1,12 @@
 #pragma once
-#include "AFilm.h"
+#include "BaseFilm.h"
 #include "DynamicBuffer.h"
 
 #include <vector>
 #include <memory>
 
 
-class CBloomFilm : public AFilm
+class CBloomFilm : public CBaseFilm
 {
 public:
 	CBloomFilm(
@@ -45,7 +45,7 @@ public:
 public:
 	virtual void Blend(
 		ID3D11DeviceContext* deviceContext, 
-		AFilm* blendTargetFilm
+		CBaseFilm* blendTargetFilm
 	) override;
 	virtual void Develop(ID3D11DeviceContext* deviceContext) override;
 };

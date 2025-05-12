@@ -5,7 +5,8 @@ cbuffer MotionBlurFilmProperty : register(b2)
 {
     uint samplingCount;
     float dissipationFactor;
-    uint2 motionBlurFilterDummy;
+    float maxMotionTrailLength;
+    uint motionBlurFilterDummy;
 };
 
 Texture2D<float4> motionVectorTexture : register(t0);
@@ -24,16 +25,17 @@ void main( uint3 DTid : SV_DispatchThreadID )
 
     float2 invVelocity = motionVectorTexture[location].xy;
     invVelocity.x =  -invVelocity.x;
-    float velocityLength = length(invVelocity);
 
-    uint dynamicStepCount = min(samplingCount, uint(velocityLength));
-
-    if (dynamicStepCount > 0)
+    float invSpeed = length(invVelocity);
+    if (invSpeed > 1E-3)
     {
-        float2 sampleStep = invVelocity / dynamicStepCount;    
+        invSpeed = min(invSpeed, maxMotionTrailLength);
+        invSpeed /= samplingCount;
+
+        float2 sampleStep = normalize(invVelocity) * invSpeed;    
         float4 sceneColor = sceneTexture[location];
 
-        for (uint step = 0; step < dynamicStepCount; ++step)
+        for (uint step = 0; step < samplingCount; ++step)
         {   
             prevLocation += sampleStep;
             motionBlurredTexture[prevLocation] = sceneColor;

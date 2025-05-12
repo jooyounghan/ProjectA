@@ -1,9 +1,9 @@
-#include "AFilm.h"
+#include "BaseFilm.h"
 #include "MacroUtilities.h"
 
 using namespace D3D11;
 
-AFilm::AFilm(
+CBaseFilm::CBaseFilm(
 	UINT width, UINT height, 
 	DXGI_FORMAT sceneFormat,
 	UINT bitLevel, 
@@ -20,16 +20,16 @@ AFilm::AFilm(
 	m_viewport.MaxDepth = 1.f;
 }
 
-void AFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
+void CBaseFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 	m_film.InitializeByOption(device, deviceContext);
 }
 
-void AFilm::Update(ID3D11DeviceContext* deviceContext, float dt)
+void CBaseFilm::Update(ID3D11DeviceContext* deviceContext, float dt)
 {
 }
 
-void AFilm::ClearFilm(ID3D11DeviceContext* deviceContext)
+void CBaseFilm::ClearFilm(ID3D11DeviceContext* deviceContext)
 {
 	constexpr FLOAT clearColor[4] = { 0.f, 0.f, 0.f, 0.f };
 	deviceContext->ClearRenderTargetView(m_film.GetRTV(), clearColor);

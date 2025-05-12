@@ -21,7 +21,7 @@ CBloomFilm::CBloomFilm(
 	UINT bitLevel, 
 	UINT channelCount
 )
-	: AFilm(width, height, sceneFormat, bitLevel, channelCount),
+	: CBaseFilm(width, height, sceneFormat, bitLevel, channelCount),
 	m_blurCount(blurCount)
 {
 	ZeroMem(m_bloomFilmPropertiesCPU);
@@ -46,7 +46,7 @@ CBloomFilm::CBloomFilm(
 
 void CBloomFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
-	AFilm::Initialize(device, deviceContext);
+	CBaseFilm::Initialize(device, deviceContext);
 
 	m_bloomFilmPropertiesGPU = make_unique<CDynamicBuffer>(PASS_SINGLE(m_bloomFilmPropertiesCPU));
 	m_bloomFilmPropertiesGPU->InitializeBuffer(device);
@@ -71,7 +71,7 @@ void CBloomFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCon
 
 void CBloomFilm::ClearFilm(ID3D11DeviceContext* deviceContext)
 {
-	AFilm::ClearFilm(deviceContext);
+	CBaseFilm::ClearFilm(deviceContext);
 
 	constexpr FLOAT clearColor[4] = { 0.f, 0.f, 0.f, 0.f };
 	for (UINT blurIdx = 0; blurIdx < m_blurCount; ++blurIdx)
@@ -82,7 +82,7 @@ void CBloomFilm::ClearFilm(ID3D11DeviceContext* deviceContext)
 
 void CBloomFilm::Blend(
 	ID3D11DeviceContext* deviceContext,
-	AFilm* blendTargetFilm
+	CBaseFilm* blendTargetFilm
 )
 {
 	ID3D11Buffer* vertexBuffers[] = {

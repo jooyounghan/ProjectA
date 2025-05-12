@@ -67,8 +67,10 @@ public:
 #pragma region 이미터 그리기 PSO
 public:
 	static const std::vector<DirectX::XMFLOAT3> GEmitterBoxPositions;
+	static const std::vector<DirectX::XMFLOAT3> GEmitterBoxNormals;
 	static const std::vector<UINT> GEmitterBoxIndices;
 	static std::unique_ptr<D3D11::CConstantBuffer> GEmitterPositionBuffer;
+	static std::unique_ptr<D3D11::CConstantBuffer> GEmitterNormalBuffer;
 	static std::unique_ptr<D3D11::CConstantBuffer> GEmitterIndexBuffer;
 	static std::unique_ptr<D3D11::CVertexShader> GEmitterDrawVS;
 	static std::unique_ptr<D3D11::CPixelShader> GEmitterDrawPS[EmitterTypeCount];
