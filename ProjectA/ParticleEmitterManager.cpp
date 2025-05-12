@@ -29,7 +29,7 @@ ParticleEmitterManager::ParticleEmitterManager(
 )
 	: AEmitterManager("ParticleEmitterManager", maxEmitterCount, maxParticleCount),
 	m_bloomFilm(make_unique<CBloomFilm>(3, 1.f, effectWidth, effectHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 1, 4)),
-	m_motionBlurFilm(make_unique<CMotionBlurFilm>(10, 1.f, effectWidth, effectHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 1, 4))
+	m_motionBlurFilm(make_unique<CMotionBlurFilm>(5, 0.8f, 5.f, effectWidth, effectHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 1, 4))
 {
 	SParticleInterpInformation particleInterpInformation;
 	ZeroMem(particleInterpInformation);

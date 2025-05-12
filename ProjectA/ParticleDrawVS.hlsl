@@ -33,7 +33,8 @@ ParticleVSOut main(uint vertexID : SV_VertexID)
 	result.spriteIndex = currentPoint.spriteIndex;
 	result.emitterID = currentPoint.emitterID;
 #else
-	result.velocity = mul(float4(currentPoint.velocity, 0.f), viewProjMatrix).xy;
+	float4 viewVelocity = mul(float4(currentPoint.velocity, 0.f), viewProjMatrix);	
+	result.velocity = viewVelocity.xy;
 #endif
 
 	return result;

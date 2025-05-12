@@ -17,18 +17,20 @@ using namespace D3D11;
 CMotionBlurFilm::CMotionBlurFilm(
 	UINT samplingCount,
 	float dissipationFactor,
+	float maxMotionTrailLength,
 	UINT width, 
 	UINT height,
 	DXGI_FORMAT sceneFormat,
 	UINT bitLevel,
 	UINT channelCount
 )
-	: AFilm(width, height, DXGI_FORMAT_R32G32_FLOAT, 4, 2),
+	: AFilm(width, height, DXGI_FORMAT_R32G32B32A32_FLOAT, 2, 4),
 	m_motionBlurredFilm(width, height, 1, 1, NULL, NULL, D3D11_USAGE_DEFAULT, sceneFormat, bitLevel, channelCount)
 {
 	ZeroMem(m_motionBlurFilmPropertiesCPU);
 	m_motionBlurFilmPropertiesCPU.m_samplingCount = samplingCount;
 	m_motionBlurFilmPropertiesCPU.m_dissipationFactor = dissipationFactor;
+	m_motionBlurFilmPropertiesCPU.m_maxMotionTrailLength = maxMotionTrailLength;
 }
 
 void CMotionBlurFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)

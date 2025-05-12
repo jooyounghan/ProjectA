@@ -11,6 +11,7 @@ public:
 	CMotionBlurFilm(
 		UINT samplingCount,
 		float dissipationFactor,
+		float maxMotionTrailLength,
 		UINT width,
 		UINT height,
 		DXGI_FORMAT sceneFormat,
@@ -27,7 +28,8 @@ protected:
 	{
 		UINT m_samplingCount;
 		float m_dissipationFactor;
-		float dummy[2];
+		float m_maxMotionTrailLength;
+		float dummy;
 	} m_motionBlurFilmPropertiesCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_motionBlurFilmPropertiesGPU;
 
