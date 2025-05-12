@@ -310,3 +310,9 @@ gantt
 - Radix Sort 내 global offset을 구하는 구간 관련 알고리즘 수정
 	- global offset을 구하기 위해서 그룹 단위 순회를 거쳐 현재 그룹 이전에 등장한 Radix의 수를 더하는 방식으로 global offset을 구하였는데, 이를 병렬 Prefix Sum을 활용한 방식으로 수정 
 	- 1,000,000개(1M)의 Sprite 정렬 시 20~25ms가 소모되었는데, 알고리즘을 수정하여 2.0 ~ 2.5ms 이내로 성능 개선
+
+### 25.05.09 ~ 25.05.11
+- Particle Emitter Manager와 Sprite Emitter Manager간 효과 분리를 위하여 구조 개선
+	- Film 클래스를 상속받는 MotionBlurFilm, BloomFilm 등을 Emitter Manager가 멤버 변수로 관리하고 Emitter Manager가 입자들을 그릴때 효과를 처리하는 방식으로 구현
+	- Particle Emitter : Bloom, Motion Blur 적용
+	- Sprite Emtiter : Bloom 적용

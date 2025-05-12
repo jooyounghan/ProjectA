@@ -48,7 +48,7 @@ ParticlePSOut main(ParticleGSOut input) : SV_TARGET
 	ParticlePSOut result;
 	result.f4ShotFilm = color;
 	result.f4BlurFilm = color;
-    result.f4MotionVector = input.velocity;
+    result.f2MotionVector = input.velocity;
 #endif
 	return result;
 
