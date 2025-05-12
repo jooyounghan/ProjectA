@@ -157,8 +157,8 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 
 	ID3D11DepthStencilState* depthStencilStates[EmitterTypeCount] = 
 	{
-		CDepthStencilState::GetDSSReadWrite(),
-		CDepthStencilState::GetDSSReadWrite(),
+		CDepthStencilState::GetDSSReadOnly(),
+		CDepthStencilState::GetDSSReadOnly(),
 		CDepthStencilState::GetDSSReadWrite(),
 		CDepthStencilState::GetDSSReadWrite()
 	};
@@ -238,7 +238,7 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 			nullptr,
 			nullptr,
 			GEmitterDrawPS[idx].get(),
-			CRasterizerState::GetRSSolidCWSS(),
+			CRasterizerState::GetRSWireframeCWSS(),
 			nullptr,
 			CDepthStencilState::GetDSSReadWrite(),
 			nullptr,

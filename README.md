@@ -316,3 +316,7 @@ gantt
 	- Film 클래스를 상속받는 MotionBlurFilm, BloomFilm 등을 Emitter Manager가 멤버 변수로 관리하고 Emitter Manager가 입자들을 그릴때 효과를 처리하는 방식으로 구현
 	- Particle Emitter : Bloom, Motion Blur 적용
 	- Sprite Emtiter : Bloom 적용
+
+### 25.05.12
+- 깊이값 기반으로 파티클 충돌 처리하는 로직 추가
+	- Multi Render Target을 활용하여 Normal 벡터를 추가로 기록하고, Depth Stencil Buffer를 Shader Resource View로 활용하여 깊이값을 비교하고, 속도 성분을 Normal에 대해 Reflect 하여 구현

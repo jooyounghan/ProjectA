@@ -162,10 +162,10 @@ void CProjectAApp::Init(
 	m_emitterManagers.emplace_back(make_unique<ParticleEmitterManager>(
 		m_width, m_height, MaxParticleEmitterCount, MaxParticleCount
 	));
+
 	m_emitterManagers.emplace_back(make_unique<SpriteEmitterManager>(
 		m_width, m_height, MaxSpriteEmitterCount, MaxParticleCount
 	));
-
 	for (auto& emitterManager : m_emitterManagers)
 	{
 		emitterManager->Initialize(m_device, m_deviceContext);
