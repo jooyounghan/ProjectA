@@ -68,10 +68,10 @@ namespace App
 		virtual void Update(float deltaTime) = 0;
 		virtual void Quit() = 0;
 		virtual void AppProcImpl(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) = 0;
+		float GetDeltaTime() noexcept;
 
 	private:
 		void OnWindowSizeUpdate() noexcept;
-		float GetDeltaTime() noexcept;
 	};
 }
 #endif

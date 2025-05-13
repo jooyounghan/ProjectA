@@ -32,8 +32,6 @@ class AEmitterManager : public IUpdatable
 public:
 	AEmitterManager(
 		const std::string& managerName, 
-		UINT effectWidth,
-		UINT effectHeight,
 		UINT maxEmitterCount,
 		UINT maxParticleCount
 	);
@@ -65,9 +63,6 @@ protected:
 protected:
 	UINT IssueAvailableEmitterID();
 	virtual void ReclaimEmitterID(UINT emitterID) noexcept;
-
-protected:
-	std::unique_ptr<CBaseFilm> m_normalVectorFilm;
 
 protected:
 	std::unique_ptr<D3D11::CStructuredBuffer> m_totalParticles;
@@ -165,11 +160,11 @@ protected:
 	virtual void UpdateImpl(ID3D11DeviceContext* deviceContext, float dt);
 
 public:
-	virtual void InitializeAliveFlag(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext) = 0;
+	virtual void InitializeAliveFlag(CShotFilm* shotFilm, CBaseFilm* normalFilm, ID3D11DeviceContext* deviceContext) = 0;
 	virtual void SourceParticles(ID3D11DeviceContext* deviceContext);
 	virtual void CalculateIndirectArgs(ID3D11DeviceContext* deviceContext);
 	virtual void CalculateForces(ID3D11DeviceContext* deviceContext);
 	virtual void FinalizeParticles(ID3D11DeviceContext* deviceContext) = 0;
-	virtual void DrawEmitters(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext);
+	virtual void DrawEmitters(CShotFilm* shotFilm, CBaseFilm* normalFilm, ID3D11DeviceContext* deviceContext);
 	virtual void DrawParticles(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext) = 0;
 };

@@ -112,7 +112,7 @@ void CCamera::Update(ID3D11DeviceContext* deviceContext, float dt)
 
 		XMMATRIX viewProjMatrix = viewMatrix * projMatrix;
 		m_cameraPropertiesCPU.viewProjMatrix = XMMatrixTranspose(viewProjMatrix);
-		m_cameraPropertiesCPU.invTransposeViewMatrix = XMMatrixInverse(nullptr, viewMatrix);
+		m_cameraPropertiesCPU.invViewProjMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, viewProjMatrix));
 
 		m_propertiesGPU->Stage(deviceContext);
 		m_propertiesGPU->Upload(deviceContext);

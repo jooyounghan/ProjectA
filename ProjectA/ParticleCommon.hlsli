@@ -30,7 +30,7 @@ cbuffer AppParams : register(b0)
 cbuffer CameraViewProj : register(b1)
 {
     matrix viewProjMatrix;
-    matrix invTransposeViewMatrix;
+    matrix invViewProjMatrix;
 };
 
 uint FloatToSortableUint(float f)

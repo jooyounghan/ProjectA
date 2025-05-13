@@ -32,15 +32,12 @@ using namespace D3D11;
 
 AEmitterManager::AEmitterManager(
 	const string& managerName,
-	UINT effectWidth,
-	UINT effectHeight,
 	UINT maxEmitterCount,
 	UINT maxParticleCount
 )
 	: m_managerName(managerName), m_maxEmitterCount(maxEmitterCount),
 	m_emitterManagerPropertyCPU{ maxParticleCount, 0, 0, 0 },
-	m_isEmitterManagerPropertyChanged(false),
-	m_normalVectorFilm(make_unique<CBaseFilm>(effectWidth, effectHeight, DXGI_FORMAT_R16G16B16A16_FLOAT, 2, 4))
+	m_isEmitterManagerPropertyChanged(false)
 {
 	for (UINT idx = 0; idx < m_maxEmitterCount; ++idx)
 	{
@@ -335,8 +332,6 @@ void AEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* 
 
 	m_colorD1Dim4PorpertyManager->Initialize(device, deviceContext);
 	m_colorD3Dim4PorpertyManager->Initialize(device, deviceContext);
-
-	m_normalVectorFilm->Initialize(device, deviceContext);
 }
 
 void AEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
@@ -388,8 +383,6 @@ void AEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
 
 	m_colorD1Dim4PorpertyManager->Update(deviceContext, dt);
 	m_colorD3Dim4PorpertyManager->Update(deviceContext, dt);
-
-	m_normalVectorFilm->ClearFilm(deviceContext);
 }
 
 void AEmitterManager::SourceParticles(ID3D11DeviceContext* deviceContext)
@@ -514,12 +507,12 @@ void AEmitterManager::CalculateForces(ID3D11DeviceContext* deviceContext)
 	CEmitterManagerCommonData::GCaculateParticleForceCS[emitterType]->ResetShader(deviceContext);
 }
 
-void AEmitterManager::DrawEmitters(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext)
+void AEmitterManager::DrawEmitters(CShotFilm* shotFilm, CBaseFilm* normalFilm, ID3D11DeviceContext* deviceContext)
 {
-	ID3D11RenderTargetView* rtvs[] = { shotFilm->GetFilmRTV(), m_normalVectorFilm->GetFilmRTV() };
+	ID3D11RenderTargetView* rtvs[] = { shotFilm->GetFilmRTV(), normalFilm->GetFilmRTV() };
 	ID3D11RenderTargetView* nullRtvs[] = { nullptr, nullptr };
 	ID3D11DepthStencilView* dsv = shotFilm->GetFilmDSV();
-	D3D11_VIEWPORT viewports[] = { shotFilm->GetFilmViewPort(), m_normalVectorFilm->GetFilmViewPort() };
+	D3D11_VIEWPORT viewports[] = { shotFilm->GetFilmViewPort(), normalFilm->GetFilmViewPort() };
 
 	ID3D11Buffer* vertexBuffers[] = {
 		CEmitterManagerCommonData::GEmitterPositionBuffer->GetBuffer(),

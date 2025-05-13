@@ -13,6 +13,7 @@ namespace D3D11
 
 class IUpdatable;
 class CCamera;
+class CBaseFilm;
 class CShotFilm;
 class CEmitterSelector;
 class AEmitterManager;
@@ -63,6 +64,7 @@ private:
 #pragma region 테스트 변수
 	std::unique_ptr<CCamera> m_camera;
 	std::unique_ptr<CShotFilm> m_shotFilm;
+	std::unique_ptr<CBaseFilm> m_normalVectorFilm;
 	std::unique_ptr<CEmitterSelector> m_emitterSelector;
 	std::vector<std::unique_ptr<AEmitterManager>> m_emitterManagers;
 

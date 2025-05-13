@@ -46,7 +46,7 @@ protected:
 	struct
 	{
 		DirectX::XMMATRIX viewProjMatrix;
-		DirectX::XMMATRIX invTransposeViewMatrix;
+		DirectX::XMMATRIX invViewProjMatrix;
 	} m_cameraPropertiesCPU;
 	std::unique_ptr<D3D11::CDynamicBuffer> m_propertiesGPU;
 	bool m_isPropertiesChanged;

@@ -41,16 +41,14 @@ void main(point ParticleVSOut input[1], uint primID : SV_PrimitiveID, inout Tria
     };
 
 #ifdef PARTICLE_EMITTER
-    float4 negativeViewVelocity = float4(-inputData.velocity, 0.f);
-    float4 negativeViewVelocityDir = normalize(negativeViewVelocity);
+    float4 negativeNDCVelocity = -float4(inputData.ndcVelocity, 0.f, 0.f);
 #endif
 
     [unroll]
     for (int i = 0; i < 4; ++i) 
     {
 #ifdef PARTICLE_EMITTER
-        float4 stretchOffset = clamp(0.f, 1.f, negativeViewVelocityDir * dot(offsets[i], negativeViewVelocity));
-        offsets[i] += stretchOffset;
+        offsets[i] += negativeNDCVelocity * dot(offsets[i], negativeNDCVelocity);
 #endif
         element.viewPos = inputData.viewPos + offsets[i];
         element.texCoord = texCoords[i];

@@ -391,9 +391,6 @@
     <None Include="CaculateForceCommon.hlsli">
       <Filter>Shader\Particle\ExecuteEmitter\CaculateForce</Filter>
     </None>
-    <None Include="DefineLinkedWithCpp.hlsli">
-      <Filter>Shader</Filter>
-    </None>
     <None Include="InterpolaterHelper.hlsli">
       <Filter>Shader\Particle\ExecuteEmitter\Initalize\Interpolater</Filter>
     </None>
@@ -402,6 +399,9 @@
     </None>
     <None Include="FilterCommon.hlsli">
       <Filter>Shader\Filter</Filter>
+    </None>
+    <None Include="DefineLinkedWithCpp.hlsli">
+      <Filter>Shader\Particle</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

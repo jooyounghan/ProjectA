@@ -38,8 +38,13 @@ ParticleVSOut main(uint vertexID : SV_VertexID)
 	result.emitterID = currentPoint.emitterID;
 #else
 	float4 currentVelocity = float4(currentPoint.velocity, 0.f);
-	float4 currentClippedVelocity =  mul(currentVelocity, viewProjMatrix);
-	result.velocity = currentClippedVelocity.xyz / currentClippedVelocity.w;
+    float4 prevWorldPos = currentWorldPos - currentVelocity * dt;
+    float4 prevClippedPos = mul(prevWorldPos, viewProjMatrix);
+    currentClippedPos /= currentClippedPos.w;
+    prevClippedPos /= prevClippedPos.w;
+    float2 ndcVelocity = (currentClippedPos - prevClippedPos).xy / dt;
+    ndcVelocity = clamp(ndcVelocity, -1.f, 1.f);
+    result.ndcVelocity = ndcVelocity;
 #endif
 
 	return result;

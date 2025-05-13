@@ -31,7 +31,7 @@ SpriteEmitterManager::SpriteEmitterManager(
 	UINT maxEmitterCount,
 	UINT maxParticleCount
 )
-	: AEmitterManager("SpriteEmitterManager", effectWidth, effectHeight, maxEmitterCount, maxParticleCount),
+	: AEmitterManager("SpriteEmitterManager", maxEmitterCount, maxParticleCount),
 	m_bloomFilm(make_unique<CBloomFilm>(3, 1.f, effectWidth, effectHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 1, 4)),
 	m_spriteTextureWidth(MaxSpriteTextureWidth),
 	m_spriteTextureHeight(MaxSpriteTextureHeight),
@@ -447,7 +447,7 @@ void SpriteEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float 
 	m_spriteIndexD3Dim1PorpertyManager->Update(deviceContext, dt);
 }
 
-void SpriteEmitterManager::InitializeAliveFlag(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext)
+void SpriteEmitterManager::InitializeAliveFlag(CShotFilm* shotFilm, CBaseFilm* normalFilm, ID3D11DeviceContext* deviceContext)
 {
 	ID3D11SamplerState* samplerStates[] = { CSamplerState::GetSSClamp() };
 	ID3D11SamplerState* samplerNullStates[] = { nullptr };
@@ -458,7 +458,7 @@ void SpriteEmitterManager::InitializeAliveFlag(CShotFilm* shotFilm, ID3D11Device
 	ID3D11ShaderResourceView* initializeSRVs[] = {
 		m_emitterInterpInformationGPU->GetSRV(),
 		shotFilm->GetFilmDepthSRV(),
-		m_normalVectorFilm->GetFilmSRV(),
+		normalFilm->GetFilmSRV(),
 		m_colorD1Dim4PorpertyManager->GetGPUInterpPropertySRV(),
 		m_colorD3Dim4PorpertyManager->GetGPUInterpPropertySRV(),
 		m_spriteSizeD1Dim2PorpertyManager->GetGPUInterpPropertySRV(),

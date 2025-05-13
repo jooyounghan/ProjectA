@@ -157,6 +157,11 @@ void CProjectAApp::Init(
 	);
 	m_shotFilm->Initialize(m_device, m_deviceContext);
 
+	m_normalVectorFilm = make_unique<CBaseFilm>(
+		m_width, m_height, DXGI_FORMAT_R16G16B16A16_FLOAT, 2, 4
+	);
+	m_normalVectorFilm->Initialize(m_device, m_deviceContext);
+
 	m_camera->SetViewport(m_shotFilm->GetFilmViewPort());
 
 	m_emitterManagers.emplace_back(make_unique<ParticleEmitterManager>(
@@ -174,6 +179,8 @@ void CProjectAApp::Init(
 #pragma endregion
 
 #pragma endregion
+	// Waste Delta Time After Initialization
+	GetDeltaTime();
 }
 
 void CProjectAApp::Update(float deltaTime)
@@ -203,17 +210,19 @@ void CProjectAApp::Update(float deltaTime)
 
 #pragma region 카메라 초기화 및 설정
 	m_shotFilm->ClearFilm(m_deviceContext);
+	m_normalVectorFilm->ClearFilm(m_deviceContext);
 #pragma endregion
 
 	ID3D11Buffer* cameraCb = m_camera->GetPropertiesBuffer();
 	ID3D11Buffer* singleNullCb = nullptr;
 	CShotFilm* shortFilm = m_shotFilm.get();
+	CBaseFilm* normalVectorFilm = m_normalVectorFilm.get();
 
 #pragma region 방출기 그리기
 	m_deviceContext->VSSetConstantBuffers(0, 1, &cameraCb);
 	for (auto& emitterManager : m_emitterManagers)
 	{
-		emitterManager->DrawEmitters(shortFilm, m_deviceContext);
+		emitterManager->DrawEmitters(shortFilm, normalVectorFilm, m_deviceContext);
 	}
 	m_deviceContext->VSSetConstantBuffers(0, 1, &singleNullCb);
 #pragma endregion
@@ -229,7 +238,7 @@ void CProjectAApp::Update(float deltaTime)
 
 	for (auto& emitterManager : m_emitterManagers)
 	{
-		emitterManager->InitializeAliveFlag(shortFilm, m_deviceContext);
+		emitterManager->InitializeAliveFlag(shortFilm, normalVectorFilm, m_deviceContext);
 		emitterManager->SourceParticles(m_deviceContext);
 		emitterManager->CalculateIndirectArgs(m_deviceContext);
 		emitterManager->CalculateForces(m_deviceContext);

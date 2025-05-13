@@ -2,7 +2,7 @@ struct ParticleVSOut
 {
     float4 viewPos : POSITION;
     float4 color : COLOR;
-    float3 velocity : VELOCITY;
+    float2 ndcVelocity : VELOCITY;
     float2 xyScale : SCALE;
 };
 

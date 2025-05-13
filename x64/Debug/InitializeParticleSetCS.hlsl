@@ -39,21 +39,41 @@ cbuffer EmitterManagerProperties : register(b2)
     uint2 emitterManagerPropertyDummy;
 };
 
-bool CheckIntersection(Texture2D<float> depthTexture, float3 p1, float3 p2)
+bool CheckIntersection(
+    Texture2D<float> depthTexture, 
+    float3 prevUVWithDepth, 
+    float3 currentUVWithDepth, 
+    out float3 intersectUVWithDepth
+)
 {
     const int steps = 10;
-    for (int i = 0; i <= steps; ++i)
-    {
-        float t = i / (float)steps;
-        float3 p = lerp(p1, p2, t);
-        float2 uv = p.xy;
 
-        if (uv.x < 0 || uv.x > 1 || uv.y < 0 || uv.y > 1)
+    float invSteps = 1.f / (float)steps;
+    float3 prevLerpedUVWithDepth = prevUVWithDepth;
+    intersectUVWithDepth = float3(0.f, 0.f, 0.f);
+    
+    for (int i = 1; i <= steps; ++i)
+    {
+        float currentStep = i * invSteps;
+        float3 currentLerpedUVWithDepth = lerp(prevUVWithDepth, currentUVWithDepth, currentStep);
+        
+        float2 prevUV = prevLerpedUVWithDepth.xy;
+        float prevDepth = prevLerpedUVWithDepth.z;
+        float2 currentUV = currentLerpedUVWithDepth.xy;
+        float currentDepth = currentLerpedUVWithDepth.z;
+        
+        if (any(prevUV < 0 || prevUV > 1) || any(currentUV < 0 || currentUV > 1))
             continue;
 
-        float depthAtUV = depthTexture.SampleLevel(clampSampler, uv, 0);
-        if (p.z > depthAtUV)
+        float prevRefDepth = depthTexture.SampleLevel(clampSampler, prevUV, 0);
+        float currentRefDepth = depthTexture.SampleLevel(clampSampler, currentUV, 0);
+        
+        if (prevDepth <= prevRefDepth && currentDepth > currentRefDepth)
+        {
+            intersectUVWithDepth = prevLerpedUVWithDepth;
             return true;
+        }
+        prevLerpedUVWithDepth = currentLerpedUVWithDepth;
     }
     return false;
 }
@@ -127,40 +147,43 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
             #endif	
 
             // 가속도를 통한 적분 ===========================================================================================
-            float3 prevWorldPos = currentParticle.worldPos;
             currentParticle.velocity += currentParticle.accelerate * dt;
-            float3 currentPos = prevWorldPos + currentParticle.velocity * dt; 
-            currentParticle.worldPos = currentPos;
+            float4 prevWorldPos = float4(currentParticle.worldPos, 1.f);
+            float4 currentVelocity = float4(currentParticle.velocity, 0.f);
+            float4 currentPos = prevWorldPos + currentVelocity * dt;
+            
+            currentParticle.worldPos = currentPos.xyz;
             // ==============================================================================================================
 
             // Depth 기반 충돌 처리 =========================================================================================
-            float4 prevViewProjPos = mul(float4(prevWorldPos, 1.f), viewProjMatrix);
-            float prevWInv = 1.f / prevViewProjPos.w;
-            float3 ndcPrevViewProjPos = prevViewProjPos.xyz * prevWInv;
-            ndcPrevViewProjPos.x = (ndcPrevViewProjPos.x + 1.f) / 2.f;
-            ndcPrevViewProjPos.y = (-ndcPrevViewProjPos.y + 1.f) / 2.f;
+            float4 clippedPrevPos = mul(prevWorldPos, viewProjMatrix);
+            float4 currentClippedPos = mul(currentPos, viewProjMatrix);
+            float3 ndcPrevPos = clippedPrevPos / clippedPrevPos.w;
+            float3 ndcCurrentPos = currentClippedPos / currentClippedPos.w;
 
-            float4 currentViewProjPos = mul(float4(currentPos, 1.f), viewProjMatrix);
-            float currentWInv = 1.f / currentViewProjPos.w;
-            float3 ndcCurrentViewProjPos = currentViewProjPos.xyz * currentWInv;
-            ndcCurrentViewProjPos.x = (ndcCurrentViewProjPos.x + 1.f) / 2.f;
-            ndcCurrentViewProjPos.y = (-ndcCurrentViewProjPos.y + 1.f) / 2.f;
+            float2 prevPosUV = 0.5f * (ndcPrevPos.xy * float2(1, -1) + 1.f);
+            float2 currentPosUV = 0.5f * (ndcCurrentPos.xy * float2(1, -1) + 1.f);
+            
+            float3 prevUVWithDepth = float3(prevPosUV, ndcPrevPos.z);
+            float3 currentUVWithDepth = float3(currentPosUV, ndcCurrentPos.z);
 
-            // out 확인 후 위치 조정해줘서 조금 더 정확도 향상
-            if (CheckIntersection(depthView, ndcPrevViewProjPos, ndcCurrentViewProjPos))
+            float3 intersectUVWithDepth = currentUVWithDepth;
+            if (CheckIntersection(depthView, prevUVWithDepth, currentUVWithDepth, intersectUVWithDepth))
             {
-                float3 normalVector = -normalView.SampleLevel(clampSampler, ndcPrevViewProjPos.xy, 0).xyz;
-                prevWorldPos += normalVector * 0.1f;
-                currentParticle.worldPos = prevWorldPos;
-                currentParticle.velocity = -0.5f * reflect(currentParticle.velocity, normalVector);
+                float2 intersectUV = intersectUVWithDepth.xy;
+                float3 normalVector = normalView.SampleLevel(clampSampler, intersectUV, 0).xyz;
+                
+                float2 ndcIntersectXY = (2.f * intersectUV - 1.f) * float2(1, -1);
+                float4 clippedIntersectPos = float4(ndcIntersectXY, intersectUVWithDepth.z, 1.f);
+                float4 worldIntersectPos = mul(clippedIntersectPos, invViewProjMatrix);
+                worldIntersectPos /= worldIntersectPos.w;
+                currentParticle.worldPos = worldIntersectPos;
+                currentParticle.velocity = 0.5f * reflect(currentParticle.velocity, normalVector);
             }
             // ==============================================================================================================
             
             #ifdef SPRITE_EMITTER
-//            if (any(ndcCurrentViewProjPos < 0.0f) || any(ndcCurrentViewProjPos > 1.0f))
-//                return;
-
-            float depth = 1.f - ndcCurrentViewProjPos.z;
+            float depth = 1.f - intersectUVWithDepth.z;
             SpriteAliveIndex spriteAliveIndex;
             spriteAliveIndex.index = threadID;
             spriteAliveIndex.depth = FloatToSortableUint(depth);
