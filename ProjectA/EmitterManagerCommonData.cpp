@@ -238,7 +238,7 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 			nullptr,
 			nullptr,
 			GEmitterDrawPS[idx].get(),
-			CRasterizerState::GetRSWireframeCWSS(),
+			CRasterizerState::GetRSSolidCWSS(),
 			nullptr,
 			CDepthStencilState::GetDSSReadWrite(),
 			nullptr,

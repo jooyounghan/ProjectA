@@ -26,20 +26,12 @@ void main( uint3 DTid : SV_DispatchThreadID )
     float2 invVelocity = motionVectorTexture[location].xy;
     invVelocity.x =  -invVelocity.x;
 
-    float invSpeed = length(invVelocity);
-    if (invSpeed > 1E-3)
-    {
-        invSpeed = min(invSpeed, maxMotionTrailLength);
-        invSpeed /= samplingCount;
+    float4 sceneColor = sceneTexture[location];
 
-        float2 sampleStep = normalize(invVelocity) * invSpeed;    
-        float4 sceneColor = sceneTexture[location];
-
-        for (uint step = 0; step < samplingCount; ++step)
-        {   
-            prevLocation += sampleStep;
-            motionBlurredTexture[prevLocation] = sceneColor;
-            sceneColor *= dissipationFactor;
-        }
+    for (uint step = 0; step < samplingCount; ++step)
+    {   
+        prevLocation += invVelocity;
+        motionBlurredTexture[prevLocation] = sceneColor;
+        sceneColor *= dissipationFactor;
     }
 }

@@ -50,8 +50,8 @@ using namespace ImGui;
 
 
 #define CurrentEmitterTypeCount 2
-#define MaxParticleEmitterCount 250
-#define MaxSpriteEmitterCount 250
+#define MaxParticleEmitterCount 1000
+#define MaxSpriteEmitterCount 1000
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
 	HWND hWnd,

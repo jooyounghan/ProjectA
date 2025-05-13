@@ -3,7 +3,7 @@
 #include "Texture2DInstance.h"
 #include "SRVOption.h"
 
-#define MaxSpriteTextureWidth 500
+#define MaxSpriteTextureWidth 300
 #define MaxSpriteTextureHeight 100
 
 struct SSpriteAliveIndex

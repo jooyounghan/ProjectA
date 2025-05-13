@@ -336,9 +336,7 @@ void AEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* 
 	m_colorD1Dim4PorpertyManager->Initialize(device, deviceContext);
 	m_colorD3Dim4PorpertyManager->Initialize(device, deviceContext);
 
-
 	m_normalVectorFilm->Initialize(device, deviceContext);
-
 }
 
 void AEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
@@ -390,6 +388,8 @@ void AEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
 
 	m_colorD1Dim4PorpertyManager->Update(deviceContext, dt);
 	m_colorD3Dim4PorpertyManager->Update(deviceContext, dt);
+
+	m_normalVectorFilm->ClearFilm(deviceContext);
 }
 
 void AEmitterManager::SourceParticles(ID3D11DeviceContext* deviceContext)

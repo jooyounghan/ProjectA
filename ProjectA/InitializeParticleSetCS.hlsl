@@ -157,6 +157,9 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
             // ==============================================================================================================
             
             #ifdef SPRITE_EMITTER
+//            if (any(ndcCurrentViewProjPos < 0.0f) || any(ndcCurrentViewProjPos > 1.0f))
+//                return;
+
             float depth = 1.f - ndcCurrentViewProjPos.z;
             SpriteAliveIndex spriteAliveIndex;
             spriteAliveIndex.index = threadID;

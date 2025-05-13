@@ -18,18 +18,25 @@ ParticlePSOut main(ParticleGSOut input) : SV_TARGET
 	const uint emitterID = input.emitterID;
 	const float spriteTextureCount = emitterInterpInforms[emitterID].spriteTextureCount;
 
-	const uint lowerIndex = floor(input.spriteIndex);
-	const uint upperIndex = ceil(input.spriteIndex);
-	const float t = input.spriteIndex - lowerIndex;
+	uint   lowerIndex = (uint)floor(input.spriteIndex);
+	uint   upperIndex = (uint)ceil(input.spriteIndex);
+	float  t          = input.spriteIndex - lowerIndex;
 
-	float2 originTexCoord = input.texCoord;
-	float2 lowerTexCoord = float2(lowerIndex / spriteTextureCount +  originTexCoord.x / spriteTextureCount, originTexCoord.y);
-	float2 upperTexCoord = float2(upperIndex / spriteTextureCount + originTexCoord.x / spriteTextureCount , originTexCoord.y);
+	float2 baseCoord = input.texCoord;
+	float2 lowerUV = float2(
+		(lowerIndex + baseCoord.x) / spriteTextureCount,
+		baseCoord.y
+	);
 
-	float4 lowerSampled = spriteImage.Sample(wrapSampler, float3(lowerTexCoord, emitterID));
-	float4 upperSampled = spriteImage.Sample(wrapSampler, float3(upperTexCoord, emitterID));
-	float4 spriteSampled = (1.f - t) * lowerSampled + t * upperSampled;
-	float4 color = input.color * spriteSampled;
+	float2 upperUV = float2(
+		(upperIndex + baseCoord.x) / spriteTextureCount,
+		baseCoord.y
+	);
+
+	float4 lowerSample = spriteImage.Sample(wrapSampler, float3(lowerUV, emitterID));
+	float4 upperSample = spriteImage.Sample(wrapSampler, float3(upperUV, emitterID));
+	float4 spriteColor = lerp(lowerSample, upperSample, t);
+	float4 color = input.color * spriteColor;
 #else
     float3 offsetTexCoord = float3((input.texCoord - 0.5f) * 2.f, 0.f);
     offsetTexCoord.y *= -1.f;
