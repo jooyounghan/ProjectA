@@ -5,11 +5,11 @@ EmitterPSOutput main(EmitterVSOutput input) : SV_TARGET
 	EmitterPSOutput result;
 
 #ifdef PARTICLE_EMITTER
-	result.color = float4(1.0f, 1.0f, 0.0f, 1.0f);
-#elif defined(RIBBON_EMITTER)
 	result.color = float4(0.0f, 1.0f, 1.0f, 1.0f);
 #elif defined(SPRITE_EMITTER)
 	result.color = float4(1.0f, 0.0f, 1.0f, 1.0f);
+#elif defined(RIBBON_EMITTER)
+	result.color = float4(1.0f, 1.0f, 0.0f, 1.0f);
 #elif defined(MESH_EMITTER)
 	result.color = float4(1.0f, 1.0f, 1.0f, 1.0f);
 #else

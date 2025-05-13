@@ -30,7 +30,6 @@ unique_ptr<CVertexShader> CFilterCommonData::GFilterVS;
 
 unique_ptr<CPixelShader> CFilterCommonData::GFilterTracePS;
 unique_ptr<CPixelShader> CFilterCommonData::GFilterBlurPS;
-unique_ptr<CComputeShader> CFilterCommonData::GFilterMotionBlurCS;
 unique_ptr<CPixelShader> CFilterCommonData::GFilterGammaCorrectionPS;
 
 unique_ptr<CGraphicsPSOObject> CFilterCommonData::GFilterAdditivePSO;
@@ -77,9 +76,6 @@ void CFilterCommonData::Intialize(ID3D11Device* device)
 
 	GFilterBlurPS = make_unique<CPixelShader>();
 	GFilterBlurPS->CreateShader(L"./FilterBlurPS.hlsl", nullptr, "main", "ps_5_0", device);
-
-	GFilterMotionBlurCS = make_unique<CComputeShader>();
-	GFilterMotionBlurCS->CreateShader(L"./FilterMotionBlurCS.hlsl", nullptr, "main", "cs_5_0", device);
 
 	GFilterGammaCorrectionPS = make_unique<CPixelShader>();
 	GFilterGammaCorrectionPS->CreateShader(L"./FilterGammaCorrectionPS.hlsl", nullptr, "main", "ps_5_0", device);

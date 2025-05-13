@@ -25,7 +25,11 @@ ParticleVSOut main(uint vertexID : SV_VertexID)
 #endif
 
     Particle currentPoint = particles[index];
-    result.viewPos = mul(float4(currentPoint.worldPos, 1.f), viewProjMatrix);
+
+	float4 currentWorldPos = float4(currentPoint.worldPos, 1.f);
+	float4 currentClippedPos = mul(currentWorldPos, viewProjMatrix);
+
+    result.viewPos = currentClippedPos;
 	result.color = currentPoint.color;
 	result.xyScale = float2(currentPoint.xyScale);
 
@@ -33,8 +37,9 @@ ParticleVSOut main(uint vertexID : SV_VertexID)
 	result.spriteIndex = currentPoint.spriteIndex;
 	result.emitterID = currentPoint.emitterID;
 #else
-	float4 viewVelocity = mul(float4(currentPoint.velocity, 0.f), viewProjMatrix);	
-	result.velocity = viewVelocity.xy;
+	float4 currentVelocity = float4(currentPoint.velocity, 0.f);
+	float4 currentClippedVelocity =  mul(currentVelocity, viewProjMatrix);
+	result.velocity = currentClippedVelocity.xyz / currentClippedVelocity.w;
 #endif
 
 	return result;

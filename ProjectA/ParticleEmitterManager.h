@@ -2,7 +2,6 @@
 #include "AEmitterManager.h"
 
 class CBloomFilm;
-class CMotionBlurFilm;
 
 class ParticleEmitterManager : public AEmitterManager
 {
@@ -22,7 +21,6 @@ protected:
 
 protected:
 	std::unique_ptr<CBloomFilm> m_bloomFilm;
-	std::unique_ptr<CMotionBlurFilm> m_motionBlurFilm;
 
 protected:
 	std::vector<SParticleInterpInformation> m_emitterInterpInformationCPU;

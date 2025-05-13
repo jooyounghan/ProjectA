@@ -14,7 +14,7 @@ static float2 offsets[4] =
     float2(-1.f, -1.f), float2(1.f, -1.f), float2(-1.f, 1.f), float2(1.f, 1.f)
 };
 
-float4 main(PostProcessVertexOutput output) : SV_TARGET
+float4 main(PostProcessVertexOutput input) : SV_TARGET
 {
     uint width, height, numLevels;
     filterSource.GetDimensions(0, width, height, numLevels);
@@ -27,7 +27,7 @@ float4 main(PostProcessVertexOutput output) : SV_TARGET
     {
         color += filterSource.Sample(
             clampSampler, 
-            output.f2TexCoord + blurRadius * offsets[i] * scale
+            input.f2TexCoord + blurRadius * offsets[i] * scale
         );
     }
    

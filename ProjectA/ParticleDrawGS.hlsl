@@ -16,20 +16,20 @@ void main(point ParticleVSOut input[1], uint primID : SV_PrimitiveID, inout Tria
 #else
     ParticleVSOut inputData = input[0];
     ParticleGSOut element;
-    element.velocity = inputData.velocity;
 #endif
 
-    const float2 xyScale = inputData.xyScale;
-    const float4 dx = float4(10.f / appWidth, 0.f, 0.f, 0.f) * xyScale.x;
-    const float4 dy = float4(0.f, 10.f / appHeight, 0.f, 0.f) * xyScale.y;
+    float4 inputViewPos = inputData.viewPos;
+    float2 xyScale = inputData.xyScale;
+    float2 dxdy = float2(10.f / appWidth, 10.f / appHeight) * xyScale;
+
     element.color = inputData.color;
 
     float4 offsets[4] = 
     {
-        -dx - dy,
-        -dx + dy,
-         dx - dy,
-         dx + dy
+        float4(-dxdy.x, -dxdy.y, 0.f, 0.f),
+        float4(-dxdy.x, dxdy.y, 0.f, 0.f),
+        float4(dxdy.x, -dxdy.y, 0.f, 0.f),
+        float4(dxdy.x, dxdy.y, 0.f, 0.f)
     };
 
     float2 texCoords[4] = 
@@ -40,10 +40,18 @@ void main(point ParticleVSOut input[1], uint primID : SV_PrimitiveID, inout Tria
         float2(1.f, 0.f)
     };
 
+#ifdef PARTICLE_EMITTER
+    float4 negativeViewVelocity = float4(-inputData.velocity, 0.f);
+    float4 negativeViewVelocityDir = normalize(negativeViewVelocity);
+#endif
 
     [unroll]
     for (int i = 0; i < 4; ++i) 
     {
+#ifdef PARTICLE_EMITTER
+        float4 stretchOffset = clamp(0.f, 1.f, negativeViewVelocityDir * dot(offsets[i], negativeViewVelocity));
+        offsets[i] += stretchOffset;
+#endif
         element.viewPos = inputData.viewPos + offsets[i];
         element.texCoord = texCoords[i];
         output.Append(element);

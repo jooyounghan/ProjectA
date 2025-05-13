@@ -15,7 +15,6 @@
 
 #include "ShotFilm.h"
 #include "BloomFilm.h"
-#include "MotionBlurFilm.h"
 #include "SamplerState.h"
 
 using namespace std;
@@ -29,8 +28,7 @@ ParticleEmitterManager::ParticleEmitterManager(
 	UINT maxParticleCount
 )
 	: AEmitterManager("ParticleEmitterManager", effectWidth, effectHeight, maxEmitterCount, maxParticleCount),
-	m_bloomFilm(make_unique<CBloomFilm>(3, 1.f, effectWidth, effectHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 1, 4)),
-	m_motionBlurFilm(make_unique<CMotionBlurFilm>(5, 0.5f, 10.f, effectWidth, effectHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 1, 4))
+	m_bloomFilm(make_unique<CBloomFilm>(3, 1.f, effectWidth, effectHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 1, 4))
 {
 	SParticleInterpInformation particleInterpInformation;
 	ZeroMem(particleInterpInformation);
@@ -57,7 +55,7 @@ void ParticleEmitterManager::CreateAliveIndexSet(ID3D11Device* device)
 UINT ParticleEmitterManager::AddEmitter(
 	XMVECTOR position,
 	XMVECTOR angle,
-	ID3D11Device* device, 
+	ID3D11Device* device,
 	ID3D11DeviceContext* deviceContext
 )
 {
@@ -65,24 +63,24 @@ UINT ParticleEmitterManager::AddEmitter(
 	unique_ptr<ParticleEmitter> particleEmitter = make_unique<ParticleEmitter>(
 		particleEmitterID,
 		position, angle,
-		[this](UINT emitterID, const XMMATRIX& worldTransform) { 
-			m_worldTransformCPU[emitterID] = worldTransform; 
-			AddWorldTransformChangedEmitterID(emitterID); 
+		[this](UINT emitterID, const XMMATRIX& worldTransform) {
+			m_worldTransformCPU[emitterID] = worldTransform;
+			AddWorldTransformChangedEmitterID(emitterID);
 		},
-		[this](UINT emitterID, const SEmitterForceProperty& forceProperty) 
+		[this](UINT emitterID, const SEmitterForceProperty& forceProperty)
 		{
 			m_forcePropertyCPU[emitterID] = forceProperty;
 			AddForceChangedEmitterID(emitterID);
 		},
-		[this](UINT emitterID, UINT colorInterpolaterID, bool isColorGPUInterpolaterOn, EInterpolationMethod colorInterpolationMethod, IInterpolater<4>* colorInterpolater)
+			[this](UINT emitterID, UINT colorInterpolaterID, bool isColorGPUInterpolaterOn, EInterpolationMethod colorInterpolationMethod, IInterpolater<4>* colorInterpolater)
 		{
 			SelectColorGPUInterpolater(emitterID, colorInterpolaterID, isColorGPUInterpolaterOn, colorInterpolationMethod, colorInterpolater);
 		},
-		[this](UINT emitterID, UINT colorInterpolaterID, bool isColorGPUInterpolaterOn, float maxLife, EInterpolationMethod colorInterpolationMethod, IInterpolater<4>* colorInterpolater)
+			[this](UINT emitterID, UINT colorInterpolaterID, bool isColorGPUInterpolaterOn, float maxLife, EInterpolationMethod colorInterpolationMethod, IInterpolater<4>* colorInterpolater)
 		{
 			UpdateColorGPUInterpolater(emitterID, colorInterpolaterID, isColorGPUInterpolaterOn, maxLife, colorInterpolationMethod, colorInterpolater);
 		}
-	);
+		);
 
 	particleEmitter->CreateProperty();
 	m_emitters.emplace_back(std::move(particleEmitter));
@@ -91,10 +89,10 @@ UINT ParticleEmitterManager::AddEmitter(
 
 void ParticleEmitterManager::UpdateColorGPUInterpolaterImpl(
 	UINT emitterID,
-	UINT colorInterpolaterID, 
-	bool isColorGPUInterpolaterOn, 
-	float maxLife, 
-	EInterpolationMethod colorInterpolationMethod, 
+	UINT colorInterpolaterID,
+	bool isColorGPUInterpolaterOn,
+	float maxLife,
+	EInterpolationMethod colorInterpolationMethod,
 	IInterpolater<4>* colorInterpolater
 )
 {
@@ -113,11 +111,10 @@ void ParticleEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceCo
 		static_cast<UINT>(sizeof(SParticleInterpInformation)),
 		m_maxEmitterCount,
 		m_emitterInterpInformationCPU.data()
-	);
+		);
 	m_emitterInterpInformationGPU->InitializeBuffer(device);
 
 	m_bloomFilm->Initialize(device, deviceContext);
-	m_motionBlurFilm->Initialize(device, deviceContext);
 }
 
 void ParticleEmitterManager::InitializeAliveFlag(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext)
@@ -136,7 +133,7 @@ void ParticleEmitterManager::InitializeAliveFlag(CShotFilm* shotFilm, ID3D11Devi
 		m_colorD3Dim4PorpertyManager->GetGPUInterpPropertySRV()
 	};
 	ID3D11ShaderResourceView* initializeNullSRVs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
-	ID3D11UnorderedAccessView* initializeUavs[] = { 
+	ID3D11UnorderedAccessView* initializeUavs[] = {
 		m_totalParticles->GetUAV(),
 		m_deathIndexSet->GetUAV(),
 		m_aliveIndexSet->GetUAV()
@@ -167,14 +164,13 @@ void ParticleEmitterManager::FinalizeParticles(ID3D11DeviceContext* deviceContex
 void ParticleEmitterManager::DrawParticles(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext)
 {
 	m_bloomFilm->ClearFilm(deviceContext);
-	m_motionBlurFilm->ClearFilm(deviceContext);
 
-	ID3D11RenderTargetView* rtvs[] = { shotFilm->GetFilmRTV(), m_bloomFilm->GetFilmRTV(), m_motionBlurFilm->GetFilmRTV() };
+	ID3D11RenderTargetView* rtvs[] = { shotFilm->GetFilmRTV(), m_bloomFilm->GetFilmRTV() };
 	ID3D11DepthStencilView* dsv = shotFilm->GetFilmDSV();
-	D3D11_VIEWPORT viewports[] = { shotFilm->GetFilmViewPort(), m_bloomFilm->GetFilmViewPort(), m_motionBlurFilm->GetFilmViewPort() };
+	D3D11_VIEWPORT viewports[] = { shotFilm->GetFilmViewPort(), m_bloomFilm->GetFilmViewPort() };
 
-	deviceContext->OMSetRenderTargets(3, rtvs, dsv);
-	deviceContext->RSSetViewports(3, viewports);
+	deviceContext->OMSetRenderTargets(2, rtvs, dsv);
+	deviceContext->RSSetViewports(2, viewports);
 
 	ID3D11ShaderResourceView* patriclesSrvs[] = {
 		m_totalParticles->GetSRV(),
@@ -195,8 +191,6 @@ void ParticleEmitterManager::DrawParticles(CShotFilm* shotFilm, ID3D11DeviceCont
 	CEmitterManagerCommonData::GDrawParticlePSO[emitterTypeIndex]->RemovePSO(deviceContext);
 
 	m_bloomFilm->Develop(deviceContext);
-	m_motionBlurFilm->Develop(deviceContext);
 
 	m_bloomFilm->Blend(deviceContext, shotFilm);
-	m_motionBlurFilm->Blend(deviceContext, shotFilm);
 }

@@ -1,8 +1,8 @@
 struct ParticleVSOut
 {
     float4 viewPos : POSITION;
-    float2 velocity : VELOCITY;
     float4 color : COLOR;
+    float3 velocity : VELOCITY;
     float2 xyScale : SCALE;
 };
 
@@ -18,7 +18,6 @@ struct SpriteVSOut
 struct ParticleGSOut
 {
     float4 viewPos : SV_Position;
-    float2 velocity : VELOCITY;
     float2 texCoord : TEXCOORD;
     float4 color : COLOR;
 };
@@ -36,7 +35,6 @@ struct ParticlePSOut
 {
     float4 f4ShotFilm : SV_Target0;
     float4 f4BlurFilm : SV_Target1;
-    float4 f4MotionVector : SV_Target2;
 };
 
 struct SpritePSOut

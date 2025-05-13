@@ -39,9 +39,6 @@ public:
 	static std::unique_ptr<D3D11::CPixelShader> GFilterGammaCorrectionPS;
 
 public:
-	static std::unique_ptr<D3D11::CComputeShader> GFilterMotionBlurCS;
-
-public:
 	static std::unique_ptr<D3D11::CGraphicsPSOObject> GFilterAdditivePSO;
 	static std::unique_ptr<D3D11::CGraphicsPSOObject> GFilterBlurPSO;
 	static std::unique_ptr<D3D11::CGraphicsPSOObject> GFilterGammaCorrectionPSO;

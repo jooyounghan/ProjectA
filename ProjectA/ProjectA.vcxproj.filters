@@ -236,9 +236,6 @@
     <ClCompile Include="BloomFilm.cpp">
       <Filter>소스 파일\Camera\Film\Extended</Filter>
     </ClCompile>
-    <ClCompile Include="MotionBlurFilm.cpp">
-      <Filter>소스 파일\Camera\Film\Extended</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External\imgui_impl_dx11.h">
@@ -376,9 +373,6 @@
     <ClInclude Include="ProjectAApp.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="MotionBlurFilm.h">
-      <Filter>헤더 파일\Camera\Film\Extended</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
@@ -460,9 +454,6 @@
       <Filter>Shader\Filter</Filter>
     </FxCompile>
     <FxCompile Include="FilterTracePS.hlsl">
-      <Filter>Shader\Filter</Filter>
-    </FxCompile>
-    <FxCompile Include="FilterMotionBlurCS.hlsl">
       <Filter>Shader\Filter</Filter>
     </FxCompile>
   </ItemGroup>
