@@ -159,6 +159,9 @@ protected:
 	virtual void InitializeImpl(ID3D11Device* device, ID3D11DeviceContext* deviceContext);
 	virtual void UpdateImpl(ID3D11DeviceContext* deviceContext, float dt);
 
+protected:
+	void UpdateAliveParticleCount(ID3D11DeviceContext* deviceContext);
+
 public:
 	virtual void InitializeAliveFlag(CShotFilm* shotFilm, CBaseFilm* normalFilm, ID3D11DeviceContext* deviceContext) = 0;
 	virtual void SourceParticles(ID3D11DeviceContext* deviceContext);

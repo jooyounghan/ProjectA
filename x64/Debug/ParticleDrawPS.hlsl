@@ -53,7 +53,7 @@ ParticlePSOut main(ParticleGSOut input) : SV_TARGET
 
 #else
 	ParticlePSOut result;
-	result.f4ShotFilm = color * 100.f;
+	result.f4ShotFilm = color;
 	result.f4BlurFilm = color;
 #endif
 	return result;

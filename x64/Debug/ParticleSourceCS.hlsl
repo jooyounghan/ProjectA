@@ -93,9 +93,8 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID)
 
 #ifdef INITIAL_SOURCE
 	if (threadID >= initialParticleCount) return;
-#else
-	if (threadID + aliveParticleCount >= particleMaxCount) return;
 #endif
+	if (threadID + aliveParticleCount >= particleMaxCount) return;
 
 	uint revivedIndex = deathIndexSet.Consume();
 

@@ -385,6 +385,11 @@ void AEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
 	m_colorD3Dim4PorpertyManager->Update(deviceContext, dt);
 }
 
+void AEmitterManager::UpdateAliveParticleCount(ID3D11DeviceContext* deviceContext)
+{
+	deviceContext->CopyStructureCount(m_emitterManagerPropertyGPU->GetBuffer(), 4, m_aliveIndexSet->GetUAV());
+}
+
 void AEmitterManager::SourceParticles(ID3D11DeviceContext* deviceContext)
 {
 	const UINT emitterType = GetEmitterType();
@@ -422,14 +427,14 @@ void AEmitterManager::SourceParticles(ID3D11DeviceContext* deviceContext)
 			deviceContext->Dispatch(dispatchX, 1, 1);
 			deviceContext->CSSetConstantBuffers(2, 3, emitterInitialSourceNullBuffers);
 			emitter->SetSpawned(true);
+
+			UpdateAliveParticleCount(deviceContext);
 		}
 	}
 	CEmitterManagerCommonData::GParticleInitialSourceCS[emitterType]->ResetShader(deviceContext);
 #pragma endregion
 
 #pragma region ·±Å¸ÀÓ ¼Ò½Ì
-	deviceContext->CopyStructureCount(m_emitterManagerPropertyGPU->GetBuffer(), 4, m_aliveIndexSet->GetUAV());
-
 	CEmitterManagerCommonData::GParticleRuntimeSourceCS[emitterType]->SetShader(deviceContext);
 	for (auto& emitter : m_emitters)
 	{
@@ -448,6 +453,8 @@ void AEmitterManager::SourceParticles(ID3D11DeviceContext* deviceContext)
 		const UINT dispatchX = emitterUpdateProperty->GetSpawnCount();
 		deviceContext->Dispatch(dispatchX, 1, 1);
 		deviceContext->CSSetConstantBuffers(2, 3, emitterRuntimeSourceNullBuffers);
+
+		UpdateAliveParticleCount(deviceContext);
 	}
 	CEmitterManagerCommonData::GParticleRuntimeSourceCS[emitterType]->ResetShader(deviceContext);
 #pragma endregion
