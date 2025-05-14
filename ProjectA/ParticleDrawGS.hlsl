@@ -9,7 +9,7 @@ void main(point ParticleVSOut input[1], uint primID : SV_PrimitiveID, inout Tria
 #endif
 {
     const float defaultLength = 10.f;
-    const float defaultTailLength = defaultLength / 2.f;
+    const float defaultTailLength = defaultLength / 3.f;
     
 #ifdef SPRITE_EMITTER
     SpriteVSOut inputData = input[0];
