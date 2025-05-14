@@ -50,10 +50,10 @@ ParticlePSOut main(ParticleGSOut input) : SV_TARGET
 #ifdef SPRITE_EMITTER
 	SpritePSOut result;
 	result.f4ShotFilm = color;
-	result.f4BlurFilm = color;
+
 #else
 	ParticlePSOut result;
-	result.f4ShotFilm = color;
+	result.f4ShotFilm = color * 100.f;
 	result.f4BlurFilm = color;
 #endif
 	return result;

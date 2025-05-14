@@ -28,7 +28,7 @@ ParticleEmitterManager::ParticleEmitterManager(
 	UINT maxParticleCount
 )
 	: AEmitterManager("ParticleEmitterManager", maxEmitterCount, maxParticleCount),
-	m_bloomFilm(make_unique<CBloomFilm>(3, 1.f, effectWidth, effectHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 1, 4))
+	m_bloomFilm(make_unique<CBloomFilm>(3, 1.f, effectWidth, effectHeight, DXGI_FORMAT_R16G16B16A16_FLOAT, 1, 4))
 {
 	SParticleInterpInformation particleInterpInformation;
 	ZeroMem(particleInterpInformation);

@@ -40,7 +40,6 @@ struct ParticlePSOut
 struct SpritePSOut
 {
     float4 f4ShotFilm : SV_Target0;
-    float4 f4BlurFilm : SV_Target1;
 };
 
 float smoothstep(float edge0, float edge1, float x)

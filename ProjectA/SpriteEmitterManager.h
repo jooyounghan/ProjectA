@@ -38,8 +38,8 @@ public:
 	);
 	~SpriteEmitterManager() override = default;
 
-protected:
-	std::unique_ptr<CBloomFilm> m_bloomFilm;
+//protected:
+//	std::unique_ptr<CBloomFilm> m_bloomFilm;
 
 protected:
 	virtual UINT GetEmitterType() const noexcept override { return static_cast<UINT>(EEmitterType::SpriteEmitter); }

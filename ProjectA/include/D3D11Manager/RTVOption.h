@@ -33,6 +33,10 @@ namespace D3D11
 
 	public:
 		void Swap(RTVOption& rtvOptionIn);
+
+	private:
+		static D3D11_RENDER_TARGET_VIEW_DESC GetRenderTargetViewDesc(const D3D11_TEXTURE2D_DESC& texture2dDesc);
+		static DXGI_FORMAT GetRenderTargetViewFormatFromTextureFormat(const DXGI_FORMAT& textureFormat);
 	};
 }
 #endif

@@ -1,9 +1,14 @@
 #include "FilterCommon.hlsli"
+#include "FilterToneMappingCommon.hlsli"
 
 Texture2D filterSource : register(t0);
 SamplerState clampSampler : register(s0);
 
+
 float4 main(PostProcessVertexOutput input) : SV_TARGET
 {   
-    return pow(filterSource.Sample(clampSampler, input.f2TexCoord), 1.0f / 2.2f);
+    float3 hdrColor = filterSource.Sample(clampSampler, input.f2TexCoord);
+    float3 ldrColor = SimpleReinhard(hdrColor);
+    float3 gammaCorrecetedColor = pow(ldrColor, 1.0f / 2.2f);
+    return float4(gammaCorrecetedColor, 1.f);
 }

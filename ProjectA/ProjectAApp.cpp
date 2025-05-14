@@ -153,12 +153,17 @@ void CProjectAApp::Init(
 	m_camera->Initialize(m_device, m_deviceContext);
 
 	m_shotFilm = make_unique<CShotFilm>(
-		m_width, m_height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_R24G8_TYPELESS, 1, 4, m_backBufferRTV
+		m_width, m_height, 
+		DXGI_FORMAT_R16G16B16A16_FLOAT, 
+		DXGI_FORMAT_R24G8_TYPELESS, 
+		1, 4, m_backBufferRTV
 	);
 	m_shotFilm->Initialize(m_device, m_deviceContext);
 
 	m_normalVectorFilm = make_unique<CBaseFilm>(
-		m_width, m_height, DXGI_FORMAT_R16G16B16A16_FLOAT, 2, 4
+		m_width, m_height, 
+		DXGI_FORMAT_R16G16B16A16_FLOAT, 
+		2, 4
 	);
 	m_normalVectorFilm->Initialize(m_device, m_deviceContext);
 

@@ -403,6 +403,9 @@
     <None Include="DefineLinkedWithCpp.hlsli">
       <Filter>Shader\Particle</Filter>
     </None>
+    <None Include="FilterToneMappingCommon.hlsli">
+      <Filter>Shader\Filter</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="EmitterDrawPS.hlsl">
@@ -454,6 +457,12 @@
       <Filter>Shader\Filter</Filter>
     </FxCompile>
     <FxCompile Include="FilterTracePS.hlsl">
+      <Filter>Shader\Filter</Filter>
+    </FxCompile>
+    <FxCompile Include="FilterGetLuminancePS.hlsl">
+      <Filter>Shader\Filter</Filter>
+    </FxCompile>
+    <FxCompile Include="CalculateLogLuminance.hlsl">
       <Filter>Shader\Filter</Filter>
     </FxCompile>
   </ItemGroup>

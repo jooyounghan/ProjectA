@@ -32,7 +32,7 @@ SpriteEmitterManager::SpriteEmitterManager(
 	UINT maxParticleCount
 )
 	: AEmitterManager("SpriteEmitterManager", maxEmitterCount, maxParticleCount),
-	m_bloomFilm(make_unique<CBloomFilm>(3, 1.f, effectWidth, effectHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 1, 4)),
+	//m_bloomFilm(make_unique<CBloomFilm>(5, 1.5f, effectWidth, effectHeight, DXGI_FORMAT_R16G16B16A16_FLOAT, 1, 4)),
 	m_spriteTextureWidth(MaxSpriteTextureWidth),
 	m_spriteTextureHeight(MaxSpriteTextureHeight),
 	m_sortBitOffset(m_emitterManagerPropertyCPU.padding1)
@@ -433,7 +433,7 @@ void SpriteEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceCont
 	);
 	m_spriteTextureArray->InitializeByOption(device, deviceContext);
 
-	m_bloomFilm->Initialize(device, deviceContext);
+	//m_bloomFilm->Initialize(device, deviceContext);
 }
 
 void SpriteEmitterManager::UpdateImpl(ID3D11DeviceContext* deviceContext, float dt)
@@ -599,14 +599,14 @@ void SpriteEmitterManager::FinalizeParticles(ID3D11DeviceContext* deviceContext)
 
 void SpriteEmitterManager::DrawParticles(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext)
 {
-	m_bloomFilm->ClearFilm(deviceContext);
+	//m_bloomFilm->ClearFilm(deviceContext);
 
-	ID3D11RenderTargetView* rtvs[] = { shotFilm->GetFilmRTV(), m_bloomFilm->GetFilmRTV() };
+	ID3D11RenderTargetView* rtvs[] = { shotFilm->GetFilmRTV()  };
 	ID3D11DepthStencilView* dsv = shotFilm->GetFilmDSV();
-	D3D11_VIEWPORT viewports[] = { shotFilm->GetFilmViewPort(), m_bloomFilm->GetFilmViewPort() };
+	D3D11_VIEWPORT viewports[] = { shotFilm->GetFilmViewPort() };
 
-	deviceContext->OMSetRenderTargets(2, rtvs, dsv);
-	deviceContext->RSSetViewports(2, viewports);
+	deviceContext->OMSetRenderTargets(1, rtvs, dsv);
+	deviceContext->RSSetViewports(1, viewports);
 
 	ID3D11ShaderResourceView* vertexSrvs[] = {
 		m_totalParticles->GetSRV(),
@@ -630,6 +630,4 @@ void SpriteEmitterManager::DrawParticles(CShotFilm* shotFilm, ID3D11DeviceContex
 	deviceContext->PSSetShaderResources(0, 2, pixelNullSrvs);
 	CEmitterManagerCommonData::GDrawParticlePSO[emitterTypeIndex]->RemovePSO(deviceContext);
 
-	m_bloomFilm->Develop(deviceContext);
-	m_bloomFilm->Blend(deviceContext, shotFilm);
 }

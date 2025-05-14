@@ -50,7 +50,6 @@ bool CheckIntersection(
 
     float invSteps = 1.f / (float)steps;
     float3 prevLerpedUVWithDepth = prevUVWithDepth;
-    intersectUVWithDepth = float3(0.f, 0.f, 0.f);
     
     for (int i = 1; i <= steps; ++i)
     {
@@ -167,7 +166,7 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
             float3 prevUVWithDepth = float3(prevPosUV, ndcPrevPos.z);
             float3 currentUVWithDepth = float3(currentPosUV, ndcCurrentPos.z);
 
-            float3 intersectUVWithDepth = currentUVWithDepth;
+            float3 intersectUVWithDepth;
             if (CheckIntersection(depthView, prevUVWithDepth, currentUVWithDepth, intersectUVWithDepth))
             {
                 float2 intersectUV = intersectUVWithDepth.xy;
@@ -179,6 +178,10 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
                 worldIntersectPos /= worldIntersectPos.w;
                 currentParticle.worldPos = worldIntersectPos;
                 currentParticle.velocity = 0.5f * reflect(currentParticle.velocity, normalVector);
+            }
+            else
+            {
+                intersectUVWithDepth = currentUVWithDepth;
             }
             // ==============================================================================================================
             

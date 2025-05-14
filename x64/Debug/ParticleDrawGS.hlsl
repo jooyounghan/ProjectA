@@ -8,6 +8,9 @@ void main(point SpriteVSOut input[1], uint primID : SV_PrimitiveID, inout Triang
 void main(point ParticleVSOut input[1], uint primID : SV_PrimitiveID, inout TriangleStream<ParticleGSOut> output)
 #endif
 {
+    const float defaultLength = 10.f;
+    const float defaultTailLength = defaultLength / 2.f;
+    
 #ifdef SPRITE_EMITTER
     SpriteVSOut inputData = input[0];
     SpriteGSOut element;
@@ -19,8 +22,9 @@ void main(point ParticleVSOut input[1], uint primID : SV_PrimitiveID, inout Tria
 #endif
 
     float4 inputViewPos = inputData.viewPos;
+    float2 viewportScale = float2(1.f/ appWidth, 1.f / appHeight);
     float2 xyScale = inputData.xyScale;
-    float2 dxdy = float2(10.f / appWidth, 10.f / appHeight) * xyScale;
+    float2 dxdy = defaultLength * viewportScale * xyScale;
 
     element.color = inputData.color;
 
@@ -48,7 +52,7 @@ void main(point ParticleVSOut input[1], uint primID : SV_PrimitiveID, inout Tria
     for (int i = 0; i < 4; ++i) 
     {
 #ifdef PARTICLE_EMITTER
-        offsets[i] += negativeNDCVelocity * dot(offsets[i], negativeNDCVelocity);
+        offsets[i] += defaultTailLength * negativeNDCVelocity * dot(offsets[i], negativeNDCVelocity);
 #endif
         element.viewPos = inputData.viewPos + offsets[i];
         element.texCoord = texCoords[i];

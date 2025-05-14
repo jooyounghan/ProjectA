@@ -36,11 +36,16 @@ public:
 public:
 	static std::unique_ptr<D3D11::CPixelShader> GFilterTracePS;
 	static std::unique_ptr<D3D11::CPixelShader> GFilterBlurPS;
+	static std::unique_ptr<D3D11::CPixelShader> GFilterGetLuminancePS;
 	static std::unique_ptr<D3D11::CPixelShader> GFilterGammaCorrectionPS;
+
+public:
+	static std::unique_ptr<D3D11::CComputeShader> GFilterCalculateLogLuminanceCS;
 
 public:
 	static std::unique_ptr<D3D11::CGraphicsPSOObject> GFilterAdditivePSO;
 	static std::unique_ptr<D3D11::CGraphicsPSOObject> GFilterBlurPSO;
+	static std::unique_ptr<D3D11::CGraphicsPSOObject> GFilterGetLuminancePSO;
 	static std::unique_ptr<D3D11::CGraphicsPSOObject> GFilterGammaCorrectionPSO;
 };
 
