@@ -33,7 +33,8 @@ unique_ptr<CPixelShader> CFilterCommonData::GFilterBlurPS;
 unique_ptr<CPixelShader> CFilterCommonData::GFilterGetLuminancePS;
 unique_ptr<CPixelShader> CFilterCommonData::GFilterGammaCorrectionPS;
 
-unique_ptr<CComputeShader> CFilterCommonData::GFilterCalculateLogLuminanceCS;
+unique_ptr<CComputeShader> CFilterCommonData::GFilterSetLogLuminanceHistogramCS;
+unique_ptr<CComputeShader> CFilterCommonData::GFilterGetAdaptedLuminanceCS;
 
 unique_ptr<CGraphicsPSOObject> CFilterCommonData::GFilterAdditivePSO;
 unique_ptr<CGraphicsPSOObject> CFilterCommonData::GFilterBlurPSO;
@@ -87,8 +88,11 @@ void CFilterCommonData::Intialize(ID3D11Device* device)
 	GFilterGammaCorrectionPS = make_unique<CPixelShader>();
 	GFilterGammaCorrectionPS->CreateShader(L"./FilterGammaCorrectionPS.hlsl", nullptr, "main", "ps_5_0", device);
 
-	GFilterCalculateLogLuminanceCS = make_unique<CComputeShader>();
-	GFilterCalculateLogLuminanceCS->CreateShader(L"./CalculateLogLuminance.hlsl", nullptr, "main", "cs_5_0", device);
+	GFilterSetLogLuminanceHistogramCS = make_unique<CComputeShader>();
+	GFilterSetLogLuminanceHistogramCS->CreateShader(L"./FilterSetLogLuminanceHistogramCS.hlsl", nullptr, "main", "cs_5_0", device);
+
+	GFilterGetAdaptedLuminanceCS = make_unique<CComputeShader>();
+	GFilterGetAdaptedLuminanceCS->CreateShader(L"./FilterGetAdaptedLuminance.hlsl", nullptr, "main", "cs_5_0", device);
 
 	static ID3D11SamplerState* samplerStates[] = { CSamplerState::GetSSClamp() };
 

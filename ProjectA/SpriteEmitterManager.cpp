@@ -518,7 +518,7 @@ void SpriteEmitterManager::CalculateIndirectArgs(ID3D11DeviceContext* deviceCont
 
 void SpriteEmitterManager::FinalizeParticles(ID3D11DeviceContext* deviceContext)
 {
-	UINT clearValues[4] = { 0, 0, 0, 0 };
+	constexpr UINT clearValues[4] = { 0, 0, 0, 0 };
 
 	ID3D11Buffer* finalizeCBs[] = { m_emitterManagerPropertyGPU->GetBuffer(), m_dispatchIndirectStagingBuffer->GetBuffer() };
 	ID3D11Buffer* finalizeNullCBs[] = { nullptr, nullptr };

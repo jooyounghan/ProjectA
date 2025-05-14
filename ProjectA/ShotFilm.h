@@ -1,6 +1,10 @@
 #pragma once
 #include "BaseFilm.h"
 #include "DSVOption.h"
+#include "DynamicBuffer.h"
+#include "StructuredBuffer.h"
+
+#include <memory>
 
 class CShotFilm : public CBaseFilm
 {
@@ -30,6 +34,19 @@ protected:
 protected:
 	Texture2DInstance<D3D11::SRVOption, D3D11::RTVOption> m_luminanceCheckFilm;
 	D3D11_VIEWPORT m_luminanceViewport;
+
+protected:
+	std::unique_ptr<D3D11::CStructuredBuffer> m_luminanceHistogramSet;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_adaptedLuminance;
+
+protected:
+	struct
+	{
+		float minLogLum;
+		float maxLogLum;
+		float dummy[2];
+	} m_luminanceFilterPropertiesCPU;
+	std::unique_ptr<D3D11::CDynamicBuffer> m_luminanceFilterPropertiesGPU;
 
 public:
 	virtual void Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext) override;

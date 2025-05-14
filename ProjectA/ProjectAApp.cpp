@@ -235,12 +235,11 @@ void CProjectAApp::Update(float deltaTime)
 #pragma region 입자 그리기
 	ID3D11Buffer* commonCbs[] = { m_appParamsGPU->GetBuffer(), m_camera->GetPropertiesBuffer() };
 	ID3D11Buffer* commonNullCbs[] = { nullptr, nullptr };
+
 	m_deviceContext->CSSetConstantBuffers(0, 2, commonCbs);
 	m_deviceContext->VSSetConstantBuffers(0, 2, commonCbs);
 	m_deviceContext->GSSetConstantBuffers(0, 2, commonCbs);
 	m_deviceContext->PSSetConstantBuffers(0, 2, commonCbs);
-
-
 	for (auto& emitterManager : m_emitterManagers)
 	{
 		emitterManager->InitializeAliveFlag(shortFilm, normalVectorFilm, m_deviceContext);
@@ -257,7 +256,9 @@ void CProjectAApp::Update(float deltaTime)
 #pragma endregion
 
 #pragma region 전체 화면에 대한 후처리 수행
+	m_deviceContext->CSSetConstantBuffers(0, 2, commonCbs);
 	m_shotFilm->Develop(m_deviceContext);
+	m_deviceContext->CSSetConstantBuffers(0, 2, commonNullCbs);
 #pragma endregion
 
 #pragma region UI 그리기

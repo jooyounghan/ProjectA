@@ -462,7 +462,10 @@
     <FxCompile Include="FilterGetLuminancePS.hlsl">
       <Filter>Shader\Filter</Filter>
     </FxCompile>
-    <FxCompile Include="CalculateLogLuminance.hlsl">
+    <FxCompile Include="FilterSetLogLuminanceHistogramCS.hlsl">
+      <Filter>Shader\Filter</Filter>
+    </FxCompile>
+    <FxCompile Include="FilterGetAdaptedLuminance.hlsl">
       <Filter>Shader\Filter</Filter>
     </FxCompile>
   </ItemGroup>

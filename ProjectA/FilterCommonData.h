@@ -40,7 +40,8 @@ public:
 	static std::unique_ptr<D3D11::CPixelShader> GFilterGammaCorrectionPS;
 
 public:
-	static std::unique_ptr<D3D11::CComputeShader> GFilterCalculateLogLuminanceCS;
+	static std::unique_ptr<D3D11::CComputeShader> GFilterSetLogLuminanceHistogramCS;
+	static std::unique_ptr<D3D11::CComputeShader> GFilterGetAdaptedLuminanceCS;
 
 public:
 	static std::unique_ptr<D3D11::CGraphicsPSOObject> GFilterAdditivePSO;
