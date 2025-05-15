@@ -50,10 +50,7 @@ public:
 
 #pragma region 스프라이트 소팅 관련 CS
 public:
-	static std::unique_ptr<D3D11::CComputeShader> GSpriteSetRadixHistogramCS;
-	static std::unique_ptr<D3D11::CComputeShader> GSpriteSetGlobalOffsetCS;
-	static std::unique_ptr<D3D11::CComputeShader> GSpritePrefixSumRadixCS;
-	static std::unique_ptr<D3D11::CComputeShader> GSpriteSortingCS;
+	static std::unique_ptr<D3D11::CComputeShader> GSpriteSetLocalHistogramCS;
 #pragma endregion
 
 #pragma region 입자 그리기 관련 PSO

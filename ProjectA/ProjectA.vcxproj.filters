@@ -435,18 +435,6 @@
     <FxCompile Include="ComputeIndirectArgsCS.hlsl">
       <Filter>Shader\Particle\ExecuteEmitter\Indirect</Filter>
     </FxCompile>
-    <FxCompile Include="SpriteSetRadixHistogramCS.hlsl">
-      <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
-    </FxCompile>
-    <FxCompile Include="SpriteSortingCS.hlsl">
-      <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
-    </FxCompile>
-    <FxCompile Include="SpritePrefixSumRadixCS.hlsl">
-      <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
-    </FxCompile>
-    <FxCompile Include="SpriteSetGlobalOffset.hlsl">
-      <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
-    </FxCompile>
     <FxCompile Include="FilterBlurPS.hlsl">
       <Filter>Shader\Filter</Filter>
     </FxCompile>
@@ -467,6 +455,9 @@
     </FxCompile>
     <FxCompile Include="FilterGetAdaptedLuminance.hlsl">
       <Filter>Shader\Filter</Filter>
+    </FxCompile>
+    <FxCompile Include="SpriteSetLocalHistogramCS.hlsl">
+      <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

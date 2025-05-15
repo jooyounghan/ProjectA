@@ -22,7 +22,7 @@ struct SPrefixDesciptor
 
 struct SRadixHistogram
 {
-	UINT histogram[1 << RadixBitCount];
+	UINT bin[1 << RadixBitCount];
 };
 
 class CBloomFilm;
@@ -38,9 +38,6 @@ public:
 	);
 	~SpriteEmitterManager() override = default;
 
-//protected:
-//	std::unique_ptr<CBloomFilm> m_bloomFilm;
-
 protected:
 	virtual UINT GetEmitterType() const noexcept override { return static_cast<UINT>(EEmitterType::SpriteEmitter); }
 
@@ -48,22 +45,24 @@ protected:
 	virtual void ReclaimEmitterID(UINT emitterID) noexcept override;
 
 protected:
-	UINT& m_sortBitOffset;
+	struct
+	{
+		UINT sortBitOffset;
+		UINT padding1;
+		UINT padding2;
+		UINT padding3;
+	} m_radixSortPropertyCPU;
+	std::unique_ptr<D3D11::CDynamicBuffer> m_radixSortPropertyGPU;
+
+protected:
 	std::unique_ptr<D3D11::CAppendBuffer> m_sortedAliveIndexSet;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> m_aliveIndexRWSet;
-	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> m_sortedAliveIndexRWSet;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_aliveIndexSRV;
+	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> m_aliveIndexUAV;
+	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> m_sortedAliveIndexUAV;
 
 protected:
-	std::unique_ptr<D3D11::CStructuredBuffer> m_dispatchRadixIndirectCalculatedBuffer;
-	std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DISPATCH_INDIRECT_ARGS>> m_dispatchRadixIndirectBuffer;
-
-protected:
-	std::unique_ptr<D3D11::CStructuredBuffer> m_localHistogramSet;
-	std::unique_ptr<D3D11::CStructuredBuffer> m_localPrefixSumStatus;
-
-protected:
-	std::unique_ptr<D3D11::CStructuredBuffer> m_globalHistogramSet;
-	std::unique_ptr<D3D11::CStructuredBuffer> m_globalPrefixSumStatus;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_localHistogram;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_localOffset;
 
 protected:
 	virtual void CreateAliveIndexSet(ID3D11Device* device) override;
@@ -158,7 +157,6 @@ protected:
 
 public:
 	virtual void InitializeAliveFlag(CShotFilm* shotFilm, CBaseFilm* normalFilm, ID3D11DeviceContext* deviceContext) override;
-	virtual void CalculateIndirectArgs(ID3D11DeviceContext* deviceContext) override;
 	virtual void FinalizeParticles(ID3D11DeviceContext* deviceContext);
 	virtual void DrawParticles(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext) override;
 };
