@@ -38,12 +38,7 @@ float3 ConvertYxy2RGB(float3 Yxy)
 	return rgb;
 }
 
-float3 SimpleReinhard1(float3 rgb)
-{
-	return rgb / (1.f + rgb);
-}
-
-float3 SimpleReinhard2(float3 rgb, float avgLuminance)
+float3 SimpleReinhard(float3 rgb, float avgLuminance)
 {
 	float3 Yxy = ConvertRGB2Yxy(rgb);
 	float3 luminance = Yxy.x;

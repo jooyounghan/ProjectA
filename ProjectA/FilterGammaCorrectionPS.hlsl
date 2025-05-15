@@ -11,7 +11,7 @@ float4 main(PostProcessVertexOutput input) : SV_TARGET
 {   
     float3 hdrColor = filterSource.Sample(clampSampler, input.f2TexCoord);
     float avgLuminanace = adaptedLuminance[0];
-    float3 ldrColor = SimpleReinhard(hdrColor, avgLuminanace * 10.f);
+    float3 ldrColor = SimpleReinhard(hdrColor, avgLuminanace);
     float3 gammaCorrecetedColor = pow(ldrColor, 1.0f / 2.2f);
     return float4(gammaCorrecetedColor, 1.f);
 }

@@ -30,14 +30,14 @@ CShotFilm::CShotFilm(
 	ZeroMem(m_luminanceViewport);
 	m_luminanceViewport.TopLeftX = 0.f;
 	m_luminanceViewport.TopLeftY = 0.f;
-	m_luminanceViewport.Width = static_cast<FLOAT>(64);
-	m_luminanceViewport.Height = static_cast<FLOAT>(64);
+	m_luminanceViewport.Width = static_cast<FLOAT>(GroupTexWidth * GroupTexWidth);
+	m_luminanceViewport.Height = static_cast<FLOAT>(GroupTexHeight * GroupTexHeight);
 	m_luminanceViewport.MinDepth = 0.f;
 	m_luminanceViewport.MaxDepth = 1.f;
 
 	ZeroMem(m_luminanceFilterPropertiesCPU);
 	m_luminanceFilterPropertiesCPU.minLogLum = -10.f;
-	m_luminanceFilterPropertiesCPU.maxLogLum = 2.f;
+	m_luminanceFilterPropertiesCPU.maxLogLum = 10.f;
 }
 
 void CShotFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
@@ -74,6 +74,7 @@ void CShotFilm::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCont
 void CShotFilm::ClearFilm(ID3D11DeviceContext* deviceContext)
 {
 	constexpr FLOAT clearColor[4] = { 0.f, 0.f, 0.f, 0.f };
+	constexpr UINT clearValue[4] = { 0, 0, 0, 0 };
 
 	CBaseFilm::ClearFilm(deviceContext);
 
@@ -88,6 +89,7 @@ void CShotFilm::ClearFilm(ID3D11DeviceContext* deviceContext)
 		deviceContext->ClearRenderTargetView(m_pingpongFilm.GetRTV(), clearColor);
 	}
 	deviceContext->ClearRenderTargetView(m_luminanceCheckFilm.GetRTV(), clearColor);
+	deviceContext->ClearUnorderedAccessViewUint(m_luminanceHistogramSet->GetUAV(), clearValue);
 }
 
 void CShotFilm::Develop(ID3D11DeviceContext* deviceContext)
