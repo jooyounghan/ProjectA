@@ -10,22 +10,17 @@
 	- Append Buffer의 카운터를 활용하여 Indirect Draw Call을 지원하여 렌더링 파이프라인에서 발생할 수 있는 오버헤드 최소화 
 
 2.  Emitter 구현
-			- Emitter는 기능에 따라 4가지로 설계
+			- Emitter는 기능에 따라 2가지로 설계
 				- Particle Emttier
-				- Ribbon Emitter
 				- Sprite Emitter
-				- Mesh Emitter
+				
 	```mermaid
 	classDiagram
 		class AEmitter
 		class ParticleEmitter
-		class RibbonEmitter
 		class SpriteEmitter
-		class MeshEmitter
 		AEmitter <|-- ParticleEmitter
-		AEmitter <|-- RibbonEmitter
 		AEmitter<|-- SpriteEmitter
-		AEmitter <|-- MeshEmitter
 	```
 
 ## 프로젝트 계획
@@ -37,10 +32,8 @@ gantt
 	dateFormat MM-DD
 	axisFormat %m-%d
     Emitter Manager :a, 04-01, 05-21
-    Particle  :b, 04-16, 04-30
-    Sprite :c, 04-23, 05-07
-    Mesh :d, 04-30, 05-14
-    Ribbon :e, 05-07, 05-21
+    Particle  :b, 04-16, 05-07
+    Sprite :c, 04-30, 05-21
     최종 :f, 05-16, 05-23
 ```
 
@@ -320,3 +313,14 @@ gantt
 ### 25.05.12
 - 깊이값 기반으로 파티클 충돌 처리하는 로직 추가
 	- Multi Render Target을 활용하여 Normal 벡터를 추가로 기록하고, Depth Stencil Buffer를 Shader Resource View로 활용하여 깊이값을 비교하고, 속도 성분을 Normal에 대해 Reflect 하여 구현
+
+### 25.05.13
+- 기존 Motion Blur 삭제 후 속도 방향으로 Stretch하는 방법으로 재변경
+- 깊이 기반 충돌 처리 보완 완료
+    -   과거 위치에서 현재 위치로 일정 Step만큼 전진하며 충돌이 확인된 직전 Step 위치로 입자 위치 변경
+
+### 25.05.14
+- Bloom으로 인한 계단 형식의 Halo 수정
+    -   Blur Steop(3->5로 수정)
+    -   Reinhard Tone Mapping 추가
+- Radix Sort 간 입자 방출 조건을 추가하여 Consume으로 인한 오류 방지 수정
