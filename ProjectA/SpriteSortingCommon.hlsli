@@ -1,7 +1,5 @@
 #include "ParticleCommon.hlsli"
 
-static const uint RadixCountPerGroupThread = (RadixBinCount + LocalThreadCount - 1) / LocalThreadCount;
-
 struct PrefixSumStatus
 {
     uint aggregate;
@@ -12,7 +10,7 @@ struct PrefixSumStatus
 
 struct Histogram
 {
-    uint bin[RadixBinCount];
+    uint bin[LocalThreadCount];
 };
 
 cbuffer EmitterManagerProperties : register(b2)

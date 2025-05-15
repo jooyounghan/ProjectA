@@ -19,8 +19,6 @@
 
 #include "stb_image_resize2.h"
 
-#define RadixBinCount (1 << RadixBitCount)
-
 using namespace std;
 using namespace DirectX;
 using namespace D3D11;
@@ -32,7 +30,6 @@ SpriteEmitterManager::SpriteEmitterManager(
 	UINT maxParticleCount
 )
 	: AEmitterManager("SpriteEmitterManager", maxEmitterCount, maxParticleCount),
-	//m_bloomFilm(make_unique<CBloomFilm>(5, 1.5f, effectWidth, effectHeight, DXGI_FORMAT_R16G16B16A16_FLOAT, 1, 4)),
 	m_spriteTextureWidth(MaxSpriteTextureWidth),
 	m_spriteTextureHeight(MaxSpriteTextureHeight)
 {

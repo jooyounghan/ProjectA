@@ -12,15 +12,15 @@ struct BitonicSortKey
 };
 
 groupshared Histogram groupHistogram;
-groupshared BitonicSortKey groupBitonicKeys[RadixBinCount];
+groupshared BitonicSortKey groupBitonicKeys[LocalThreadCount];
 
 static void GetGroupHistogramPrefix(uint groupThreadIdx)
 {
     [unroll]
-    for (uint upSweepIdx = 1; upSweepIdx < RadixBinCount; upSweepIdx <<= 1)
+    for (uint upSweepIdx = 1; upSweepIdx < LocalThreadCount; upSweepIdx <<= 1)
     {
         uint index = (groupThreadIdx + 1) * upSweepIdx * 2 - 1;
-        if (index < RadixBinCount)
+        if (index < LocalThreadCount)
         {
             groupHistogram.bin[index] += groupHistogram.bin[index - upSweepIdx];
         }
@@ -29,15 +29,15 @@ static void GetGroupHistogramPrefix(uint groupThreadIdx)
 
     if (groupThreadIdx == 0)
     {
-        groupHistogram.bin[RadixBinCount - 1] = 0;
+        groupHistogram.bin[LocalThreadCount - 1] = 0;
     }
     GroupMemoryBarrierWithGroupSync();
 
     [unroll]
-    for (uint downSweep = RadixBinCount >> 1; downSweep > 0; downSweep >>= 1)
+    for (uint downSweep = LocalThreadCount >> 1; downSweep > 0; downSweep >>= 1)
     {
         uint index = (groupThreadIdx + 1) * downSweep * 2 - 1;
-        if (index < RadixBinCount)
+        if (index < LocalThreadCount)
         {
             uint t = groupHistogram.bin[index - downSweep];
             groupHistogram.bin[index - downSweep] = groupHistogram.bin[index];
@@ -50,7 +50,7 @@ static void GetGroupHistogramPrefix(uint groupThreadIdx)
 void SortGroupIndices(uint groupThreadIdx)
 {
     [unroll]
-    for (uint k = 2; k <= RadixBinCount; k <<= 1)
+    for (uint k = 2; k <= LocalThreadCount; k <<= 1)
     {
         [unroll]
         for (uint j = k >> 1; j > 0; j >>= 1)
@@ -76,7 +76,7 @@ void SortGroupIndices(uint groupThreadIdx)
     }
 }
 
-[numthreads(RadixBinCount, 1, 1)]
+[numthreads(LocalThreadCount, 1, 1)]
 void main(
 	uint3 Gid : SV_GroupID, 
 	uint3 GTid : SV_GroupThreadID, 
@@ -88,7 +88,7 @@ void main(
     uint threadIdx = DTid.x;    
 
     SpriteAliveIndex spriteAliveIndex = aliveIndices[threadIdx];
-    uint radixDepth = (spriteAliveIndex.depth >> sortBitOffset) & (RadixBinCount - 1);
+    uint radixDepth = (spriteAliveIndex.depth >> sortBitOffset) & (LocalThreadCount - 1);
 
     BitonicSortKey bitonicSortKey;
     bitonicSortKey.depth = spriteAliveIndex.depth << (24 - sortBitOffset);
@@ -115,7 +115,7 @@ void main(
         uint sortedThreadIdx = sortedIndex + LocalThreadCount * groupIdx;
 
         SpriteAliveIndex sortedAliveIndex = aliveIndices[sortedThreadIdx];
-        uint sortedDepth = (sortedAliveIndex.depth >> sortBitOffset) & (RadixBinCount - 1);
+        uint sortedDepth = (sortedAliveIndex.depth >> sortBitOffset) & (LocalThreadCount - 1);
 
         localOffset[sortedThreadIdx] = groupThreadIdx - groupHistogram.bin[sortedDepth];
     }
