@@ -1,16 +1,16 @@
 #include "ParticleCommon.hlsli"
 
-struct PrefixSumStatus
+struct PrefixSumDescriptor
 {
     uint aggregate;
-    uint statusFlag; /* X : 0, A : 1, P : 2*/
     uint exclusivePrefix;
     uint inclusivePrefix;
+    uint statusFlag; /* X : 0, A : 1, P : 2*/
 };
 
 struct Histogram
 {
-    uint bin[LocalThreadCount];
+    uint bin[1 << RadixBitCount];
 };
 
 cbuffer EmitterManagerProperties : register(b2)
@@ -26,10 +26,3 @@ cbuffer RadixSortProperties : register(b3)
     uint sortBitOffset;
     uint3 radixSortPropertyDummy;
 };
-
-cbuffer indirectStagingBuffer : register(b4)
-{
-    uint emitterTotalParticleCount;
-    uint3 indirectStagingDummy;
-};
-

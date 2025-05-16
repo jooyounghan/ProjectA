@@ -1,10 +1,11 @@
 #include "ParticleCommon.hlsli"
 #include "CaculateForceCommon.hlsli"
 
-cbuffer indirectStagingBuffer : register(b2)
+cbuffer EmitterManagerProperties : register(b2)
 {
-    uint emitterTotalParticleCount;
-    uint3 indirectStagingDummy;
+	uint particleMaxCount;
+	uint aliveParticleCount;
+	uint2 emitterPropertyDummy;
 };
 
 StructuredBuffer<matrix> emitterWorldTransforms : register(t0);
@@ -22,7 +23,7 @@ ConsumeStructuredBuffer<uint> aliveIndexSet : register(u1);
 void main( uint3 DTid : SV_DispatchThreadID )
 {
 	uint threadID = DTid.x;
-    if (threadID < emitterTotalParticleCount)
+    if (threadID < aliveParticleCount)
 	{
 		const uint GravityFlag = 0;
 		const uint DragFlag = 1;

@@ -432,7 +432,7 @@
     <FxCompile Include="InitializeParticleSetCS.hlsl">
       <Filter>Shader\Particle\ExecuteEmitter\Initalize</Filter>
     </FxCompile>
-    <FxCompile Include="ComputeIndirectArgsCS.hlsl">
+    <FxCompile Include="CalculateDispatchArgsCS.hlsl">
       <Filter>Shader\Particle\ExecuteEmitter\Indirect</Filter>
     </FxCompile>
     <FxCompile Include="FilterBlurPS.hlsl">
@@ -457,6 +457,9 @@
       <Filter>Shader\Filter</Filter>
     </FxCompile>
     <FxCompile Include="SpriteSetLocalHistogramCS.hlsl">
+      <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
+    </FxCompile>
+    <FxCompile Include="SpritePrefixSumLocalHistogramCS.hlsl">
       <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
     </FxCompile>
   </ItemGroup>

@@ -38,7 +38,8 @@ public:
 
 #pragma region Indirect 인자 계산 관련 CS
 public:
-	static std::unique_ptr<D3D11::CComputeShader> GCalcualteIndirectArgCS;
+	static std::unique_ptr<D3D11::CComputeShader> GCaculateDispatchArgsCS;
+	static std::unique_ptr<D3D11::CComputeShader> GPrefixSumLocalHistogramDispatchArgsCS;
 #pragma endregion
 
 
@@ -50,6 +51,7 @@ public:
 #pragma region 스프라이트 소팅 관련 CS
 public:
 	static std::unique_ptr<D3D11::CComputeShader> GSpriteSetLocalHistogramCS;
+	static std::unique_ptr<D3D11::CComputeShader> GSpritePrefixSumLocalHistogramCS;
 #pragma endregion
 
 #pragma region 입자 그리기 관련 PSO

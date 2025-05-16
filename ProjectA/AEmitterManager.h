@@ -101,8 +101,7 @@ protected:
 	virtual void CreateAliveIndexSet(ID3D11Device* device) = 0;
 
 protected:
-	std::unique_ptr<D3D11::CDynamicBuffer> m_dispatchIndirectStagingBuffer;
-	std::unique_ptr<D3D11::CStructuredBuffer> m_dispatchIndirectCalculatedBuffer;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_dispatchArgsBuffer;
 	std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DISPATCH_INDIRECT_ARGS>> m_dispatchIndirectBuffer;
 	std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DRAW_INSTANCED_INDIRECT_ARGS>> m_drawIndirectBuffer;
 

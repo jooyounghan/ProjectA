@@ -12,10 +12,10 @@ struct SSpriteAliveIndex
 	UINT depth;
 };
 
-struct SPrefixDesciptor
+struct SPrefixSumDesciptor
 {
 	UINT aggregate;
-	UINT statusFlag; /* X : 0, A : 1, P : 2*/
+	UINT statusFlag;	/* X : 0, A : 1, P : 2*/
 	UINT exclusivePrefix;
 	UINT inclusivePrefix;
 };
@@ -61,8 +61,12 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> m_sortedAliveIndexUAV;
 
 protected:
+	std::unique_ptr<D3D11::CStructuredBuffer> m_prefixLocalHistogramDispatchArgsBuffer;
+	std::unique_ptr<D3D11::CIndirectBuffer<D3D11_DISPATCH_INDIRECT_ARGS>> m_prefixLocalHistogramDispatchIndirectBuffer;
+
+protected:
 	std::unique_ptr<D3D11::CStructuredBuffer> m_localHistogram;
-	std::unique_ptr<D3D11::CStructuredBuffer> m_localOffset;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_localPrefixSumDescriptors;
 
 protected:
 	virtual void CreateAliveIndexSet(ID3D11Device* device) override;
@@ -157,6 +161,7 @@ protected:
 
 public:
 	virtual void InitializeAliveFlag(CShotFilm* shotFilm, CBaseFilm* normalFilm, ID3D11DeviceContext* deviceContext) override;
+	virtual void CalculateIndirectArgs(ID3D11DeviceContext* deviceContext) override;
 	virtual void FinalizeParticles(ID3D11DeviceContext* deviceContext);
 	virtual void DrawParticles(CShotFilm* shotFilm, ID3D11DeviceContext* deviceContext) override;
 };

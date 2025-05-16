@@ -30,9 +30,13 @@ using namespace D3D11;
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GInitializeParticleSetCS[EmitterTypeCount];
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GParticleInitialSourceCS[EmitterTypeCount];
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GParticleRuntimeSourceCS[EmitterTypeCount];
-unique_ptr<CComputeShader> CEmitterManagerCommonData::GCalcualteIndirectArgCS = make_unique<CComputeShader>();
+unique_ptr<CComputeShader> CEmitterManagerCommonData::GCaculateDispatchArgsCS = make_unique<CComputeShader>();
+unique_ptr<CComputeShader> CEmitterManagerCommonData::GPrefixSumLocalHistogramDispatchArgsCS = make_unique<CComputeShader>();
+
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GCaculateParticleForceCS[EmitterTypeCount];
+
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GSpriteSetLocalHistogramCS = make_unique<CComputeShader>();
+unique_ptr<CComputeShader> CEmitterManagerCommonData::GSpritePrefixSumLocalHistogramCS = make_unique<CComputeShader>();
 
 unique_ptr<CVertexShader> CEmitterManagerCommonData::GParticleDrawVS[EmitterTypeCount];
 unique_ptr<CGeometryShader> CEmitterManagerCommonData::GParticleDrawGS[EmitterTypeCount];
@@ -109,7 +113,13 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 #pragma endregion
 
 #pragma region Indirect 인자 계산 관련 CS
-	GCalcualteIndirectArgCS->CreateShader(L"./ComputeIndirectArgsCS.hlsl", nullptr, "main", "cs_5_0", device);
+	const D3D_SHADER_MACRO dispatchMacro[2] = {
+		{ "DISPATCH_RADIX_SORT", nullptr },
+		{ nullptr, nullptr }
+	};
+
+	GCaculateDispatchArgsCS->CreateShader(L"./CalculateDispatchArgsCS.hlsl", nullptr, "main", "cs_5_0", device);
+	GPrefixSumLocalHistogramDispatchArgsCS->CreateShader(L"./CalculateDispatchArgsCS.hlsl", dispatchMacro, "main", "cs_5_0", device);
 #pragma endregion
 
 #pragma region 입자 시뮬레이션 관련 CS
@@ -122,6 +132,7 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 
 #pragma region 스프라이트 소팅 관련 CS
 	GSpriteSetLocalHistogramCS->CreateShader(L"./SpriteSetLocalHistogramCS.hlsl", nullptr, "main", "cs_5_0", device);
+	GSpritePrefixSumLocalHistogramCS->CreateShader(L"./SpritePrefixSumLocalHistogramCS.hlsl", nullptr, "main", "cs_5_0", device);
 #pragma endregion
 
 #pragma region 입자 그리기 관련 PSO
