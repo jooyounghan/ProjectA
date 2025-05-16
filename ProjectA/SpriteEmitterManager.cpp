@@ -533,6 +533,9 @@ void SpriteEmitterManager::FinalizeParticles(ID3D11DeviceContext* deviceContext)
 
 	for (UINT idx = 0; idx < radixPathCount; ++idx)
 	{
+		constexpr UINT clearValues[4] = { 0, 0, 0, 0 };
+		deviceContext->ClearUnorderedAccessViewUint(m_localPrefixSumDescriptors->GetUAV(), clearValues);
+
 		m_radixSortPropertyCPU.sortBitOffset = idx * RadixBitCount;
 
 		m_radixSortPropertyGPU->Stage(deviceContext);

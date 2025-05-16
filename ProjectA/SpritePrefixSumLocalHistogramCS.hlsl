@@ -6,7 +6,7 @@ RWStructuredBuffer<PrefixSumDescriptor> localPrefixSumDescriptors : register(u1)
 
 groupshared uint groupHistogram[LocalThreadCount];
 
-static void LocalUpSweep(uint workGroupIdx, uint groupRadixIdx, uint groupThreadIdx)
+static void LocalUpSweep(uint groupThreadIdx)
 {
     [unroll]
     for (uint uIdx = 1; uIdx < LocalThreadCount; uIdx <<= 1)
@@ -18,49 +18,78 @@ static void LocalUpSweep(uint workGroupIdx, uint groupRadixIdx, uint groupThread
         }
         GroupMemoryBarrierWithGroupSync();
     }
+}
 
-    if (groupThreadIdx == 0)
+void LocalDownSweep(uint groupThreadIdx)
+{
+   if (groupThreadIdx == 0)
     {
-        int aggregate = groupHistogram[LocalThreadCount - 1];
-        bool isFirstGroup = (workGroupIdx == 0);
+        groupHistogram[LocalThreadCount - 1] = 0;
+    }
+    GroupMemoryBarrierWithGroupSync();
 
-        localPrefixSumDescriptors[groupRadixIdx].aggregate = aggregate;
-        localPrefixSumDescriptors[groupRadixIdx].exclusivePrefix = 0;        
-        localPrefixSumDescriptors[groupRadixIdx].inclusivePrefix = isFirstGroup ? aggregate : 0;
-        AllMemoryBarrier();
-        InterlockedCompareStore(localPrefixSumDescriptors[groupRadixIdx].statusFlag, 0, isFirstGroup ? 2 : 1);
+    for (uint stride = LocalThreadCount >> 1; stride > 0; stride >>= 1)
+    {
+        uint index = (groupThreadIdx + 1) * stride * 2 - 1;
+        if (index < LocalThreadCount)
+        {
+            uint t = groupHistogram[index - stride];
+            groupHistogram[index - stride] = groupHistogram[index];
+            groupHistogram[index] += t;
+        }
+        GroupMemoryBarrierWithGroupSync();
     }
 }
 
 static void DecoupledLookBack(uint workGroupIdx, uint workRadixIdx, uint groupRadixIdx, uint groupThreadIdx)
 {
-    uint exclusivePrefix = 0;
-    
-    for (int loopBackID = (workGroupIdx - 1); loopBackID >= 0; --loopBackID)
+
+if (groupThreadIdx == 0)
     {
-        uint loopBackRadixIdx = workRadixIdx + LocalThreadCount * loopBackID;
-        uint currentStatus = 0;
-        uint spinCount = 0;
+        uint aggregate = groupHistogram[LocalThreadCount - 1];
+        bool isFirstGroup = (workGroupIdx == 0);
 
-        while (currentStatus == 0 && spinCount++ < 10000);
+        PrefixSumDescriptor startDescriptor;
+        startDescriptor.aggregate = aggregate;
+        startDescriptor.exclusivePrefix = 0;        
+        startDescriptor.inclusivePrefix = isFirstGroup ? aggregate : 0;
+        startDescriptor.statusFlag = isFirstGroup ? 2 : 1;
+        localPrefixSumDescriptors[groupRadixIdx] = startDescriptor;
+        DeviceMemoryBarrier();
+
+        if (workGroupIdx > 0)
         {
-            InterlockedCompareExchange(localPrefixSumDescriptors[loopBackRadixIdx].statusFlag, 0xFFFFFFFF, 0xFFFFFFFF, currentStatus);
-        }  
-        AllMemoryBarrier();
-        uint aggregate  = localPrefixSumDescriptors[loopBackRadixIdx].aggregate;
-        uint inclusive  = localPrefixSumDescriptors[loopBackRadixIdx].inclusivePrefix;
+            uint exclusivePrefix = 0;
+            bool isInclusiveChecked = false;
+    
+            for (int loopBackID = (workGroupIdx - 1); loopBackID >= 0 && !isInclusiveChecked; --loopBackID)
+            {
+                uint loopBackRadixIdx = workRadixIdx + LocalThreadCount * loopBackID;
+                uint currentStatus = 0;
 
-        bool isInclusiveChecked = (currentStatus == 2);
-        exclusivePrefix += isInclusiveChecked ? inclusive : aggregate;
+                do
+                {
+                    InterlockedCompareExchange(localPrefixSumDescriptors[loopBackRadixIdx].statusFlag, 0xFFFFFFFF, 0xFFFFFFFF, currentStatus);
+                }  
+                while (currentStatus == 0);
 
-        if (isInclusiveChecked) break;
+                uint lookBackAggregate  = localPrefixSumDescriptors[loopBackRadixIdx].aggregate;
+                uint lookBackInclusive  = localPrefixSumDescriptors[loopBackRadixIdx].inclusivePrefix;
+                isInclusiveChecked = (currentStatus == 2);
+                exclusivePrefix += isInclusiveChecked ? lookBackInclusive : lookBackAggregate;
+            }
+
+            PrefixSumDescriptor finishDescriptor;
+            finishDescriptor.aggregate = localPrefixSumDescriptors[groupRadixIdx].aggregate;
+            finishDescriptor.exclusivePrefix = exclusivePrefix;        
+            finishDescriptor.inclusivePrefix = finishDescriptor.aggregate + exclusivePrefix;
+            finishDescriptor.statusFlag = 2;
+            localPrefixSumDescriptors[groupRadixIdx] = finishDescriptor;
+            DeviceMemoryBarrier();
+        }
     }
-
-    localPrefixSumDescriptors[groupRadixIdx].exclusivePrefix = exclusivePrefix;
-    localPrefixSumDescriptors[groupRadixIdx].inclusivePrefix = localPrefixSumDescriptors[groupRadixIdx].aggregate + exclusivePrefix;
-    AllMemoryBarrier();
-    InterlockedCompareStore(localPrefixSumDescriptors[groupRadixIdx].statusFlag, 1, 2);
 }
+
 
 [numthreads(LocalThreadCount, 1, 1)]
 void main(
@@ -81,9 +110,8 @@ void main(
 	groupHistogram[groupThreadIdx] = localHistogram[groupIdx].bin[workRadixIdx];
 	GroupMemoryBarrierWithGroupSync();
 
-    LocalUpSweep(workGroupIdx, groupRadixIdx, groupThreadIdx);
-    if (groupThreadIdx == 0 && workGroupIdx > 0)
-    {
-        DecoupledLookBack(workGroupIdx, workRadixIdx, groupRadixIdx, groupThreadIdx);
-    }
+    LocalUpSweep(groupThreadIdx);
+    DecoupledLookBack(workGroupIdx, workRadixIdx, groupRadixIdx, groupThreadIdx);
+    LocalDownSweep(groupThreadIdx);
+    localHistogram[groupIdx].bin[workRadixIdx] = groupHistogram[groupThreadIdx];
 }
