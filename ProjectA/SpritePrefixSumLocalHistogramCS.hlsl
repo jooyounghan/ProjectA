@@ -5,8 +5,7 @@ RWStructuredBuffer<uint> localHistogram : register(u0);
 RWStructuredBuffer<PrefixSumDescriptor> localPrefixSumDescriptors : register(u1);
 
 groupshared uint groupHistogram[LocalThreadCount];
-
-static uint groupCount = uint(ceil(aliveParticleCount * invLocalThreadCount * invLocalThreadCount));
+groupshared uint exclusivePrefix;
 
 static void LocalUpSweep(uint groupThreadIdx)
 {
@@ -43,10 +42,11 @@ void LocalDownSweep(uint groupThreadIdx)
     }
 }
 
-static void DecoupledLookBack(uint groupIdx, uint radixIdx, uint prefixDescriptorIdx, uint groupThreadIdx)
+static void DecoupledLookBack(uint groupIdx, uint radixIdx, uint prefixDescriptorIdx, uint groupCount, uint groupThreadIdx)
 {
     if (groupThreadIdx == 0)
     {
+        exclusivePrefix = 0;
         uint aggregate = groupHistogram[LocalThreadCount - 1];
         bool isFirstGroup = (groupIdx == 0);
 
@@ -60,7 +60,6 @@ static void DecoupledLookBack(uint groupIdx, uint radixIdx, uint prefixDescripto
 
         if (groupIdx > 0)
         {
-            uint exclusivePrefix = 0;
             bool isInclusiveChecked = false;
             for (int loopBackID = (groupIdx - 1); loopBackID >= 0 && !isInclusiveChecked; --loopBackID)
             {
@@ -88,6 +87,7 @@ static void DecoupledLookBack(uint groupIdx, uint radixIdx, uint prefixDescripto
             DeviceMemoryBarrier();
         }
     }
+    GroupMemoryBarrierWithGroupSync();
 }
 
 
@@ -102,7 +102,9 @@ void main(
     uint radixIdx = Gid.y;
     uint groupThreadIdx = GTid.x;
     uint threadXIdx = DTid.x;
-
+    
+    float invLocalThreadCount = 1 / FLocalThreadCount;
+    uint groupCount = uint(ceil(aliveParticleCount * invLocalThreadCount * invLocalThreadCount));
     uint groupElementIdx = groupIdx * LocalThreadCount + groupThreadIdx;
     uint prefixDescriptorIdx = groupCount * radixIdx + groupIdx;
     
@@ -111,8 +113,8 @@ void main(
     GroupMemoryBarrierWithGroupSync();
 
     LocalUpSweep(groupThreadIdx);
-    DecoupledLookBack(groupIdx, radixIdx, prefixDescriptorIdx, groupThreadIdx);
+    DecoupledLookBack(groupIdx, radixIdx, prefixDescriptorIdx, groupCount, groupThreadIdx);
     LocalDownSweep(groupThreadIdx);
-    localHistogram[workIdx] = workIdx;
-        
+
+    localHistogram[workIdx] = groupHistogram[groupThreadIdx] + exclusivePrefix;
 }

@@ -5,8 +5,6 @@ RWStructuredBuffer<uint> localHistogram : register(u0);
 
 groupshared uint groupHistogram[LocalThreadCount];
 
-static uint groupCount = uint(ceil(aliveParticleCount * invLocalThreadCount));
-
 [numthreads(LocalThreadCount, 1, 1)]
 void main(
 	uint3 Gid : SV_GroupID, 
@@ -18,6 +16,8 @@ void main(
     uint radixIdx = GTid.x;
     uint threadIdx = DTid.x;    
 
+    float invLocalThreadCount = 1 / FLocalThreadCount;
+    uint groupCount = uint(ceil(aliveParticleCount * invLocalThreadCount));
     uint groupRadixIdx = radixIdx * groupCount + groupIdx;
 
     groupHistogram[radixIdx] = 0;

@@ -51,7 +51,6 @@ protected:
 
 protected:
 	std::unique_ptr<D3D11::CAppendBuffer> m_sortedAliveIndexSet;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_aliveIndexSRV;
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> m_aliveIndexUAV;
 	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> m_sortedAliveIndexUAV;
 
@@ -62,6 +61,7 @@ protected:
 protected:
 	std::unique_ptr<D3D11::CStructuredBuffer> m_localHistogram;
 	std::unique_ptr<D3D11::CStructuredBuffer> m_localPrefixSumDescriptors;
+	std::unique_ptr<D3D11::CStructuredBuffer> m_globlaHistogram;
 
 protected:
 	virtual void CreateAliveIndexSet(ID3D11Device* device) override;

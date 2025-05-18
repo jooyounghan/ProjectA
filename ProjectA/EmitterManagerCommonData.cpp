@@ -37,6 +37,8 @@ unique_ptr<CComputeShader> CEmitterManagerCommonData::GCaculateParticleForceCS[E
 
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GSpriteSetLocalHistogramCS = make_unique<CComputeShader>();
 unique_ptr<CComputeShader> CEmitterManagerCommonData::GSpritePrefixSumLocalHistogramCS = make_unique<CComputeShader>();
+unique_ptr<CComputeShader> CEmitterManagerCommonData::GSpritePrefixSumGlobalHistogramCS = make_unique<CComputeShader>();
+unique_ptr<CComputeShader> CEmitterManagerCommonData::GSpriteSortCS = make_unique<CComputeShader>();
 
 unique_ptr<CVertexShader> CEmitterManagerCommonData::GParticleDrawVS[EmitterTypeCount];
 unique_ptr<CGeometryShader> CEmitterManagerCommonData::GParticleDrawGS[EmitterTypeCount];
@@ -133,6 +135,8 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 #pragma region 스프라이트 소팅 관련 CS
 	GSpriteSetLocalHistogramCS->CreateShader(L"./SpriteSetLocalHistogramCS.hlsl", nullptr, "main", "cs_5_0", device);
 	GSpritePrefixSumLocalHistogramCS->CreateShader(L"./SpritePrefixSumLocalHistogramCS.hlsl", nullptr, "main", "cs_5_0", device);
+	GSpritePrefixSumGlobalHistogramCS->CreateShader(L"./SpritePrefixSumGlobalHistogramCS.hlsl", nullptr, "main", "cs_5_0", device);
+	GSpriteSortCS->CreateShader(L"./SpriteSortCS.hlsl", nullptr, "main", "cs_5_0", device);
 #pragma endregion
 
 #pragma region 입자 그리기 관련 PSO

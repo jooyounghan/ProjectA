@@ -21,7 +21,8 @@ RWStructuredBuffer<DispatchIndirectArgs> dispatchArgsStager : register(u0);
 void main( uint3 DTid : SV_DispatchThreadID )
 {  
     DispatchIndirectArgs dispatchArgs;
-
+    float invLocalThreadCount = 1 / FLocalThreadCount;
+    
 #ifdef DISPATCH_RADIX_SORT
     dispatchArgs.threadGroupCountX = uint(ceil(aliveParticleCount * invLocalThreadCount * invLocalThreadCount ));
 	dispatchArgs.threadGroupCountY = (1 << RadixBitCount);

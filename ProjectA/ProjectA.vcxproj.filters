@@ -462,7 +462,10 @@
     <FxCompile Include="SpritePrefixSumLocalHistogramCS.hlsl">
       <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
     </FxCompile>
-    <FxCompile Include="SpritePrefixGlobalHistogram.hlsl">
+    <FxCompile Include="SpritePrefixSumGlobalHistogramCS.hlsl">
+      <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
+    </FxCompile>
+    <FxCompile Include="SpriteSortCS.hlsl">
       <Filter>Shader\Particle\ExecuteEmitter\Sorting</Filter>
     </FxCompile>
   </ItemGroup>
