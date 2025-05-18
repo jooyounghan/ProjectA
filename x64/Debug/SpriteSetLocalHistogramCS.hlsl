@@ -1,9 +1,11 @@
 #include "SpriteSortingCommon.hlsli"
 
 StructuredBuffer<SpriteAliveIndex> aliveIndices : register(t0);
-RWStructuredBuffer<Histogram> localHistogram : register(u0);
+RWStructuredBuffer<uint> localHistogram : register(u0);
 
-groupshared Histogram groupHistogram;
+groupshared uint groupHistogram[LocalThreadCount];
+
+static uint groupCount = uint(ceil(aliveParticleCount * invLocalThreadCount));
 
 [numthreads(LocalThreadCount, 1, 1)]
 void main(
@@ -12,18 +14,20 @@ void main(
 	uint3 DTid : SV_DispatchThreadID
 )
 {
-	uint groupIdx = Gid.x;
-    uint groupThreadIdx = GTid.x;
+    uint groupIdx = Gid.x;
+    uint radixIdx = GTid.x;
     uint threadIdx = DTid.x;    
 
-    groupHistogram.bin[groupThreadIdx] = 0;
+    uint groupRadixIdx = radixIdx * groupCount + groupIdx;
+
+    groupHistogram[radixIdx] = 0;
     GroupMemoryBarrierWithGroupSync();
 
     SpriteAliveIndex spriteAliveIndex = aliveIndices[threadIdx];
     uint radixDepth = (spriteAliveIndex.depth >> sortBitOffset) & (LocalThreadCount - 1);
     uint isAlive = (threadIdx < aliveParticleCount);
-    InterlockedAdd(groupHistogram.bin[radixDepth], isAlive);
+    InterlockedAdd(groupHistogram[radixDepth], isAlive);
     GroupMemoryBarrierWithGroupSync();
 
-    if (groupThreadIdx == 0) localHistogram[groupIdx] = groupHistogram;
+    localHistogram[groupRadixIdx] = groupHistogram[radixIdx];
 }

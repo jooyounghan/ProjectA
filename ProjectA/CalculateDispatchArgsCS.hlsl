@@ -17,8 +17,6 @@ struct DispatchIndirectArgs
 
 RWStructuredBuffer<DispatchIndirectArgs> dispatchArgsStager : register(u0);
 
-static float invLocalThreadCount = 1 / float(LocalThreadCount);
-
 [numthreads(1, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
 {  

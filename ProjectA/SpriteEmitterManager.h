@@ -20,11 +20,6 @@ struct SPrefixSumDesciptor
 	UINT inclusivePrefix;
 };
 
-struct SRadixHistogram
-{
-	UINT bin[1 << RadixBitCount];
-};
-
 class CBloomFilm;
 
 class SpriteEmitterManager : public AEmitterManager

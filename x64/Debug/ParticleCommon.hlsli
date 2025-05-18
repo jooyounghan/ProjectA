@@ -1,5 +1,7 @@
 #include "DefineLinkedWithCpp.hlsli"
 
+static float invLocalThreadCount = 1 / FLocalThreadCount;
+
 struct Particle
 {
     float4 color;

@@ -52,7 +52,6 @@ public:
 public:
 	static std::unique_ptr<D3D11::CComputeShader> GSpriteSetLocalHistogramCS;
 	static std::unique_ptr<D3D11::CComputeShader> GSpritePrefixSumLocalHistogramCS;
-	static std::unique_ptr<D3D11::CComputeShader> GSpritePrefixSumGlobalHistogramCS;
 #pragma endregion
 
 #pragma region 입자 그리기 관련 PSO

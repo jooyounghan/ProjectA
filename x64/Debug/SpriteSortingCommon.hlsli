@@ -8,11 +8,6 @@ struct PrefixSumDescriptor
     uint statusFlag; /* X : 0, A : 1, P : 2*/
 };
 
-struct Histogram
-{
-    uint bin[1 << RadixBitCount];
-};
-
 cbuffer EmitterManagerProperties : register(b2)
 {
     uint particleMaxCount;

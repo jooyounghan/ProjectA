@@ -396,11 +396,7 @@ void SpriteEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceCont
 	m_prefixLocalHistogramDispatchIndirectBuffer->InitializeBuffer(device);
 
 
-	m_localHistogram = make_unique<CStructuredBuffer>(
-		static_cast<UINT>(sizeof(SRadixHistogram)),
-		static_cast<UINT>(ceil(particleMaxCount / LocalThreadCount)),
-		nullptr
-	);
+	m_localHistogram = make_unique<CStructuredBuffer>(4, particleMaxCount, nullptr);
 	m_localHistogram->InitializeBuffer(device);
 	deviceContext->ClearUnorderedAccessViewUint(m_localHistogram->GetUAV(), clearValues);
 
@@ -534,6 +530,7 @@ void SpriteEmitterManager::FinalizeParticles(ID3D11DeviceContext* deviceContext)
 	for (UINT idx = 0; idx < radixPathCount; ++idx)
 	{
 		constexpr UINT clearValues[4] = { 0, 0, 0, 0 };
+
 		deviceContext->ClearUnorderedAccessViewUint(m_localPrefixSumDescriptors->GetUAV(), clearValues);
 
 		m_radixSortPropertyCPU.sortBitOffset = idx * RadixBitCount;
