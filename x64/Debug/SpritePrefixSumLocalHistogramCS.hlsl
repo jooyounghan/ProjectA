@@ -42,7 +42,7 @@ void LocalDownSweep(uint groupThreadIdx)
     }
 }
 
-static void DecoupledLookBack(uint groupIdx, uint radixIdx, uint prefixDescriptorIdx, uint groupCount, uint groupThreadIdx)
+static void DecoupledLookBack(uint groupIdx, uint radixIdx, uint prefixDescriptorIdx, uint maxGroupCount, uint groupThreadIdx)
 {
     if (groupThreadIdx == 0)
     {
@@ -64,7 +64,7 @@ static void DecoupledLookBack(uint groupIdx, uint radixIdx, uint prefixDescripto
             uint spinLockCount = 0;
             for (int loopBackID = (groupIdx - 1); loopBackID >= 0 && !isInclusiveChecked; --loopBackID)
             {
-                uint loopBackRadixIdx = groupCount * radixIdx + loopBackID;
+                uint loopBackRadixIdx = maxGroupCount * radixIdx + loopBackID;
                 uint currentStatus = 0;
 
                 do
@@ -105,16 +105,15 @@ void main(
     uint threadXIdx = DTid.x;
     
     float invLocalThreadCount = 1 / FLocalThreadCount;
-    uint groupCount = uint(ceil(aliveParticleCount * invLocalThreadCount * invLocalThreadCount));
-    uint groupElementIdx = groupIdx * LocalThreadCount + groupThreadIdx;
-    uint prefixDescriptorIdx = groupCount * radixIdx + groupIdx;
+    uint maxGroupCount = uint(ceil(particleMaxCount * invLocalThreadCount * invLocalThreadCount));
+    uint prefixDescriptorIdx = maxGroupCount * radixIdx + groupIdx;
+    uint workIdx = radixIdx * (maxGroupCount * LocalThreadCount) + threadXIdx;
     
-    uint workIdx = radixIdx * (groupCount * LocalThreadCount) + threadXIdx;
     groupHistogram[groupThreadIdx] = localHistogram[workIdx];
     GroupMemoryBarrierWithGroupSync();
 
     LocalUpSweep(groupThreadIdx);
-    DecoupledLookBack(groupIdx, radixIdx, prefixDescriptorIdx, groupCount, groupThreadIdx);
+    DecoupledLookBack(groupIdx, radixIdx, prefixDescriptorIdx, maxGroupCount, groupThreadIdx);
     LocalDownSweep(groupThreadIdx);
 
     localHistogram[workIdx] = groupHistogram[groupThreadIdx] + exclusivePrefix;

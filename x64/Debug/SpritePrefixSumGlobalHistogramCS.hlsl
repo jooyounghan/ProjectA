@@ -45,8 +45,10 @@ void main( uint3 GTid : SV_GroupThreadID )
 {
     uint groupThreadIdx = GTid.x;    
     float invLocalThreadCount = 1 / FLocalThreadCount;
+    uint maxGroupCount = uint(ceil(particleMaxCount * invLocalThreadCount * invLocalThreadCount));
     uint groupCount = uint(ceil(aliveParticleCount * invLocalThreadCount * invLocalThreadCount));
-    uint prefixDescriptorIndex = groupCount * groupThreadIdx + (groupCount - 1);
+
+    uint prefixDescriptorIndex = maxGroupCount * groupThreadIdx + (groupCount - 1);
     groupHistogram[groupThreadIdx] = localPrefixSumDescriptors[prefixDescriptorIndex].inclusivePrefix;
     GroupMemoryBarrierWithGroupSync();
 

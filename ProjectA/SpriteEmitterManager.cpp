@@ -395,13 +395,13 @@ void SpriteEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceCont
 
 	m_localPrefixSumDescriptors = make_unique<CStructuredBuffer>(
 		static_cast<UINT>(sizeof(SPrefixSumDesciptor)),
-		static_cast<UINT>(ceil(particleMaxCount / (LocalThreadCount * LocalThreadCount))) * (1 << RadixBitCount),
+		static_cast<UINT>(ceil(particleMaxCount / (LocalThreadCount * LocalThreadCount))) * RadixBinCount,
 		nullptr
 	);
 	m_localPrefixSumDescriptors->InitializeBuffer(device);
 	deviceContext->ClearUnorderedAccessViewUint(m_localPrefixSumDescriptors->GetUAV(), clearValues);
 
-	m_globlaHistogram = make_unique<CStructuredBuffer>(4, (1 << RadixBitCount), nullptr);
+	m_globlaHistogram = make_unique<CStructuredBuffer>(4, RadixBinCount, nullptr);
 	m_globlaHistogram->InitializeBuffer(device);
 	deviceContext->ClearUnorderedAccessViewUint(m_globlaHistogram->GetUAV(), clearValues);
 
@@ -545,7 +545,8 @@ void SpriteEmitterManager::FinalizeParticles(ID3D11DeviceContext* deviceContext)
 
 			deviceContext->CSSetShaderResources(0, 1, aliveIndexSrvs);
 			deviceContext->CSSetUnorderedAccessViews(0, 1, localHistogramUavs, initValue);
-			deviceContext->DispatchIndirect(m_dispatchIndirectBuffer->GetBuffer(), NULL);
+			static const UINT dispatchX = static_cast<UINT>(ceil(m_emitterManagerPropertyCPU.particleMaxCount / LocalThreadCount));
+			deviceContext->Dispatch(dispatchX, 1, 1);
 			deviceContext->CSSetShaderResources(0, 1, aliveIndexNullSrvs);
 			deviceContext->CSSetUnorderedAccessViews(0, 1, localHistogramNullUavs, initValue);
 		}		

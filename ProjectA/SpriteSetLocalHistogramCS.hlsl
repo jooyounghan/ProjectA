@@ -17,14 +17,14 @@ void main(
     uint threadIdx = DTid.x;    
 
     float invLocalThreadCount = 1 / FLocalThreadCount;
-    uint groupCount = uint(ceil(aliveParticleCount * invLocalThreadCount));
-    uint groupRadixIdx = radixIdx * groupCount + groupIdx;
+    uint maxGroupCount = uint(ceil(particleMaxCount * invLocalThreadCount));
+    uint groupRadixIdx = radixIdx * maxGroupCount + groupIdx;
 
     groupHistogram[radixIdx] = 0;
     GroupMemoryBarrierWithGroupSync();
 
     SpriteAliveIndex spriteAliveIndex = aliveIndices[threadIdx];
-    uint radixDepth = (spriteAliveIndex.depth >> sortBitOffset) & (LocalThreadCount - 1);
+    uint radixDepth = (spriteAliveIndex.depth >> sortBitOffset) & (RadixBinCount - 1);
     uint isAlive = (threadIdx < aliveParticleCount);
     InterlockedAdd(groupHistogram[radixDepth], isAlive);
     GroupMemoryBarrierWithGroupSync();

@@ -6,8 +6,7 @@ StructuredBuffer<uint> globalHistogram : register(t2);
 
 RWStructuredBuffer<SpriteAliveIndex> sortedAliveIndices : register(u0);
 
-groupshared uint localOffset[LocalThreadCount];
-groupshared int localDepth[LocalThreadCount];
+groupshared uint localDepth[LocalThreadCount];
 
 [numthreads(LocalThreadCount, 1, 1)]
 void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID)
@@ -17,25 +16,24 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
     uint threadIdx = DTid.x;
     
     float invLocalThreadCount = 1 / FLocalThreadCount;
-    uint groupCount = uint(ceil(aliveParticleCount * invLocalThreadCount));
+    uint maxGroupCount = uint(ceil(particleMaxCount * invLocalThreadCount));
     
     SpriteAliveIndex spriteAliveIndex = aliveIndices[threadIdx];
-    int radix = int((spriteAliveIndex.depth >> sortBitOffset) & (LocalThreadCount - 1));
-    uint groupRadixIdx = radix * groupCount + groupIdx;
+    uint radix = (spriteAliveIndex.depth >> sortBitOffset) & (RadixBinCount - 1);
+    uint groupRadixIdx = radix * maxGroupCount + groupIdx;
 
     bool isValid = threadIdx < aliveParticleCount;
-
-    localOffset[groupThreadIdx] = 0;
-    localDepth[groupThreadIdx] = isValid ? radix : -1;
+    localDepth[groupThreadIdx] = radix;
     GroupMemoryBarrierWithGroupSync();
 
+    if (!isValid) return;
+    
     uint offset = 0;
     for (uint index = 0; index < groupThreadIdx; ++index)
     {
         offset += (localDepth[index] == radix) ? 1 : 0;
     }
-    localOffset[groupThreadIdx] = offset;
 
-    uint scatterIdx = globalHistogram[radix] + localHistogram[groupRadixIdx] + localOffset[groupThreadIdx];
+    uint scatterIdx = globalHistogram[radix] + localHistogram[groupRadixIdx] + offset;
     sortedAliveIndices[scatterIdx] = spriteAliveIndex;
 }
