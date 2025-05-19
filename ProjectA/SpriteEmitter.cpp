@@ -133,6 +133,44 @@ void SpriteEmitter::Serialize(std::ofstream& ofs)
 
 void SpriteEmitter::Deserialize(std::ifstream& ifs)
 {
+	static int i = 0;
 	AEmitter::Deserialize(ifs);
 	m_spriteTextureDirectory = SerializeHelper::DeserializeString(ifs);
+
+	switch (i)
+	{
+	case 0:
+		m_spriteTextureDirectory = "./Asset/cloud_sprites.png";
+		break;
+	case 1:
+		m_spriteTextureDirectory = "./Asset/disc_smoke_sprites.png";
+		break;
+	case 2:
+		m_spriteTextureDirectory = "./Asset/explosion_sprites.png";
+		break;
+	case 3:
+		m_spriteTextureDirectory = "./Asset/explosion_sprites_2.png";
+		break;
+	case 4:
+		m_spriteTextureDirectory = "./Asset/impact_sprites.png";
+		break;
+	case 5:
+		m_spriteTextureDirectory = "./Asset/wispy_smoke_sprites.png";
+		break;
+	case 6:
+		m_spriteTextureDirectory = "./Asset/cloud_sprites.png";
+		break;
+	case 7:
+		m_spriteTextureDirectory = "./Asset/impact_sprites.png";
+		break;
+	case 8:
+		m_spriteTextureDirectory = "./Asset/explosion_sprites_2.png";
+		break;
+	default:
+		break;
+	}
+
+	i++;
+
+
 }

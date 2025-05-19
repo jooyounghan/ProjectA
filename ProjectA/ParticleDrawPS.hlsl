@@ -51,7 +51,6 @@ ParticlePSOut main(ParticleGSOut input) : SV_TARGET
 
 #else
 	ParticlePSOut result;
-	float4 emissiveColor = float4(color.xyz * 10.f, color.w);
 	result.f4ShotFilm = color;
 	result.f4BlurFilm = color;
 #endif

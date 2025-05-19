@@ -230,6 +230,14 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 
 	GEmitterDrawVS->CreateShader(L"./EmitterDrawVS.hlsl", nullptr, "main", "vs_5_0", device);
 
+
+	ID3D11RasterizerState* rasterizerStates[] = {
+		CRasterizerState::GetRSSolidCWSS(),
+		CRasterizerState::GetRSWireframeCWSS(),
+		CRasterizerState::GetRSWireframeCWSS(),
+		CRasterizerState::GetRSWireframeCWSS()
+	};
+
 	for (size_t idx = 0; idx < EmitterTypeCount; ++idx)
 	{
 		GEmitterDrawPS[idx]->CreateShader(L"./EmitterDrawPS.hlsl", emitterTypeMacros[idx], "main", "ps_5_0", device);
@@ -239,7 +247,7 @@ void CEmitterManagerCommonData::Intialize(ID3D11Device* device)
 			nullptr,
 			nullptr,
 			GEmitterDrawPS[idx].get(),
-			CRasterizerState::GetRSWireframeCWSS(),
+			rasterizerStates[idx],
 			nullptr,
 			CDepthStencilState::GetDSSReadWrite(),
 			nullptr,
