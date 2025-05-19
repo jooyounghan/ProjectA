@@ -107,7 +107,7 @@ UINT SpriteEmitterManager::AddEmitter(DirectX::XMVECTOR position, DirectX::XMVEC
 		{
 			SelectSpriteIndexGPUInterpolater(emitterID, spriteIndexInterpolaterID, isSpriteIndexGPUInterpolaterOn, spriteIndexInterpolationMethod, spriteIndexInterpolater);
 		},
-		[this](UINT emitterID, UINT spriteIndexInterpolaterID, bool isSpriteIndexGPUInterpolaterOn, float maxLife, UINT spriteTextureCount, EInterpolationMethod spriteIndexInterpolationMethod, IInterpolater<1>* spriteIndexInterpolater)
+		[this](UINT emitterID, UINT spriteIndexInterpolaterID, bool isSpriteIndexGPUInterpolaterOn, float maxLife, const XMFLOAT2& spriteTextureCount, EInterpolationMethod spriteIndexInterpolationMethod, IInterpolater<1>* spriteIndexInterpolater)
 		{
 			UpdateSpriteIndexGPUInterpolater(emitterID, spriteIndexInterpolaterID, isSpriteIndexGPUInterpolaterOn, maxLife, spriteTextureCount, spriteIndexInterpolationMethod, spriteIndexInterpolater);
 		},
@@ -275,7 +275,7 @@ void SpriteEmitterManager::UpdateSpriteIndexGPUInterpolater(
 	UINT spriteIndexInterpolaterID, 
 	bool isSpriteIndexGPUInterpolaterOn, 
 	float maxLife,
-	UINT spriteTextureCount,
+	const DirectX::XMFLOAT2& spriteTextureCount,
 	EInterpolationMethod spriteIndexInterpolationMethod, 
 	IInterpolater<1>* spriteIndexInterpolater
 )
@@ -325,7 +325,7 @@ void SpriteEmitterManager::UpdateSpriteTexture(
 	ID3D11DeviceContext* deviceContext
 )
 {
-	uint8_t* rescaledBuffer = new uint8_t[width * height * channel];
+	uint8_t* rescaledBuffer = new uint8_t[MaxSpriteTextureWidth * MaxSpriteTextureHeight * channel];
 
 	stbir_resize_uint8_linear(
 		loadedBuffer, width, height, width * channel,

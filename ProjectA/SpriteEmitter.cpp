@@ -24,7 +24,7 @@ SpriteEmitter::SpriteEmitter(
 	const std::function<void(UINT, UINT, bool, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterSelectedHandler,
 	const std::function<void(UINT, UINT, bool, float, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterUpdatedHandler,
 	const std::function<void(UINT, UINT, bool, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterSelectedHandler,
-	const std::function<void(UINT, UINT, bool, float, UINT, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterUpdatedHandler,
+	const std::function<void(UINT, UINT, bool, float, const XMFLOAT2&, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterUpdatedHandler,
 	const std::function<void(UINT, unsigned char*, UINT, UINT, UINT)>& spriteTextureLoadedHandler
 )
 	: AEmitter(
@@ -93,7 +93,7 @@ void SpriteEmitter::CreateProperty()
 		{
 			m_onSpriteIndexInterpolaterSelected(GetEmitterID(), m_spriteIndexInterpolaterID, isSpriteIndexGPUInterpolaterOn, spriteIndexIntperpolationMethod, spriteIndexInterpolater);
 		},
-			[this](bool isSpriteIndexGPUInterpolaterOn, float maxLife, UINT spriteTextureCount, EInterpolationMethod spriteIndexIntperpolationMethod, IInterpolater<1>* spriteIndexInterpolater)
+			[this](bool isSpriteIndexGPUInterpolaterOn, float maxLife, const XMFLOAT2& spriteTextureCount, EInterpolationMethod spriteIndexIntperpolationMethod, IInterpolater<1>* spriteIndexInterpolater)
 		{
 			m_onSpriteIndexInterpolaterUpdated(GetEmitterID(), m_spriteIndexInterpolaterID, isSpriteIndexGPUInterpolaterOn, maxLife, spriteTextureCount, spriteIndexIntperpolationMethod, spriteIndexInterpolater);
 		}

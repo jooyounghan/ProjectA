@@ -13,7 +13,7 @@ public:
 		const std::function<void(bool, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterSelectedHandler,
 		const std::function<void(bool, float, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterUpdatedHandler,
 		const std::function<void(bool, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterSelectedHandler,
-		const std::function<void(bool, float, UINT, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterUpdatedHandler
+		const std::function<void(bool, float, const DirectX::XMFLOAT2&, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterUpdatedHandler
 	);
 	~CSpriteRuntimeSpawnProperty() override = default;
 
@@ -23,7 +23,7 @@ protected:
 
 protected:
 	std::function<void(bool, EInterpolationMethod, IInterpolater<1>*)> m_onGpuSpriteIndexInterpolaterSelected;
-	std::function<void(bool, float, UINT, EInterpolationMethod, IInterpolater<1>*)> m_onGpuSpriteIndexInterpolaterUpdated;
+	std::function<void(bool, float, const DirectX::XMFLOAT2&, EInterpolationMethod, IInterpolater<1>*)> m_onGpuSpriteIndexInterpolaterUpdated;
 
 protected:
 	SControlPoint<2> m_spriteSizeInitControlPoint;
@@ -40,7 +40,7 @@ protected:
 	std::unique_ptr<CInterpolaterSelectPlotter<2>> m_spriteSizeInterpolationSelectPlotter;
 
 protected:
-	UINT m_spriteTextureCount;
+	DirectX::XMFLOAT2 m_spriteTextureCount;
 
 protected:
 	SControlPoint<1> m_spriteIndexInitControlPoint;

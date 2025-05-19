@@ -13,11 +13,12 @@ struct SParticleInterpInformation
 struct SSpriteInterpInformation
 {
 	float maxLife;
-	unsigned int colorInterpolaterID;
-	unsigned int colorInterpolaterDegree;
-	unsigned int spriteSizeInterpolaterID;
-	unsigned int spriteSizeInterpolaterDegree;
-	unsigned int spriteIndexInterpolaterID;
-	unsigned int spriteIndexInterpolaterDegree;
-	unsigned int spriteTextureCount;
+	uint32_t colorInterpolaterID;
+	uint32_t colorInterpolaterDegree;
+	uint32_t spriteSizeInterpolaterID;
+	uint32_t spriteSizeInterpolaterDegree;
+	uint32_t spriteIndexInterpolaterID;
+	uint32_t spriteIndexInterpolaterDegree;
+	DirectX::XMFLOAT2 spriteTextureCount;
+	float dummy[3];
 };

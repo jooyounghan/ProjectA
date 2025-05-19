@@ -45,7 +45,7 @@ CSpriteRuntimeSpawnProperty::CSpriteRuntimeSpawnProperty(
 	const std::function<void(bool, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterSelectedHandler,
 	const std::function<void(bool, float, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterUpdatedHandler,
 	const std::function<void(bool, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterSelectedHandler,
-	const std::function<void(bool, float, UINT, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterUpdatedHandler
+	const std::function<void(bool, float, const XMFLOAT2&, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterUpdatedHandler
 )
 	: 
 	CRuntimeSpawnProperty(gpuColorInterpolaterSelectedHandler, gpuColorInterpolaterUpdatedHandler),
@@ -57,7 +57,7 @@ CSpriteRuntimeSpawnProperty::CSpriteRuntimeSpawnProperty(
 	m_spriteSizeInitControlPoint{ 0.f, MakeArray(0.f, 0.f) },
 	m_spriteSizeFinalControlPoint{ InitLife, MakeArray(10.f, 10.f) },
 	m_spriteSizeInterpolationMethod(EInterpolationMethod::Linear),
-	m_spriteTextureCount(1),
+	m_spriteTextureCount(XMFLOAT2(1, 1)),
 	m_checkGPUSpriteIndexInterpolater(false),
 	m_spriteIndexInitControlPoint{ 0.f, 0.f },
 	m_spriteIndexFinalControlPoint{ InitLife, 10.f },
@@ -164,12 +164,13 @@ void CSpriteRuntimeSpawnProperty::AdjustControlPointsFromLife()
 
 void CSpriteRuntimeSpawnProperty::AdjustControlPointsFromTextureCount()
 {
-	float maxSpriteTextureIndex = (m_spriteTextureCount - 1.f);
-	m_spriteIndexInitControlPoint.y[0] = min(m_spriteIndexInitControlPoint.y[0], float(maxSpriteTextureIndex));
-	m_spriteIndexFinalControlPoint.y[0] = min(m_spriteIndexFinalControlPoint.y[0], float(maxSpriteTextureIndex));
+	float maxSpriteTextureIndex = (m_spriteTextureCount.x * m_spriteTextureCount.y - 1.f);
+	m_spriteIndexInitControlPoint.y[0] = min(m_spriteIndexInitControlPoint.y[0], maxSpriteTextureIndex);
+	m_spriteIndexFinalControlPoint.y[0] = min(m_spriteIndexFinalControlPoint.y[0], maxSpriteTextureIndex);
+
 	for (auto& spriteIndexControlPoint : m_spriteIndexControlPoints)
 	{
-		spriteIndexControlPoint.y[0] = min(spriteIndexControlPoint.y[0], float(maxSpriteTextureIndex));
+		spriteIndexControlPoint.y[0] = min(spriteIndexControlPoint.y[0], maxSpriteTextureIndex);
 	}
 
 	m_spriteIndexInterpolater->UpdateCoefficient();
@@ -274,7 +275,7 @@ void CSpriteRuntimeSpawnProperty::DrawSpriteSizeSetting()
 void CSpriteRuntimeSpawnProperty::DrawSpriteIndexSetting()
 {
 	SeparatorText("스프라이트 텍스쳐 설정");
-	if (DragInt("텍스쳐 개수", (int*)&m_spriteTextureCount, 1.f, 0, 100, "%d"))
+	if (DragFloat2("텍스쳐 개수", &m_spriteTextureCount.x, 1.f, 0, 100, "%.f"))
 	{
 		AdjustControlPointsFromTextureCount();
 		UpdateGPUSpriteIndexInterp();
@@ -331,7 +332,7 @@ void CSpriteRuntimeSpawnProperty::Serialize(std::ofstream& ofs)
 	SerializeHelper::SerializeElement<EInterpolationMethod>(ofs, m_spriteSizeInterpolationMethod);
 	SerializeHelper::SerializeElement<bool>(ofs, m_checkGPUSpriteSizeInterpolater);
 
-	SerializeHelper::SerializeElement<UINT>(ofs, m_spriteTextureCount);
+	SerializeHelper::SerializeElement<XMFLOAT2>(ofs, m_spriteTextureCount);
 	SerializeHelper::SerializeElement<SControlPoint<1>>(ofs, m_spriteIndexInitControlPoint);
 	SerializeHelper::SerializeElement<SControlPoint<1>>(ofs, m_spriteIndexFinalControlPoint);
 	SerializeHelper::SerializeVector<SControlPoint<1>>(ofs, m_spriteIndexControlPoints);
@@ -349,7 +350,7 @@ void CSpriteRuntimeSpawnProperty::Deserialize(std::ifstream& ifs)
 	m_spriteSizeInterpolationMethod = SerializeHelper::DeserializeElement<EInterpolationMethod>(ifs);
 	m_checkGPUSpriteSizeInterpolater = SerializeHelper::DeserializeElement<bool>(ifs);
 
-	m_spriteTextureCount = SerializeHelper::DeserializeElement<UINT>(ifs);
+	m_spriteTextureCount = SerializeHelper::DeserializeElement<XMFLOAT2>(ifs);
 	m_spriteIndexInitControlPoint = SerializeHelper::DeserializeElement<SControlPoint<1>>(ifs);
 	m_spriteIndexFinalControlPoint = SerializeHelper::DeserializeElement<SControlPoint<1>>(ifs);
 	m_spriteIndexControlPoints = SerializeHelper::DeserializeVector<SControlPoint<1>>(ifs);

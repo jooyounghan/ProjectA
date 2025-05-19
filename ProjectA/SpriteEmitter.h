@@ -18,7 +18,7 @@ public:
 		const std::function<void(UINT, UINT, bool, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterSelectedHandler,
 		const std::function<void(UINT, UINT, bool, float, EInterpolationMethod, IInterpolater<2>*)>& gpuSpriteSizeInterpolaterUpdatedHandler,
 		const std::function<void(UINT, UINT, bool, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterSelectedHandler,
-		const std::function<void(UINT, UINT, bool, float, UINT, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterUpdatedHandler,
+		const std::function<void(UINT, UINT, bool, float, const DirectX::XMFLOAT2&, EInterpolationMethod, IInterpolater<1>*)>& gpuSpriteIndexInterpolaterUpdatedHandler,
 		const std::function<void(UINT, unsigned char*, UINT, UINT, UINT)>& spriteTextureLoadedHandler
 	);
 	~SpriteEmitter() override = default;
@@ -32,7 +32,7 @@ protected:
 protected:
 	UINT m_spriteIndexInterpolaterID;
 	std::function<void(UINT, UINT, bool, EInterpolationMethod, IInterpolater<1>*)> m_onSpriteIndexInterpolaterSelected;
-	std::function<void(UINT, UINT, bool, float, UINT, EInterpolationMethod, IInterpolater<1>*)> m_onSpriteIndexInterpolaterUpdated;
+	std::function<void(UINT, UINT, bool, float, const DirectX::XMFLOAT2&, EInterpolationMethod, IInterpolater<1>*)> m_onSpriteIndexInterpolaterUpdated;
 
 public:
 	inline void SetSpriteSizeInterpolaterID(UINT spriteSizeInterpolaterID) noexcept { m_spriteSizeInterpolaterID = spriteSizeInterpolaterID; }

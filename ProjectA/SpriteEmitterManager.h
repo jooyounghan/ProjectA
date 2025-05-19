@@ -3,8 +3,8 @@
 #include "Texture2DInstance.h"
 #include "SRVOption.h"
 
-#define MaxSpriteTextureWidth 300
-#define MaxSpriteTextureHeight 100
+#define MaxSpriteTextureWidth 1000
+#define MaxSpriteTextureHeight 1000
 
 struct SSpriteAliveIndex
 {
@@ -129,7 +129,7 @@ protected:
 		UINT spriteIndexInterpolaterID,
 		bool isSpriteIndexGPUInterpolaterOn,
 		float maxLife,
-		UINT spriteTextureCount,
+		const DirectX::XMFLOAT2& spriteTextureCount,
 		EInterpolationMethod spriteIndexInterpolationMethod,
 		IInterpolater<1>* spriteIndexInterpolater
 	);

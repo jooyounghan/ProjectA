@@ -15,23 +15,21 @@ ParticlePSOut main(ParticleGSOut input) : SV_TARGET
 #endif
 {
 #ifdef SPRITE_EMITTER
-	const uint emitterID = input.emitterID;
-	const float spriteTextureCount = emitterInterpInforms[emitterID].spriteTextureCount;
+	uint emitterID = input.emitterID;
+	float2 spriteTextureCount = emitterInterpInforms[emitterID].spriteTextureCount;
+	uint2 indexer = uint2(spriteTextureCount);
 
-	uint   lowerIndex = (uint)floor(input.spriteIndex);
-	uint   upperIndex = (uint)ceil(input.spriteIndex);
-	float  t          = input.spriteIndex - lowerIndex;
+
+	uint   idx1 = (uint)floor(input.spriteIndex);
+	uint   idx2 = (uint)ceil(input.spriteIndex);
+	float  t          = input.spriteIndex - idx1;
+
+	uint2 lowerIndex = uint2(idx1 % indexer.x, idx1 / indexer.y);
+	uint2 upperIndex = uint2(idx2 % indexer.x, idx2 / indexer.y);
 
 	float2 baseCoord = input.texCoord;
-	float2 lowerUV = float2(
-		(lowerIndex + baseCoord.x) / spriteTextureCount,
-		baseCoord.y
-	);
-
-	float2 upperUV = float2(
-		(upperIndex + baseCoord.x) / spriteTextureCount,
-		baseCoord.y
-	);
+	float2 lowerUV = (lowerIndex + baseCoord) / spriteTextureCount;
+	float2 upperUV = (upperIndex + baseCoord) / spriteTextureCount;
 
 	float4 lowerSample = spriteImage.Sample(wrapSampler, float3(lowerUV, emitterID));
 	float4 upperSample = spriteImage.Sample(wrapSampler, float3(upperUV, emitterID));
