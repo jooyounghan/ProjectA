@@ -31,5 +31,5 @@ float4 main(PostProcessVertexOutput input) : SV_TARGET
         );
     }
    
-    return color * 0.25f * 0.9f;
+    return color * 0.25f * 0.7f;
 }
