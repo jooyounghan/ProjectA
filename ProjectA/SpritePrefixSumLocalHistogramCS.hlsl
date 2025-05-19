@@ -61,6 +61,7 @@ static void DecoupledLookBack(uint groupIdx, uint radixIdx, uint prefixDescripto
         if (groupIdx > 0)
         {
             bool isInclusiveChecked = false;
+            uint spinLockCount = 0;
             for (int loopBackID = (groupIdx - 1); loopBackID >= 0 && !isInclusiveChecked; --loopBackID)
             {
                 uint loopBackRadixIdx = groupCount * radixIdx + loopBackID;
@@ -70,7 +71,7 @@ static void DecoupledLookBack(uint groupIdx, uint radixIdx, uint prefixDescripto
                 {
                     InterlockedCompareExchange(localPrefixSumDescriptors[loopBackRadixIdx].statusFlag, 0xFFFFFFFF, 0xFFFFFFFF, currentStatus);
                 }
-                while (currentStatus == 0);
+                while (currentStatus == 0 && ++spinLockCount < 1000);
 
                 uint lookBackAggregate = localPrefixSumDescriptors[loopBackRadixIdx].aggregate;
                 uint lookBackInclusive = localPrefixSumDescriptors[loopBackRadixIdx].inclusivePrefix;

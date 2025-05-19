@@ -24,6 +24,7 @@ void main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV
     uint groupRadixIdx = radix * groupCount + groupIdx;
 
     bool isValid = threadIdx < aliveParticleCount;
+
     localOffset[groupThreadIdx] = 0;
     localDepth[groupThreadIdx] = isValid ? radix : -1;
     GroupMemoryBarrierWithGroupSync();
