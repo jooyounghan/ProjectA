@@ -108,8 +108,8 @@ gantt
 		1) Up-Sweep 과정을 통하여 i번째 스레드 그룹의 Aggregate(총합)을 구하고, i번째 스레드 그룹의 상태를 A로 변경한다. 이때 0번째 스레드 그룹의 경우, Aggregate를 Inclusive Prefix로 사용할 수 있으므로 상태를 P로 변경한다.
 		2) Decoupled - Lookback을 수행한다. i번째 스레드 그룹의 경우, i -1, i - 2, ... 0번째 스레드 그룹의 상태를 순차적으로 확인하고, m번째 스레드 그룹의 상태를 확인하였을 경우 아래와 같이 동작한다.
 			- 상태 X : Polling 대기 수행
-			- 상태 A : ExclusivePrefix$_{i}$ +=  Aggregate$_{m}$, continue Look-Back  
-			- 상태 P : ExclusivePrefix$_{i}$ +=  InclusivePrefix$_{m}$, break Look-Back 
+			- 상태 A : ExclusivePrefix +=  Aggregate, continue Look-Back  
+			- 상태 P : ExclusivePrefix +=  InclusivePrefix, break Look-Back 
 		3) i번째 스레드 그룹의 Look-Back을 마무리하면 상태를 P로 변경한다.
 		4)  Down-Sweep을 통하여 i번째 스레드 그룹에 대한 로컬 Prefix Sum을 계산하고, 이에 대해서 ExcluseivePrefix와 InclusivePrefix를 통하여 보정한다.
 
@@ -321,7 +321,7 @@ gantt
 
 ### 25.05.14
 - Bloom으로 인한 계단 형식의 Halo 수정
-    -   Blur Steop(3->5로 수정)
+    -   Blur Step(3->5로 수정)
     -   Reinhard Tone Mapping 추가
 - Radix Sort 간 입자 방출 조건을 추가하여 Consume으로 인한 오류 방지 수정
 
@@ -335,3 +335,10 @@ gantt
 	- 데이터를 쓰고 읽는 과정에서 GPU 캐싱 관련 최적화 수행
 		- 1,000,000개(1M)의 정렬 시 1.6 ~ 1.8ms 소모
 		- 간헐적으로 정렬이 안되는 경우가 발생하여 해당 부분 디버깅 필요
+
+### 25. 05.19
+- Radix Sort 문제점 해결
+	- 세이더 내에서 그룹 Count를 통해서 인덱싱 하는 과정에서 계산 오류
+- Flip-Book을 위한 2차원 스프라이트 텍스쳐도 활용할 수 있도록 확장
+	- 기존의 경우 가로로 전개된 텍스쳐에 대해서만 활용 가능하였는데, 이를 가로 세로로 전개된 텍스쳐에서도 활용할 수 있도록 확장
+- 최종 발표 예제 작성 
