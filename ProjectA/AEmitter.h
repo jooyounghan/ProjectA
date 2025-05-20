@@ -13,7 +13,7 @@
 class CInitialSpawnProperty;
 class CEmitterUpdateProperty;
 class CRuntimeSpawnProperty;
-class ForceUpdateProperty;
+class CForceUpdateProperty;
 
 class AEmitter : public IDrawable, public IUpdatable, public ISerializable
 {
@@ -82,13 +82,13 @@ protected:
 	std::unique_ptr<CInitialSpawnProperty> m_initialSpawnProperty;
 	std::unique_ptr<CEmitterUpdateProperty> m_emitterUpdateProperty;
 	std::unique_ptr<CRuntimeSpawnProperty> m_runtimeSpawnProperty;
-	std::unique_ptr<ForceUpdateProperty> m_forceUpdateProperty;
+	std::unique_ptr<CForceUpdateProperty> m_forceUpdateProperty;
 
 public:
 	inline CInitialSpawnProperty* GetInitialSpawnProperty() const noexcept { return m_initialSpawnProperty.get(); }
 	inline CEmitterUpdateProperty* GetEmitterUpdateProperty() const noexcept { return m_emitterUpdateProperty.get(); }
 	inline CRuntimeSpawnProperty* GetRuntimeSpawnProperty() const noexcept { return m_runtimeSpawnProperty.get(); }
-	inline ForceUpdateProperty* GetForceUpdateProperty() const noexcept { return m_forceUpdateProperty.get(); }
+	inline CForceUpdateProperty* GetForceUpdateProperty() const noexcept { return m_forceUpdateProperty.get(); }
 
 public:
 	void SetPosition(const DirectX::XMVECTOR& position) noexcept;

@@ -406,6 +406,7 @@
     <None Include="FilterToneMappingCommon.hlsli">
       <Filter>Shader\Filter</Filter>
     </None>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="EmitterDrawPS.hlsl">

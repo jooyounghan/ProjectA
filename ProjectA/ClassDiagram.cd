@@ -1,0 +1,360 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="AEmitter" Collapsed="true">
+    <Position X="20.75" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QQxECIARgiAIEQIACQAAREARACDEAkAAQAAAAgIUAAw=</HashCode>
+      <FileName>AEmitter.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AEmitterManager" Collapsed="true">
+    <Position X="12.5" Y="0.5" Width="5.5" />
+    <NestedTypes>
+      <Struct Name="AEmitterManager::__unnamed_struct_0004_1" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>AEmitterManager.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>ggUQQuEIOEQAGwBAUJSBOQBhAACgQYBBAAAAAgAgAkA=</HashCode>
+      <FileName>AEmitterManager.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AInterpolater&lt;Dim, CoefficientCount&gt;" Collapsed="true">
+    <Position X="3.5" Y="2" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAgBABAIAAAACAAAAQIIAAAAAEAEDAAAABAEAA=</HashCode>
+      <FileName>Interpolater.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CBaseFilm" Collapsed="true">
+    <Position X="21.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAARAICAAAQAAAgAAAACAAQACAEAIggAABAAAAAA=</HashCode>
+      <FileName>BaseFilm.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CBloomFilm" Collapsed="true">
+    <Position X="20.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQAQAASAAAgAAAQAAAQAAIEgAAAAIAAEAAAI=</HashCode>
+      <FileName>BloomFilm.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CCamera" Collapsed="true">
+    <Position X="32" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAwCJBSAICIANQAAIQAAAgAAgAAACAAEAEAAAAACBEA=</HashCode>
+      <FileName>Camera.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CCatmullRomInterpolater&lt;Dim&gt;" Collapsed="true">
+    <Position X="7" Y="3.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAAABAAAAAAAAAAAAAQAIAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>CatmullRomInterpolater.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CControlPointGridView&lt;Dim&gt;" Collapsed="true">
+    <Position X="36.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAgABYAAIACBAACAAIAggAAEGAAAEEACAAAAQ=</HashCode>
+      <FileName>ControlPointGridView.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CCubicSplineInterpolater&lt;Dim&gt;" Collapsed="true">
+    <Position X="0.5" Y="3.5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAAAAAAAAAAAAAAAAAUAgAAAAAAACAAAAAAAAAA=</HashCode>
+      <FileName>CubicSplineInterpolater.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CEmitterManagerCommonData" Collapsed="true">
+    <Position X="38.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAASAEAAAAgAIgAAAgAAApAAAAIACVAAAIMAAkBAEQA=</HashCode>
+      <FileName>EmitterManagerCommonData.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CEmitterUpdateProperty" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="3.75" Y="6.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>ABQCAwAAAAAEIQAABQJAACAAAGFEEAIIAAEBBAVAAAA=</HashCode>
+      <FileName>EmitterUpdateProperty.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CFilterCommonData" Collapsed="true">
+    <Position X="40.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAEAAGgBAACJAIAAABgAEAAAAEAAIAAAgAgAgAA=</HashCode>
+      <FileName>FilterCommonData.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CGPUInterpPropertyManager&lt;Dim, CoefficientCount&gt;" Collapsed="true">
+    <Position X="34.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>GQQAAGEAAAAABwAAAAAAAAAAUgAAAAAAAAAIAAAAAAA=</HashCode>
+      <FileName>GPUInterpPropertyManager.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CInitialSpawnProperty" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="1.5" Y="6.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAQAAARABAUEAQgQAQQQAAACCCBFAAAABEAAAAEjCEA=</HashCode>
+      <FileName>InitialSpawnProperty.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CLinearInterpolater&lt;Dim&gt;" Collapsed="true">
+    <Position X="4" Y="3.5" Width="2.25" />
+    <InheritanceLine Type="AInterpolater&lt;Dim, CoefficientCount&gt;" FixedToPoint="true">
+      <Path>
+        <Point X="5" Y="2.691" />
+        <Point X="5" Y="3.5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>AAAAQAAAAAAAAAAAAAAAAAQAAAAAAAACAAAAAAAAEAA=</HashCode>
+      <FileName>LinearInterpolater.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CModel" Collapsed="true">
+    <Position X="18.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAQACAAESAhCBAoAEAAAAIAAABCAABEEgAAAAA=</HashCode>
+      <FileName>Model.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CParticleRuntimeSpawnProperty" Collapsed="true">
+    <Position X="6.25" Y="7.25" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAJAAAAAAAAAAA=</HashCode>
+      <FileName>ParticleRuntimeSpawnProperty.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CProjectAApp" Collapsed="true">
+    <Position X="42" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABQEAAQAAQQAAIAAAQQEBAQABgACAAAAAAACCAAAAQA=</HashCode>
+      <FileName>ProjectAApp.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CRuntimeSpawnProperty" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="7.75" Y="6" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAUAAABQBQQGASgAEQQhAIADBCBEAAAiBAAAIiFBAEA=</HashCode>
+      <FileName>RuntimeSpawnProperty.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CShotFilm" Collapsed="true">
+    <Position X="23" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>RABAAAAAAQAAAQCAAwACAUAAAQEAAAAAAAAAAEAAAQA=</HashCode>
+      <FileName>ShotFilm.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CSpriteRuntimeSpawnProperty" Collapsed="true">
+    <Position X="9.25" Y="7.25" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAgQABAwYAA6AAAAABYAAAAKDEABQgBBQAAAgAIEM=</HashCode>
+      <FileName>SpriteRuntimeSpawnProperty.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GDirection" Collapsed="true">
+    <Position X="36.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAQAAAAQAAAAAAQAAAAAAAAAAA=</HashCode>
+      <FileName>GlobalVariable.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="IInterpolater&lt;Dim&gt;" Collapsed="true">
+    <Position X="3.25" Y="0.75" Width="3.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAUAAgAAAAAAAAACAAAAQAAAAAAAAAAAAAAABAMAA=</HashCode>
+      <FileName>Interpolater.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterpolaterSelectorHelper" Collapsed="true">
+    <Position X="38.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAA=</HashCode>
+      <FileName>InterpolaterSelector.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ModelFactory" Collapsed="true">
+    <Position X="40.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAIAgAAAAAIAABAAAAAAAAAAAAAAAQAAIAAAI=</HashCode>
+      <FileName>ModelFactory.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ParticleEmitter" Collapsed="true">
+    <Position X="22.25" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAABAAAAAAAAACAAAAAQAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ParticleEmitter.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ParticleEmitterManager" Collapsed="true">
+    <Position X="12" Y="3" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AgAQAgAAAAAAAgAAABAAKAAAAACAAQAJAAAAAAAAAkA=</HashCode>
+      <FileName>ParticleEmitterManager.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SerializeHelper" Collapsed="true">
+    <Position X="42" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABBAAAAAAAAAAgAAAAAAAAAAAAgAAAAAgAACAAAA=</HashCode>
+      <FileName>ISerializable.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SpriteEmitter" Collapsed="true">
+    <Position X="19.75" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAFEEAAAQAAgAAQIQEQACJEAAAAgQAAAAAQCAQ=</HashCode>
+      <FileName>SpriteEmitter.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SpriteEmitterManager" Collapsed="true">
+    <Position X="16" Y="3" Width="2" />
+    <TypeIdentifier>
+      <HashCode>ggABAgAAAgAGAgAAAAIBKCAAAAHgASiBoACAYAAJIkI=</HashCode>
+      <FileName>SpriteEmitterManager.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CForceUpdateProperty" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="1.5" Y="7.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAgACBQAEAQAAAAAgACBEAAAAAAAAAwAAACg=</HashCode>
+      <FileName>ForceUpdateProperty.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="SControlPoint&lt;Dim&gt;" Collapsed="true">
+    <Position X="36.75" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAAAAAAA=</HashCode>
+      <FileName>InterpolaterStructure.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="SEmitterForceProperty" Collapsed="true">
+    <Position X="38.5" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAAAAAAAAAAAACAAAAEAQAAAAABABAAgAAg=</HashCode>
+      <FileName>EmitterForceProperty.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="SInterpProperty&lt;Dim, CoefficientCount&gt;" Collapsed="true">
+    <Position X="40.25" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAQAAAAAEAAAAAAQQAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>InterpolaterStructure.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="SParticle" Collapsed="true">
+    <Position X="42" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAEAIAAAAAAAAIIAAAAgAAAACAAAQAAAAAAAA=</HashCode>
+      <FileName>ParticleStructure.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="SParticleInterpInformation" Collapsed="true">
+    <Position X="36.75" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgAAAAAAAAAEAAAAAAAAAAYAAAAAA=</HashCode>
+      <FileName>InterpInformation.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="SPointInteractionForce" Collapsed="true">
+    <Position X="38.5" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAACAAAAAAAAAAQAAAAAAAAAAAAAgAAAA=</HashCode>
+      <FileName>EmitterForceProperty.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="SPrefixSumDesciptor" Collapsed="true">
+    <Position X="40.25" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAABABAAAAAAAAIAAAAABAAAAAAAAAAAAA=</HashCode>
+      <FileName>SpriteEmitterManager.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="SShapedVectorProperty" Collapsed="true">
+    <Position X="42" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAABAIAAAAABAAAAAAAAAAAAAABAAAAAA=</HashCode>
+      <FileName>ShapedVectorProperty.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="SSpriteAliveIndex" Collapsed="true">
+    <Position X="36.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAABAAA=</HashCode>
+      <FileName>SpriteEmitterManager.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="SSpriteInterpInformation" Collapsed="true">
+    <Position X="38.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAEAIAAAAoAAAAAAAAAQAAAIAABAAAYAAAAAA=</HashCode>
+      <FileName>InterpInformation.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="SVortexForce" Collapsed="true">
+    <Position X="40.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAIAAAAAAAAAAAAAAAAAAgAAAAIAAAAAAABAAAAAAE=</HashCode>
+      <FileName>EmitterForceProperty.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="VERTEX_CONSTANT_BUFFER_DX11" Collapsed="true">
+    <Position X="42" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAI=</HashCode>
+      <FileName>External\imgui_impl_dx11.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Enum Name="EEmitterType" Collapsed="true">
+    <Position X="36.75" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACABAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAQAAA=</HashCode>
+      <FileName>EmitterTypeDefinition.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="EForceFlag" Collapsed="true">
+    <Position X="38.5" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAIIAAAAAAAAAAAAAACAAAAACAAAAAAABAA=</HashCode>
+      <FileName>ForceUpdateProperty.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="EInterpolationMethod" Collapsed="true">
+    <Position X="40.25" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAAgAAAAAAAAgAAAAAAAAAAAA=</HashCode>
+      <FileName>InterpolaterStructure.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="EKey" Collapsed="true">
+    <Position X="42" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANACIAAA=</HashCode>
+      <FileName>Camera.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ENForceKind" Collapsed="true">
+    <Position X="36.75" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAABAA=</HashCode>
+      <FileName>ForceUpdateProperty.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="EShapedVector" Collapsed="true">
+    <Position X="38.5" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQAAAAAAAAAQgAAAAAAAAAAAAAAAAAAECAAA=</HashCode>
+      <FileName>ShapedVectorProperty.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="맑은 고딕" Size="9" />
+</ClassDiagram>

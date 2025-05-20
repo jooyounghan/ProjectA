@@ -98,7 +98,7 @@ void SpriteEmitter::CreateProperty()
 			m_onSpriteIndexInterpolaterUpdated(GetEmitterID(), m_spriteIndexInterpolaterID, isSpriteIndexGPUInterpolaterOn, maxLife, spriteTextureCount, spriteIndexIntperpolationMethod, spriteIndexInterpolater);
 		}
 	);
-	m_forceUpdateProperty = make_unique<ForceUpdateProperty>(
+	m_forceUpdateProperty = make_unique<CForceUpdateProperty>(
 		[this](const SEmitterForceProperty& forceProperty) { m_onForcePropertyChanged(GetEmitterID(), forceProperty); }
 	);
 }

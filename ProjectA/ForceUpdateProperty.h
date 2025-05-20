@@ -43,13 +43,13 @@ constexpr void SetNForceCount(UINT& nForceCount, ENForceKind forceKind, UINT new
 constexpr void IncrementNForceCount(UINT& nForceCount, ENForceKind forceKind);
 constexpr void DecrementNForceCount(UINT& nForceCount, ENForceKind forceKind);
 
-class ForceUpdateProperty : public IDrawable, public IUpdatable, public ISerializable
+class CForceUpdateProperty : public IDrawable, public IUpdatable, public ISerializable
 {
 public:
-	ForceUpdateProperty(
+	CForceUpdateProperty(
 		const std::function<void(const SEmitterForceProperty&)>& emitterForceUpdatedHandler
 	);
-	~ForceUpdateProperty() override = default;
+	~CForceUpdateProperty() override = default;
 
 protected:
 	SEmitterForceProperty m_emitterForceProperty;

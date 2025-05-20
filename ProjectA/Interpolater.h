@@ -38,7 +38,7 @@ public:
 
 public:
 	virtual uint32_t GetDegree() = 0;
-
+	
 public:
 	virtual void UpdateCoefficient() = 0;
 	virtual const float* GetXProfilesAddress() const noexcept = 0;

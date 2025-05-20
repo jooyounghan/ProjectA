@@ -45,7 +45,7 @@ void ParticleEmitter::CreateProperty()
 			m_onGpuColorInterpolaterUpdated(GetEmitterID(), m_colorInterpolaterID, isColorGPUInterpolaterOn, maxLife, colorIntperpolationMethod, colorInterpolater);
 		}
 	);
-	m_forceUpdateProperty = make_unique<ForceUpdateProperty>(
+	m_forceUpdateProperty = make_unique<CForceUpdateProperty>(
 		[this](const SEmitterForceProperty& forceProperty) { m_onForcePropertyChanged(GetEmitterID(), forceProperty); }
 	);
 }

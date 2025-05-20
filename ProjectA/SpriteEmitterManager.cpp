@@ -528,6 +528,7 @@ void SpriteEmitterManager::FinalizeParticles(ID3D11DeviceContext* deviceContext)
 	{
 		constexpr UINT clearValues[4] = { 0, 0, 0, 0 };
 
+		deviceContext->ClearUnorderedAccessViewUint(m_localHistogram->GetUAV(), clearValues);
 		deviceContext->ClearUnorderedAccessViewUint(m_localPrefixSumDescriptors->GetUAV(), clearValues);
 
 		m_radixSortPropertyCPU.sortBitOffset = idx * RadixBitCount;
@@ -545,8 +546,7 @@ void SpriteEmitterManager::FinalizeParticles(ID3D11DeviceContext* deviceContext)
 
 			deviceContext->CSSetShaderResources(0, 1, aliveIndexSrvs);
 			deviceContext->CSSetUnorderedAccessViews(0, 1, localHistogramUavs, initValue);
-			static const UINT dispatchX = static_cast<UINT>(ceil(m_emitterManagerPropertyCPU.particleMaxCount / LocalThreadCount));
-			deviceContext->Dispatch(dispatchX, 1, 1);
+			deviceContext->DispatchIndirect(m_dispatchIndirectBuffer->GetBuffer(), NULL);
 			deviceContext->CSSetShaderResources(0, 1, aliveIndexNullSrvs);
 			deviceContext->CSSetUnorderedAccessViews(0, 1, localHistogramNullUavs, initValue);
 		}		

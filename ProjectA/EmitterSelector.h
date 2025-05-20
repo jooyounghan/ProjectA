@@ -8,7 +8,7 @@ class AEmitter;
 class CInitialSpawnProperty;
 class CEmitterUpdateProperty;
 class CRuntimeSpawnProperty;
-class ForceUpdateProperty;
+class CForceUpdateProperty;
 
 class CEmitterSelector : public CBaseSelector<EEmitterType>
 {

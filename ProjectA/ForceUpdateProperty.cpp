@@ -49,7 +49,7 @@ constexpr void DecrementNForceCount(UINT& nForceCount, ENForceKind forceKind)
 }
 
 
-ForceUpdateProperty::ForceUpdateProperty(
+CForceUpdateProperty::CForceUpdateProperty(
 	const std::function<void(const SEmitterForceProperty&)>& emitterForceUpdatedHandler
 )
 	: m_isEmitterForcePropertyChanged(false),
@@ -59,18 +59,18 @@ ForceUpdateProperty::ForceUpdateProperty(
 }
 
 
-void ForceUpdateProperty::SetFlag(EForceFlag forceFlag, bool isOn)
+void CForceUpdateProperty::SetFlag(EForceFlag forceFlag, bool isOn)
 {
 	isOn ? m_emitterForceProperty.forceFlag |= GetForceFlagOffset(forceFlag) : m_emitterForceProperty.forceFlag &= ~GetForceFlagOffset(forceFlag);
 	m_isEmitterForcePropertyChanged = true;
 }
 
-void ForceUpdateProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
+void CForceUpdateProperty::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 
 }
 
-void ForceUpdateProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
+void CForceUpdateProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 {
 	if (m_isEmitterForcePropertyChanged)
 	{
@@ -79,7 +79,7 @@ void ForceUpdateProperty::Update(ID3D11DeviceContext* deviceContext, float dt)
 	}
 }
 
-void ForceUpdateProperty::DrawUI()
+void CForceUpdateProperty::DrawUI()
 {
 	if (!CollapsingHeader("파티클 업데이트 프로퍼티"))
 		return;
@@ -87,7 +87,7 @@ void ForceUpdateProperty::DrawUI()
 	DrawUIImpl();
 }
 
-void ForceUpdateProperty::DrawUIImpl()
+void CForceUpdateProperty::DrawUIImpl()
 {
 	HandleSingleForce("중력", EForceFlag::Gravity, [&]()
 		{
@@ -154,7 +154,7 @@ void ForceUpdateProperty::DrawUIImpl()
 	);
 }
 
-void ForceUpdateProperty::HandleSingleForce(
+void CForceUpdateProperty::HandleSingleForce(
 	const string& forceName,
 	EForceFlag force,
 	const function<bool()>& handler
@@ -175,7 +175,7 @@ void ForceUpdateProperty::HandleSingleForce(
 
 }
 
-void ForceUpdateProperty::HandleNForce(
+void CForceUpdateProperty::HandleNForce(
 	const string& forceName,
 	EForceFlag forceFlag, 
 	ENForceKind nForceKind,
@@ -240,13 +240,13 @@ void ForceUpdateProperty::HandleNForce(
 	EndDisabled();
 }
 
-void ForceUpdateProperty::Serialize(std::ofstream& ofs)
+void CForceUpdateProperty::Serialize(std::ofstream& ofs)
 {
 	SerializeHelper::SerializeElement<SEmitterForceProperty>(ofs, m_emitterForceProperty);
 
 }
 
-void ForceUpdateProperty::Deserialize(std::ifstream& ifs)
+void CForceUpdateProperty::Deserialize(std::ifstream& ifs)
 {
 	m_emitterForceProperty = SerializeHelper::DeserializeElement<SEmitterForceProperty>(ifs);
 	m_isEmitterForcePropertyChanged = true;
