@@ -24,8 +24,8 @@ ParticlePSOut main(ParticleGSOut input) : SV_TARGET
 	uint   idx2 = (uint)ceil(input.spriteIndex);
 	float  t          = input.spriteIndex - idx1;
 
-	uint2 lowerIndex = uint2(idx1 % indexer.x, idx1 / indexer.y);
-	uint2 upperIndex = uint2(idx2 % indexer.x, idx2 / indexer.y);
+	uint2 lowerIndex = uint2(idx1 % indexer.x, idx1 / indexer.x);
+	uint2 upperIndex = uint2(idx2 % indexer.x, idx2 / indexer.x);
 
 	float2 baseCoord = input.texCoord;
 	float2 lowerUV = (lowerIndex + baseCoord) / spriteTextureCount;
@@ -51,7 +51,6 @@ ParticlePSOut main(ParticleGSOut input) : SV_TARGET
 
 #else
 	ParticlePSOut result;
-	float4 emissiveColor = float4(color.xyz * 10.f, color.w);
 	result.f4ShotFilm = color;
 	result.f4BlurFilm = color;
 #endif

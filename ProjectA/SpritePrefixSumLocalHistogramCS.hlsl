@@ -105,16 +105,22 @@ void main(
     uint threadXIdx = DTid.x;
     
     float invLocalThreadCount = 1 / FLocalThreadCount;
-    uint maxGroupCount = uint(ceil(particleMaxCount * invLocalThreadCount * invLocalThreadCount));
-    uint prefixDescriptorIdx = maxGroupCount * radixIdx + groupIdx;
-    uint workIdx = radixIdx * (maxGroupCount * LocalThreadCount) + threadXIdx;
-    
-    groupHistogram[groupThreadIdx] = localHistogram[workIdx];
+    uint maxGroupCount = uint(ceil(particleMaxCount * invLocalThreadCount));
+    uint maxPrefixGroupCount = uint(ceil(ceil(particleMaxCount * invLocalThreadCount) * invLocalThreadCount));
+
+    uint prefixDescriptorIdx = maxPrefixGroupCount * radixIdx + groupIdx;
+    uint workIdx = maxGroupCount * radixIdx + threadXIdx;
+    bool isValid = threadXIdx < maxGroupCount;
+       
+    groupHistogram[groupThreadIdx] = isValid ? localHistogram[workIdx] : 0;
     GroupMemoryBarrierWithGroupSync();
 
     LocalUpSweep(groupThreadIdx);
     DecoupledLookBack(groupIdx, radixIdx, prefixDescriptorIdx, maxGroupCount, groupThreadIdx);
     LocalDownSweep(groupThreadIdx);
 
-    localHistogram[workIdx] = groupHistogram[groupThreadIdx] + exclusivePrefix;
+    if (isValid)
+    {
+        localHistogram[workIdx] = groupHistogram[groupThreadIdx] + exclusivePrefix;
+    }
 }

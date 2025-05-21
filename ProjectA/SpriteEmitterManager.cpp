@@ -389,13 +389,17 @@ void SpriteEmitterManager::InitializeImpl(ID3D11Device* device, ID3D11DeviceCont
 	m_prefixLocalHistogramDispatchIndirectBuffer->InitializeBuffer(device);
 
 
-	m_localHistogram = make_unique<CStructuredBuffer>(4, particleMaxCount, nullptr);
+	m_localHistogram = make_unique<CStructuredBuffer>(
+		4, 
+		static_cast<UINT>(ceil(particleMaxCount / LocalThreadCount)) * RadixBinCount, 
+		nullptr
+	);
 	m_localHistogram->InitializeBuffer(device);
 	deviceContext->ClearUnorderedAccessViewUint(m_localHistogram->GetUAV(), clearValues);
 
 	m_localPrefixSumDescriptors = make_unique<CStructuredBuffer>(
 		static_cast<UINT>(sizeof(SPrefixSumDesciptor)),
-		static_cast<UINT>(ceil(particleMaxCount / (LocalThreadCount * LocalThreadCount))) * RadixBinCount,
+		static_cast<UINT>(ceil(ceil(particleMaxCount / LocalThreadCount) / LocalThreadCount)) * RadixBinCount,
 		nullptr
 	);
 	m_localPrefixSumDescriptors->InitializeBuffer(device);
