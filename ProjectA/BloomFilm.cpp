@@ -34,8 +34,10 @@ CBloomFilm::CBloomFilm(
 	m_blurredViewports.emplace_back(m_viewport);
 	for (size_t blurIdx = 0; blurIdx < blurCount; ++blurIdx)
 	{
-		blurWidth = UINT(ceil(blurWidth / 2.f));
-		blurHeight = UINT(ceil(blurHeight / 2.f));
+		//blurWidth = UINT(ceil(blurWidth / 2.f));
+		//blurHeight = UINT(ceil(blurHeight / 2.f));
+		blurWidth = UINT(ceil(blurWidth));
+		blurHeight = UINT(ceil(blurHeight));
 		blurredViewport.Width = static_cast<FLOAT>(blurWidth);
 		blurredViewport.Height = static_cast<FLOAT>(blurHeight);
 
